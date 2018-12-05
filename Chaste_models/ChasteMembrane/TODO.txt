@@ -1,0 +1,13 @@
+TODO
+CHASTE
+- Introduce the boundary condition to keep the crypt gounded
+- Try membrane cell with smaller spring length between it and stromal/epithelial cells
+- Modify java visualiser so node radius is smaller
+- Have a go at using the modifier
+- See what overlapping spheres can do
+- Membrane growing under stress
+- 
+
+BIOLOGY
+- Complete list of things that I know and questions that need to be answered
+- Be prepared for meeting with Susi
