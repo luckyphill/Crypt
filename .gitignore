@@ -1,0 +1,9 @@
+.DS_Store
+*/*_Store
+build/**
+testoutput*/*
+Membrane_Cell_Characterisation/*/
+*.txt
+*.m~
+Data/*
+

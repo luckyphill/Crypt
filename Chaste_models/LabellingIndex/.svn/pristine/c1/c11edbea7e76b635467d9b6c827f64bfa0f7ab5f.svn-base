@@ -1,0 +1,93 @@
+= Comparing individual-based approaches to modelling the self-organization of multicellular tissues =
+
+Welcome to the Chaste wiki.
+
+This section contains pages generated automatically from the source code accompanying the paper "Comparing individual-based approaches to modelling the self-organization of multicellular tissues". 
+
+[[EmbedYoutube(4YZp_WmBZTI)]]
+[[EmbedYoutube(F04IlE2PyY0)]]
+[[EmbedYoutube(SX2GFOr0Dus)]]
+[[EmbedYoutube(Yl2GT2x2ohc)]]
+
+== Getting the code and installing dependencies ==
+
+Before running these examples you will need to [wiki:InstallGuides/InstallGuide install Chaste's dependencies].
+The easiest way to do this is using an Ubuntu machine (or an Ubuntu virtual machine) as discussed on [wiki:InstallGuides/UbuntuPackage]. 
+Note that Chaste is only fully supported on !Linux/Unix systems, so users of Windows or Mac OS X may need to follow the virtual machine route.
+For manual installation of each dependency, on any version of Linux, see DeveloperInstallGuide.
+
+'''NB''': the paper was developed to work with a specific tagged development version of Chaste. 
+Presently it does not work with any of the previous release versions.  However we will tie this code to the next release of Chaste.
+
+To checkout the source code for the specific code revision use the command
+{{{
+  git clone --depth 1 --branch paper/CellBasedComparison https://chaste.cs.ox.ac.uk/git/chaste.git Chaste
+  cd Chaste
+}}}
+Alternatively, if you already have a clone of our Git repository then simply run the command {{{git pull; git checkout paper/CellBasedComparison}}} to move your source to the correct revision.
+
+This project can be built with either of the two builders SCons or CMake.  (Note that SCons will be deprecated in a later release of Chaste.)
+At this point you should configure Chaste with [wiki:ChasteGuides/UserBuildGuide Scons] or [wiki:ChasteGuides/CmakeBuildGuide CMake].
+
+You will also need the source for the CellBasedComparison2017 project.  This can be done by checking out the version from the repository by using the command 
+{{{
+svn checkout --username anonymous https://chaste.cs.ox.ac.uk/svn/chaste/projects/CellBasedComparison2017 projects/CellBasedComparison2017
+}}}
+in the Chaste directory. Note that '''username''' for checking out the project code is 'anonymous'.  When prompted for a password then please give an email address.
+
+Now the project should be installed, and everything should compile and run correctly. 
+You can now run the tests or simulations, or create your own test suites.
+
+== Documentation ==
+There are two folders - `src` and `test`.
+ 1. The `src` folder contains classes which add functionality to the core Chaste code.
+ 1. The `test` folder contains:
+  * [wiki:PaperTutorials/CellBasedComparison2017/CellSorting TestCellSortingLiteratePaper.hpp] - this file can be run to generate the results in Figures 2 and 3.
+  * [wiki:PaperTutorials/CellBasedComparison2017/CylindricalCrypt TestCylindricalCryptLiteratePaper.hpp] - this file can be run to generate the results in Figures 4, 5 and 6.
+  * [wiki:PaperTutorials/CellBasedComparison2017/DeltaNotch TestDeltaNotchLiteratePaper.hpp] - this file can be run to generate the results in Figures 7 and 8.
+  * [wiki:PaperTutorials/CellBasedComparison2017/MorphogenMonolayer TestMorphogenMonolayerLiteratePaper.hpp] - this file can be run to generate the results in Figures 9, 10 and 11.
+  
+'''Clicking on the images below will take you to the code to run the corresponding simulation.'''
+
+||  ||= Adhesion =||= Proliferation =||= Short-range signalling =||= Long-range signalling =||
+||= CA =|| [[Image(source:projects/CellBasedComparison2017/figures/Sorting_CA_1_t1000.png, link=wiki:PaperTutorials/CellBasedComparison2017/CellSorting#CA, height=100px)]] || [[Image(source:projects/CellBasedComparison2017/figures/Crypt_CA_08_t100.png, link=wiki:PaperTutorials/CellBasedComparison2017/CylindricalCrypt#CA, height=100px)]] || [[Image(source:projects/CellBasedComparison2017/figures/DN_CA_01_t1000.png, link=wiki:PaperTutorials/CellBasedComparison2017/DeltaNotch#CA, height=100px)]] || [[Image(source:projects/CellBasedComparison2017/figures/Morph_Ca_t100.png, link=wiki:PaperTutorials/CellBasedComparison2017/MorphogenMonolayer#CA, height=100px)]] ||
+||= CP =|| [[Image(source:projects/CellBasedComparison2017/figures/Sorting_Potts_1_t1000.png, link=wiki:PaperTutorials/CellBasedComparison2017/CellSorting#CP, height=100px)]] || [[Image(source:projects/CellBasedComparison2017/figures/Crypt_Potts_08_t100.png, link=wiki:PaperTutorials/CellBasedComparison2017/CylindricalCrypt#CP, height=100px)]] || [[Image(source:projects/CellBasedComparison2017/figures/DN_Potts_01_t1000.png, link=wiki:PaperTutorials/CellBasedComparison2017/DeltaNotch#CP, height=100px)]] || [[Image(source:projects/CellBasedComparison2017/figures/Morph_Potts_t100.png, link=wiki:PaperTutorials/CellBasedComparison2017/MorphogenMonolayer#CP, height=100px)]] ||
+||= OS =|| [[Image(source:projects/CellBasedComparison2017/figures/Sorting_Node_1_t1000.png, link=wiki:PaperTutorials/CellBasedComparison2017/CellSorting#OS, height=100px)]] || [[Image(source:projects/CellBasedComparison2017/figures/Crypt_Node_08_t100.png, link=wiki:PaperTutorials/CellBasedComparison2017/CylindricalCrypt#OS, height=100px)]] || [[Image(source:projects/CellBasedComparison2017/figures/DN_Node_01_t1000.png, link=wiki:PaperTutorials/CellBasedComparison2017/DeltaNotch#OS, height=100px)]] || [[Image(source:projects/CellBasedComparison2017/figures/Morph_Node_t100.png, link=wiki:PaperTutorials/CellBasedComparison2017/MorphogenMonolayer#OS, height=100px)]] ||
+||= VT =|| [[Image(source:projects/CellBasedComparison2017/figures/Sorting_Mesh_1_t1000.png, link=wiki:PaperTutorials/CellBasedComparison2017/CellSorting#VT, height=100px)]] || [[Image(source:projects/CellBasedComparison2017/figures/Crypt_Mesh_08_t100.png, link=wiki:PaperTutorials/CellBasedComparison2017/CylindricalCrypt#VT, height=100px)]] ||  [[Image(source:projects/CellBasedComparison2017/figures/DN_Mesh_01_t1000.png, link=wiki:PaperTutorials/CellBasedComparison2017/DeltaNotch#VT, height=100px)]] ||  [[Image(source:projects/CellBasedComparison2017/figures/Morph_Mesh_t100.png, link=wiki:PaperTutorials/CellBasedComparison2017/MorphogenMonolayer#VT, height=100px)]] || 
+||= VM =|| [[Image(source:projects/CellBasedComparison2017/figures/Sorting_Vertex_1_t1000.png, link=wiki:PaperTutorials/CellBasedComparison2017/CellSorting#VM, height=100px)]] || [[Image(source:projects/CellBasedComparison2017/figures/Crypt_Vertex_08_t100.png, link=wiki:PaperTutorials/CellBasedComparison2017/CylindricalCrypt#VM, height=100px)]] || [[Image(source:projects/CellBasedComparison2017/figures/DN_Vertex_01_t1000.png, link=wiki:PaperTutorials/CellBasedComparison2017/DeltaNotch#VM, height=100px)]] || [[Image(source:projects/CellBasedComparison2017/figures/Morph_Vertex_t100.png, link=wiki:PaperTutorials/CellBasedComparison2017/MorphogenMonolayer#VM, height=100px)]] ||
+
+== Running tests ==
+With SCons you can run tests with,
+{{{
+cd <Chaste path>
+
+# Make and run a test at a time:
+scons b=GccOpt ts=projects/CellBasedComparison2017/test/TestCellSortingLiteratePaper.hpp
+# etc.
+
+# Make and run all tests on 4 threads:
+scons b=GccOpt -j4 projects/CellBasedComparison2017
+}}}
+
+With CMake you can run tests with,
+{{{
+cd <Chaste path>
+cd ../chaste-build  # Assuming you have configured CMake here.
+cmake . # Unnecessary extra step to pick up project and reconfigure 
+
+# Make and run a test at a time:
+make  TestCellSortingLiteratePaperRunner
+ctest -R TestCellSortingLiteratePaper 
+# etc.
+
+# Make and run all tests on 4 threads:
+make -j 4 project_CellBasedComparison2017
+ctest -j 4 -L project_CellBasedComparison2017
+}}}
+
+
+----
+'''NB''': the paper was developed with the specific tagged development version of Chaste {{{paper/CellBasedComparison}}}. It does not work with release version 3.4 or under, but will work on future releases.
+
+For further information on using Chaste, see the [wiki:ChasteGuides extensive guide material].
+You may also wish to look at some of the [wiki:UserTutorials basic user tutorials].

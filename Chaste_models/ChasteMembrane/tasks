@@ -1,0 +1,14 @@
+
+
+must implement void CheckAndLabelCellsForApoptosisOrDeath()
+
+
+loop through the cells and check if it's popped up
+
+if it has, mark it for death in a list with the cell pointer and the time it popped up
+
+at each step loop through the list and kill all the cells that are past their death time
+
+if a cell has the anoikis resistant mutation they will die later
+
+can set a radius here for collecting neighbours - will be handy for determining how far out cells can pop before anoikis kicks in
