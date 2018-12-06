@@ -276,7 +276,7 @@ class TestContactNeighbour : public AbstractCellBasedTestSuite
 	};
 
 
-	void xTestContactNeighbours2D() throw(Exception)
+	void TestContactNeighbours2D() throw(Exception)
 	{
 		// This test is intended to check that the contact neighbour calculation works correctly
 		// The contact neighbours returned should match what is expected
@@ -400,7 +400,7 @@ class TestContactNeighbour : public AbstractCellBasedTestSuite
 
 	};
 
-	void TestContactNeighbours1D() throw(Exception)
+	void xTestContactNeighbours1D() throw(Exception)
 	{
 		// This test is intended to check that the contact neighbour calculation works correctly
 		// The contact neighbours returned should match what is expected
