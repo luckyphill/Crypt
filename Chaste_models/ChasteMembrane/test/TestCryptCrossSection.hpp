@@ -33,6 +33,7 @@
 #include "GrowingContactInhibitionPhaseBasedCCM.hpp"
 #include "UniformContactInhibition.hpp"
 #include "WntUniformContactInhibition.hpp"
+#include "SimpleWntContactInhibitionCellCycleModel.hpp"
 
 #include "WildTypeCellMutationState.hpp"
 
@@ -221,14 +222,13 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		{
 			for(unsigned i=1; i<=n; i++)
 			{
-				WntUniformContactInhibition* p_cycle_model = new WntUniformContactInhibition();
+				SimpleWntContactInhibitionCellCycleModel* p_cycle_model = new SimpleWntContactInhibitionCellCycleModel();
 				double birth_time = minimumCycleTime * RandomNumberGenerator::Instance()->ranf();
+				p_cycle_model->SetDimension(2);
+	            p_cycle_model->SetEquilibriumVolume(equilibriumVolume);
+	            p_cycle_model->SetQuiescentVolumeFraction(quiescentVolumeFraction);
+	            p_cycle_model->SetWntThreshold(0.25);
 				p_cycle_model->SetBirthTime(-birth_time);
-				p_cycle_model->SetMinCellCycleDuration(minimumCycleTime);
-				p_cycle_model->SetQuiescentVolumeFraction(quiescentVolumeFraction);
-				p_cycle_model->SetEquilibriumVolume(equilibriumVolume);
-				p_cycle_model->SetProliferativeRegion(0.25); // 0.25 will occur 3/4 up the crypt
-
 
 				CellPtr p_cell(new Cell(p_state, p_cycle_model));
 				p_cell->SetCellProliferativeType(p_trans_type);
