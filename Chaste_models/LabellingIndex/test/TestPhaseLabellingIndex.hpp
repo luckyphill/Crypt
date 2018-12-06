@@ -121,6 +121,11 @@ class TestPhaseLabellingIndex : public AbstractCellBasedWithTimingsTestSuite
             java_visualiser = true;
 
         }
+        PRINT_VARIABLE(run_number)
+        PRINT_VARIABLE(s_length)
+        PRINT_VARIABLE(end_time)
+        PRINT_VARIABLE(sampling_multiple)
+        PRINT_VARIABLE(java_visualiser)
         
         RandomNumberGenerator::Instance()->Reseed(run_number);
         

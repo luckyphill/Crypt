@@ -12,4 +12,4 @@
 # adds .cpp .hpp .txt .py .m and .sh files: -f"+ *.m" -f"+ *.sh"
 # ignores any other file eg. pdfs: -f"- *.*"
 # removes anything in the destination folder that isn't being transfered: --delete
-rsync -avz --progress -f"+ */" -f"+ *.hpp" -f"+ *.cpp" -f"+ *.sh" -f"+ *.txt" -f"+ *.m" -f"+ *.py" -f"- *.*" --delete . a1738927@phoenix.adelaide.edu.au:/fast/users/a1738927/Chaste/projects/CellBasedComparison2017/
+rsync -avz --progress -f"+ */" -f"+ *.hpp" -f"+ *.cpp" -f"+ *.sh" -f"+ *.txt" -f"+ *.m" -f"+ *.py" -f"- *.*" --delete ../ a1738927@phoenix.adelaide.edu.au:/fast/users/a1738927/Chaste/projects/LabellingIndex/
