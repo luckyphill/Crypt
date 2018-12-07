@@ -24,7 +24,7 @@ NormalAdhesionForce<ELEMENT_DIM,SPACE_DIM>::NormalAdhesionForce()
    : AbstractForce<ELEMENT_DIM,SPACE_DIM>(),
     mMembraneEpithelialSpringStiffness(15.0),
     mMembranePreferredRadius(0.1),
-    mEpithelialPreferredRadius(1.0)
+    mEpithelialPreferredRadius(0.5)
 {
 }
 
@@ -42,7 +42,8 @@ void NormalAdhesionForce<ELEMENT_DIM,SPACE_DIM>::AddForceContribution(AbstractCe
 
     std::list<CellPtr> cells =  p_tissue->rGetCells();
 
-    // Loop through each epithelial node/ stromal node (in this case) and add the reaining force
+    // Loop through each epithelial node/ stromal node (in this case) and add the retaining force
+    // At this stage it assumes that the etherial membrane is a flat line on the y axis
     for (std::list<CellPtr>::iterator cell_iter = cells.begin(); cell_iter != cells.end(); ++cell_iter)
     {
         Node<SPACE_DIM>* p_node =  p_tissue->GetNodeCorrespondingToCell(*cell_iter);

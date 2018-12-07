@@ -95,10 +95,10 @@ bool WntUniformContactInhibition::ReadyToDivide()
         // PRINT_VARIABLE(GetAge())
         // 
         // PRINT_VARIABLE(mProliferativeRegion)
-        if (GetAge() >= mCellCycleDuration && cell_volume > quiescent_volume && WntConcentrationXSection<2>::Instance()->GetWntLevel(mpCell) >= mProliferativeRegion)
+        if (GetAge() >= mCellCycleDuration && cell_volume > quiescent_volume && WntConcentration<2>::Instance()->GetWntLevel(mpCell) >= mProliferativeRegion)
         {
             // TRACE("Division happening here right now at this place")
-            // PRINT_VARIABLE(WntConcentrationXSection<2>::Instance()->GetWntLevel(mpCell))          
+            // PRINT_VARIABLE(WntConcentration<2>::Instance()->GetWntLevel(mpCell))          
             
             mReadyToDivide = true;
         }

@@ -42,7 +42,7 @@ bool WntUniformCellCycleModel::IsAbovetWntThreshold()
     //double level = 0;
     bool AboveThreshold = false;
 
-    if (WntConcentrationXSection<2>::Instance()->GetWntLevel(mpCell) > WntConcentrationXSection<2>::Instance()->GetWntThreshold())
+    if (WntConcentration<2>::Instance()->GetWntLevel(mpCell) > 0.25)
     {
        AboveThreshold = true;
     }
@@ -61,7 +61,7 @@ bool WntUniformCellCycleModel::ReadyToDivide()
     // The point where these regimes change can be controlled by changing the threshold
     if (!mReadyToDivide)
     {
-        double wntLevel = WntConcentrationXSection<2>::Instance()->GetWntLevel(mpCell);
+        double wntLevel = WntConcentration<2>::Instance()->GetWntLevel(mpCell);
         
         if (wntLevel > mTransientRegimeThreshold){
             // Niche division rate

@@ -40,6 +40,8 @@ private:
     }
 
     c_vector<double, 2> mMembraneAxis;
+    bool mWiggle = false;
+    double mMaxAngle = 0.1; // maxmium wiggle angle above or below membrane axis
 
 public:
 
@@ -72,6 +74,10 @@ public:
     //Use this to define the direction of division
     //In more complicated simulations this will need to be calculated individually for each cell
     void SetMembraneAxis(c_vector<double, 2> membraneAxis);
+
+    void SetWiggleDivision(bool wiggle);
+
+    void SetMaxAngle(double maxangle);
 };
 
 #include "SerializationExportWrapper.hpp"

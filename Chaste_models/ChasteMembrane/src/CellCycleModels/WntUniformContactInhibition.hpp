@@ -38,7 +38,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "AbstractSimpleCellCycleModel.hpp"
 #include "RandomNumberGenerator.hpp"
-#include "WntConcentrationXSection.hpp"
+#include "WntConcentration.hpp"
 
 /**
  * A stochastic cell-cycle model where cells divide with a stochastic cell cycle duration

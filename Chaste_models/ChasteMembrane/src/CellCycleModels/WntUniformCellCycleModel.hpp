@@ -4,7 +4,7 @@
 #define WNTUNIFORMCELLCYCLEMODEL_HPP_
 
 #include "UniformCellCycleModel.hpp"
-#include "WntConcentrationXSection.hpp"
+#include "WntConcentration.hpp"
 
 
 class WntUniformCellCycleModel : public UniformCellCycleModel

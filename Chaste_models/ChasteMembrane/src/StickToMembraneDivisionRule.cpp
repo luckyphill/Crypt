@@ -19,12 +19,24 @@ std::pair<c_vector<double, SPACE_DIM>, c_vector<double, SPACE_DIM> >
     double separation = rCellPopulation.GetMeinekeDivisionSeparation();
 
     c_vector<double, 2> random_vector;
+
+    if (mWiggle)
+    {
+        // If wiggle set to true, then randomly choose a small angle deviation from the membrane axis
+        double angle = mMaxAngle - 2 * mMaxAngle * RandomNumberGenerator::Instance()->ranf(); // resulting value: -mMaxAngle < angle < mMaxAngle
+        random_vector(0) = 0.5 * separation * (mMembraneAxis(0) * cos(angle) - mMembraneAxis(1) * sin(angle));
+        random_vector(1) = 0.5 * separation * (mMembraneAxis(0) * sin(angle) + mMembraneAxis(1) * cos(angle));
+    }
+    else
+    {
+        //If normal division, split in the direction of membrane axis
+        random_vector = 0.5 * separation * mMembraneAxis;
+        //random_vector(1) = 0.5 * separation * mMembraneAxis(1);
+        //Need to add in some wiggle to this so that it isn't perfectly in line each time
+    }
     
 
-        //If normal division, split in the direction of membrane axis
-        random_vector(0) = 0.5 * separation * mMembraneAxis(0);
-        random_vector(1) = 0.5 * separation * mMembraneAxis(1);
-        //Need to add in some wiggle to this so that it isn't perfectly in line each time
+        
     
     
     c_vector<double, 2> parent_position = rCellPopulation.GetLocationOfCellCentre(pParentCell) - random_vector;
@@ -40,7 +52,22 @@ std::pair<c_vector<double, SPACE_DIM>, c_vector<double, SPACE_DIM> >
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
 void StickToMembraneDivisionRule<ELEMENT_DIM, SPACE_DIM>::SetMembraneAxis(c_vector<double, 2> membraneAxis)
 {
-    mMembraneAxis = membraneAxis;
+    double magnitude = sqrt(membraneAxis(0) * membraneAxis(0) + membraneAxis(1) * membraneAxis(1));
+    mMembraneAxis = membraneAxis/magnitude;
+    // need to normalise so it is a unit vector
+
+}
+
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+void StickToMembraneDivisionRule<ELEMENT_DIM, SPACE_DIM>::SetWiggleDivision(bool wiggle)
+{
+    mWiggle = wiggle;
+}
+
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+void StickToMembraneDivisionRule<ELEMENT_DIM, SPACE_DIM>::SetMaxAngle(double maxangle)
+{
+    mMaxAngle = maxangle;
 }
 
 // Explicit instantiation

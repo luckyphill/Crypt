@@ -1,13 +1,5 @@
-TestMembraneFunction.hpp
-TestIsolatedMembrane1.hpp
-TestMembraneCellCrypt.hpp
-TestContactNeighbour.hpp
-TestGrowingCellDivision.hpp
-TestMembraneCellWall.hpp
-TestSingleCellTearOffForce.hpp
-TestSingleCellRestPosition.hpp
-TestSingleCellDragForce.hpp
-TestMultipleCellDrivingForce.hpp
-TestDrivingForceNormalAdhesion.hpp
 TestMitoticPressureVelocity.hpp
 TestCrypt1DUniform.hpp
+TestCryptCrossSection.hpp
+TestContactNeighbour.hpp
+TestGrowingCellDivision.hpp

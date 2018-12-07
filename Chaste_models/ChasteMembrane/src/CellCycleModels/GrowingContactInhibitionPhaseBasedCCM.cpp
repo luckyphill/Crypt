@@ -174,10 +174,6 @@ void GrowingContactInhibitionPhaseBasedCCM::UpdateCellCyclePhase()
 
     CalculatePreferredRadius();
     
-    if (mUsingWnt)
-    {
-        DetermineWntChanges();
-    }
     
 }
 
@@ -207,26 +203,6 @@ void GrowingContactInhibitionPhaseBasedCCM::CalculatePreferredRadius()
     //PRINT_VARIABLE(mPreferredRadius)
 }
 
-void GrowingContactInhibitionPhaseBasedCCM::DetermineWntChanges()
-{
-    // If using a WNT concentration, this function is used to how long G1 should be as a means of controlling cell cycle length
-    if (WntConcentrationXSection<2>::Instance()->GetWntLevel(mpCell) > mNicheLimitConcentration  && !mpCell->GetCellProliferativeType()->IsType<DifferentiatedCellProliferativeType>())
-    {
-        mG1Duration = mG1LongDuration;
-    }
-    if (WntConcentrationXSection<2>::Instance()->GetWntLevel(mpCell) < mNicheLimitConcentration  && !mpCell->GetCellProliferativeType()->IsType<DifferentiatedCellProliferativeType>())
-    {
-        mG1Duration = mG1ShortDuration;
-    }
-    if (WntConcentrationXSection<2>::Instance()->GetWntLevel(mpCell) < mTransientLimitConcentration && !mpCell->GetCellProliferativeType()->IsType<DifferentiatedCellProliferativeType>())
-    {
-        MAKE_PTR(DifferentiatedCellProliferativeType, p_diff);
-        //DifferentiatedCellProliferativeType* p_diff = new DifferentiatedCellProliferativeType();
-        mpCell->SetCellProliferativeType(p_diff);
-        mCurrentCellCyclePhase = G_ZERO_PHASE;
-    }
-
-}
 
 void GrowingContactInhibitionPhaseBasedCCM::SetG1Duration()
 {

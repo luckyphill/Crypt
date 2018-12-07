@@ -13,7 +13,7 @@
 #include "GeneralisedLinearSpringForce.hpp"
 #include "LinearSpringForcePhaseBased.hpp"
 #include "LinearSpringForceMembraneCellNodeBased.hpp"
-#include "PushForce.hpp"
+#include "NormalAdhesionForce.hpp"
 
 #include "HoneycombMeshGenerator.hpp" //Generates mesh
 #include "NodesOnlyMesh.hpp"
@@ -30,7 +30,6 @@
 //Cell cycle models
 #include "NoCellCycleModel.hpp"
 #include "UniformCellCycleModel.hpp"
-#include "GrowingContactInhibitionPhaseBasedCCM.hpp"
 #include "UniformContactInhibition.hpp"
 #include "WntUniformContactInhibition.hpp"
 #include "SimpleWntContactInhibitionCellCycleModel.hpp"
@@ -60,7 +59,7 @@
 #include "NormalAdhesionForce.hpp"
 
 // Wnt Concentration for position tracking
-#include "WntConcentrationXSection.hpp"
+#include "WntConcentration.hpp"
 
 // Writers
 #include "EpithelialCellBirthWriter.hpp"
@@ -74,7 +73,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 {
 	public:
 
-	void TestCryptCI() throw(Exception)
+	void TestCryptWiggleDivision() throw(Exception)
 	{
 		// This test simulates a column of cells that can now move in 2 dimensions
 		// In order to retain the cells in a column, an etherial force needs to be added
@@ -90,9 +89,11 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		// 5: use phase based and contact inhibition CCM
 		// 6: use e-e force determined from experiments, and CI percentage
 
-
-        TS_ASSERT(CommandLineArguments::Instance()->OptionExists("-ees"));
-        double epithelialStiffness = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-ees");
+		double epithelialStiffness = 20;
+        if(CommandLineArguments::Instance()->OptionExists("-ees"))
+        {
+        	epithelialStiffness = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-ees");
+        }
 
         double epithelialInteractionRadius = 1; //Not considered since it's 1D
 
@@ -100,11 +101,12 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
         double epithelialPreferredRadius = 0.5; // Must have this value due to volume calculation - can't set node radius as SetRadius(epithelialPreferredRadius) doesn't work
 
+        double membraneEpithelialSpringStiffness = 20;
 
         bool multiple_cells = true;
         unsigned n = 20;
 
-        double end_time = 100;
+        double end_time = 10;
         if(CommandLineArguments::Instance()->OptionExists("-t"))
         {	
         	end_time = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-t");
@@ -130,14 +132,8 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		//bool debugging = false;
 
 		// Make the Wnt concentration for tracking cell position so division can be turned off
-		WntConcentrationXSection<2>* p_wnt = WntConcentrationXSection<2>::Instance();
-		p_wnt->SetType(LINEAR);
-		p_wnt->SetCryptLength(20);
-		p_wnt->SetCryptStart(0);
-		p_wnt->SetWntThreshold(.75);
-		p_wnt->SetWntConcentrationXSectionParameter(20); // Scales the distance to a fraction
-
-	
+		// Create an instance of a Wnt concentration
+        	
 		std::vector<Node<2>*> nodes;
 		std::vector<unsigned> transit_nodes;
 		std::vector<unsigned> location_indices;
@@ -147,7 +143,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
 		double dt = 0.001;
 		
-		double sampling_multiple = 1000000;
+		double sampling_multiple = 10;
 
 		double maxInteractionRadius = 2.0;
 
@@ -164,7 +160,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		PRINT_VARIABLE(equilibriumVolume)
 		PRINT_VARIABLE(quiescentVolumeFraction);
 
-		double x_distance = 0;
+		double x_distance = 0.6;
         double y_distance = 0;
 		double x = x_distance;
 		double y = y_distance;
@@ -239,8 +235,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
 
 		NodeBasedCellPopulation<2> cell_population(mesh, cells, location_indices);
-		p_wnt->SetCellPopulation(cell_population);
-		cell_population.SetOutputResultsForChasteVisualizer(false);
+		//cell_population.SetOutputResultsForChasteVisualizer(false);
 		cell_population.SetMeinekeDivisionSeparation(0.05); // Set how far apart the cells will be upon division
 
 
@@ -252,6 +247,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
 			MAKE_PTR(StickToMembraneDivisionRule<2>, pCentreBasedDivisionRule);
 			pCentreBasedDivisionRule->SetMembraneAxis(membraneAxis);
+			pCentreBasedDivisionRule->SetWiggleDivision(true);
 			cell_population.SetCentreBasedDivisionRule(pCentreBasedDivisionRule);
 		}
 
@@ -268,7 +264,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
         {
         	out << "_run_" << run_number;
         }
-        std::string output_directory = "TestCrypt1DWithEndCI/" +  out.str();
+        std::string output_directory = "TestCryptWiggleDivision/" +  out.str();
 
 		simulator.SetOutputDirectory(output_directory);
 
@@ -301,7 +297,15 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
 		p_force->Set1D(true);
 
+		WntConcentration<2>::Instance()->SetType(LINEAR);
+        WntConcentration<2>::Instance()->SetCellPopulation(cell_population);
+        WntConcentration<2>::Instance()->SetCryptLength(n);
+
+        MAKE_PTR(NormalAdhesionForce<2>, p_adhesion);
+        p_adhesion->SetMembraneEpithelialSpringStiffness(membraneEpithelialSpringStiffness);
+
 		simulator.AddForce(p_force);
+		simulator.AddForce(p_adhesion);
 
 		MAKE_PTR_ARGS(CryptBoundaryCondition, p_bc, (&cell_population));
 		simulator.AddCellPopulationBoundaryCondition(p_bc);
@@ -321,7 +325,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		PRINT_VARIABLE(simulator.GetOutputDivisionLocations())
 
 		simulator.Solve();
-		WntConcentrationXSection<2>::Destroy();
+		WntConcentration<2>::Instance()->Destroy();
 	};
 
 	

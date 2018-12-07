@@ -2,9 +2,9 @@
 #SBATCH -p batch 
 #SBATCH -N 1 
 #SBATCH -n 1 
-#SBATCH --time=05:00:00 
+#SBATCH --time=06:00:00 
 #SBATCH --mem=4GB 
-#SBATCH --array=1000-2000
+#SBATCH --array=2001-4000
 #SBATCH --err="output/LI_S_5_%a.err" 
 #SBATCH --output="output/LI_S_5_%a.out" 
 #SBATCH --job-name="LI_S_5_experiment"

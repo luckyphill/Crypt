@@ -12,7 +12,6 @@
 #include "RandomNumberGenerator.hpp"
 #include "AbstractSimplePhaseBasedCellCycleModel.hpp"
 
-#include "WntConcentrationXSection.hpp"
 #include "CellCyclePhases.hpp"
 
 
@@ -152,8 +151,6 @@ public:
     void SetInteractionRadius(double interactionRadius);
 
     void CalculatePreferredRadius();
-
-    void DetermineWntChanges();
 
     void SetG1LongDuration(double g1LongDuration);
     void SetG1ShortDuration(double g1ShortDuration);
