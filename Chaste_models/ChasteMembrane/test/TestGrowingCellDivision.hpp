@@ -52,6 +52,8 @@
 #include "EpithelialCellSPhaseWriter.hpp"
 #include "EpithelialCellVelocityWriter.hpp"
 
+#include "WntConcentration.hpp"
+
 // Misc
 #include "FakePetscSetup.hpp"
 #include "Debug.hpp"
@@ -406,7 +408,7 @@ class TestGrowingCellDivision : public AbstractCellBasedTestSuite
 
 		double dt = 0.01;
 		double end_time = 50;
-		double sampling_multiple = 10;
+		double sampling_multiple = 1;
 
 		double membraneStiffness = 0; 			// 5.0
 
@@ -428,7 +430,7 @@ class TestGrowingCellDivision : public AbstractCellBasedTestSuite
 		double g2Duration = 1.5;   // 1.5    These are approximate values for rats/mice taken from the black bible
 
 		double equilibriumVolume = 0.7;
-		double volumeFraction = 0.92;
+		double volumeFraction = 0.8;
 
 
 		double springGrowthDuration = 1.0;
@@ -441,13 +443,11 @@ class TestGrowingCellDivision : public AbstractCellBasedTestSuite
 		double wall_top = wall_height;
 		double wall_bottom = 0;
 
-		WntConcentrationXSection<2>* p_wnt = WntConcentrationXSection<2>::Instance();
+		WntConcentration<2>* p_wnt = WntConcentration<2>::Instance();
 		p_wnt->SetType(LINEAR);
 
 		p_wnt->SetCryptLength(wall_height);
-		p_wnt->SetCryptStart(wall_bottom);
-		p_wnt->SetWntThreshold(1);
-		p_wnt->SetWntConcentrationXSectionParameter(wall_height);
+		p_wnt->SetWntConcentrationParameter(wall_height);
 
 		// Drawing the membrane
 		for (double y = wall_bottom; y <= wall_top; y+=membrane_spacing)
@@ -609,7 +609,7 @@ class TestGrowingCellDivision : public AbstractCellBasedTestSuite
 
 		simulator.Solve();
 
-		WntConcentrationXSection<2>::Destroy();
+		WntConcentration<2>::Destroy();
 
 	};
 
@@ -672,13 +672,11 @@ class TestGrowingCellDivision : public AbstractCellBasedTestSuite
 		double wall_top = wall_height;
 		double wall_bottom = 0;
 
-		WntConcentrationXSection<2>* p_wnt = WntConcentrationXSection<2>::Instance();
+		WntConcentration<2>* p_wnt = WntConcentration<2>::Instance();
 		p_wnt->SetType(LINEAR);
 
 		p_wnt->SetCryptLength(wall_height);
-		p_wnt->SetCryptStart(wall_bottom);
-		p_wnt->SetWntThreshold(1);
-		p_wnt->SetWntConcentrationXSectionParameter(wall_height);
+		p_wnt->SetWntConcentrationParameter(wall_height);
 
 		// Drawing the membrane
 		for (double y = wall_bottom; y <= wall_top; y+=membrane_spacing)
@@ -845,7 +843,7 @@ class TestGrowingCellDivision : public AbstractCellBasedTestSuite
 
 		simulator.Solve();
 
-		WntConcentrationXSection<2>::Destroy();
+		WntConcentration<2>::Destroy();
 
 	};
 
@@ -917,13 +915,11 @@ class TestGrowingCellDivision : public AbstractCellBasedTestSuite
 		double wall_top = centre_y + wall_height;
 		double wall_bottom = centre_y;
 
-		WntConcentrationXSection<2>* p_wnt = WntConcentrationXSection<2>::Instance();
+		WntConcentration<2>* p_wnt = WntConcentration<2>::Instance();
 		p_wnt->SetType(LINEAR);
 
 		p_wnt->SetCryptLength(wall_height);
-		p_wnt->SetCryptStart(wall_bottom);
-		p_wnt->SetWntThreshold(1);
-		p_wnt->SetWntConcentrationXSectionParameter(wall_height);
+		p_wnt->SetWntConcentrationParameter(wall_height);
 
 		// Drawing the membrane
 		// Need to follow this order to ensure membrane nodes are registered in order
@@ -1119,11 +1115,11 @@ class TestGrowingCellDivision : public AbstractCellBasedTestSuite
 
 		simulator.SetEndTime(50);
 		
-		WntConcentrationXSection<2>::Destroy();
+		WntConcentration<2>::Destroy();
 
 	};
 
-	void TestAnoikisResistant() throw(Exception)
+	void xTestAnoikisResistant() throw(Exception)
 	{
 
 		bool debugging = false;
@@ -1341,7 +1337,7 @@ class TestGrowingCellDivision : public AbstractCellBasedTestSuite
 
 	};
 
-	void xTestGrowingDivisionNormalAdhesion() throw(Exception)
+	void xTestNormalAdhesion() throw(Exception)
 	{
 
 		//TS_ASSERT(CommandLineArguments::Instance()->OptionExists("-wh"));
@@ -1350,9 +1346,9 @@ class TestGrowingCellDivision : public AbstractCellBasedTestSuite
 
 		bool debugging = false;
 
-        double epithelialStiffness = 15.0;
+        double epithelialStiffness = 30.0;
 		
-        double epithelialMembraneStiffness = 10.0;
+        double epithelialMembraneStiffness = 100.0;
 		
 		std::vector<Node<2>*> nodes;
 		std::vector<unsigned> transit_nodes;
@@ -1478,23 +1474,26 @@ class TestGrowingCellDivision : public AbstractCellBasedTestSuite
 
 			MAKE_PTR(StickToMembraneDivisionRule<2>, pCentreBasedDivisionRule);
 			pCentreBasedDivisionRule->SetMembraneAxis(membraneAxis);
+			pCentreBasedDivisionRule->SetWiggleDivision(true);
 			cell_population.SetCentreBasedDivisionRule(pCentreBasedDivisionRule);
 		}
 
 		OffLatticeSimulation<2> simulator(cell_population);
 
-		simulator.SetOutputDirectory("TestGrowingDivisionNormalAdhesion");
+		simulator.SetOutputDirectory("TestNormalAdhesion");
 
 		simulator.SetEndTime(end_time);
 		simulator.SetDt(dt);
 		simulator.SetSamplingTimestepMultiple(sampling_multiple);
 
-		MAKE_PTR(NormalAdhesionForce<2>, p_force_2);
+		MAKE_PTR(NormalAdhesionForce<2>, p_adhesion);
 		// For this force calculator, epithelial means anything not membrane
-		p_force_2->SetMembraneEpithelialSpringStiffness(epithelialMembraneStiffness);
+		p_adhesion->SetMembraneEpithelialSpringStiffness(epithelialMembraneStiffness);
 
-		p_force_2->SetEpithelialPreferredRadius(epithelialPreferredRadius);
-		p_force_2->SetMembranePreferredRadius(membranePreferredRadius);
+		p_adhesion->SetEpithelialPreferredRadius(epithelialPreferredRadius);
+		p_adhesion->SetMembranePreferredRadius(membranePreferredRadius);
+
+		simulator.AddForce(p_adhesion);
 
 		MAKE_PTR(NonLinearSpringForceScaled<2>, p_force);
 		p_force->SetEpithelialSpringStiffness(epithelialStiffness);
@@ -1623,5 +1622,200 @@ class TestGrowingCellDivision : public AbstractCellBasedTestSuite
 		simulator.AddSimulationModifier(p_mod);
 
         simulator.Solve();
+	};
+
+	void TestGrowingDivisionNormalAdhesion() throw(Exception)
+	{
+
+		bool debugging = false;
+
+        double epithelialStiffness = 20.0;
+		
+        double epithelialMembraneStiffness = 50.0;
+		
+		std::vector<Node<2>*> nodes;
+		std::vector<unsigned> transit_nodes;
+		std::vector<unsigned> location_indices;
+		std::vector<std::vector<CellPtr>> membraneSections;
+
+		unsigned node_counter = 0;
+
+		double dt = 0.05;
+		double end_time = 50;
+		double sampling_multiple = 1;
+
+		double membraneStiffness = 0; 			// 5.0
+
+		double epithelialPreferredRadius = 0.7;			// 1.0
+		double membranePreferredRadius = 0.2;			// 0.2
+
+		double epithelialInteractionRadius = 1.5 * epithelialPreferredRadius; // Epithelial covers stem and transit
+		double membraneInteractionRadius = 7.0 * membranePreferredRadius;
+		double epithelialNewlyDividedRadius = 0.7 * epithelialPreferredRadius;
+		double maxInteractionRadius = 3.0;
+
+		double minCellCycleDuration = 10;
+
+		double mDuration = 1;      // 1.0
+		double g1Duration = 5;     // 8.0
+		double g1ShortDuration = 2;
+		double g1LongDuration = 8;
+		double sDuration = 4.5;    // 7.5
+		double g2Duration = 1.5;   // 1.5    These are approximate values for rats/mice taken from the black bible
+
+		double equilibriumVolume = 0.7;
+		double volumeFraction = 0.8;
+
+
+		double springGrowthDuration = 1.0;
+
+
+		double epithelial_spacing = 2.0 * epithelialPreferredRadius;
+		double wall_height = 20;
+		double left_side = 0;
+		double wall_top = wall_height;
+		double wall_bottom = 0;
+
+		WntConcentration<2>* p_wnt = WntConcentration<2>::Instance();
+		p_wnt->SetType(LINEAR);
+
+		p_wnt->SetCryptLength(wall_height);
+		p_wnt->SetWntConcentrationParameter(wall_height);
+
+
+		// Drawing the epithelium
+		// The transit amplifying cells
+		for (double y = wall_bottom; y <= wall_top; y+= epithelial_spacing)
+		{
+			double x = 0.88; // Note this value is determined from observing simulations//left_side + epithelialPreferredRadius;
+			nodes.push_back(new Node<2>(node_counter,  false,  x, y));
+			transit_nodes.push_back(node_counter);
+			location_indices.push_back(node_counter);
+			node_counter++;
+		}
+
+		NodesOnlyMesh<2> mesh;
+		mesh.ConstructNodesWithoutMesh(nodes, maxInteractionRadius);
+
+		std::vector<CellPtr> cells;
+		std::vector<CellPtr> membrane_cells;
+
+		MAKE_PTR(DifferentiatedCellProliferativeType, p_diff_type);
+		MAKE_PTR(TransitCellProliferativeType, p_trans_type);
+		MAKE_PTR(WildTypeCellMutationState, p_state);
+		MAKE_PTR(BoundaryCellProperty, p_boundary);
+
+		// First node is fixed
+		{
+			GrowingContactInhibitionPhaseBasedCCM* p_cycle_model = new GrowingContactInhibitionPhaseBasedCCM();
+
+			CellPtr p_cell(new Cell(p_state, p_cycle_model));
+			p_cell->SetCellProliferativeType(p_diff_type);
+			p_cell->AddCellProperty(p_boundary);
+
+			p_cell->InitialiseCellCycleModel();
+
+			cells.push_back(p_cell);
+		}
+		//Initialise trans nodes
+		for (unsigned i = 1; i < transit_nodes.size(); i++)
+		{
+			GrowingContactInhibitionPhaseBasedCCM* p_cycle_model = new GrowingContactInhibitionPhaseBasedCCM();
+			p_cycle_model->SetNewlyDividedRadius(epithelialNewlyDividedRadius);
+			p_cycle_model->SetPreferredRadius(epithelialPreferredRadius);
+			p_cycle_model->SetInteractionRadius(epithelialInteractionRadius);
+			p_cycle_model->SetMDuration(mDuration);
+			p_cycle_model->SetSDuration(sDuration);
+			p_cycle_model->SetTransitCellG1Duration(g1Duration);
+			p_cycle_model->SetG2Duration(g2Duration);
+			p_cycle_model->SetEquilibriumVolume(equilibriumVolume);
+			p_cycle_model->SetQuiescentVolumeFraction(volumeFraction);
+
+			p_cycle_model->SetG1LongDuration(g1ShortDuration);
+			p_cycle_model->SetG1ShortDuration(g1ShortDuration);
+			p_cycle_model->SetNicheLimitConcentration(.66);
+			p_cycle_model->SetTransientLimitConcentration(.33);
+
+			p_cycle_model->SetUsingWnt(true);
+
+			double birth_time = minCellCycleDuration * RandomNumberGenerator::Instance()->ranf();
+			p_cycle_model->SetBirthTime(-birth_time);
+			//p_cycle_model->SetMinCellCycleDuration(minCellCycleDuration);
+
+			CellPtr p_cell(new Cell(p_state, p_cycle_model));
+			p_cell->SetCellProliferativeType(p_trans_type);
+
+			p_cell->InitialiseCellCycleModel();
+
+			cells.push_back(p_cell);
+		}
+
+
+		NodeBasedCellPopulation<2> cell_population(mesh, cells, location_indices);
+		p_wnt->SetCellPopulation(cell_population);
+
+		{ //Division vector rules
+			c_vector<double, 2> membraneAxis;
+			membraneAxis(0) = 0;
+			membraneAxis(1) = 1;
+
+			MAKE_PTR(StickToMembraneDivisionRule<2>, pCentreBasedDivisionRule);
+			pCentreBasedDivisionRule->SetMembraneAxis(membraneAxis);
+			cell_population.SetCentreBasedDivisionRule(pCentreBasedDivisionRule);
+		}
+
+		OffLatticeSimulation<2> simulator(cell_population);
+
+		simulator.SetOutputDirectory("TestGrowingDivisionNormalAdhesion");
+
+		simulator.SetEndTime(end_time);
+		simulator.SetDt(dt);
+		simulator.SetSamplingTimestepMultiple(sampling_multiple);
+
+		MAKE_PTR(LinearSpringForcePhaseBased<2>, p_force);
+		p_force->SetEpithelialSpringStiffness(epithelialStiffness);
+		p_force->SetStromalSpringStiffness(epithelialStiffness);
+		p_force->SetMembraneSpringStiffness(membraneStiffness);
+		
+		p_force->SetEpithelialMembraneSpringStiffness(epithelialMembraneStiffness);
+		p_force->SetMembraneStromalSpringStiffness(epithelialMembraneStiffness);
+		p_force->SetStromalEpithelialSpringStiffness(epithelialStiffness);
+
+		p_force->SetEpithelialPreferredRadius(epithelialPreferredRadius);
+		p_force->SetStromalPreferredRadius(epithelialPreferredRadius);
+		p_force->SetMembranePreferredRadius(membranePreferredRadius);
+
+		p_force->SetEpithelialInteractionRadius(epithelialInteractionRadius);
+		p_force->SetMembraneInteractionRadius(membraneInteractionRadius);
+		
+		p_force->SetMeinekeSpringGrowthDuration(springGrowthDuration);
+		p_force->SetMeinekeDivisionRestingSpringLength(0.1);
+
+		p_force->SetDebugMode(debugging);
+
+		simulator.AddForce(p_force);
+
+		MAKE_PTR_ARGS(AnoikisCellKiller, p_anoikis_killer, (&cell_population));
+		//simulator.AddCellKiller(p_anoikis_killer);
+
+		MAKE_PTR_ARGS(CryptBoundaryCondition, p_bc, (&cell_population));
+		simulator.AddCellPopulationBoundaryCondition(p_bc);
+
+		MAKE_PTR_ARGS(SimpleSloughingCellKiller, p_sloughing_killer, (&cell_population));
+		p_sloughing_killer->SetCryptTop(wall_top);
+		simulator.AddCellKiller(p_sloughing_killer);
+
+		MAKE_PTR(VolumeTrackingModifier<2>, p_mod);
+		simulator.AddSimulationModifier(p_mod);
+
+		cell_population.AddCellWriter<EpithelialCellPositionWriter>();
+		cell_population.AddCellWriter<EpithelialCellBirthWriter>();
+		cell_population.AddCellWriter<EpithelialCellVelocityWriter>();
+		cell_population.AddCellWriter<EpithelialCellSPhaseWriter>();
+
+		simulator.Solve();
+
+		WntConcentration<2>::Destroy();
+
 	};
 };

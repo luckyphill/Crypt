@@ -32,7 +32,7 @@ p.division_spring_length = 0.05;
 
 p.division_separation = 0.05; % The separation after it initially divides
 
-p.output_file = sprintf('simulation/EES_%d_VF_%d_T_%d', stiffness, vol_frac, t_end)
+p.output_file = sprintf('simulation/EES_%d_VF_%d_T_%d', stiffness, vol_frac, t_end);
 
 
 p = crypt_1D(p);

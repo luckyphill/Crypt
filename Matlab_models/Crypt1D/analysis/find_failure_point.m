@@ -1,6 +1,10 @@
-
-
 % Running a bunch of simulations to see when the failures stop
+% Under certain conditions, newly divided adjacent cells will cross over each other
+% This is not physical to start with, but also causes the non-linear spring
+% force to fail, due to log receiving a -ve number. The goal of this script
+% is to determine a minimum CI fraction and spring stiffness so that 0/20
+% consecutive simulations encounter cell cross-over
+
 stiffness = 2:2:40;
 vol_frac = 5:5:100;
 

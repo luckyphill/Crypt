@@ -29,7 +29,7 @@ LinearSpringForceMembraneCellNodeBased<ELEMENT_DIM,SPACE_DIM>::LinearSpringForce
     mStromalEpithelialSpringStiffness(15.0),
     mEpithelialPreferredRadius(1.0),
     mMembranePreferredRadius(0.1),
-    mStromalPreferredRadius(1.0),
+    mStromalPreferredRadius(0.5),
     mEpithelialInteractionRadius(1.5), // Epithelial covers stem and transit
     mMembraneInteractionRadius(0.15),
     mStromalInteractionRadius(1.5) // Stromal is the differentiated "filler" cells

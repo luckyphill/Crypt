@@ -82,8 +82,8 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		// a minor element of randomness needs to be added to the division direction nudge
 		// the column out of it's unstable equilibrium.
 
-		// 1: add division nudge
-		// 2: add BM force to pull back into column
+		// 1: add division nudge - done
+		// 2: add BM force to pull back into column - done 
 		// 3: determine BM force and range needed to get varying amounts of popping up
 		// 4: make sure contact neighbours is correct
 		// 5: use phase based and contact inhibition CCM
@@ -94,17 +94,6 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
         {
         	epithelialStiffness = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-ees");
         }
-
-        double epithelialInteractionRadius = 1; //Not considered since it's 1D
-
-        double membranePreferredRadius = 0.5; // Meaningless
-
-        double epithelialPreferredRadius = 0.5; // Must have this value due to volume calculation - can't set node radius as SetRadius(epithelialPreferredRadius) doesn't work
-
-        double membraneEpithelialSpringStiffness = 20;
-
-        bool multiple_cells = true;
-        unsigned n = 20;
 
         double end_time = 10;
         if(CommandLineArguments::Instance()->OptionExists("-t"))
@@ -127,19 +116,20 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
         }
 
-        // First things first - need to seed the rng to make sure each simulation is different
-        RandomNumberGenerator::Instance()->Reseed(run_number * quiescentVolumeFraction * epithelialStiffness);
-		//bool debugging = false;
+        double epithelialInteractionRadius = 1; //Not considered since it's 1D
 
-		// Make the Wnt concentration for tracking cell position so division can be turned off
-		// Create an instance of a Wnt concentration
-        	
-		std::vector<Node<2>*> nodes;
-		std::vector<unsigned> transit_nodes;
-		std::vector<unsigned> location_indices;
-		std::vector<std::vector<CellPtr>> membraneSections;
+        double membranePreferredRadius = 0.5; // Meaningless
 
-		unsigned node_counter = 0;
+        double epithelialPreferredRadius = 0.5; // Must have this value due to volume calculation - can't set node radius as SetRadius(epithelialPreferredRadius) doesn't work
+
+        double membraneEpithelialSpringStiffness = 20;
+
+        double equilibriumVolume = M_PI*epithelialPreferredRadius*epithelialPreferredRadius;; // Depends on the preferred radius
+
+        bool multiple_cells = true;
+        unsigned n = 20;
+
+        unsigned node_counter = 0;
 
 		double dt = 0.001;
 		
@@ -155,11 +145,23 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		// A maximum of 350 will give at least 350 divisions, probably more, but the simulation won't run the full time
 		// so in the end, there should be enough to get a decent plot
 
-		
-		double equilibriumVolume = M_PI*epithelialPreferredRadius*epithelialPreferredRadius;; // Depends on the preferred radius
-		PRINT_VARIABLE(equilibriumVolume)
-		PRINT_VARIABLE(quiescentVolumeFraction);
+        
 
+        
+
+        // First things first - need to seed the rng to make sure each simulation is different
+        RandomNumberGenerator::Instance()->Reseed(run_number * quiescentVolumeFraction * epithelialStiffness);
+		//bool debugging = false;
+
+		// Make the Wnt concentration for tracking cell position so division can be turned off
+		// Create an instance of a Wnt concentration
+        	
+		std::vector<Node<2>*> nodes;
+		std::vector<unsigned> transit_nodes;
+		std::vector<unsigned> location_indices;
+
+
+		// Column building parameters
 		double x_distance = 0.6;
         double y_distance = 0;
 		double x = x_distance;
@@ -252,11 +254,11 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		}
 
 
-
+		// A simulator with a stopping even when there are too many cells
 		OffLatticeSimulationTooManyCells simulator(cell_population);
 
 
-
+		// Building the directory name
 		std::stringstream out;
         out << "n_" << n;
         out << "_EES_"<< epithelialStiffness << "_VF_" << quiescentVolumeFraction;
@@ -295,7 +297,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		p_force->SetMeinekeSpringGrowthDuration(1);
 		p_force->SetMeinekeDivisionRestingSpringLength(0.05);
 
-		p_force->Set1D(true);
+		//p_force->Set1D(true);
 
 		WntConcentration<2>::Instance()->SetType(LINEAR);
         WntConcentration<2>::Instance()->SetCellPopulation(cell_population);

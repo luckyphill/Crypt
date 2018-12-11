@@ -59,7 +59,7 @@
 #include "NormalAdhesionForce.hpp"
 
 // Wnt Concentration for position tracking
-#include "WntConcentrationXSection.hpp"
+#include "WntConcentration.hpp"
 
 // Writers
 #include "EpithelialCellBirthWriter.hpp"
@@ -316,12 +316,10 @@ class TestCrypt1DUniform : public AbstractCellBasedTestSuite
 		//bool debugging = false;
 
 		// Make the Wnt concentration for tracking cell position so division can be turned off
-		WntConcentrationXSection<2>* p_wnt = WntConcentrationXSection<2>::Instance();
+		WntConcentration<2>* p_wnt = WntConcentration<2>::Instance();
 		p_wnt->SetType(LINEAR);
 		p_wnt->SetCryptLength(20);
-		p_wnt->SetCryptStart(0);
-		p_wnt->SetWntThreshold(.75);
-		p_wnt->SetWntConcentrationXSectionParameter(20); // Scales the distance to a fraction
+		p_wnt->SetWntConcentrationParameter(20); // Scales the distance to a fraction
 
 	
 		std::vector<Node<2>*> nodes;
@@ -333,7 +331,7 @@ class TestCrypt1DUniform : public AbstractCellBasedTestSuite
 
 		double dt = 0.001;
 		
-		double sampling_multiple = 1000000;
+		double sampling_multiple = 10;
 
 		double maxInteractionRadius = 2.0;
 
@@ -427,7 +425,7 @@ class TestCrypt1DUniform : public AbstractCellBasedTestSuite
 
 		NodeBasedCellPopulation<2> cell_population(mesh, cells, location_indices);
 		p_wnt->SetCellPopulation(cell_population);
-		cell_population.SetOutputResultsForChasteVisualizer(false);
+		//cell_population.SetOutputResultsForChasteVisualizer(false);
 		cell_population.SetMeinekeDivisionSeparation(0.05); // Set how far apart the cells will be upon division
 
 
@@ -508,7 +506,7 @@ class TestCrypt1DUniform : public AbstractCellBasedTestSuite
 		PRINT_VARIABLE(simulator.GetOutputDivisionLocations())
 
 		simulator.Solve();
-		WntConcentrationXSection<2>::Destroy();
+		WntConcentration<2>::Destroy();
 	};
 
 	void xTestForceCalculator() throw(Exception)
