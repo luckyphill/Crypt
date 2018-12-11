@@ -122,7 +122,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
         double epithelialPreferredRadius = 0.5; // Must have this value due to volume calculation - can't set node radius as SetRadius(epithelialPreferredRadius) doesn't work
 
-        double membraneEpithelialSpringStiffness = 20;
+        double membraneEpithelialSpringStiffness = 50;
 
         double equilibriumVolume = M_PI*epithelialPreferredRadius*epithelialPreferredRadius;; // Depends on the preferred radius
 
@@ -177,7 +177,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
 		if(multiple_cells)
 		{
-			for(unsigned i=1; i<=n; i++)
+			for(unsigned i = 1; i <= n; i++)
 			{
 				x = x_distance;
 				y = y_distance + 2 * i * epithelialPreferredRadius;
