@@ -344,7 +344,7 @@ class TestCrypt1DUniform : public AbstractCellBasedTestSuite
 		// so in the end, there should be enough to get a decent plot
 
 		
-		double equilibriumVolume = M_PI*epithelialPreferredRadius*epithelialPreferredRadius;; // Depends on the preferred radius
+		double equilibriumVolume = M_PI*epithelialPreferredRadius*epithelialPreferredRadius; // Depends on the preferred radius
 		PRINT_VARIABLE(equilibriumVolume)
 		PRINT_VARIABLE(quiescentVolumeFraction);
 
