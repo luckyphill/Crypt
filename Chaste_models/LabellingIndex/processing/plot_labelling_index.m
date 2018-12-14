@@ -1,33 +1,33 @@
 close all;
-% clear all;
-% 
-% data_s = [];
-% data_m = [];
-% data_wc = [];
-% 
-% s_length = 5;
-% count = 0;
-% for i = 0:4000
-%    
-%     s_file = ['/Users/phillipbrown/Research/Crypt/Data/Chaste/LabellingIndex/s' num2str(s_length) '/sphase_s' num2str(s_length) 'run_' num2str(i) '.txt'];
-%     m_file = ['/Users/phillipbrown/Research/Crypt/Data/Chaste/LabellingIndex/s' num2str(s_length) '/mphase_s' num2str(s_length) 'run_' num2str(i) '.txt'];
-%     wc_file = ['/Users/phillipbrown/Research/Crypt/Data/Chaste/LabellingIndex/s' num2str(s_length) '/whole_crypt_s' num2str(s_length) 'run_' num2str(i) '.txt'];
-% 
-%     try
-%         data_s_temp = dlmread(s_file);
-%         data_m_temp = dlmread(m_file);
-%         data_wc_temp = dlmread(wc_file);
-% 
-%         data_s = cat(1, data_s, data_s_temp(2:end,1));
-%         data_m = cat(1, data_m, data_m_temp(2:end,1));
-%         data_wc = cat(1, data_wc, [data_wc_temp(:,2), data_wc_temp(:,4)]);
-%         count = count + 1;
-%     catch e
-%         e
-%         s_file
-%     end
-% 
-% end
+clear all;
+
+data_s = [];
+data_m = [];
+data_wc = [];
+
+s_length = 5;
+count = 0;
+for i = 0:4000
+   
+    s_file = ['/Users/phillipbrown/Research/Crypt/Data/Chaste/LabellingIndex/s' num2str(s_length) '/sphase_s' num2str(s_length) 'run_' num2str(i) '.txt'];
+    m_file = ['/Users/phillipbrown/Research/Crypt/Data/Chaste/LabellingIndex/s' num2str(s_length) '/mphase_s' num2str(s_length) 'run_' num2str(i) '.txt'];
+    wc_file = ['/Users/phillipbrown/Research/Crypt/Data/Chaste/LabellingIndex/s' num2str(s_length) '/whole_crypt_s' num2str(s_length) 'run_' num2str(i) '.txt'];
+
+    try
+        data_s_temp = dlmread(s_file);
+        data_m_temp = dlmread(m_file);
+        data_wc_temp = dlmread(wc_file);
+
+        data_s = cat(1, data_s, data_s_temp(2:end,1));
+        data_m = cat(1, data_m, data_m_temp(2:end,1));
+        data_wc = cat(1, data_wc, [data_wc_temp(:,2), data_wc_temp(:,4)]);
+        count = count + 1;
+    catch e
+        e
+        s_file
+    end
+
+end
 
 max_pos_s = max(data_s);
 edges_s = -0.5:1:(max_pos_s + 0.5);
