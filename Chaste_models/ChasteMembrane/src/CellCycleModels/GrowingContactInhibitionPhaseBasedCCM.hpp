@@ -13,6 +13,7 @@
 #include "AbstractSimplePhaseBasedCellCycleModel.hpp"
 
 #include "CellCyclePhases.hpp"
+#include "WntConcentration.hpp"
 
 
 class GrowingContactInhibitionPhaseBasedCCM : public AbstractSimplePhaseBasedCellCycleModel

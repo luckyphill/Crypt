@@ -89,6 +89,20 @@ GrowingContactInhibitionPhaseBasedCCM::GrowingContactInhibitionPhaseBasedCCM(con
 
 void GrowingContactInhibitionPhaseBasedCCM::UpdateCellCyclePhase()
 {
+      
+
+    if (mUsingWnt)
+    {
+        if (WntConcentration<2>::Instance()->GetWntLevel(mpCell) < 0.25)
+        {
+
+            MAKE_PTR(DifferentiatedCellProliferativeType, p_diff);
+            mpCell->SetCellProliferativeType(p_diff);
+            mCurrentCellCyclePhase = G_ZERO_PHASE;
+        }
+    }
+
+
     if ((mQuiescentVolumeFraction == DOUBLE_UNSET) || (mEquilibriumVolume == DOUBLE_UNSET))
     {
         EXCEPTION("The member variables mQuiescentVolumeFraction and mEquilibriumVolume have not yet been set.");
@@ -104,14 +118,14 @@ void GrowingContactInhibitionPhaseBasedCCM::UpdateCellCyclePhase()
     if (mCurrentCellCyclePhase == G_ONE_PHASE)
     {
         // Update G1 duration based on cell volume
-        // double dt = SimulationTime::Instance()->GetTimeStep();
+        double dt = SimulationTime::Instance()->GetTimeStep();
         double quiescent_volume = mEquilibriumVolume * mQuiescentVolumeFraction;
 
         if (cell_volume < quiescent_volume)
         {
             // Update the duration of the current period of contact inhibition.
             mCurrentQuiescentDuration = SimulationTime::Instance()->GetTime() - mCurrentQuiescentOnsetTime;
-            mG1Duration += mG1ShortDuration * (1 + 0.2 * RandomNumberGenerator::Instance()->ranf() - 0.4); // +/- 20% wiggle
+            mG1Duration += dt;
 
             /*
              * This method is usually called within a CellBasedSimulation, after the CellPopulation
@@ -173,7 +187,7 @@ void GrowingContactInhibitionPhaseBasedCCM::UpdateCellCyclePhase()
     }
 
     CalculatePreferredRadius();
-    
+
     
 }
 

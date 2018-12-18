@@ -430,10 +430,10 @@ c_vector<double, SPACE_DIM> LinearSpringForcePhaseBased<ELEMENT_DIM,SPACE_DIM>::
         }
         if (epiB)
         {
-            // GrowingContactInhibitionPhaseBasedCCM* pCCM = static_cast<GrowingContactInhibitionPhaseBasedCCM*>(p_cell_B->GetCellCycleModel());
-            // preferredRadiusB = pCCM->GetPreferredRadius();
-            // double epiInteractionRadius = pCCM->GetInteractionRadius();
-            double epiInteractionRadius = mEpithelialInteractionRadius;
+            GrowingContactInhibitionPhaseBasedCCM* pCCM = static_cast<GrowingContactInhibitionPhaseBasedCCM*>(p_cell_B->GetCellCycleModel());
+            preferredRadiusB = pCCM->GetPreferredRadius();
+            double epiInteractionRadius = pCCM->GetInteractionRadius();
+            // double epiInteractionRadius = mEpithelialInteractionRadius;
             preferredRadiusB = mEpithelialPreferredRadius;
             if (distance_between_nodes >= std::max(epiInteractionRadius, mMembraneInteractionRadius))
             {
