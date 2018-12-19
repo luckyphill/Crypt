@@ -191,6 +191,25 @@ void GrowingContactInhibitionPhaseBasedCCM::UpdateCellCyclePhase()
     
 }
 
+bool GrowingContactInhibitionPhaseBasedCCM::ReadyToDivide()
+{
+    assert(mpCell != nullptr);
+
+    if (!mReadyToDivide)
+    {
+        UpdateCellCyclePhase();
+        if ((mCurrentCellCyclePhase != G_ZERO_PHASE) &&
+            (GetAge() >= GetMDuration() + GetG1Duration() + GetSDuration() + GetG2Duration()))
+        {
+            mReadyToDivide = true;
+            // Set cell property 'parent_cell' to be this cell
+            // This should be copied over to both new cells
+            mpCell->GetCellData()->SetItem("parent_cell", mpCell->GetCellId());
+        }
+    }
+    return mReadyToDivide;
+}
+
 
 void GrowingContactInhibitionPhaseBasedCCM::CalculatePreferredRadius()
 {

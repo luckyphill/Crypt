@@ -101,6 +101,8 @@ public:
      */
     void UpdateCellCyclePhase();
 
+    virtual bool ReadyToDivide();
+
     /**
      * @param quiescentVolumeFraction
      */

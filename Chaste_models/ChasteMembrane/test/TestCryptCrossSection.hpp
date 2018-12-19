@@ -402,12 +402,9 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
 		double minimumCycleTime = 10;
 
-		unsigned cell_limit = 100; // At the smallest CI limit, there can be at most 400 cells, but we don't want to get there
+		unsigned cell_limit = 200; // At the smallest CI limit, there can be at most 400 cells, but we don't want to get there
 		// A maximum of 350 will give at least 350 divisions, probably more, but the simulation won't run the full time
 		// so in the end, there should be enough to get a decent plot
-
-        
-
         
 
         // First things first - need to seed the rng to make sure each simulation is different
@@ -492,6 +489,8 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
 				CellPtr p_cell(new Cell(p_state, p_cycle_model));
 				p_cell->SetCellProliferativeType(p_trans_type);
+				// Ought to find a better way to do this, but this is needed for the force law
+				p_cell->GetCellData()->SetItem("parent_cell", mpCell->GetCellId());
 
 				p_cell->InitialiseCellCycleModel();
 
