@@ -19,6 +19,11 @@
  * or S phases then it will still divide, and thus cells whose
  * volumes are smaller than the given threshold may still divide.
  */
+
+//************************************************************************************************
+// Implements cell_data method of tracing cell parents, in order to deal with newly divided cells
+//************************************************************************************************
+
 class SimpleWntContactInhibitionCellCycleModel : public ContactInhibitionCellCycleModel
 {
 private:
@@ -80,6 +85,8 @@ public:
      */
     SimpleWntContactInhibitionCellCycleModel();
 
+    void Initialise();
+
     /**
      * Overridden UpdateCellCyclePhase() method.
      */
@@ -103,6 +110,9 @@ public:
      * @return mWntThreshold
      */
     double GetWntThreshold();
+
+    // Uses cell data to track the cell's parents
+    virtual void ResetForDivision();
 
     /**
      * Outputs cell cycle model parameters to file.

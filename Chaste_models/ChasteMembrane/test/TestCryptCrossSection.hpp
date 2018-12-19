@@ -14,6 +14,7 @@
 #include "LinearSpringForcePhaseBased.hpp"
 #include "LinearSpringForceMembraneCellNodeBased.hpp"
 #include "NormalAdhesionForce.hpp"
+#include "BasicNonLinearSpringForce.hpp"
 
 #include "HoneycombMeshGenerator.hpp" //Generates mesh
 #include "NodesOnlyMesh.hpp"
@@ -44,7 +45,7 @@
 // Cell killers
 #include "SimpleSloughingCellKiller.hpp"
 #include "TopAndBottomSloughing.hpp"
-#include "AnoikisCellKiller.hpp"
+#include "SimpleAnoikisCellKiller.hpp"
 
 //Division Rules
 #include "StickToMembraneDivisionRule.hpp"
@@ -332,7 +333,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		WntConcentration<2>::Instance()->Destroy();
 	};
 
-	void TestCryptGrowingDivision() throw(Exception)
+	void TestCryptBasicWnt() throw(Exception)
 	{
 		// This test simulates a column of cells that can now move in 2 dimensions
 		// In order to retain the cells in a column, an etherial force needs to be added
@@ -383,7 +384,11 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
         double epithelialNewlyDividedRadius = 0.3;
 
-        double membraneEpithelialSpringStiffness = 50;
+        
+
+        double membraneEpithelialSpringStiffness = 100;
+
+        
 
         double equilibriumVolume = M_PI*epithelialPreferredRadius*epithelialPreferredRadius;; // Depends on the preferred radius
 
@@ -468,7 +473,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 			CellPtr p_cell(new Cell(p_state, p_cycle_model));
 			p_cell->SetCellProliferativeType(p_diff_type);
 			p_cell->AddCellProperty(p_boundary);
-
+			p_cell->GetCellData()->SetItem("parent", p_cell->GetCellId());
 			p_cell->InitialiseCellCycleModel();
 
 			cells.push_back(p_cell);
@@ -479,19 +484,16 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 			for(unsigned i=1; i<=n; i++)
 			{
 
-				GrowingContactInhibitionPhaseBasedCCM* p_cycle_model = new GrowingContactInhibitionPhaseBasedCCM();
-				p_cycle_model->SetNewlyDividedRadius(epithelialNewlyDividedRadius);
-				p_cycle_model->SetPreferredRadius(epithelialPreferredRadius);
-				p_cycle_model->SetInteractionRadius(epithelialInteractionRadius);
-				p_cycle_model->SetUsingWnt(true);
+				SimpleWntContactInhibitionCellCycleModel* p_cycle_model = new SimpleWntContactInhibitionCellCycleModel();
 				double birth_time = minimumCycleTime * RandomNumberGenerator::Instance()->ranf();
+				p_cycle_model->SetDimension(2);
+	   			p_cycle_model->SetEquilibriumVolume(equilibriumVolume);
+	   			p_cycle_model->SetQuiescentVolumeFraction(quiescentVolumeFraction);
+	   			p_cycle_model->SetWntThreshold(0.25);
 				p_cycle_model->SetBirthTime(-birth_time);
 
 				CellPtr p_cell(new Cell(p_state, p_cycle_model));
 				p_cell->SetCellProliferativeType(p_trans_type);
-				// Ought to find a better way to do this, but this is needed for the force law
-				p_cell->GetCellData()->SetItem("parent_cell", mpCell->GetCellId());
-
 				p_cell->InitialiseCellCycleModel();
 
 				cells.push_back(p_cell);
@@ -530,7 +532,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
         {
         	out << "_run_" << run_number;
         }
-        std::string output_directory = "TestCryptGrowingDivision/" +  out.str();
+        std::string output_directory = "TestCryptBasicWnt/" +  out.str();
 
 		simulator.SetOutputDirectory(output_directory);
 
@@ -545,21 +547,17 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		// simulator.AddForce(p_gen_force);
 
 		// Use the specialised spring force
-		MAKE_PTR(LinearSpringForcePhaseBased<2>, p_force);
-		p_force->SetEpithelialSpringStiffness(epithelialStiffness);
-		p_force->SetStromalSpringStiffness(epithelialStiffness);
+		MAKE_PTR(BasicNonLinearSpringForce<2>, p_force);
+		p_force->SetSpringStiffness(epithelialStiffness);
 
-		p_force->SetStromalEpithelialSpringStiffness(epithelialStiffness);
+		p_force->SetRestLength(2 * epithelialPreferredRadius);
 
-		p_force->SetEpithelialPreferredRadius(epithelialPreferredRadius);
-		p_force->SetStromalPreferredRadius(epithelialPreferredRadius);
-		p_force->SetMembranePreferredRadius(membranePreferredRadius);
-
-		p_force->SetEpithelialInteractionRadius(epithelialInteractionRadius);
-		p_force->SetStromalInteractionRadius(epithelialInteractionRadius);
+		p_force->SetCutOffLength(3 * epithelialPreferredRadius);
 		
+		p_force->SetMeinekeSpringStiffness(epithelialStiffness);
 		p_force->SetMeinekeSpringGrowthDuration(1);
 		p_force->SetMeinekeDivisionRestingSpringLength(0.05);
+
 
 		//p_force->Set1D(true);
 
@@ -580,8 +578,9 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		p_sloughing_killer->SetCryptTop(wall_top);
 		simulator.AddCellKiller(p_sloughing_killer);
 
-		// MAKE_PTR_ARGS(AnoikisCellKiller, p_anoikis_killer, (&cell_population));
-		// simulator.AddCellKiller(p_anoikis_killer);
+		MAKE_PTR_ARGS(SimpleAnoikisCellKiller, p_anoikis_killer, (&cell_population));
+		p_anoikis_killer->SetPopUpDistance(1.0);
+		simulator.AddCellKiller(p_anoikis_killer);
 
 
 		//cell_population.AddCellWriter<EpithelialCellBirthWriter>();

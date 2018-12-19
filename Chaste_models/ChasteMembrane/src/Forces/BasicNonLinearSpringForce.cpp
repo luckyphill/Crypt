@@ -1,8 +1,9 @@
 /*
 
-A simplified force calculator for the sake of checking resting position
-cutoff length is equivalent to sensing radius
-restlength is the distance that the membrane cell prefers to have the epithelial cell centre
+A simplified force calculator
+Expects only one type of cell, and provides one type of spring length, stiffness, and cutoff length
+Implements the cell property method for determining if two cells should have a growing spring between them
+As of 19/12/2018 the only CCM that works with this is SimpleWntContactInhibitionCellCycleModel
 
 */
 
@@ -21,9 +22,9 @@ restlength is the distance that the membrane cell prefers to have the epithelial
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
 BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::BasicNonLinearSpringForce()
    : AbstractTwoBodyInteractionForce<ELEMENT_DIM,SPACE_DIM>(),
-    mEpithelialMembraneSpringStiffness(15.0),
-    mEpithelialMembraneRestLength(1.0),
-    mEpithelialMembraneCutOffLength(1.5)
+    mSpringStiffness(15.0),
+    mRestLength(1.0),
+    mCutOffLength(1.5)
 
 {
 }
@@ -44,102 +45,130 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::Ca
     CellPtr p_cell_A = rCellPopulation.GetCellUsingLocationIndex(nodeAGlobalIndex);
     CellPtr p_cell_B = rCellPopulation.GetCellUsingLocationIndex(nodeBGlobalIndex);
 
-    // First, determine what we've got
-    bool membraneA = p_cell_A->GetCellProliferativeType()->IsType<MembraneCellProliferativeType>();
-    bool membraneB = p_cell_B->GetCellProliferativeType()->IsType<MembraneCellProliferativeType>();
+    c_vector<double, SPACE_DIM> zero_vector;
+    for (unsigned i=0; i < SPACE_DIM; i++)
+    {
+        zero_vector[i] = 0;
+    }
 
-    c_vector<double, 2> zero_vector;
-    zero_vector[0] = 0;
-    zero_vector[1] = 0;
+    Node<SPACE_DIM>* p_node_a = rCellPopulation.GetNode(nodeAGlobalIndex);
+    Node<SPACE_DIM>* p_node_b = rCellPopulation.GetNode(nodeBGlobalIndex);
 
-    if (membraneA && membraneB)
+    // Get the node locations
+    c_vector<double, SPACE_DIM> node_a_location = p_node_a->rGetLocation();
+    c_vector<double, SPACE_DIM> node_b_location = p_node_b->rGetLocation();
+
+
+    // Get the unit vector parallel to the line joining the two nodes
+    c_vector<double, SPACE_DIM> unitForceDirection;
+
+    unitForceDirection = rCellPopulation.rGetMesh().GetVectorFromAtoB(node_a_location, node_b_location);
+
+    // Calculate the distance between the two nodes
+    double distance_between_nodes = norm_2(unitForceDirection);
+    assert(distance_between_nodes > 0);
+    assert(!std::isnan(distance_between_nodes));
+
+    unitForceDirection /= distance_between_nodes;
+
+
+    double rest_length = mRestLength;
+    double spring_constant = mSpringStiffness;
+
+    if (distance_between_nodes > mCutOffLength)
     {
         return zero_vector;
-
-    } else {
-
-        Node<SPACE_DIM>* p_node_a = rCellPopulation.GetNode(nodeAGlobalIndex);
-        Node<SPACE_DIM>* p_node_b = rCellPopulation.GetNode(nodeBGlobalIndex);
-
-        // Get the node locations
-        c_vector<double, SPACE_DIM> node_a_location = p_node_a->rGetLocation();
-        c_vector<double, SPACE_DIM> node_b_location = p_node_b->rGetLocation();
+    }
 
 
-        // Get the unit vector parallel to the line joining the two nodes
-        c_vector<double, SPACE_DIM> unitForceDirection;
+    // Checks if both cells are in M phase and checks if they have the same parent
+    // *****************************************************************************************
+    // Implements cell sibling tracking
+    double ageA = p_cell_A->GetAge();
+    double ageB = p_cell_B->GetAge();
 
-        unitForceDirection = rCellPopulation.rGetMesh().GetVectorFromAtoB(node_a_location, node_b_location);
-
-        // Calculate the distance between the two nodes
-        double distance_between_nodes = norm_2(unitForceDirection);
-        assert(distance_between_nodes > 0);
-        assert(!std::isnan(distance_between_nodes));
-
-        unitForceDirection /= distance_between_nodes;
+    double parentA = p_cell_A->GetCellData()->GetItem("parent");
+    double parentB = p_cell_B->GetCellData()->GetItem("parent");
 
 
-        double rest_length = mEpithelialMembraneRestLength;
-        double spring_constant = mEpithelialMembraneSpringStiffness;
+    if (ageA < mMeinekeSpringGrowthDuration && ageA == ageB && parentA == parentB)
+    {
+        // Make the spring length grow.
+        double lambda = mMeinekeDivisionRestingSpringLength;
+        rest_length = lambda + (rest_length - lambda) * ageA/mMeinekeSpringGrowthDuration;
+    }
+    // *****************************************************************************************
 
-        if (distance_between_nodes > mEpithelialMembraneCutOffLength)
-        {
-            return zero_vector;
-            PRINT_2_VARIABLES(nodeAGlobalIndex,nodeBGlobalIndex)
-        } 
-
-        double overlap = distance_between_nodes - rest_length;
-        bool is_closer_than_rest_length = (overlap <= 0);
+    double overlap = distance_between_nodes - rest_length;
+    bool is_closer_than_rest_length = (overlap <= 0);
 
 
-        if (is_closer_than_rest_length) //overlap is negative
-        {
-            // log(x+1) is undefined for x<=-1
-            assert(overlap > -rest_length);
-            c_vector<double, 2> temp = spring_constant * unitForceDirection * rest_length * log(1.0 + overlap/rest_length);
-            return temp;
-        }
-        else
-        {
-            double alpha = 1.8; // 3.0
-            c_vector<double, 2> temp = spring_constant * unitForceDirection * overlap * exp(-alpha * overlap/rest_length);
-            return temp;
-        }
+    if (is_closer_than_rest_length) //overlap is negative
+    {
+        // log(x+1) is undefined for x<=-1
+        assert(overlap > -rest_length);
+        c_vector<double, 2> temp = spring_constant * unitForceDirection * rest_length * log(1.0 + overlap/rest_length);
+        return temp;
+    }
+    else
+    {
+        double alpha = 1.8; // 3.0
+        c_vector<double, 2> temp = spring_constant * unitForceDirection * overlap * exp(-alpha * overlap/rest_length);
+        return temp;
     }
 
 }
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-void BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::SetEpithelialMembraneSpringStiffness(double epithelialMembraneSpringStiffness)
+void BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::SetSpringStiffness(double SpringStiffness)
 {
-    assert(epithelialMembraneSpringStiffness > 0.0);
-    mEpithelialMembraneSpringStiffness = epithelialMembraneSpringStiffness;
+    assert(SpringStiffness > 0.0);
+    mSpringStiffness = SpringStiffness;
+}
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+void BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::SetRestLength(double RestLength)
+{
+    assert(RestLength > 0.0);
+    mRestLength = RestLength;
+}
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+void BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::SetCutOffLength(double CutOffLength)
+{
+    assert(CutOffLength > 0.0);
+    mCutOffLength = CutOffLength;
+}
+
+
+// For growing spring length
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+void BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::SetMeinekeSpringStiffness(double springStiffness)
+{
+    assert(springStiffness > 0.0);
+    mMeinekeSpringStiffness = springStiffness;
 }
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-void BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::SetEpithelialMembraneRestLength(double epithelialMembraneRestLength)
+void BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::SetMeinekeDivisionRestingSpringLength(double divisionRestingSpringLength)
 {
-    assert(epithelialMembraneRestLength > 0.0);
-    mEpithelialMembraneRestLength = epithelialMembraneRestLength;
+    assert(divisionRestingSpringLength <= 1.0);
+    assert(divisionRestingSpringLength >= 0.0);
+
+    mMeinekeDivisionRestingSpringLength = divisionRestingSpringLength;
 }
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-void BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::SetEpithelialMembraneCutOffLength(double epithelialMembraneCutOffLength)
+void BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::SetMeinekeSpringGrowthDuration(double springGrowthDuration)
 {
-    assert(epithelialMembraneCutOffLength > 0.0);
-    mEpithelialMembraneCutOffLength = epithelialMembraneCutOffLength;
-}
+    assert(springGrowthDuration >= 0.0);
 
+    mMeinekeSpringGrowthDuration = springGrowthDuration;
+}
 
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
 void BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::OutputForceParameters(out_stream& rParamsFile)
 {
-    *rParamsFile << "\t\t\t<EpithelialMembraneSpringStiffness>" << mEpithelialMembraneSpringStiffness << "</EpithelialMembraneSpringStiffness>\n";
-    
-    *rParamsFile << "\t\t\t<EpithelialMembraneRestLength>" << mEpithelialMembraneRestLength << "</EpithelialMembraneRestLength>\n";
-    
-    *rParamsFile << "\t\t\t<EpithelialMembraneCutOffLength>" << mEpithelialMembraneCutOffLength << "</EpithelialMembraneCutOffLength>\n";
+    *rParamsFile << "\t\t\t<SpringStiffness>" << mSpringStiffness << "</SpringStiffness>\n";
 
     // Call method on direct parent class
     AbstractTwoBodyInteractionForce<ELEMENT_DIM,SPACE_DIM>::OutputForceParameters(rParamsFile);

@@ -34,19 +34,26 @@ private:
     {
         archive & boost::serialization::base_object<AbstractTwoBodyInteractionForce<ELEMENT_DIM, SPACE_DIM> >(*this);
 
-        archive & mEpithelialMembraneSpringStiffness;
+        archive & mSpringStiffness;
 
     }
 
 protected:
 
 
-    double mEpithelialMembraneSpringStiffness;
+    double mSpringStiffness;
 
-    double mEpithelialMembraneRestLength;
+    double mRestLength;
 
-    double mEpithelialMembraneCutOffLength;
+    double mCutOffLength;
 
+    
+    // Spring growth parameters for newly divided cells
+    double mMeinekeSpringStiffness;
+
+    double mMeinekeDivisionRestingSpringLength;
+
+    double mMeinekeSpringGrowthDuration;
 
 public:
 
@@ -77,11 +84,19 @@ public:
                                                      AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation);
 
 
-    void SetEpithelialMembraneSpringStiffness(double epithelialMembraneSpringStiffness);
+    void SetSpringStiffness(double SpringStiffness);
 
-    void SetEpithelialMembraneRestLength(double epithelialMembraneRestLength);
+    void SetRestLength(double RestLength);
 
-    void SetEpithelialMembraneCutOffLength(double epithelialMembraneCutOffLength);
+    void SetCutOffLength(double CutOffLength);
+
+    
+    // Spring growth for newly divided cells
+    void SetMeinekeSpringStiffness(double springStiffness);
+
+    void SetMeinekeDivisionRestingSpringLength(double divisionRestingSpringLength);
+
+    void SetMeinekeSpringGrowthDuration(double springGrowthDuration);
 
     /**
      * Overridden OutputForceParameters() method.

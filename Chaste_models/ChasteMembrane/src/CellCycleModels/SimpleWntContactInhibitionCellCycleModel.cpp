@@ -32,6 +32,15 @@ SimpleWntContactInhibitionCellCycleModel::SimpleWntContactInhibitionCellCycleMod
      */
 }
 
+void SimpleWntContactInhibitionCellCycleModel::Initialise()
+{
+    // A brand new cell created in a Test script will need to have it's parent set
+    // The parent will be set properly for cells created in the simulation
+    AbstractSimplePhaseBasedCellCycleModel::Initialise();
+    assert(mpCell != NULL);
+    mpCell->GetCellData()->SetItem("parent", mpCell->GetCellId());
+}
+
 void SimpleWntContactInhibitionCellCycleModel::UpdateCellCyclePhase()
 {
     double wnt_level= GetWntLevel();
@@ -116,6 +125,15 @@ AbstractCellCycleModel* SimpleWntContactInhibitionCellCycleModel::CreateCellCycl
     // Create a new cell-cycle model
     return new SimpleWntContactInhibitionCellCycleModel(*this);
 }
+
+
+void SimpleWntContactInhibitionCellCycleModel::ResetForDivision()
+{
+    AbstractPhaseBasedCellCycleModel::ResetForDivision();
+    // Used for makig sure newly divided cells are handeled properly in the force calculator
+    mpCell->GetCellData()->SetItem("parent", mpCell->GetCellId());
+}
+
 
 void SimpleWntContactInhibitionCellCycleModel::SetWntThreshold(double wntThreshold)
 {
