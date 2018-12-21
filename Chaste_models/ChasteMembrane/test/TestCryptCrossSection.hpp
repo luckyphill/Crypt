@@ -349,13 +349,27 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		// 5: use phase based and contact inhibition CCM
 		// 6: use e-e force determined from experiments, and CI percentage
 
+
+		double popUpDistance = 1.1;
+		if(CommandLineArguments::Instance()->OptionExists("-pu"))
+        {
+        	popUpDistance = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-pu");
+        }
+
+        double membraneEpithelialSpringStiffness = 50;
+        if(CommandLineArguments::Instance()->OptionExists("-ms"))
+        {
+        	membraneEpithelialSpringStiffness = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-ms");
+        }
+
+
 		double epithelialStiffness = 20;
         if(CommandLineArguments::Instance()->OptionExists("-ees"))
         {
         	epithelialStiffness = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-ees");
         }
 
-        double end_time = 10;
+        double end_time = 100;
         if(CommandLineArguments::Instance()->OptionExists("-t"))
         {	
         	end_time = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-t");
@@ -376,19 +390,16 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
         }
 
-        double epithelialInteractionRadius = 1; //Not considered since it's 1D
+        bool java_visualiser = false;
+        double sampling_multiple = 100000;
+        if(CommandLineArguments::Instance()->OptionExists("-sm"))
+        {   
+            sampling_multiple = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-sm");
+            java_visualiser = true;
 
-        double membranePreferredRadius = 0.5; // Meaningless
+        }
 
         double epithelialPreferredRadius = 0.5; // Must have this value due to volume calculation - can't set node radius as SetRadius(epithelialPreferredRadius) doesn't work
-
-        double epithelialNewlyDividedRadius = 0.3;
-
-        
-
-        double membraneEpithelialSpringStiffness = 100;
-
-        
 
         double equilibriumVolume = M_PI*epithelialPreferredRadius*epithelialPreferredRadius;; // Depends on the preferred radius
 
@@ -398,8 +409,6 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
         unsigned node_counter = 0;
 
 		double dt = 0.001;
-		
-		double sampling_multiple = 10;
 
 		double maxInteractionRadius = 2.0;
 
@@ -536,6 +545,14 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
 		simulator.SetOutputDirectory(output_directory);
 
+
+		// ********************************************************************************************
+        // File outputs
+        // Files are only output if the command line argument -sm exists and a sampling multiple is set
+        simulator.SetSamplingTimestepMultiple(sampling_multiple);
+        cell_population.SetOutputResultsForChasteVisualizer(java_visualiser);
+        // ********************************************************************************************
+
 		PRINT_VARIABLE(end_time)
 		simulator.SetEndTime(end_time);
 		simulator.SetDt(dt);
@@ -574,12 +591,12 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		MAKE_PTR_ARGS(CryptBoundaryCondition, p_bc, (&cell_population));
 		simulator.AddCellPopulationBoundaryCondition(p_bc);
 
-		MAKE_PTR_ARGS(TopAndBottomSloughing, p_sloughing_killer, (&cell_population));
+		MAKE_PTR_ARGS(SimpleSloughingCellKiller, p_sloughing_killer, (&cell_population));
 		p_sloughing_killer->SetCryptTop(wall_top);
 		simulator.AddCellKiller(p_sloughing_killer);
 
 		MAKE_PTR_ARGS(SimpleAnoikisCellKiller, p_anoikis_killer, (&cell_population));
-		p_anoikis_killer->SetPopUpDistance(1.0);
+		p_anoikis_killer->SetPopUpDistance(popUpDistance);
 		simulator.AddCellKiller(p_anoikis_killer);
 
 
@@ -594,5 +611,43 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
 		simulator.Solve();
 		WntConcentration<2>::Instance()->Destroy();
+
+		// Get the highest cell ID, which should indicate the total number of cells made in the simulation
+		MeshBasedCellPopulation<2,2>* p_tissue = static_cast<MeshBasedCellPopulation<2,2>*>(&simulator.rGetCellPopulation());
+		std::list<CellPtr> pos_cells =  p_tissue->rGetCells();
+
+		unsigned cellId = 0;
+
+        for (std::list<CellPtr>::iterator cell_iter = pos_cells.begin(); cell_iter != pos_cells.end(); ++cell_iter)
+        {
+        	
+        	if ((*cell_iter)->GetCellId() > cellId)
+        	{
+        		cellId = (*cell_iter)->GetCellId();
+        	}
+            
+        }
+
+        std::stringstream kill_count_file_name;
+        // Mac path
+        // kill_count_file_name << "/Users/phillipbrown/Research/Crypt/Data/Chaste/CellKillCount/kill_count_" << "n_" << n << "_EES_"<< epithelialStiffness;
+        // Phoenix path
+        kill_count_file_name << "data/CellKillCount/kill_count_" << "n_" << n << "_EES_"<< epithelialStiffness;
+        kill_count_file_name << "_MS" << membraneEpithelialSpringStiffness << ".txt";
+        // VF and PU don't change here
+        // << "_VF_" << quiescentVolumeFraction << "_PU_" << popUpDistance <<
+
+        ofstream kill_count_file;
+        kill_count_file.open(kill_count_file_name.str());
+
+        kill_count_file << "Total cells, killed sloughing, killed anoikis\n";
+
+        kill_count_file << cellId << "," << p_sloughing_killer->GetCellKillCount() << "," << p_anoikis_killer->GetCellKillCount();
+
+        kill_count_file.close();
+
+        PRINT_VARIABLE(p_sloughing_killer->GetCellKillCount())
+		PRINT_VARIABLE(p_anoikis_killer->GetCellKillCount())
+		PRINT_VARIABLE(cellId)
 	};
 };

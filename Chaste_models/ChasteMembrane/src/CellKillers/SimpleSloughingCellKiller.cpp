@@ -57,6 +57,7 @@ void SimpleSloughingCellKiller::CheckAndLabelCellsForApoptosisOrDeath()
             	if (y > mCryptTop && !cell_iter->IsDead())
             	{
             		cell_iter->Kill();
+                    mCellKillCount += 1;//Increment the cell kill count by one for each cell killed
             	}
     		}
     	}
@@ -77,10 +78,16 @@ void SimpleSloughingCellKiller::CheckAndLabelCellsForApoptosisOrDeath()
             	if (y > mCryptTop && !cell_iter->IsDead())
             	{
             		cell_iter->Kill();
+                    mCellKillCount += 1;//Increment the cell kill count by one for each cell killed
             	}
     		}
     	}
     }
+}
+
+unsigned SimpleSloughingCellKiller::GetCellKillCount()
+{
+    return mCellKillCount;
 }
 
 

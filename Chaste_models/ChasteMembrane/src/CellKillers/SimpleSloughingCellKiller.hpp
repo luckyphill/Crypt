@@ -26,6 +26,8 @@ private:
         archive & boost::serialization::base_object<AbstractCellKiller<2> >(*this);
     }
 
+    unsigned mCellKillCount = 0; // Tracks the number of cells killed by anoikis
+
 public:
 
     /**
@@ -47,6 +49,8 @@ public:
     void CheckAndLabelCellsForApoptosisOrDeath();
 
     void SetCryptTop(double cryptTop);
+
+    unsigned GetCellKillCount();
 
     /**
      * Outputs cell killer parameters to file

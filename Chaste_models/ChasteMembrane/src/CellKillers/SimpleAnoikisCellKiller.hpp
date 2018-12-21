@@ -36,6 +36,8 @@ private:
 
     double mPopUpDistance = 1.5; // The distance above the membrane when a cell is considered to have popped up
 
+    unsigned mCellKillCount = 0; // Tracks the number of cells killed by anoikis
+
     // The output file directory for the simulation data that corresponds to the number of cells
     // killed by anoikis
     out_stream mAnoikisOutputFile;
@@ -103,6 +105,8 @@ public:
     void SetSlowDeath(bool slowDeath);
     void SetPoppedUpLifeExpectancy(double poppedUpLifeExpectancy);
     void SetResistantPoppedUpLifeExpectancy(double resistantPoppedUpLifeExpectancy);
+
+    unsigned GetCellKillCount();
 
 };
 

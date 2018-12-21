@@ -191,8 +191,11 @@ void SimpleAnoikisCellKiller::CheckAndLabelCellsForApoptosisOrDeath()
 				{
 					p_cell->StartApoptosis();
 				}
-			} else {
+			}
+			else
+			{
 				p_cell->Kill();
+				mCellKillCount += 1;//Increment the cell kill count by one for each cell killed
 			}
 			
 		}
@@ -202,6 +205,11 @@ void SimpleAnoikisCellKiller::CheckAndLabelCellsForApoptosisOrDeath()
 void SimpleAnoikisCellKiller::SetSlowDeath(bool slowDeath)
 {
 	mSlowDeath = slowDeath;
+}
+
+unsigned SimpleAnoikisCellKiller::GetCellKillCount()
+{
+	return mCellKillCount;
 }
 
 void SimpleAnoikisCellKiller::OutputCellKillerParameters(out_stream& rParamsFile)
