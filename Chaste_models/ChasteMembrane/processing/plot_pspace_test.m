@@ -7,12 +7,12 @@
 close all;
 clear all;
 
-es = 20:60;
+es = 20:59;
 n = length(es);
 ms = 1:100;
 m = length(ms);
 
-pspace = zeros(n,m);
+pspace = nan(n,m);
 
 for i = 1:n
     for j = 1:m
@@ -26,4 +26,18 @@ for i = 1:n
     end
 end
 
-imagesc(pspace);
+h = figure();
+imagesc(flipud(pspace),'AlphaData',~isnan(flipud(pspace)));
+set(gca, 'XTick', linspace(0, 100, 11))
+set(gca, 'XTickLabel',  0:10:100)
+set(gca, 'YTick', linspace(0, 40, 9))
+set(gca, 'YTickLabel', fliplr(20:5:60))
+ylabel('Epithelial stiffness','Interpreter','latex');
+xlabel('Adhesion stiffness','Interpreter','latex');
+title('Parameter space showing cell death cause difference','Interpreter','latex');
+colorbar;
+
+set(h,'Units','Inches');
+pos = get(h,'Position');
+set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
+print('CellKillCount','-dpdf');

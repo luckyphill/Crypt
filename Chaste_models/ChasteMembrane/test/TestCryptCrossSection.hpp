@@ -34,7 +34,6 @@
 #include "UniformContactInhibition.hpp"
 #include "WntUniformContactInhibition.hpp"
 #include "SimpleWntContactInhibitionCellCycleModel.hpp"
-#include "GrowingContactInhibitionPhaseBasedCCM.hpp"
 
 #include "WildTypeCellMutationState.hpp"
 
@@ -344,7 +343,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
 		// 1: add division nudge - done
 		// 2: add BM force to pull back into column - done 
-		// 3: determine BM force and range needed to get varying amounts of popping up
+		// 3: determine BM force and range needed to get varying amounts of popping up - sort of done
 		// 4: make sure contact neighbours is correct
 		// 5: use phase based and contact inhibition CCM
 		// 6: use e-e force determined from experiments, and CI percentage
@@ -367,6 +366,12 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
         if(CommandLineArguments::Instance()->OptionExists("-ees"))
         {
         	epithelialStiffness = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-ees");
+        }
+
+        double meinekeStiffness = epithelialStiffness; // Newly divided spring stiffness
+        if(CommandLineArguments::Instance()->OptionExists("-nds"))
+        {
+        	meinekeStiffness = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-nds");
         }
 
         double end_time = 100;
@@ -571,7 +576,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
 		p_force->SetCutOffLength(3 * epithelialPreferredRadius);
 		
-		p_force->SetMeinekeSpringStiffness(epithelialStiffness);
+		p_force->SetMeinekeSpringStiffness(meinekeStiffness);
 		p_force->SetMeinekeSpringGrowthDuration(1);
 		p_force->SetMeinekeDivisionRestingSpringLength(0.05);
 
