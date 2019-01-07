@@ -518,8 +518,6 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
 
 		NodeBasedCellPopulation<2> cell_population(mesh, cells, location_indices);
-		//cell_population.SetOutputResultsForChasteVisualizer(false);
-		cell_population.SetMeinekeDivisionSeparation(0.05); // Set how far apart the cells will be upon division
 
 
 		{ //Division vector rules
@@ -550,6 +548,13 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
 		simulator.SetOutputDirectory(output_directory);
 
+		// ********************************************************************************************
+		// Set Wnt parameters and add in the cell population
+		WntConcentration<2>::Instance()->SetType(LINEAR);
+        WntConcentration<2>::Instance()->SetCellPopulation(cell_population);
+        WntConcentration<2>::Instance()->SetCryptLength(n);
+        // ********************************************************************************************
+
 
 		// ********************************************************************************************
         // File outputs
@@ -564,38 +569,37 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		simulator.SetSamplingTimestepMultiple(sampling_multiple);
 		simulator.SetCellLimit(cell_limit);
 
-		// Use the generalised spring force
-		// MAKE_PTR(GeneralisedLinearSpringForce<2>, p_gen_force);
-		// simulator.AddForce(p_gen_force);
-
-		// Use the specialised spring force
+		// ********************************************************************************************
+		// Set force parameters
 		MAKE_PTR(BasicNonLinearSpringForce<2>, p_force);
 		p_force->SetSpringStiffness(epithelialStiffness);
-
 		p_force->SetRestLength(2 * epithelialPreferredRadius);
-
 		p_force->SetCutOffLength(3 * epithelialPreferredRadius);
 		
 		p_force->SetMeinekeSpringStiffness(meinekeStiffness);
 		p_force->SetMeinekeSpringGrowthDuration(1);
-		p_force->SetMeinekeDivisionRestingSpringLength(0.05);
 
-
-		//p_force->Set1D(true);
-
-		WntConcentration<2>::Instance()->SetType(LINEAR);
-        WntConcentration<2>::Instance()->SetCellPopulation(cell_population);
-        WntConcentration<2>::Instance()->SetCryptLength(n);
-
-        MAKE_PTR(NormalAdhesionForce<2>, p_adhesion);
+		MAKE_PTR(NormalAdhesionForce<2>, p_adhesion);
         p_adhesion->SetMembraneEpithelialSpringStiffness(membraneEpithelialSpringStiffness);
+		
+		// ********************************************************************************************
+		// These two parameters are inately linked - the initial separation of the daughter nodes
+		// and the initial resting spring length
+		p_force->SetMeinekeDivisionRestingSpringLength(0.05);
+		cell_population.SetMeinekeDivisionSeparation(0.05); // Set how far apart the cells will be upon division
+		// ********************************************************************************************
 
+        // ********************************************************************************************
+        // Once paramters are set, drop in the force laws
 		simulator.AddForce(p_force);
 		simulator.AddForce(p_adhesion);
+		// ********************************************************************************************
 
 		MAKE_PTR_ARGS(CryptBoundaryCondition, p_bc, (&cell_population));
 		simulator.AddCellPopulationBoundaryCondition(p_bc);
 
+		// ********************************************************************************************
+		// Add in the cell killers
 		MAKE_PTR_ARGS(SimpleSloughingCellKiller, p_sloughing_killer, (&cell_population));
 		p_sloughing_killer->SetCryptTop(wall_top);
 		simulator.AddCellKiller(p_sloughing_killer);
@@ -603,10 +607,8 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		MAKE_PTR_ARGS(SimpleAnoikisCellKiller, p_anoikis_killer, (&cell_population));
 		p_anoikis_killer->SetPopUpDistance(popUpDistance);
 		simulator.AddCellKiller(p_anoikis_killer);
+		// ********************************************************************************************
 
-
-		//cell_population.AddCellWriter<EpithelialCellBirthWriter>();
-		//cell_population.AddCellWriter<EpithelialCellPositionWriter>();
 
 		MAKE_PTR(VolumeTrackingModifier<2>, p_mod);
 		simulator.AddSimulationModifier(p_mod);
@@ -617,6 +619,9 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		simulator.Solve();
 		WntConcentration<2>::Instance()->Destroy();
 
+		// ********************************************************************************************
+		// Post simulation processing
+		// Probably best implemented as a 'writer', but have to work out how to di that first
 		// Get the highest cell ID, which should indicate the total number of cells made in the simulation
 		MeshBasedCellPopulation<2,2>* p_tissue = static_cast<MeshBasedCellPopulation<2,2>*>(&simulator.rGetCellPopulation());
 		std::list<CellPtr> pos_cells =  p_tissue->rGetCells();
@@ -650,6 +655,8 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
         kill_count_file << cellId << "," << p_sloughing_killer->GetCellKillCount() << "," << p_anoikis_killer->GetCellKillCount();
 
         kill_count_file.close();
+
+        // ********************************************************************************************
 
         PRINT_VARIABLE(p_sloughing_killer->GetCellKillCount())
 		PRINT_VARIABLE(p_anoikis_killer->GetCellKillCount())

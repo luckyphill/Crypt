@@ -27,7 +27,7 @@ for i = 1:n
 end
 
 h = figure();
-imagesc(flipud(pspace),'AlphaData',~isnan(flipud(pspace)));
+imagesc(flipud(pspace),'AlphaData',~isnan(flipud(pspace)), [-120 120]);
 set(gca, 'XTick', linspace(0, 100, 11))
 set(gca, 'XTickLabel',  0:10:100)
 set(gca, 'YTick', linspace(0, 40, 9))
