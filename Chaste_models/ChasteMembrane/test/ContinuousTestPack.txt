@@ -3,3 +3,4 @@ TestCrypt1DUniform.hpp
 TestCryptCrossSection.hpp
 TestContactNeighbour.hpp
 TestGrowingCellDivision.hpp
+TestForces_CM.hpp
