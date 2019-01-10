@@ -73,7 +73,7 @@ void NormalAdhesionForce<ELEMENT_DIM,SPACE_DIM>::AddForceContribution(AbstractCe
 
         }
 
-        restraining_force[0] = - spring_constant * overlap / 3; // Use 3 to so linear intercepts exp at it's peak 
+        //restraining_force[0] = - spring_constant * overlap / 3; // Use 3 to so linear intercepts exp at it's peak 
 
         p_node->AddAppliedForceContribution(restraining_force);
 

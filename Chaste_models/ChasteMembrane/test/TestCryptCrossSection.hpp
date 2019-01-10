@@ -333,7 +333,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		WntConcentration<2>::Instance()->Destroy();
 	};
 
-	void TestCryptBasicWnt() throw(Exception)
+	void xTestCryptBasicWnt() throw(Exception)
 	{
 		// This test simulates a column of cells that can now move in 2 dimensions
 		// In order to retain the cells in a column, an etherial force needs to be added
@@ -394,6 +394,19 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
         {	
         	run_number = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-run");
 
+        }
+
+        unsigned n_prolif = 15; // Number of proliferative cells, counting up from the bottom
+        if(CommandLineArguments::Instance()->OptionExists("-np"))
+        {	
+        	n_prolif = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-np");
+
+        }
+
+        bool wiggle = true; // Default to "2D"
+        if(CommandLineArguments::Instance()->OptionExists("-oned"))
+        {	
+        	wiggle = false;
         }
 
         bool java_visualiser = false;
@@ -504,7 +517,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 				p_cycle_model->SetDimension(2);
 	   			p_cycle_model->SetEquilibriumVolume(equilibriumVolume);
 	   			p_cycle_model->SetQuiescentVolumeFraction(quiescentVolumeFraction);
-	   			p_cycle_model->SetWntThreshold(0.25);
+	   			p_cycle_model->SetWntThreshold(1 - (double)n_prolif/n);
 				p_cycle_model->SetBirthTime(-birth_time);
 
 				CellPtr p_cell(new Cell(p_state, p_cycle_model));
@@ -528,7 +541,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
 			MAKE_PTR(StickToMembraneDivisionRule<2>, pCentreBasedDivisionRule);
 			pCentreBasedDivisionRule->SetMembraneAxis(membraneAxis);
-			pCentreBasedDivisionRule->SetWiggleDivision(true);
+			pCentreBasedDivisionRule->SetWiggleDivision(wiggle);
 			cell_population.SetCentreBasedDivisionRule(pCentreBasedDivisionRule);
 		}
 
@@ -666,7 +679,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
 
 
-	void xTestCryptDivisionRotation() throw(Exception)
+	void TestCryptDivisionRotation() throw(Exception)
 	{
 		// This test simulates a column of cells that can now move in 2 dimensions
 		// In order to retain the cells in a column, an etherial force needs to be added
@@ -703,6 +716,13 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
         	epithelialStiffness = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-ees");
         }
 
+        double cellCycleTime = 5;
+        if(CommandLineArguments::Instance()->OptionExists("-cct"))
+        {
+        	cellCycleTime = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-cct");
+        }
+
+
         double meinekeStiffness = epithelialStiffness; // Newly divided spring stiffness
         if(CommandLineArguments::Instance()->OptionExists("-nds"))
         {
@@ -729,6 +749,21 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
         	run_number = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-run");
 
         }
+
+        unsigned n_prolif = 15; // Number of proliferative cells, counting up from the bottom
+        if(CommandLineArguments::Instance()->OptionExists("-np"))
+        {	
+        	n_prolif = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-np");
+
+        }
+
+        bool wiggle = true; // Default to "2D"
+        if(CommandLineArguments::Instance()->OptionExists("-oned"))
+        {	
+        	wiggle = false;
+        }
+
+
 
         bool java_visualiser = false;
         double sampling_multiple = 100000;
@@ -834,11 +869,12 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 			{
 
 				SimpleWntContactInhibitionCellCycleModel* p_cycle_model = new SimpleWntContactInhibitionCellCycleModel();
-				double birth_time = minimumCycleTime * RandomNumberGenerator::Instance()->ranf();
+				double birth_time = cellCycleTime * RandomNumberGenerator::Instance()->ranf();
+				p_cycle_model->SetTransitCellG1Duration(cellCycleTime);
 				p_cycle_model->SetDimension(2);
 	   			p_cycle_model->SetEquilibriumVolume(equilibriumVolume);
 	   			p_cycle_model->SetQuiescentVolumeFraction(quiescentVolumeFraction);
-	   			p_cycle_model->SetWntThreshold(0.25);
+	   			p_cycle_model->SetWntThreshold(1 - (double)n_prolif/n);
 				p_cycle_model->SetBirthTime(-birth_time);
 
 				CellPtr p_cell(new Cell(p_state, p_cycle_model));
@@ -862,7 +898,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
 		MAKE_PTR(StickToMembraneDivisionRule<2>, pCentreBasedDivisionRule);
 		pCentreBasedDivisionRule->SetMembraneAxis(membraneAxis);
-		pCentreBasedDivisionRule->SetWiggleDivision(true);
+		pCentreBasedDivisionRule->SetWiggleDivision(wiggle);
 		cell_population.SetCentreBasedDivisionRule(pCentreBasedDivisionRule);
 		// ********************************************************************************************
 

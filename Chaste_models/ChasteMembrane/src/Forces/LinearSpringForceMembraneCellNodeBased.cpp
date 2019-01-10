@@ -419,6 +419,8 @@ void LinearSpringForceMembraneCellNodeBased<ELEMENT_DIM,SPACE_DIM>::AddForceCont
     MeshBasedCellPopulation<ELEMENT_DIM,SPACE_DIM>* p_tissue = static_cast<MeshBasedCellPopulation<ELEMENT_DIM,SPACE_DIM>*>(&rCellPopulation);
     std::vector< std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > >& r_node_pairs = p_tissue->rGetNodePairs();
 
+
+    // Checks if this is a 1D columnor a 2D column (i.e. cells can pop up)
     std::set< std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > > contact_nodes;
     if (m1DColumnOfCells)
     {
