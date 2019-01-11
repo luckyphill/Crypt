@@ -50,6 +50,7 @@ void NormalAdhesionForce<ELEMENT_DIM,SPACE_DIM>::AddForceContribution(AbstractCe
         c_vector<double, SPACE_DIM> node_location = p_node->rGetLocation();
 
         c_vector<double, SPACE_DIM> restraining_force;
+        restraining_force[0] = 0;
         restraining_force[1] = 0;
 
         double rest_length = mMembranePreferredRadius + mEpithelialPreferredRadius;
@@ -58,19 +59,24 @@ void NormalAdhesionForce<ELEMENT_DIM,SPACE_DIM>::AddForceContribution(AbstractCe
         double overlap = node_location[0] - rest_length;
         bool is_closer_than_rest_length = (overlap <= 0);
 
-        if (is_closer_than_rest_length) //overlap is negative
+        if (overlap < 2.4) // A quick and dirty way to stop the normal adhesion force when other cells are in the way. Set to large value to ignore
         {
-            // log(x+1) is undefined for x<=-1
-            assert(overlap > -rest_length);
-            restraining_force[0] = - spring_constant * rest_length * log(1.0 + overlap/rest_length);
+            if (is_closer_than_rest_length) //overlap is negative
+            {
+                // log(x+1) is undefined for x<=-1
+                assert(overlap > -rest_length);
+                restraining_force[0] = - spring_constant * rest_length * log(1.0 + overlap/rest_length);
 
-        }
-        else
-        {
-            //assert(overlap > -rest_length);
-            double alpha = 1.8; // 3.0
-            restraining_force[0] = - spring_constant * overlap * exp(-alpha * overlap/rest_length);
+            }
+            else
+            {
+                //assert(overlap > -rest_length);
+                double alpha = 1.8; // 3.0
+                restraining_force[0] = - spring_constant * overlap * exp(-alpha * overlap/rest_length);
+                // restraining_force[0] = - pow(spring_constant,1.0/3) * (exp(overlap/rest_length) - 1);
+                // restraining_force[0] = - spring_constant * overlap / (2 * rest_length);
 
+            }
         }
 
         //restraining_force[0] = - spring_constant * overlap / 3; // Use 3 to so linear intercepts exp at it's peak 

@@ -333,7 +333,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		WntConcentration<2>::Instance()->Destroy();
 	};
 
-	void xTestCryptBasicWnt() throw(Exception)
+	void TestCryptBasicWnt() throw(Exception)
 	{
 		// This test simulates a column of cells that can now move in 2 dimensions
 		// In order to retain the cells in a column, an etherial force needs to be added
@@ -553,7 +553,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		// Building the directory name
 		std::stringstream out;
         out << "n_" << n;
-        out << "_EES_"<< epithelialStiffness << "_VF_" << quiescentVolumeFraction;
+        out << "_EES_"<< epithelialStiffness << "_VF_" << quiescentVolumeFraction << "_MS_" << membraneEpithelialSpringStiffness;
         if(CommandLineArguments::Instance()->OptionExists("-run"))
         {
         	out << "_run_" << run_number;
@@ -654,12 +654,12 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
         std::stringstream kill_count_file_name;
         // Mac path
-        // kill_count_file_name << "/Users/phillipbrown/Research/Crypt/Data/Chaste/CellKillCount/kill_count_" << "n_" << n << "_EES_"<< epithelialStiffness;
+        kill_count_file_name << "/Users/phillipbrown/Research/Crypt/Data/Chaste/CellKillCount/kill_count_" << "n_" << n << "_EES_"<< epithelialStiffness;
         // Phoenix path
-        kill_count_file_name << "data/CellKillCount/kill_count_" << "n_" << n << "_EES_"<< epithelialStiffness;
-        kill_count_file_name << "_MS" << membraneEpithelialSpringStiffness << ".txt";
+        // kill_count_file_name << "data/CellKillCount/kill_count_" << "n_" << n << "_EES_"<< epithelialStiffness;
+        kill_count_file_name << "_MS_" << membraneEpithelialSpringStiffness << "_VF_" << int(100 * quiescentVolumeFraction) << ".txt";
         // VF and PU don't change here
-        // << "_VF_" << quiescentVolumeFraction << "_PU_" << popUpDistance <<
+        //  << "_PU_" << popUpDistance <<
 
         ofstream kill_count_file;
         kill_count_file.open(kill_count_file_name.str());
@@ -679,7 +679,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
 
 
-	void TestCryptDivisionRotation() throw(Exception)
+	void xTestCryptDivisionRotation() throw(Exception)
 	{
 		// This test simulates a column of cells that can now move in 2 dimensions
 		// In order to retain the cells in a column, an etherial force needs to be added
@@ -869,7 +869,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 			{
 
 				SimpleWntContactInhibitionCellCycleModel* p_cycle_model = new SimpleWntContactInhibitionCellCycleModel();
-				double birth_time = cellCycleTime * RandomNumberGenerator::Instance()->ranf();
+				double birth_time = (minimumCycleTime + cellCycleTime) * RandomNumberGenerator::Instance()->ranf();
 				p_cycle_model->SetTransitCellG1Duration(cellCycleTime);
 				p_cycle_model->SetDimension(2);
 	   			p_cycle_model->SetEquilibriumVolume(equilibriumVolume);
