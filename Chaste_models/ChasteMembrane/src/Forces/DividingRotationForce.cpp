@@ -103,7 +103,7 @@ std::vector<std::pair<Node<2>*, Node<2>*>> DividingRotationForce::GetNodePairs(A
     for (std::list<CellPtr>::iterator cell_iter = cells.begin(); cell_iter != cells.end(); ++cell_iter)
     {
     	// If cell is in M-phase, add it to the list
-        Node<2>* p_node =  p_tissue->GetNodeCorrespondingToCell(*cell_iter);
+        // Node<2>* p_node =  p_tissue->GetNodeCorrespondingToCell(*cell_iter);
         AbstractCellCycleModel* temp_ccm = (*cell_iter)->GetCellCycleModel();
         SimpleWntContactInhibitionCellCycleModel* ccm = static_cast<SimpleWntContactInhibitionCellCycleModel*>(temp_ccm);
 
