@@ -418,6 +418,14 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
         }
 
+        double cellCycleTime;
+        bool customCellCycleTime = false;
+        if(CommandLineArguments::Instance()->OptionExists("-cct"))
+        {
+        	customCellCycleTime = true;
+        	cellCycleTime = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-cct");
+        }
+
         double epithelialPreferredRadius = 0.5; // Must have this value due to volume calculation - can't set node radius as SetRadius(epithelialPreferredRadius) doesn't work
 
         double equilibriumVolume = M_PI*epithelialPreferredRadius*epithelialPreferredRadius;; // Depends on the preferred radius
@@ -514,6 +522,11 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
 				SimpleWntContactInhibitionCellCycleModel* p_cycle_model = new SimpleWntContactInhibitionCellCycleModel();
 				double birth_time = minimumCycleTime * RandomNumberGenerator::Instance()->ranf();
+				if (customCellCycleTime)
+				{
+					birth_time = (minimumCycleTime + cellCycleTime - 2)  * RandomNumberGenerator::Instance()->ranf();
+					p_cycle_model->SetTransitCellG1Duration(cellCycleTime);
+				}
 				p_cycle_model->SetDimension(2);
 	   			p_cycle_model->SetEquilibriumVolume(equilibriumVolume);
 	   			p_cycle_model->SetQuiescentVolumeFraction(quiescentVolumeFraction);
