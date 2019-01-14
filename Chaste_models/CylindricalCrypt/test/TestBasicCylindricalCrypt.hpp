@@ -92,8 +92,50 @@ class TestBasicCylindricalCrypt : public AbstractCellBasedTestSuite
 		std::vector<Node<2>*> nodes;
 		std::vector<unsigned> location_indices;
 
+		double x;
+		double y;
 
+		// Make a grid top x circumference
+		// Not trying to make hexagonal packing at this point
+		for (unsigned i = 0; i < top; i++)
+		{
+			for (unsigned j = 0; j < circumference; j++)
+			{
+				x = i;
+				y = j;
+				Node<2>* new_node =  new Node<2>(node_counter,  false,  x, y);
+				nodes.push_back(new_node);
+				location_indices.push_back(node_counter);
+				node_counter++;
+			}
+		}
 
+		NodesOnlyMesh<3> mesh;
+		mesh.ConstructNodesWithoutMesh(nodes, maxInteractionRadius);
+
+		std::vector<CellPtr> cells;
+
+		MAKE_PTR(DifferentiatedCellProliferativeType, p_diff_type);
+		MAKE_PTR(TransitCellProliferativeType, p_trans_type);
+
+		// Make the cells and the cell cycle models
+		for (unsigned i = 0; i < top; i++)
+		{
+			for (unsigned j = 0; j < circumference; j++)
+			{
+				UniformCellCycleModel* p_cycle_model = new UniformCellCycleModel();
+				double birth_time = 12 * RandomNumberGenerator::Instance()->ranf();
+				p_cycle_model->SetBirthTime(-birth_time);
+
+				CellPtr p_cell(new Cell(p_state, p_cycle_model));
+				p_cell->SetCellProliferativeType(p_trans_type);
+				p_cell->InitialiseCellCycleModel();
+
+				cells.push_back(p_cell);
+			}
+		}
+
+		NodeBasedCellPopulation<3> cell_population(mesh, cells, location_indices);
 
 
 
@@ -111,6 +153,30 @@ class TestBasicCylindricalCrypt : public AbstractCellBasedTestSuite
 
         simulator.SetEndTime(end_time);
 		simulator.SetDt(dt);
+
+		// ********************************************************************************************
+		// Set force parameters
+		MAKE_PTR(BasicNonLinearSpringForce<3>, p_force);
+		p_force->SetSpringStiffness(epithelialStiffness);
+		p_force->SetRestLength(2 * epithelialPreferredRadius);
+		p_force->SetCutOffLength(3 * epithelialPreferredRadius);
+		
+		p_force->SetMeinekeSpringStiffness(meinekeStiffness);
+		p_force->SetMeinekeSpringGrowthDuration(1);
+
+		MAKE_PTR(NormalAdhesionForce<3>, p_adhesion);
+        p_adhesion->SetMembraneEpithelialSpringStiffness(membraneEpithelialSpringStiffness);
+		
+		// ********************************************************************************************
+		// These two parameters are inately linked - the initial separation of the daughter nodes
+		// and the initial resting spring length
+		p_force->SetMeinekeDivisionRestingSpringLength(0.05);
+		cell_population.SetMeinekeDivisionSeparation(0.05); // Set how far apart the cells will be upon division
+		// ********************************************************************************************
+
+		MAKE_PTR_ARGS(SimpleSloughingCellKiller, p_sloughing_killer, (&cell_population));
+		p_sloughing_killer->SetCryptTop(top);
+		simulator.AddCellKiller(p_sloughing_killer);
 
 
 	};
