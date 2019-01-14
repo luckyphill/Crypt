@@ -418,7 +418,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
         }
 
-        double cellCycleTime;
+        double cellCycleTime = 2.0;
         bool customCellCycleTime = false;
         if(CommandLineArguments::Instance()->OptionExists("-cct"))
         {
@@ -521,10 +521,9 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 			{
 
 				SimpleWntContactInhibitionCellCycleModel* p_cycle_model = new SimpleWntContactInhibitionCellCycleModel();
-				double birth_time = minimumCycleTime * RandomNumberGenerator::Instance()->ranf();
+				double birth_time = (minimumCycleTime + cellCycleTime - 2) * RandomNumberGenerator::Instance()->ranf();
 				if (customCellCycleTime)
 				{
-					birth_time = (minimumCycleTime + cellCycleTime - 2)  * RandomNumberGenerator::Instance()->ranf();
 					p_cycle_model->SetTransitCellG1Duration(cellCycleTime);
 				}
 				p_cycle_model->SetDimension(2);
@@ -566,7 +565,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		// Building the directory name
 		std::stringstream out;
         out << "n_" << n;
-        out << "_EES_"<< epithelialStiffness << "_VF_" << quiescentVolumeFraction << "_MS_" << membraneEpithelialSpringStiffness;
+        out << "_EES_"<< epithelialStiffness << "_VF_" << quiescentVolumeFraction << "_MS_" << membraneEpithelialSpringStiffness << "_CCT_" << int(cellCycleTime);
         if(CommandLineArguments::Instance()->OptionExists("-run"))
         {
         	out << "_run_" << run_number;
@@ -670,7 +669,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
         // kill_count_file_name << "/Users/phillipbrown/Research/Crypt/Data/Chaste/CellKillCount/kill_count_" << "n_" << n << "_EES_"<< epithelialStiffness;
         // Phoenix path
         kill_count_file_name << "data/CellKillCount/kill_count_" << "n_" << n << "_EES_"<< epithelialStiffness;
-        kill_count_file_name << "_MS_" << membraneEpithelialSpringStiffness << "_VF_" << int(100 * quiescentVolumeFraction) << ".txt";
+        kill_count_file_name << "_MS_" << membraneEpithelialSpringStiffness << "_VF_" << int(100 * quiescentVolumeFraction) << "_CCT_" << int(cellCycleTime) << ".txt";
         // VF and PU don't change here
         //  << "_PU_" << popUpDistance <<
 

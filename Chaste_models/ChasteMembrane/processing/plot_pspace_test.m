@@ -40,4 +40,4 @@ colorbar;
 set(h,'Units','Inches');
 pos = get(h,'Position');
 set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
-print('CellKillCountVF80','-dpdf');
+print('/Users/phillip/Research/Crypt/Images/CellKillCountVF80','-dpdf');
