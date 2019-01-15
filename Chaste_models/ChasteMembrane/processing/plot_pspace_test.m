@@ -1,8 +1,8 @@
 % plots a parameter space sweep to see what parameter pair gives the 
 % most appropriate combination of cell death by anoikis and by sloughing
-% we expecct to get ~100 deaths by sloughing and ~5 deaths by anoikis
+% we expecct to get ~100 deaths by sloughing and ~5 deaths by anoikis (with cct of 12)
 % the plot shows the difference between the two, which ideally should sit
-% around 100
+% around 100 (different for other ccts)
 
 close all;
 clear all;
@@ -12,11 +12,13 @@ n = length(es);
 ms = 1:100;
 m = length(ms);
 
+vf = 75;
+
 pspace = nan(n,m);
 
 for i = 1:n
     for j = 1:m
-        file_name =[ '/Users/phillip/Research/Crypt/Data/Chaste/CellKillCount/kill_count_n_20_EES_' num2str(es(i)) '_MS_' num2str(ms(j)) '_VF_80.txt'];
+        file_name =[ '/Users/phillipbrown/Research/Crypt/Data/Chaste/CellKillCount/kill_count_n_20_EES_' num2str(es(i)) '_MS_' num2str(ms(j)) '_VF_' num2str(vf) '_CCT_8.txt'];
         try
             data = csvread(file_name,1,0);
             pspace(i,j) = data(2) - data(3);
@@ -40,4 +42,4 @@ colorbar;
 set(h,'Units','Inches');
 pos = get(h,'Position');
 set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
-print('/Users/phillip/Research/Crypt/Images/CellKillCountVF80','-dpdf');
+print(['/Users/phillipbrown/Research/Crypt/Images/CellKillCountVF' num2str(vf), '_CCT_8'],'-dpdf');

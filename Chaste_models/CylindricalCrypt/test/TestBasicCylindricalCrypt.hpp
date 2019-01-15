@@ -7,7 +7,7 @@
 
 // Simulators and output
 #include "OffLatticeSimulation.hpp" //Simulates the evolution of the population
-#include "OffLatticeSimulationTooManyCells.hpp"
+// #include "OffLatticeSimulation.hpp"
 
 // Forces
 #include "GeneralisedLinearSpringForce.hpp"
@@ -26,19 +26,15 @@
 //Cell cycle models
 #include "NoCellCycleModel.hpp"
 #include "UniformCellCycleModel.hpp"
-#include "UniformContactInhibition.hpp"
-#include "WntUniformContactInhibition.hpp"
-#include "SimpleWntContactInhibitionCellCycleModel.hpp"
 
 #include "WildTypeCellMutationState.hpp"
 
 // Boundary conditions
-#include "BoundaryCellProperty.hpp"
-#include "CryptBoundaryCondition.hpp"
+// #include "BoundaryCellProperty.hpp"
+// #include "CryptBoundaryCondition.hpp"
 
 // Cell killers
 #include "SimpleSloughingCellKiller.hpp"
-#include "TopAndBottomSloughing.hpp"
 #include "SimpleAnoikisCellKiller.hpp"
 
 //Division Rules
@@ -85,12 +81,15 @@ class TestBasicCylindricalCrypt : public AbstractCellBasedTestSuite
 		double top = 20;
 		double circumference = 16;
 		
-		// Cell cycle model parameters
-		double minimumCycleTime = 10;
-
 		// Cell population vectors
-		std::vector<Node<2>*> nodes;
+		std::vector<Node<3>*> nodes;
 		std::vector<unsigned> location_indices;
+
+		// Force parameters
+		double epithelialStiffness = 25;
+		double epithelialPreferredRadius = 0.5;
+		double meinekeStiffness = epithelialStiffness;
+		double membraneEpithelialSpringStiffness = 30;
 
 		double x;
 		double y;
@@ -103,7 +102,7 @@ class TestBasicCylindricalCrypt : public AbstractCellBasedTestSuite
 			{
 				x = i;
 				y = j;
-				Node<2>* new_node =  new Node<2>(node_counter,  false,  x, y);
+				Node<3>* new_node =  new Node<3>(node_counter,  false,  x, y);
 				nodes.push_back(new_node);
 				location_indices.push_back(node_counter);
 				node_counter++;
@@ -117,6 +116,7 @@ class TestBasicCylindricalCrypt : public AbstractCellBasedTestSuite
 
 		MAKE_PTR(DifferentiatedCellProliferativeType, p_diff_type);
 		MAKE_PTR(TransitCellProliferativeType, p_trans_type);
+		MAKE_PTR(WildTypeCellMutationState, p_state);
 
 		// Make the cells and the cell cycle models
 		for (unsigned i = 0; i < top; i++)
@@ -141,7 +141,7 @@ class TestBasicCylindricalCrypt : public AbstractCellBasedTestSuite
 
 
 		// A simulator with a stopping even when there are too many cells
-		OffLatticeSimulationTooManyCells simulator(cell_population);
+		OffLatticeSimulation<3> simulator(cell_population);
 		simulator.SetOutputDirectory("Test2DPlane");
 
 		// ********************************************************************************************
@@ -167,6 +167,9 @@ class TestBasicCylindricalCrypt : public AbstractCellBasedTestSuite
 		MAKE_PTR(NormalAdhesionForce<3>, p_adhesion);
         p_adhesion->SetMembraneEpithelialSpringStiffness(membraneEpithelialSpringStiffness);
 		
+		simulator.AddForce(p_force);
+		simulator.AddForce(p_adhesion);
+		
 		// ********************************************************************************************
 		// These two parameters are inately linked - the initial separation of the daughter nodes
 		// and the initial resting spring length
@@ -174,11 +177,14 @@ class TestBasicCylindricalCrypt : public AbstractCellBasedTestSuite
 		cell_population.SetMeinekeDivisionSeparation(0.05); // Set how far apart the cells will be upon division
 		// ********************************************************************************************
 
-		MAKE_PTR_ARGS(SimpleSloughingCellKiller, p_sloughing_killer, (&cell_population));
-		p_sloughing_killer->SetCryptTop(top);
+		MAKE_PTR_ARGS(SimpleSloughingCellKiller<3>, p_sloughing_killer, (&cell_population));
+		// SimpleSloughingCellKiller<3>* p_sloughing_killer = new SimpleSloughingCellKiller<3>(cell_population);
+		// p_sloughing_killer->SetCryptTop(top);
 		simulator.AddCellKiller(p_sloughing_killer);
+
+		simulator.Solve();
 
 
 	};
 
-}
+};
