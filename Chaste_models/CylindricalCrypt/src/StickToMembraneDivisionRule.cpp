@@ -52,7 +52,7 @@ std::pair<c_vector<double, SPACE_DIM>, c_vector<double, SPACE_DIM> >
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
 void StickToMembraneDivisionRule<ELEMENT_DIM, SPACE_DIM>::SetMembraneAxis(c_vector<double, SPACE_DIM> membraneAxis)
 {
-    double magnitude = sqrt(membraneAxis(0) * membraneAxis(0) + membraneAxis(1) * membraneAxis(1));
+    double magnitude = norm_2(membraneAxis);
     mMembraneAxis = membraneAxis/magnitude;
     // need to normalise so it is a unit vector
 

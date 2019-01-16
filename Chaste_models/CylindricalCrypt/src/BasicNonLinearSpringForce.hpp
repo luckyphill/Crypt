@@ -98,8 +98,7 @@ public:
 
     void SetMeinekeSpringGrowthDuration(double springGrowthDuration);
 
-    std::set<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> FindContactNeighbourPairs(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation);
-    /**
+   /**
      * Overridden OutputForceParameters() method.
      *
      * @param rParamsFile the file stream to which the parameters are output
@@ -111,14 +110,3 @@ public:
 EXPORT_TEMPLATE_CLASS_SAME_DIMS(BasicNonLinearSpringForce)
 
 #endif /*BASICNONLINEARSPRINGFORCE_HPP_*/
-
-#ifndef ND_SORT_FUNCTION
-#define ND_SORT_FUNCTION
-// Need to declare this sort function outide the class, otherwise it won't work
-template<unsigned  ELEMENT_DIM, unsigned SPACE_DIM=ELEMENT_DIM>
-bool nd_sort(std::tuple< Node<SPACE_DIM>*, c_vector<double, SPACE_DIM>, double > i,
-                 std::tuple< Node<SPACE_DIM>*, c_vector<double, SPACE_DIM>, double > j)
-{ 
-    return (std::get<2>(i)<std::get<2>(j)); 
-};
-#endif

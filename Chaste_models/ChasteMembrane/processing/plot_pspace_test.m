@@ -18,7 +18,7 @@ pspace = nan(n,m);
 
 for i = 1:n
     for j = 1:m
-        file_name =[ '/Users/phillipbrown/Research/Crypt/Data/Chaste/CellKillCount/kill_count_n_20_EES_' num2str(es(i)) '_MS_' num2str(ms(j)) '_VF_' num2str(vf) '_CCT_8.txt'];
+        file_name =[ '/Users/phillipbrown/Research/Crypt/Data/Chaste/CellKillCount/kill_count_n_20_EES_' num2str(es(i)) '_MS_' num2str(ms(j)) '_VF_' num2str(vf) '_CCT_16.txt'];
         try
             data = csvread(file_name,1,0);
             pspace(i,j) = data(2) - data(3);
@@ -42,4 +42,4 @@ colorbar;
 set(h,'Units','Inches');
 pos = get(h,'Position');
 set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
-print(['/Users/phillipbrown/Research/Crypt/Images/CellKillCountVF' num2str(vf), '_CCT_8'],'-dpdf');
+print(['/Users/phillipbrown/Research/Crypt/Images/CellKillCountVF' num2str(vf), '_CCT_16'],'-dpdf');

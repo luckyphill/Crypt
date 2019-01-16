@@ -12,12 +12,12 @@
 #include "NodeBasedCellPopulation.hpp"
 // #include "PanethCellMutationState.hpp"
 #include "TransitCellAnoikisResistantMutationState.hpp"
-// #include "MembraneCellProliferativeType.hpp"
 
 #include "Debug.hpp"
 
-SimpleAnoikisCellKiller::SimpleAnoikisCellKiller(AbstractCellPopulation<2>* pCellPopulation)
-    : AbstractCellKiller<2>(pCellPopulation),
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+SimpleAnoikisCellKiller<ELEMENT_DIM,SPACE_DIM>::SimpleAnoikisCellKiller(AbstractCellPopulation<SPACE_DIM>* pCellPopulation)
+    : AbstractCellKiller<SPACE_DIM>(pCellPopulation),
     mCellsRemovedByAnoikis(0),
     mSlowDeath(false),
     mPoppedUpLifeExpectancy(0.0),
@@ -27,23 +27,24 @@ SimpleAnoikisCellKiller::SimpleAnoikisCellKiller(AbstractCellPopulation<2>* pCel
 //	OutputFileHandler output_file_handler(mOutputDirectory + "AnoikisData/", false);
 //	mAnoikisOutputFile = output_file_handler.OpenOutputFile("results.anoikis");
 }
-
-SimpleAnoikisCellKiller::~SimpleAnoikisCellKiller()
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+SimpleAnoikisCellKiller<ELEMENT_DIM,SPACE_DIM>::~SimpleAnoikisCellKiller()
 {
 //    mAnoikisOutputFile->close();
 }
-
-void SimpleAnoikisCellKiller::SetPopUpDistance(double popUpDistance)
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+void SimpleAnoikisCellKiller<ELEMENT_DIM,SPACE_DIM>::SetPopUpDistance(double popUpDistance)
 {
 	mPopUpDistance = popUpDistance;
 }
-
-void SimpleAnoikisCellKiller::SetPoppedUpLifeExpectancy(double poppedUpLifeExpectancy)
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+void SimpleAnoikisCellKiller<ELEMENT_DIM,SPACE_DIM>::SetPoppedUpLifeExpectancy(double poppedUpLifeExpectancy)
 {
 	mPoppedUpLifeExpectancy = poppedUpLifeExpectancy;
 }
 
-void SimpleAnoikisCellKiller::SetResistantPoppedUpLifeExpectancy(double resistantPoppedUpLifeExpectancy)
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+void SimpleAnoikisCellKiller<ELEMENT_DIM,SPACE_DIM>::SetResistantPoppedUpLifeExpectancy(double resistantPoppedUpLifeExpectancy)
 {
 	mResistantPoppedUpLifeExpectancy = resistantPoppedUpLifeExpectancy;
 }
@@ -52,15 +53,21 @@ void SimpleAnoikisCellKiller::SetResistantPoppedUpLifeExpectancy(double resistan
  * TRUE if cell has popped up
  * FALSE if cell remains in the monolayer
  */
-bool SimpleAnoikisCellKiller::HasCellPoppedUp(unsigned nodeIndex)
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+bool SimpleAnoikisCellKiller<ELEMENT_DIM,SPACE_DIM>::HasCellPoppedUp(unsigned nodeIndex)
 {
 	bool has_cell_popped_up = false;	// Initialising
 
-	NodeBasedCellPopulation<2>* p_tissue = static_cast<NodeBasedCellPopulation<2>*> (this->mpCellPopulation);
+	NodeBasedCellPopulation<SPACE_DIM>* p_tissue = static_cast<NodeBasedCellPopulation<SPACE_DIM>*> (this->mpCellPopulation);
 
-	c_vector<double,2> cell_location = p_tissue->GetNode(nodeIndex)->rGetLocation();
+	c_vector<double,SPACE_DIM> cell_location = p_tissue->GetNode(nodeIndex)->rGetLocation();
 
-	if (cell_location[0] > mPopUpDistance)
+	if (SPACE_DIM == 2 && cell_location[0] > mPopUpDistance)
+	{
+		has_cell_popped_up = true;
+	}
+
+	if (SPACE_DIM == 3 && cell_location[2] > mPopUpDistance)
 	{
 		has_cell_popped_up = true;
 	}
@@ -69,15 +76,16 @@ bool SimpleAnoikisCellKiller::HasCellPoppedUp(unsigned nodeIndex)
 	return has_cell_popped_up;
 }
 
-void SimpleAnoikisCellKiller::PopulateAnoikisList()
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+void SimpleAnoikisCellKiller<ELEMENT_DIM,SPACE_DIM>::PopulateAnoikisList()
 {
 	// Loop through, check if popped up and if so, store the cell pointer and the time
 
-	if (dynamic_cast<NodeBasedCellPopulation<2>*>(this->mpCellPopulation))
+	if (dynamic_cast<NodeBasedCellPopulation<SPACE_DIM>*>(this->mpCellPopulation))
     {
-    	NodeBasedCellPopulation<2>* p_tissue = static_cast<NodeBasedCellPopulation<2>*> (this->mpCellPopulation);
+    	NodeBasedCellPopulation<SPACE_DIM>* p_tissue = static_cast<NodeBasedCellPopulation<SPACE_DIM>*> (this->mpCellPopulation);
 
-    	for (AbstractCellPopulation<2>::Iterator cell_iter = p_tissue->Begin();
+    	for (typename AbstractCellPopulation<SPACE_DIM>::Iterator cell_iter = p_tissue->Begin();
     			cell_iter != p_tissue->End();
     			++cell_iter)
     	{
@@ -127,8 +135,8 @@ void SimpleAnoikisCellKiller::PopulateAnoikisList()
     }
 
 }
-
-std::vector<CellPtr> SimpleAnoikisCellKiller::GetCellsReadyToDie()
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+std::vector<CellPtr> SimpleAnoikisCellKiller<ELEMENT_DIM,SPACE_DIM>::GetCellsReadyToDie()
 {
 	// Go through the anoikis list, if the lenght of time since it popped up is past a certain
 	// threshold, then that cell is ready to be killed
@@ -165,13 +173,13 @@ std::vector<CellPtr> SimpleAnoikisCellKiller::GetCellsReadyToDie()
  * the labelled tissue cells, i.e. removal by anoikis
  *
  * Also will remove differentiated cells at the orifice if mSloughOrifice is true
- */
-void SimpleAnoikisCellKiller::CheckAndLabelCellsForApoptosisOrDeath()
+ */template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+void SimpleAnoikisCellKiller<ELEMENT_DIM,SPACE_DIM>::CheckAndLabelCellsForApoptosisOrDeath()
 {
 
-	if (dynamic_cast<NodeBasedCellPopulation<2>*>(this->mpCellPopulation))
+	if (dynamic_cast<NodeBasedCellPopulation<SPACE_DIM>*>(this->mpCellPopulation))
 	{
-		NodeBasedCellPopulation<2>* p_tissue = static_cast<NodeBasedCellPopulation<2>*> (this->mpCellPopulation);
+		NodeBasedCellPopulation<SPACE_DIM>* p_tissue = static_cast<NodeBasedCellPopulation<SPACE_DIM>*> (this->mpCellPopulation);
 
 		// Get the information at this timestep for each node index that says whether to remove by anoikis or random apoptosis
 		this->PopulateAnoikisList();
@@ -201,28 +209,33 @@ void SimpleAnoikisCellKiller::CheckAndLabelCellsForApoptosisOrDeath()
 		}
 	}
 }
-
-void SimpleAnoikisCellKiller::SetSlowDeath(bool slowDeath)
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+void SimpleAnoikisCellKiller<ELEMENT_DIM,SPACE_DIM>::SetSlowDeath(bool slowDeath)
 {
 	mSlowDeath = slowDeath;
 }
-
-unsigned SimpleAnoikisCellKiller::GetCellKillCount()
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+unsigned SimpleAnoikisCellKiller<ELEMENT_DIM,SPACE_DIM>::GetCellKillCount()
 {
 	return mCellKillCount;
 }
-
-void SimpleAnoikisCellKiller::OutputCellKillerParameters(out_stream& rParamsFile)
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+void SimpleAnoikisCellKiller<ELEMENT_DIM,SPACE_DIM>::OutputCellKillerParameters(out_stream& rParamsFile)
 {
     *rParamsFile << "\t\t\t<PopUpDistance>" << mPopUpDistance << "</PopUpDistance> \n";
     *rParamsFile << "\t\t\t<PoppedUpLifeExpectancy>" << mPoppedUpLifeExpectancy << "</PoppedUpLifeExpectancy> \n";
 
     // Call direct parent class
-    AbstractCellKiller<2>::OutputCellKillerParameters(rParamsFile);
+    AbstractCellKiller<SPACE_DIM>::OutputCellKillerParameters(rParamsFile);
 }
 
 
-
+template class SimpleAnoikisCellKiller<1,1>;
+template class SimpleAnoikisCellKiller<1,2>;
+template class SimpleAnoikisCellKiller<2,2>;
+template class SimpleAnoikisCellKiller<1,3>;
+template class SimpleAnoikisCellKiller<2,3>;
+template class SimpleAnoikisCellKiller<3,3>;
 
 #include "SerializationExportWrapperForCpp.hpp"
-CHASTE_CLASS_EXPORT(SimpleAnoikisCellKiller)
+// CHASTE_CLASS_EXPORT(SimpleAnoikisCellKiller)

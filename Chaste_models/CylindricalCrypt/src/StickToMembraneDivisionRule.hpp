@@ -39,7 +39,7 @@ private:
         archive & boost::serialization::base_object<AbstractCentreBasedDivisionRule<2u> >(*this);
     }
 
-    c_vector<double, 2> mMembraneAxis;
+    c_vector<double, SPACE_DIM> mMembraneAxis;
     bool mWiggle = false;
     double mMaxAngle = 0.01; // maxmium wiggle angle above or below membrane axis
 

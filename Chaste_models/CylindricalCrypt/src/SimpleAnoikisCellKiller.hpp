@@ -17,7 +17,8 @@
  * region and entered the lumen
  */
 
-class SimpleAnoikisCellKiller : public AbstractCellKiller<2>
+template<unsigned  ELEMENT_DIM, unsigned SPACE_DIM=ELEMENT_DIM>
+class SimpleAnoikisCellKiller : public AbstractCellKiller<SPACE_DIM>
 {
 private:
 
@@ -66,7 +67,7 @@ public:
      * @param pCellPopulation pointer to a tissue
      * @param sloughOrifice whether to slough compressed cells at crypt orifice
      */
-	SimpleAnoikisCellKiller(AbstractCellPopulation<2>* pCellPopulation);
+	SimpleAnoikisCellKiller(AbstractCellPopulation<SPACE_DIM>* pCellPopulation);
 
 	// Destructor
 	~SimpleAnoikisCellKiller();
@@ -111,31 +112,31 @@ public:
 };
 
 #include "SerializationExportWrapper.hpp"
-CHASTE_CLASS_EXPORT(SimpleAnoikisCellKiller)
+EXPORT_TEMPLATE_CLASS_SAME_DIMS(SimpleAnoikisCellKiller)
 
-namespace boost
-{
-    namespace serialization
-    {
-        template<class Archive>
-        inline void save_construct_data(
-            Archive & ar, const SimpleAnoikisCellKiller * t, const unsigned int file_version)
-        {
-            const AbstractCellPopulation<2>* const p_cell_population = t->GetCellPopulation();
-            ar << p_cell_population;
-        }
+// namespace boost
+// {
+//     namespace serialization
+//     {
+//         template<class Archive>
+//         inline void save_construct_data(
+//             Archive & ar, const SimpleAnoikisCellKiller * t, const unsigned int file_version)
+//         {
+//             const AbstractCellPopulation<2>* const p_cell_population = t->GetCellPopulation();
+//             ar << p_cell_population;
+//         }
 
-        template<class Archive>
-        inline void load_construct_data(
-            Archive & ar, SimpleAnoikisCellKiller * t, const unsigned int file_version)
-        {
-            AbstractCellPopulation<2>* p_cell_population;
-            ar >> p_cell_population;
+//         template<class Archive>
+//         inline void load_construct_data(
+//             Archive & ar, SimpleAnoikisCellKiller * t, const unsigned int file_version)
+//         {
+//             AbstractCellPopulation<2>* p_cell_population;
+//             ar >> p_cell_population;
 
-            // Invoke inplace constructor to initialise instance
-            ::new(t)SimpleAnoikisCellKiller(p_cell_population);
-        }
-    }
-}
+//             // Invoke inplace constructor to initialise instance
+//             ::new(t)SimpleAnoikisCellKiller(p_cell_population);
+//         }
+//     }
+// }
 
 #endif /* SimpleANOIKISCELLKILLER_HPP_ */
