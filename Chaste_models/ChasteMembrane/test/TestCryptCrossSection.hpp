@@ -626,7 +626,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
 		// ********************************************************************************************
 		// Add in the cell killers
-		MAKE_PTR_ARGS(SimpleSloughingCellKiller, p_sloughing_killer, (&cell_population));
+		MAKE_PTR_ARGS(SimpleSloughingCellKiller<2>, p_sloughing_killer, (&cell_population));
 		p_sloughing_killer->SetCryptTop(wall_top);
 		simulator.AddCellKiller(p_sloughing_killer);
 
@@ -788,7 +788,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
         double epithelialPreferredRadius = 0.5; // Must have this value due to volume calculation - can't set node radius as SetRadius(epithelialPreferredRadius) doesn't work
 
-        double equilibriumVolume = M_PI*epithelialPreferredRadius*epithelialPreferredRadius;; // Depends on the preferred radius
+        double equilibriumVolume = M_PI*epithelialPreferredRadius*epithelialPreferredRadius; // Depends on the preferred radius
 
         bool multiple_cells = true;
         unsigned n = 20;
@@ -988,7 +988,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
 		// ********************************************************************************************
 		// Add in the cell killers
-		MAKE_PTR_ARGS(SimpleSloughingCellKiller, p_sloughing_killer, (&cell_population));
+		MAKE_PTR_ARGS(SimpleSloughingCellKiller<2>, p_sloughing_killer, (&cell_population));
 		p_sloughing_killer->SetCryptTop(wall_top);
 		simulator.AddCellKiller(p_sloughing_killer);
 

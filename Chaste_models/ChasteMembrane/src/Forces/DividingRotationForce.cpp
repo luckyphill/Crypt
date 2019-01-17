@@ -91,12 +91,10 @@ void DividingRotationForce::AddForceContribution(AbstractCellPopulation<2>& rCel
 
 std::vector<std::pair<Node<2>*, Node<2>*>> DividingRotationForce::GetNodePairs(AbstractCellPopulation<2>& rCellPopulation)
 {
-
 	// The mitotic pairs
 	std::vector<std::pair<Node<2>*, Node<2>*>> nodePairs;
 	std::list<CellPtr> mphase_cells;
 
-	
 	MeshBasedCellPopulation<2,2>* p_tissue = static_cast<MeshBasedCellPopulation<2,2>*>(&rCellPopulation);
     std::list<CellPtr> cells =  p_tissue->rGetCells();
 
@@ -108,10 +106,9 @@ std::vector<std::pair<Node<2>*, Node<2>*>> DividingRotationForce::GetNodePairs(A
         SimpleWntContactInhibitionCellCycleModel* ccm = static_cast<SimpleWntContactInhibitionCellCycleModel*>(temp_ccm);
 
         CellCyclePhase phase = ccm->GetCurrentCellCyclePhase();
-
         if (phase == M_PHASE)
-        {
-        	mphase_cells.push_back(*cell_iter);
+        {   
+            mphase_cells.push_back(*cell_iter);
         }
 
 	}
@@ -127,32 +124,33 @@ std::vector<std::pair<Node<2>*, Node<2>*>> DividingRotationForce::GetNodePairs(A
     	{
     		double parentA = (*cell_iter)->GetCellData()->GetItem("parent");
 			double parentB = (*cell_iter_2)->GetCellData()->GetItem("parent");
-			
 			unsigned idA = (*cell_iter)->GetCellId();
 			unsigned idB = (*cell_iter_2)->GetCellId();
-			
+            
 			// If cells have the same parent, and we haven't found the same cell, then they are a dividing pair
     		if (parentA == parentB && idA != idB)
     		{
     			pair_found = true;
-    			// PRINT_2_VARIABLES(idA,idB)
+
     			std::pair<Node<2>*, Node<2>*> dividing_cell;
     			// make cells into nodes
     			Node<2>* nodeA = p_tissue->GetNode(p_tissue->GetLocationIndexUsingCell((*cell_iter)));
     			Node<2>* nodeB = p_tissue->GetNode(p_tissue->GetLocationIndexUsingCell((*cell_iter_2)));
-    			//
+                //
     			dividing_cell = std::make_pair(nodeA, nodeB);
     			nodePairs.push_back(dividing_cell);
     			// delete from list
-    			cell_iter = mphase_cells.erase(cell_iter);
+    			               
     			mphase_cells.erase(cell_iter_2);
 
+                cell_iter = mphase_cells.erase(cell_iter); // erase cell_iter after cell_iter_2 to ensure it jumps to a cell that exists
     			break;
     			
     		} else {
     			++cell_iter_2;
     		}
     	}
+        // ++cell_iter;
     	if (!pair_found)
     	{
     		++cell_iter;

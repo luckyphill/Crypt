@@ -39,7 +39,7 @@ private:
         archive & boost::serialization::base_object<AbstractCentreBasedDivisionRule<2u> >(*this);
     }
 
-    c_vector<double, 2> mMembraneAxis;
+    c_vector<double, SPACE_DIM> mMembraneAxis;
     bool mWiggle = false;
     double mMaxAngle = 0.01; // maxmium wiggle angle above or below membrane axis
 
@@ -73,7 +73,7 @@ public:
     //For flat membrane, the membrane will have an axis that is constant so can be defined at compilation
     //Use this to define the direction of division
     //In more complicated simulations this will need to be calculated individually for each cell
-    void SetMembraneAxis(c_vector<double, 2> membraneAxis);
+    void SetMembraneAxis(c_vector<double, SPACE_DIM> membraneAxis);
 
     void SetWiggleDivision(bool wiggle);
 

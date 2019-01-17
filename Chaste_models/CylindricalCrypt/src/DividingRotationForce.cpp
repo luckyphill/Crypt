@@ -8,44 +8,49 @@
 
 //************************************************************************************************
 // Uses cell_data method of tracing cell parents, in order to deal with newly divided cells
-//************************************************************************************************
-
-DividingRotationForce::DividingRotationForce()
-   :  AbstractForce<2>(),
+//************************************************
+// ************************************************
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+DividingRotationForce<ELEMENT_DIM,SPACE_DIM>::DividingRotationForce()
+   :  AbstractForce<SPACE_DIM>(),
    mTorsionalStiffness(10.0)
 {
 }
 
-DividingRotationForce::~DividingRotationForce()
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+DividingRotationForce<ELEMENT_DIM,SPACE_DIM>::~DividingRotationForce()
 {
 
 }
 
-void DividingRotationForce::SetTorsionalStiffness(double torsionalStiffness)
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+void DividingRotationForce<ELEMENT_DIM,SPACE_DIM>::SetTorsionalStiffness(double torsionalStiffness)
 {
 	mTorsionalStiffness = torsionalStiffness;
 }
 
-void DividingRotationForce::AddForceContribution(AbstractCellPopulation<2>& rCellPopulation)
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+void DividingRotationForce<ELEMENT_DIM,SPACE_DIM>::AddForceContribution(AbstractCellPopulation<SPACE_DIM>& rCellPopulation)
 {
 	// loop through cell population
 	// find all pairs of cells that are dividing
-	// for each dividing pair, add in a returning force proportional to the rotation angle from the membrane axis
+	// for each dividing pair, add in a returning 
+    // force proportional to the rotation angle from the membrane axis
+	std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>*>> node_pairs = DividingRotationForce<ELEMENT_DIM,SPACE_DIM>::GetNodePairs(rCellPopulation);
 
-	std::vector<std::pair<Node<2>*, Node<2>*>> node_pairs = DividingRotationForce::GetNodePairs(rCellPopulation);
-
-	for (std::vector<std::pair<Node<2>*, Node<2>*>>::iterator it = node_pairs.begin(); it != node_pairs.end(); ++it)
+	for (typename std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>*>>::iterator it = node_pairs.begin(); it != node_pairs.end(); ++it)
     {
-    	Node<2>* nodeA = it->first;
-    	Node<2>* nodeB = it->second;
+
+    	Node<SPACE_DIM>* nodeA = it->first;
+    	Node<SPACE_DIM>* nodeB = it->second;
 
 
-    	c_vector<double, 2> locationA = nodeA->rGetLocation();
-    	c_vector<double, 2> locationB = nodeB->rGetLocation();
+    	c_vector<double, SPACE_DIM> locationA = nodeA->rGetLocation();
+    	c_vector<double, SPACE_DIM> locationB = nodeB->rGetLocation();
 
     	// Get the unit vector parallel to the line joining the two nodes
 
-	    c_vector<double, 2> divisionVector = rCellPopulation.rGetMesh().GetVectorFromAtoB(locationA, locationB);
+	    c_vector<double, SPACE_DIM> divisionVector = rCellPopulation.rGetMesh().GetVectorFromAtoB(locationA, locationB);
 
 	    double lengthDivisionVector = norm_2(divisionVector);
 
@@ -54,7 +59,11 @@ void DividingRotationForce::AddForceContribution(AbstractCellPopulation<2>& rCel
 
 	    // Get the angle between the membrane axis and the division vector
 	    // Only need the dot product because the two vectors have been normalised to length 1
-	    double dotProduct = divisionVector[0] * mMembraneAxis[0] + divisionVector[1] * mMembraneAxis[1];
+	    double dotProduct = 0;
+        for (unsigned i = 0; i < SPACE_DIM; i++)
+        {
+            dotProduct += divisionVector[i] * mMembraneAxis[i];
+        }
 
 		double angle = acos(dotProduct);
 		// Occasionally the argument steps out of the bounds for acos, for instance -1.0000000000000002
@@ -70,16 +79,20 @@ void DividingRotationForce::AddForceContribution(AbstractCellPopulation<2>& rCel
 		// This might change after adding the force in, so will have to observe behaviour
 
 		// Choose the cell that is furthest in the +ve x direction from the membrane
-
-		Node<2>* nodeToApplyForce = ((locationA[0] > locationB[0]) ? nodeA : nodeB);
-
-		double forceMagnitude = mTorsionalStiffness * angle;
-
-		c_vector<double, 2> forceDirection;
-		forceDirection[0] = -1;
-		forceDirection[1] = 0;
+        Node<SPACE_DIM>* nodeToApplyForce = ((locationA[0] > locationB[0]) ? nodeA : nodeB);
+        c_vector<double, SPACE_DIM> forceDirection;
+        forceDirection[0] = -1;
+        forceDirection[1] = 0;
+        if (SPACE_DIM == 3)
+        {
+            nodeToApplyForce = ((locationA[2] > locationB[2]) ? nodeA : nodeB);
+            forceDirection[0] = 0;
+            forceDirection[2] = -1;
+        }
 		
-		c_vector<double, 2> forceVector = forceMagnitude * forceDirection;
+		double forceMagnitude = mTorsionalStiffness * angle;
+		
+		c_vector<double, SPACE_DIM> forceVector = forceMagnitude * forceDirection;
 
 		nodeToApplyForce->AddAppliedForceContribution(forceVector);
 
@@ -89,21 +102,21 @@ void DividingRotationForce::AddForceContribution(AbstractCellPopulation<2>& rCel
 
 }
 
-std::vector<std::pair<Node<2>*, Node<2>*>> DividingRotationForce::GetNodePairs(AbstractCellPopulation<2>& rCellPopulation)
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>*>> DividingRotationForce<ELEMENT_DIM,SPACE_DIM>::GetNodePairs(AbstractCellPopulation<SPACE_DIM>& rCellPopulation)
 {
 
 	// The mitotic pairs
-	std::vector<std::pair<Node<2>*, Node<2>*>> nodePairs;
+	std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>*>> nodePairs;
 	std::list<CellPtr> mphase_cells;
 
 	
-	MeshBasedCellPopulation<2,2>* p_tissue = static_cast<MeshBasedCellPopulation<2,2>*>(&rCellPopulation);
+	MeshBasedCellPopulation<SPACE_DIM>* p_tissue = static_cast<MeshBasedCellPopulation<SPACE_DIM>*>(&rCellPopulation);
     std::list<CellPtr> cells =  p_tissue->rGetCells();
 
     for (std::list<CellPtr>::iterator cell_iter = cells.begin(); cell_iter != cells.end(); ++cell_iter)
     {
     	// If cell is in M-phase, add it to the list
-        // Node<2>* p_node =  p_tissue->GetNodeCorrespondingToCell(*cell_iter);
         AbstractCellCycleModel* temp_ccm = (*cell_iter)->GetCellCycleModel();
         SimpleWntContactInhibitionCellCycleModel* ccm = static_cast<SimpleWntContactInhibitionCellCycleModel*>(temp_ccm);
 
@@ -135,17 +148,16 @@ std::vector<std::pair<Node<2>*, Node<2>*>> DividingRotationForce::GetNodePairs(A
     		if (parentA == parentB && idA != idB)
     		{
     			pair_found = true;
-    			// PRINT_2_VARIABLES(idA,idB)
-    			std::pair<Node<2>*, Node<2>*> dividing_cell;
+    			std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>*> dividing_cell;
     			// make cells into nodes
-    			Node<2>* nodeA = p_tissue->GetNode(p_tissue->GetLocationIndexUsingCell((*cell_iter)));
-    			Node<2>* nodeB = p_tissue->GetNode(p_tissue->GetLocationIndexUsingCell((*cell_iter_2)));
-    			//
+    			Node<SPACE_DIM>* nodeA = p_tissue->GetNode(p_tissue->GetLocationIndexUsingCell((*cell_iter)));
+    			Node<SPACE_DIM>* nodeB = p_tissue->GetNode(p_tissue->GetLocationIndexUsingCell((*cell_iter_2)));
+    			// Add the pair to the list
     			dividing_cell = std::make_pair(nodeA, nodeB);
     			nodePairs.push_back(dividing_cell);
     			// delete from list
-    			cell_iter = mphase_cells.erase(cell_iter);
     			mphase_cells.erase(cell_iter_2);
+                cell_iter = mphase_cells.erase(cell_iter);
 
     			break;
     			
@@ -162,18 +174,27 @@ std::vector<std::pair<Node<2>*, Node<2>*>> DividingRotationForce::GetNodePairs(A
 }
 
 
-void DividingRotationForce::OutputForceParameters(out_stream& rParamsFile)
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+void DividingRotationForce<ELEMENT_DIM,SPACE_DIM>::OutputForceParameters(out_stream& rParamsFile)
 {
 	*rParamsFile <<  "\t\t\t<torsionalStiffness>"<<  mTorsionalStiffness << "</torsionalStiffness> \n";
 
 	// Call direct parent class
-	AbstractForce<2>::OutputForceParameters(rParamsFile);
+	AbstractForce<SPACE_DIM>::OutputForceParameters(rParamsFile);
 }
 
-void DividingRotationForce::SetMembraneAxis(c_vector<double, 2> membraneAxis)
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+void DividingRotationForce<ELEMENT_DIM,SPACE_DIM>::SetMembraneAxis(c_vector<double, SPACE_DIM> membraneAxis)
 {
-    double magnitude = sqrt(membraneAxis(0) * membraneAxis(0) + membraneAxis(1) * membraneAxis(1));
+    double magnitude = norm_2(membraneAxis);
     mMembraneAxis = membraneAxis/magnitude;
     // need to normalise so it is a unit vector
 
 }
+
+template class DividingRotationForce<1,1>;
+template class DividingRotationForce<1,2>;
+template class DividingRotationForce<2,2>;
+template class DividingRotationForce<1,3>;
+template class DividingRotationForce<2,3>;
+template class DividingRotationForce<3,3>;

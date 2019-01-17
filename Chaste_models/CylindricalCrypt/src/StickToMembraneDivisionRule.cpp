@@ -20,23 +20,18 @@ std::pair<c_vector<double, SPACE_DIM>, c_vector<double, SPACE_DIM> >
 
     c_vector<double, SPACE_DIM> random_vector;
 
-    if (mWiggle)
+    if (SPACE_DIM == 1)
     {
-        // If wiggle set to true, then randomly choose a small angle deviation from the membrane axis
+        random_vector = 0.5 * separation * mMembraneAxis; 
+    }
+
+    if (SPACE_DIM == 2 || SPACE_DIM == 3)
+    {
+        // 2D column of cells model. Need to add in a small amount of wiggle so that the cells aren't completely in 1D
         double angle = mMaxAngle - 2 * mMaxAngle * RandomNumberGenerator::Instance()->ranf(); // resulting value: -mMaxAngle < angle < mMaxAngle
         random_vector(0) = 0.5 * separation * (mMembraneAxis(0) * cos(angle) - mMembraneAxis(1) * sin(angle));
         random_vector(1) = 0.5 * separation * (mMembraneAxis(0) * sin(angle) + mMembraneAxis(1) * cos(angle));
     }
-    else
-    {
-        //If normal division, split in the direction of membrane axis
-        random_vector = 0.5 * separation * mMembraneAxis;
-        //random_vector(1) = 0.5 * separation * mMembraneAxis(1);
-        //Need to add in some wiggle to this so that it isn't perfectly in line each time
-    }
-    
-
-        
     
     
     c_vector<double, SPACE_DIM> parent_position = rCellPopulation.GetLocationOfCellCentre(pParentCell) - random_vector;

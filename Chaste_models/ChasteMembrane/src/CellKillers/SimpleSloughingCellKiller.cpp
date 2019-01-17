@@ -48,12 +48,12 @@ void SimpleSloughingCellKiller<ELEMENT_DIM,SPACE_DIM>::CheckAndLabelCellsForApop
 	{
 		MeshBasedCellPopulation<SPACE_DIM>* p_tissue = static_cast<MeshBasedCellPopulation<SPACE_DIM>*> (this->mpCellPopulation);
 
-		for (AbstractCellPopulation<SPACE_DIM>::Iterator cell_iter = p_tissue->Begin();
+		for (typename AbstractCellPopulation<SPACE_DIM>::Iterator cell_iter = p_tissue->Begin();
     			cell_iter != p_tissue->End();
     			++cell_iter)
     	{
     		unsigned node_index = this->mpCellPopulation->GetLocationIndexUsingCell(*cell_iter);
-    		if (!cell_iter->GetCellProliferativeType()->IsType<MembraneCellProliferativeType>())
+    		if (!cell_iter->GetCellProliferativeType()->template IsType<MembraneCellProliferativeType>())
     		{
     			Node<SPACE_DIM>* p_node = this->mpCellPopulation->GetNode(node_index);
             	double y = p_node->rGetLocation()[1];
@@ -69,12 +69,12 @@ void SimpleSloughingCellKiller<ELEMENT_DIM,SPACE_DIM>::CheckAndLabelCellsForApop
 	{
 		NodeBasedCellPopulation<SPACE_DIM>* p_tissue = static_cast<NodeBasedCellPopulation<SPACE_DIM>*> (this->mpCellPopulation);
 
-		for (AbstractCellPopulation<SPACE_DIM>::Iterator cell_iter = p_tissue->Begin();
+		for (typename AbstractCellPopulation<SPACE_DIM>::Iterator cell_iter = p_tissue->Begin();
     			cell_iter != p_tissue->End();
     			++cell_iter)
     	{
     		unsigned node_index = this->mpCellPopulation->GetLocationIndexUsingCell(*cell_iter);
-    		if (!cell_iter->GetCellProliferativeType()->IsType<MembraneCellProliferativeType>())
+    		if (!cell_iter->GetCellProliferativeType()->template IsType<MembraneCellProliferativeType>())
     		{
     			Node<SPACE_DIM>* p_node = this->mpCellPopulation->GetNode(node_index);
             	double y = p_node->rGetLocation()[1];
@@ -112,5 +112,5 @@ template class SimpleSloughingCellKiller<3,3>;
 
 
 
-#include "SerializationExportWrapperForCpp.hpp"
-CHASTE_CLASS_EXPORT(SimpleSloughingCellKiller)
+// #include "SerializationExportWrapperForCpp.hpp"
+// EXPORT_TEMPLATE_CLASS_SAME_DIMS(SimpleSloughingCellKiller)

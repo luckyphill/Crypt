@@ -12,8 +12,8 @@
 #include <fstream>
 
 // A force that keeps dividing cells in the correct plane
-
-class DividingRotationForce : public AbstractForce<2>
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM=ELEMENT_DIM>
+class DividingRotationForce : public AbstractForce<SPACE_DIM>
 {
     friend class TestCrossSectionModelInteractionForce;
 
@@ -23,7 +23,7 @@ private :
     double mTorsionalStiffness;
 
     // The plane that the membrane is in
-    c_vector<double, 2> mMembraneAxis;
+    c_vector<double, SPACE_DIM> mMembraneAxis;
 
     /** Needed for serialization. */
     friend class boost::serialization::access;
@@ -38,7 +38,7 @@ private :
     {
         // If Archive is an output archive, then '&' resolves to '<<'
         // If Archive is an input archive, then '&' resolves to '>>'
-        archive & boost::serialization::base_object<AbstractForce<2> >(*this);
+        archive & boost::serialization::base_object<AbstractForce<SPACE_DIM> >(*this);
         archive & mTorsionalStiffness;
 
     }
@@ -58,7 +58,7 @@ public :
     /**
      * Pure virtual, must implement
      */
-    void AddForceContribution(AbstractCellPopulation<2>& rCellPopulation); // 
+    void AddForceContribution(AbstractCellPopulation<SPACE_DIM>& rCellPopulation); // 
 
     /**
      * Pure virtual, must implement
@@ -71,14 +71,14 @@ public :
 
 
     // Define the membrane axis
-    void SetMembraneAxis(c_vector<double, 2> membraneAxis);
+    void SetMembraneAxis(c_vector<double, SPACE_DIM> membraneAxis);
 
-    std::vector<std::pair<Node<2>*, Node<2>*>> GetNodePairs(AbstractCellPopulation<2>& rCellPopulation);
+    std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>*>> GetNodePairs(AbstractCellPopulation<SPACE_DIM>& rCellPopulation);
 
     
 };
 
 #include "SerializationExportWrapper.hpp"
-CHASTE_CLASS_EXPORT(DividingRotationForce)
+EXPORT_TEMPLATE_CLASS_SAME_DIMS(DividingRotationForce)
 
 #endif /*DividingRotationForce_HPP*/

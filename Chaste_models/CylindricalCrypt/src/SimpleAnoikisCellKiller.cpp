@@ -123,7 +123,6 @@ void SimpleAnoikisCellKiller<ELEMENT_DIM,SPACE_DIM>::PopulateAnoikisList()
     		//If it has just popped up, add to the anoikis list
     		if (!p_cell->HasCellProperty<AnoikisCellTagged>() && HasCellPoppedUp(node_index))
     		{
-    			TRACE("Cell popped up")
     			PRINT_VARIABLE(p_cell->GetCellId())
     			MAKE_PTR(AnoikisCellTagged,p_tagged);
     			p_cell->AddCellProperty(p_tagged);
@@ -147,7 +146,6 @@ std::vector<CellPtr> SimpleAnoikisCellKiller<ELEMENT_DIM,SPACE_DIM>::GetCellsRea
 	{
 		if (!it->first->GetMutationState()->IsType<TransitCellAnoikisResistantMutationState>() && SimulationTime::Instance()->GetTime() - it->second > mPoppedUpLifeExpectancy)
 		{
-			TRACE("Normal cell ready to die")
 			PRINT_VARIABLE(it->second)
 			cellsReadyToDie.push_back(it->first);
 			it = mCellsForDelayedAnoikis.erase(it);
@@ -189,7 +187,6 @@ void SimpleAnoikisCellKiller<ELEMENT_DIM,SPACE_DIM>::CheckAndLabelCellsForApopto
 
 		for(std::vector<CellPtr>::iterator cell_iter = cells_to_remove.begin(); cell_iter != cells_to_remove.end(); ++cell_iter)
 		{
-			TRACE("About to kill")
 			PRINT_VARIABLE((*cell_iter)->GetCellId())
 			unsigned node_index = p_tissue->GetNodeCorrespondingToCell(*cell_iter)->GetIndex();
     		CellPtr p_cell = p_tissue->GetCellUsingLocationIndex(node_index);
