@@ -11,8 +11,8 @@
 close all;
 clear all;
 
-input_vars = [10, 50, 0.5]; % ees, ms, vf
-step_sizes = [10, 20, 0.1];
+input_vars = [10, 100, 0.7]; % ees, ms, vf
+step_sizes = [5, 5, 0.05];
 index = 1; % tracking the index of the variable we are optimising
 
 cct = 4;
@@ -24,16 +24,13 @@ first_step = true;
 direction = +1; % +1 means increase, -1 means decrease
 
 fprintf('Simulating initial point\n');
-[status,cmdout] = system(['/Users/phillip/chaste_build/projects/ChasteMembrane/test/TestCryptCrossSection -cct ' num2str(cct) ' -ees ' num2str(input_vars(1)) ' -ms ' num2str(input_vars(2)) ' -vf ' num2str(input_vars(3))]);
+obj = run_simulation(input_vars, cct);
 fprintf('Done\n');
-
-[slough, anoikis, total] = get_data(cmdout);
-obj = objective(slough, anoikis, total);
-fprintf('Objective = %d, with params: ees %7.3f, ms %7.3f vf %7.3f\n', obj,input_vars(1),input_vars(2),input_vars(3));
+fprintf('Objective = %d, with params: EES = %g, MS = %g, VF = %g,\n', obj,input_vars(1),input_vars(2),input_vars(3));
 
 iterations = 0;
 
-fprintf('Starting loop');
+fprintf('Starting loop\n');
 % Start the optimisation procedure
 while obj < target_value && iterations < 20
     % choose an axis, choose a direction, take steps until no improvement
@@ -43,35 +40,29 @@ while obj < target_value && iterations < 20
     temp_vars(index) = input_vars(index) + direction * step_sizes(index);
     
     % enforce ranges
-    if (index==1 && temp_vars(index)) < 1; temp_vars(index) = 1; end
-    if (index==2 && temp_vars(index)) < 0; temp_vars(index) = 0; end
-    if (index==3 && temp_vars(index)) < 0; temp_vars(index) = 0; end
-    if (index==3 && temp_vars(index)) > 1; temp_vars(index) = 1; end
+    if index==1 && temp_vars(index) < 1; temp_vars(index) = 1; end
+    if index==2 && temp_vars(index) < 0; temp_vars(index) = 0; end
+    if index==3 && temp_vars(index) < 0; temp_vars(index) = 0; end
+    if index==3 && temp_vars(index) > 1; temp_vars(index) = 1; end
     
     fprintf('Simulating\n');
-    [status,cmdout] = system(['/Users/phillip/chaste_build/projects/ChasteMembrane/test/TestCryptCrossSection -cct ' num2str(cct) ' -ees ' num2str(temp_vars(1)) ' -ms ' num2str(temp_vars(2)) ' -vf ' num2str(temp_vars(3))]);
+    new_obj = run_simulation(temp_vars, cct);
     fprintf('Done\n');
-    
-    [slough, anoikis, total] = get_data(cmdout);
-    new_obj = objective(slough, anoikis, total);
     
     if first_step
         % Run again, but this time stepping in the oposite direction
         temp_vars = input_vars;
     
-        temp_vars(index) = input_vars(index) + direction * step_sizes(index);
+        temp_vars(index) = input_vars(index) - step_sizes(index);
         
-        if (index==1 && temp_vars(index)) < 1; temp_vars(index) = 1; end
-        if (index==2 && temp_vars(index)) < 0; temp_vars(index) = 0; end
-        if (index==3 && temp_vars(index)) < 0; temp_vars(index) = 0; end
-        if (index==3 && temp_vars(index)) > 1; temp_vars(index) = 1; end
+        if ( index==1 && temp_vars(index) < 1 ); temp_vars(index) = 1; end
+        if ( index==2 && temp_vars(index) < 0 ); temp_vars(index) = 0; end
+        if ( index==3 && temp_vars(index) < 0 ); temp_vars(index) = 0; end
+        if ( index==3 && temp_vars(index) > 1 ); temp_vars(index) = 1; end
         
         fprintf('Simulating opposite direction\n');
-        [status,cmdout] = system(['/Users/phillip/chaste_build/projects/ChasteMembrane/test/TestCryptCrossSection -cct ' num2str(cct) ' -ees ' num2str(temp_vars(1)) ' -ms ' num2str(temp_vars(2)) ' -vf ' num2str(temp_vars(3))]);
+        new_obj_2 = run_simulation(temp_vars, cct);
         fprintf('Done\n');
-        
-        [slough, anoikis, total] = get_data(cmdout);
-        new_obj_2 = objective(slough, anoikis, total);
         
         if new_obj_2 > new_obj
             fprintf('Opposite direction better, stepping that direction\n');
@@ -92,11 +83,11 @@ while obj < target_value && iterations < 20
         % axis, reset the stepping direction and reset the first step tracker
         step_sizes(index) = step_sizes(index)/2;
         if (index == 3); index = 1; else; index = index + 1; end
-        fprintf('Step was worse, moving to variable %d', index);
+        fprintf('Step was worse, moving to variable %d\n', index);
         first_step = true;
         direction = +1;
     end
-    fprintf('Objective = %d, with params: ees %7.3f, ms %7.3f vf %7.3f\n', obj,input_vars(1),input_vars(2),input_vars(3));
+    fprintf('Objective = %d, with params: EES = %g, MS = %g, VF = %g,\n', obj,input_vars(1),input_vars(2),input_vars(3));
     iterations = iterations + 1;
         
 end
@@ -128,5 +119,26 @@ function [slough, anoikis, total] = get_data(cmdout)
         error('Something went wrong with the simulation')
     end
     
+
+end
+
+function obj_val = run_simulation(vars, cct)
+    % First checks data folder to see if the specific simulation has run before
+    % If so, grabs the data from there, rather than run the simulation again
+
+    file_name = sprintf('/Users/phillip/Research/Crypt/Data/Chaste/CellKillCount/kill_count_n_20_EES_%g_MS_%g_VF_%g_CCT_%d.txt', vars(1), vars(2), 100 * vars(3), cct);
+    try
+        data = csvread(file_name,1,0);
+        total = data(1);
+        slough = data(2);
+        anoikis = data(3);
+        fprintf('Found existing data: EES = %g, MS = %g, VF = %g, CCT = %d\n', vars(1), vars(2), vars(3), cct);
+    catch
+        fprintf('Running simulation for: EES = %g, MS = %g, VF = %g, CCT = %d\n', vars(1), vars(2), vars(3), cct);
+        [status,cmdout] = system(['/Users/phillip/chaste_build/projects/ChasteMembrane/test/TestCryptCrossSection -cct ' num2str(cct) ' -ees ' num2str(vars(1)) ' -ms ' num2str(vars(2)) ' -vf ' num2str(vars(3))]);
+        [slough, anoikis, total] = get_data(cmdout);
+    end
+
+    obj_val = objective(slough, anoikis, total);
 
 end
