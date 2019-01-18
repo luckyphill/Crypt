@@ -689,8 +689,6 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		PRINT_VARIABLE(cellId)
 	};
 
-
-
 	void xTestCryptDivisionRotation() throw(Exception)
 	{
 		// This test simulates a column of cells that can now move in 2 dimensions
