@@ -11,11 +11,11 @@
 close all;
 clear all;
 
-input_vars = [30, 100, 0.75]; % ees, ms, vf
+input_vars = [20, 100, 0.75]; % ees, ms, vf
 step_sizes = [10, 10, 0.05];
 index = 1; % tracking the index of the variable we are optimising
 
-cct = 2;
+cct = 4;
 
 
 % Run the first guess to get the ball rolling
@@ -31,7 +31,7 @@ iterations = 0;
 
 fprintf('Starting loop\n');
 % Start the optimisation procedure
-while obj < 0.9 && iterations < 20
+while obj > 0.1 && iterations < 20
     % choose an axis, choose a direction, take steps until no improvement
     % if no improvement, halve the step size, try a new axis
     temp_vars = input_vars;
@@ -63,7 +63,7 @@ while obj < 0.9 && iterations < 20
         new_obj_2 = run_simulation(temp_vars, cct);
         fprintf('Done\n');
         
-        if new_obj_2 > new_obj
+        if new_obj_2 < new_obj
             fprintf('Opposite direction better, stepping that direction\n');
             new_obj = new_obj_2;
             direction = -1;
@@ -73,7 +73,7 @@ while obj < 0.9 && iterations < 20
     end
     
     % if the result is better...
-    if new_obj > obj
+    if new_obj < obj
         fprintf('Step produced improvement\n');
         obj = new_obj;
         input_vars(index) = input_vars(index) + direction * step_sizes(index);
@@ -126,21 +126,26 @@ function [slough, anoikis, total] = get_data(cmdout)
 
 end
 
+function [slough, anoikis, total] = get_data_from_file(vars, cct)
+    file_name = sprintf('/Users/phillipbrown/Research/Crypt/Data/Chaste/CellKillCount/kill_count_n_20_EES_%g_MS_%g_VF_%g_CCT_%d.txt', vars(1), vars(2), 100 * vars(3), cct);
+
+    data = csvread(file_name,1,0);
+    total = data(1);
+    slough = data(2);
+    anoikis = data(3);
+end
+
 function obj_val = run_simulation(vars, cct)
     % First checks data folder to see if the specific simulation has run before
     % If so, grabs the data from there, rather than run the simulation again
 
-    file_name = sprintf('/Users/phillip/Research/Crypt/Data/Chaste/CellKillCount/kill_count_n_20_EES_%g_MS_%g_VF_%g_CCT_%d.txt', vars(1), vars(2), 100 * vars(3), cct);
     try
-        data = csvread(file_name,1,0);
-        total = data(1);
-        slough = data(2);
-        anoikis = data(3);
+        [slough, anoikis, total] = get_data_from_file(vars, cct);
         fprintf('Found existing data: EES = %g, MS = %g, VF = %g, CCT = %d\n', vars(1), vars(2), vars(3), cct);
     catch
         fprintf('Running simulation for: EES = %g, MS = %g, VF = %g, CCT = %d\n', vars(1), vars(2), vars(3), cct);
-        [status,cmdout] = system(['/Users/phillip/chaste_build/projects/ChasteMembrane/test/TestCryptCrossSection -cct ' num2str(cct) ' -ees ' num2str(vars(1)) ' -ms ' num2str(vars(2)) ' -vf ' num2str(vars(3))]);
-        [slough, anoikis, total] = get_data(cmdout);
+        [status,cmdout] = system(['/Users/phillipbrown/chaste_build/projects/ChasteMembrane/test/TestCryptCrossSection -cct ' num2str(cct) ' -ees ' num2str(vars(1)) ' -ms ' num2str(vars(2)) ' -vf ' num2str(vars(3))]);
+        [slough, anoikis, total] = get_data_from_file(vars, cct);
     end
 
     expected_cell_count = (100 * 15/ (10 + cct) + 20); % an estimate of the number of cells passing through the crypt
@@ -148,7 +153,7 @@ function obj_val = run_simulation(vars, cct)
     
     difference = (slough - anoikis);
 
-    obj_val = 0.5 * (difference/expected_difference) + 0.5 * (total/expected_cell_count);
+    obj_val = 0.5 * ((difference - expected_difference)/expected_difference)^2 + 0.5 * ((total - expected_cell_count)/expected_cell_count)^2;
     % obj_val = objective(slough, anoikis, total);
 
 end

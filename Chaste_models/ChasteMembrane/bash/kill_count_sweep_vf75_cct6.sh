@@ -5,9 +5,9 @@
 #SBATCH --time=00:10:00 
 #SBATCH --mem=4GB 
 #SBATCH --array=0-4000
-#SBATCH --err="output/kill_count_vf75_cct8_%a.err" 
-#SBATCH --output="output/kill_count_vf75_cct8_%a.out" 
-#SBATCH --job-name="kill_count_vf75_cct8"
+#SBATCH --err="output/kill_count_vf75_cct6_%a.err" 
+#SBATCH --output="output/kill_count_vf75_cct6_%a.out" 
+#SBATCH --job-name="kill_count_vf75_cct6"
 # NOTIFICATIONS
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=phillip.j.brown@adelaide.edu.au
@@ -32,7 +32,7 @@ done < kill_count_params.txt
 if [ $found = 1 ]; then
 
 	echo "/home/a1738927/fastdir/chaste_build/projects/ChasteMembrane/test/TestCryptCrossSection -ees ${es} -ms ${ms}";
-	/home/a1738927/fastdir/chaste_build/projects/ChasteMembrane/test/TestCryptCrossSection -ees ${es} -ms ${ms} -vf 0.75 -cct 8
+	/home/a1738927/fastdir/chaste_build/projects/ChasteMembrane/test/TestCryptCrossSection -ees ${es} -ms ${ms} -vf 0.75 -cct 6
 else 
   echo "kill_count_params.txt does not have enough parameters for $SLURM_ARRAY_TASK_ID index" 
 fi

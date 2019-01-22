@@ -14,6 +14,11 @@ m = length(ms);
 
 vf = 75;
 
+cct = 2;
+
+expected_cell_count = (100 * 15/ (10 + cct) + 20); % an estimate of the number of cells passing through the crypt
+expected_difference = (expected_cell_count * 0.92);
+
 pspace = nan(n,m);
 
 for i = 1:n
@@ -21,7 +26,12 @@ for i = 1:n
         file_name =[ '/Users/phillipbrown/Research/Crypt/Data/Chaste/CellKillCount/kill_count_n_20_EES_' num2str(es(i)) '_MS_' num2str(ms(j)) '_VF_' num2str(vf) '_CCT_4.txt'];
         try
             data = csvread(file_name,1,0);
-            pspace(i,j) = data(2) - data(3);
+            total = data(1);
+            slough = data(2);
+            anoikis = data(3);
+            difference = (slough - anoikis);
+            pspace(i,j) = 0.5 * ((difference - expected_difference)/expected_difference)^2 + 0.5 * ((total - expected_cell_count)/expected_cell_count)^2;
+           
         catch e
             e
         end
@@ -29,7 +39,7 @@ for i = 1:n
 end
 
 h = figure();
-imagesc(flipud(pspace),'AlphaData',~isnan(flipud(pspace)), [-120 120]);
+imagesc(flipud(pspace),'AlphaData',~isnan(flipud(pspace)));%, [-120 120]);
 set(gca, 'XTick', linspace(0, 100, 11))
 set(gca, 'XTickLabel',  0:10:100)
 set(gca, 'YTick', linspace(0, 40, 9))

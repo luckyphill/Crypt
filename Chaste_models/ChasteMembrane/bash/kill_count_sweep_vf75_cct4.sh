@@ -5,9 +5,9 @@
 #SBATCH --time=00:10:00 
 #SBATCH --mem=4GB 
 #SBATCH --array=0-4000
-#SBATCH --err="output/kill_count_cct4_%a.err" 
-#SBATCH --output="output/kill_count_cct4_%a.out" 
-#SBATCH --job-name="kill_count_cct4"
+#SBATCH --err="output/kill_count_vf75_cct4_%a.err" 
+#SBATCH --output="output/kill_count_vf75_cct4_%a.out" 
+#SBATCH --job-name="kill_count_vf75_cct4"
 # NOTIFICATIONS
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=phillip.j.brown@adelaide.edu.au

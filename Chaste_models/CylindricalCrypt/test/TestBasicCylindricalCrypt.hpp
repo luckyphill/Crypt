@@ -266,7 +266,7 @@ class TestBasicCylindricalCrypt : public AbstractCellBasedTestSuite
 		double top = 10;
 		double circumference = 8;
 		double maxPopUpDistance = 1.0;
-		double quiescentVolumeFraction = 0.88; // Set by the user
+		double quiescentVolumeFraction = 0.8; // Set by the user
 		double cellCycleTime = 2.0;
         bool customCellCycleTime = false;
         bool wiggle = true; // Default to "2D"
@@ -335,7 +335,7 @@ class TestBasicCylindricalCrypt : public AbstractCellBasedTestSuite
 				// UniformCellCycleModel* p_cycle_model = new UniformCellCycleModel();
 				SimpleWntContactInhibitionCellCycleModel* p_cycle_model = new SimpleWntContactInhibitionCellCycleModel();
 				double birth_time = 2 + 10 * RandomNumberGenerator::Instance()->ranf();
-				// p_cycle_model->SetTransitCellG1Duration(cellCycleTime);
+				p_cycle_model->SetTransitCellG1Duration(cellCycleTime);
 				p_cycle_model->SetDimension(3);
 	   			p_cycle_model->SetEquilibriumVolume(equilibriumVolume);
 	   			p_cycle_model->SetQuiescentVolumeFraction(quiescentVolumeFraction);
