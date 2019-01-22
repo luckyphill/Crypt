@@ -4,3 +4,4 @@ TestCryptCrossSection.hpp
 TestContactNeighbour.hpp
 TestGrowingCellDivision.hpp
 TestForces_CM.hpp
+TestAnoikisResistance.hpp

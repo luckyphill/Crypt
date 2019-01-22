@@ -7,7 +7,7 @@
 #include <boost/serialization/base_object.hpp>
 
 /**
- * Subclass of AbstractCellMutationState defining a 'wild type' mutation state.
+ * Specifies that a cell has been tagged for death by anoikis
  */
 class AnoikisCellTagged : public AbstractCellProperty
 {
