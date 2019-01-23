@@ -102,6 +102,10 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::Ca
     {
         double alpha = 1.8; // 3.0
         c_vector<double, SPACE_DIM> temp = spring_constant * unitForceDirection * overlap * exp(-alpha * overlap/rest_length);
+        if (SPACE_DIM == 3)
+        {
+            return zero_vector;
+        }
         return temp;
     }
 

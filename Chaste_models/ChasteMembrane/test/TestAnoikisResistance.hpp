@@ -16,6 +16,7 @@
 #include "NormalAdhesionForce.hpp"
 #include "BasicNonLinearSpringForce.hpp"
 #include "DividingRotationForce.hpp"
+#include "BasicContactNeighbourSpringForce.hpp"
 
 #include "HoneycombMeshGenerator.hpp" //Generates mesh
 #include "NodesOnlyMesh.hpp"
@@ -346,7 +347,7 @@ class TestAnoikisResistance : public AbstractCellBasedTestSuite
 
 		// ********************************************************************************************
 		// Set force parameters
-		MAKE_PTR(BasicNonLinearSpringForce<2>, p_force);
+		MAKE_PTR(BasicContactNeighbourSpringForce<2>, p_force);
 		p_force->SetSpringStiffness(epithelialStiffness);
 		p_force->SetRestLength(2 * epithelialPreferredRadius);
 		p_force->SetCutOffLength(3 * epithelialPreferredRadius);

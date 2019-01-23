@@ -246,7 +246,7 @@ class TestBasicCylindricalCrypt : public AbstractCellBasedTestSuite
 		// Force parameters
 		double epithelialPreferredRadius = 0.5;
 		double epithelialStiffness = 25;
-		double membraneEpithelialSpringStiffness = 10;
+		double membraneEpithelialSpringStiffness = 100;
         if(CommandLineArguments::Instance()->OptionExists("-ms"))
         {
         	membraneEpithelialSpringStiffness = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-ms");
@@ -262,7 +262,7 @@ class TestBasicCylindricalCrypt : public AbstractCellBasedTestSuite
         // ********************************************************************************************
 		// Cell population parameters
 		unsigned node_counter = 0;
-		double maxInteractionRadius = 1.1;
+		double maxInteractionRadius = 2.0;
 		double top = 10;
 		double circumference = 8;
 		double maxPopUpDistance = 1.0;
@@ -270,7 +270,7 @@ class TestBasicCylindricalCrypt : public AbstractCellBasedTestSuite
 		double cellCycleTime = 2.0;
         bool customCellCycleTime = false;
         bool wiggle = true; // Default to "2D"
-        double equilibriumVolume = 4*M_PI*pow(epithelialPreferredRadius,3)/3;
+        double equilibriumVolume = 4 * M_PI * pow(epithelialPreferredRadius,3) / 3;
 		if(CommandLineArguments::Instance()->OptionExists("-pu"))
         {
         	maxPopUpDistance = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-pu");
@@ -399,7 +399,7 @@ class TestBasicCylindricalCrypt : public AbstractCellBasedTestSuite
 		
 		simulator.AddForce(p_force);
 		simulator.AddForce(p_adhesion);
-		simulator.AddForce(p_rotation);
+		// simulator.AddForce(p_rotation);
 		// ********************************************************************************************
 
 		// ********************************************************************************************
@@ -480,7 +480,7 @@ class TestBasicCylindricalCrypt : public AbstractCellBasedTestSuite
 		simulator.Solve();
 		// ********************************************************************************************
 
-
+		WntConcentration<2>::Instance()->Destroy();
 		
 		// ********************************************************************************************
 		// Post processing - getting the total number of cells and the causes of death

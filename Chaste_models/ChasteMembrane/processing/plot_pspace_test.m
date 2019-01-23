@@ -7,14 +7,14 @@
 close all;
 clear all;
 
-es = 20:59;
+es = 10:40;
 n = length(es);
-ms = 1:100;
+ms = 80:2:200;
 m = length(ms);
 
-vf = 75;
+vf = 80;
 
-cct = 2;
+cct = 4;
 
 expected_cell_count = (100 * 15/ (10 + cct) + 20); % an estimate of the number of cells passing through the crypt
 expected_difference = (expected_cell_count * 0.92);
@@ -23,7 +23,7 @@ pspace = nan(n,m);
 
 for i = 1:n
     for j = 1:m
-        file_name =[ '/Users/phillipbrown/Research/Crypt/Data/Chaste/CellKillCount/kill_count_n_20_EES_' num2str(es(i)) '_MS_' num2str(ms(j)) '_VF_' num2str(vf) '_CCT_4.txt'];
+        file_name =[ '/Users/phillipbrown/Research/Crypt/Data/Chaste/CellKillCount/kill_count_n_20_EES_' num2str(es(i)) '_MS_' num2str(ms(j)) '_VF_' num2str(vf) '_CCT_' num2str(cct) '.txt'];
         try
             data = csvread(file_name,1,0);
             total = data(1);
@@ -52,4 +52,4 @@ colorbar;
 set(h,'Units','Inches');
 pos = get(h,'Position');
 set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
-print(['/Users/phillipbrown/Research/Crypt/Images/CellKillCountVF' num2str(vf), '_CCT_4'],'-dpdf');
+print(['/Users/phillipbrown/Research/Crypt/Images/CellKillCountVF' num2str(vf), '_CCT_' num2str(cct) ''],'-dpdf');
