@@ -347,7 +347,8 @@ class TestAnoikisResistance : public AbstractCellBasedTestSuite
 
 		// ********************************************************************************************
 		// Set force parameters
-		MAKE_PTR(BasicContactNeighbourSpringForce<2>, p_force);
+		MAKE_PTR(BasicNonLinearSpringForce<2>, p_force);
+		// MAKE_PTR(BasicContactNeighbourSpringForce<2>, p_force);
 		p_force->SetSpringStiffness(epithelialStiffness);
 		p_force->SetRestLength(2 * epithelialPreferredRadius);
 		p_force->SetCutOffLength(3 * epithelialPreferredRadius);
