@@ -4,6 +4,7 @@
 #include "TransitCellProliferativeType.hpp"
 #include "DifferentiatedCellProliferativeType.hpp"
 #include "WntConcentration.hpp"
+#include "Debug.hpp"
 
 SimpleWntContactInhibitionCellCycleModel::SimpleWntContactInhibitionCellCycleModel()
     : ContactInhibitionCellCycleModel(),
@@ -41,6 +42,12 @@ void SimpleWntContactInhibitionCellCycleModel::Initialise()
     mpCell->GetCellData()->SetItem("parent", mpCell->GetCellId());
 }
 
+// void SimpleWntContactInhibitionCellCycleModel::InitialiseDaughterCell()
+// {
+//     AbstractPhaseBasedCellCycleModel::InitialiseDaughterCell();
+//     SetG1Duration();
+// }
+
 void SimpleWntContactInhibitionCellCycleModel::UpdateCellCyclePhase()
 {
     double wnt_level= GetWntLevel();
@@ -71,7 +78,7 @@ void SimpleWntContactInhibitionCellCycleModel::SetG1Duration()
 
     if (mpCell->GetCellProliferativeType()->IsType<TransitCellProliferativeType>())
     {
-        mG1Duration = p_gen->NormalRandomDeviate(GetTransitCellG1Duration(), 1.0);
+        mG1Duration = p_gen->NormalRandomDeviate(GetTransitCellG1Duration(), 2.0);
     }
     else if (mpCell->GetCellProliferativeType()->IsType<DifferentiatedCellProliferativeType>())
     {
@@ -130,7 +137,7 @@ AbstractCellCycleModel* SimpleWntContactInhibitionCellCycleModel::CreateCellCycl
 void SimpleWntContactInhibitionCellCycleModel::ResetForDivision()
 {
     AbstractPhaseBasedCellCycleModel::ResetForDivision();
-    // Used for makig sure newly divided cells are handeled properly in the force calculator
+    // Used for making sure newly divided cells are handeled properly in the force calculator
     mpCell->GetCellData()->SetItem("parent", mpCell->GetCellId());
 }
 

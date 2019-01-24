@@ -15,6 +15,7 @@
 #include "LinearSpringForceMembraneCellNodeBased.hpp"
 #include "NormalAdhesionForce.hpp"
 #include "BasicNonLinearSpringForce.hpp"
+#include "BasicContactNeighbourSpringForce.hpp"
 #include "DividingRotationForce.hpp"
 
 #include "HoneycombMeshGenerator.hpp" //Generates mesh
@@ -598,6 +599,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		// ********************************************************************************************
 		// Set force parameters
 		MAKE_PTR(BasicNonLinearSpringForce<2>, p_force);
+		// MAKE_PTR(BasicContactNeighbourSpringForce<2>, p_force);
 		p_force->SetSpringStiffness(epithelialStiffness);
 		p_force->SetRestLength(2 * epithelialPreferredRadius);
 		p_force->SetCutOffLength(3 * epithelialPreferredRadius);
@@ -644,8 +646,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		PRINT_VARIABLE(simulator.GetOutputDivisionLocations())
 
 		simulator.Solve();
-		WntConcentration<2>::Instance()->Destroy();
-
+		
 		// ********************************************************************************************
 		// Post simulation processing
 		// Probably best implemented as a 'writer', but have to work out how to di that first
@@ -662,8 +663,17 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
         	{
         		cellId = (*cell_iter)->GetCellId();
         	}
+        	PRINT_VARIABLE((*cell_iter)->GetCellData()->GetItem("parent"))
+        	PRINT_VARIABLE((*cell_iter)->GetAge())
+        	SimpleWntContactInhibitionCellCycleModel* p_ccm = static_cast<SimpleWntContactInhibitionCellCycleModel*>((*cell_iter)->GetCellCycleModel());
+        	if ((*cell_iter)->GetCellProliferativeType()->IsType<TransitCellProliferativeType>())
+    		{
+        		PRINT_VARIABLE(p_ccm->GetG1Duration())
+        	}
             
         }
+
+        WntConcentration<2>::Instance()->Destroy();
 
         std::stringstream kill_count_file_name;
         // Uni Mac path

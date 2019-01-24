@@ -14,7 +14,7 @@ m = length(ms);
 
 vf = 80;
 
-cct = 4;
+cct = 2;
 
 expected_cell_count = (100 * 15/ (10 + cct) + 20); % an estimate of the number of cells passing through the crypt
 expected_difference = (expected_cell_count * 0.92);
@@ -41,9 +41,9 @@ end
 h = figure();
 imagesc(flipud(pspace),'AlphaData',~isnan(flipud(pspace)));%, [-120 120]);
 set(gca, 'XTick', linspace(0, 100, 11))
-set(gca, 'XTickLabel',  0:10:100)
+set(gca, 'XTickLabel',  80:20:200)
 set(gca, 'YTick', linspace(0, 40, 9))
-set(gca, 'YTickLabel', fliplr(20:5:60))
+set(gca, 'YTickLabel', fliplr(10:5:40))
 ylabel('Epithelial stiffness','Interpreter','latex');
 xlabel('Adhesion stiffness','Interpreter','latex');
 title('Parameter space showing cell death cause difference','Interpreter','latex');

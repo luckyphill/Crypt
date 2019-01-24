@@ -460,6 +460,7 @@ c_vector<double, SPACE_DIM> BasicContactNeighbourSpringForce<ELEMENT_DIM,SPACE_D
         double alpha = 1.8; // 3.0
         c_vector<double, 2> temp = spring_constant * unitForceDirection * overlap * exp(-alpha * overlap/rest_length);
         return temp;
+        // return zero_vector;
     }
 
 }
