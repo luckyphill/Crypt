@@ -45,6 +45,8 @@ protected:
     double mMembranePreferredRadius;
     double mEpithelialPreferredRadius; // Epithelial is the differentiated "filler" cells
 
+    double mAdhesionForceLawParameter; // The maximum distance that adhesion works
+
 
     bool mDebugMode = false;
 
@@ -66,6 +68,7 @@ public:
 
     void SetMembranePreferredRadius(double membranePreferredRadius);
     void SetEpithelialPreferredRadius(double stromalPreferredRadius); // Epithelial is the differentiated "filler" cells
+    void SetAdhesionForceLawParameter(double adhesionForceLawParameter);
 
    
     virtual void OutputForceParameters(out_stream& rParamsFile);

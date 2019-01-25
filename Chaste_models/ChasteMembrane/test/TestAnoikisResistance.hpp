@@ -87,6 +87,18 @@ class TestAnoikisResistance : public AbstractCellBasedTestSuite
         	popUpDistance = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-pu");
         }
 
+        double adhesionForceLawParameter = 5.0;
+        if(CommandLineArguments::Instance()->OptionExists("-aap"))
+        {
+        	adhesionForceLawParameter = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-aap");
+        }
+
+        double attractionParameter = 5.0; // epithelial attraction parameter
+        if(CommandLineArguments::Instance()->OptionExists("-eap"))
+        {
+        	attractionParameter = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-eap");
+        }
+
         double membraneEpithelialSpringStiffness = 50;
         if(CommandLineArguments::Instance()->OptionExists("-ms"))
         {
@@ -356,8 +368,11 @@ class TestAnoikisResistance : public AbstractCellBasedTestSuite
 		p_force->SetMeinekeSpringStiffness(meinekeStiffness);
 		p_force->SetMeinekeSpringGrowthDuration(1);
 
+		p_force->SetAttractionParameter(attractionParameter);
+
 		MAKE_PTR(NormalAdhesionForce<2>, p_adhesion);
         p_adhesion->SetMembraneEpithelialSpringStiffness(membraneEpithelialSpringStiffness);
+        p_adhesion->SetAdhesionForceLawParameter(adhesionForceLawParameter);
 		
 		// ********************************************************************************************
 		// These two parameters are inately linked - the initial separation of the daughter nodes

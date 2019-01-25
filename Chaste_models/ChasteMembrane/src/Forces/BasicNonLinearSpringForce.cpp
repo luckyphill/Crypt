@@ -23,7 +23,8 @@ BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::BasicNonLinearSpringForce()
    : AbstractTwoBodyInteractionForce<ELEMENT_DIM,SPACE_DIM>(),
     mSpringStiffness(15.0),
     mRestLength(1.0),
-    mCutOffLength(1.1)
+    mCutOffLength(1.1),
+    mAttractionParameter(5.0)
 
 {
 }
@@ -111,12 +112,18 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::Ca
     }
     else
     {
-        // double alpha = 1.8; // 3.0
-        // c_vector<double, 2> temp = spring_constant * unitForceDirection * overlap * exp(-alpha * overlap/rest_length);
-        // return temp;
-        return zero_vector;
+        double alpha = mAttractionParameter;
+        c_vector<double, 2> temp = spring_constant * unitForceDirection * overlap * exp(-alpha * overlap/rest_length);
+        return temp;
+        // return zero_vector;
     }
 
+}
+
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+void BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::SetAttractionParameter(double attractionParameter)
+{
+    mAttractionParameter = attractionParameter;
 }
 
 

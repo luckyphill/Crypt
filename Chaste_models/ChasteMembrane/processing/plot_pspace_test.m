@@ -14,7 +14,7 @@ m = length(ms);
 
 vf = 80;
 
-cct = 2;
+cct = 4;
 
 expected_cell_count = (100 * 15/ (10 + cct) + 20); % an estimate of the number of cells passing through the crypt
 expected_difference = (expected_cell_count * 0.92);

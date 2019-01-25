@@ -11,11 +11,11 @@
 close all;
 clear all;
 
-input_vars = [20, 100, 0.75]; % ees, ms, vf
+input_vars = [50, 150, 0.7]; % ees, ms, vf
 step_sizes = [10, 10, 0.05];
 index = 1; % tracking the index of the variable we are optimising
 
-cct = 4;
+cct = 2;
 
 
 % Run the first guess to get the ball rolling

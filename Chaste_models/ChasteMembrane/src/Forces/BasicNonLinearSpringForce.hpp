@@ -47,6 +47,8 @@ protected:
 
     double mCutOffLength;
 
+    double mAttractionParameter;
+
     
     // Spring growth parameters for newly divided cells
     double mMeinekeSpringStiffness;
@@ -89,6 +91,8 @@ public:
     void SetRestLength(double RestLength);
 
     void SetCutOffLength(double CutOffLength);
+
+    void SetAttractionParameter(double attractionParameter);
 
     
     // Spring growth for newly divided cells
