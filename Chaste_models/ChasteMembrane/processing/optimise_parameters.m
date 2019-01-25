@@ -11,7 +11,7 @@
 close all;
 clear all;
 
-input_vars = [50, 150, 0.7]; % ees, ms, vf
+input_vars = [50, 100, 0.7]; % ees, ms, vf
 step_sizes = [10, 10, 0.05];
 index = 1; % tracking the index of the variable we are optimising
 
@@ -126,13 +126,18 @@ function [slough, anoikis, total] = get_data(cmdout)
 
 end
 
-function [slough, anoikis, total] = get_data_from_file(vars, cct)
+function [slough, anoikis, total] = get_data_from_file(vars, cct, cmdout)
     file_name = sprintf('/Users/phillipbrown/Research/Crypt/Data/Chaste/CellKillCount/kill_count_n_20_EES_%g_MS_%g_VF_%g_CCT_%d.txt', vars(1), vars(2), 100 * vars(3), cct);
 
-    data = csvread(file_name,1,0);
-    total = data(1);
-    slough = data(2);
-    anoikis = data(3);
+    try
+        data = csvread(file_name,1,0);
+        total = data(1);
+        slough = data(2);
+        anoikis = data(3);
+    catch
+        [slough, anoikis, total] = get_data(cmdout);
+    end
+    
 end
 
 function obj_val = run_simulation(vars, cct)
@@ -145,14 +150,14 @@ function obj_val = run_simulation(vars, cct)
     catch
         fprintf('Running simulation for: EES = %g, MS = %g, VF = %g, CCT = %d\n', vars(1), vars(2), vars(3), cct);
         [status,cmdout] = system(['/Users/phillipbrown/chaste_build/projects/ChasteMembrane/test/TestCryptCrossSection -cct ' num2str(cct) ' -ees ' num2str(vars(1)) ' -ms ' num2str(vars(2)) ' -vf ' num2str(vars(3))]);
-        [slough, anoikis, total] = get_data_from_file(vars, cct);
+        [slough, anoikis, total] = get_data_from_file(vars, cct, cmdout);
     end
 
     expected_cell_count = (100 * 15/ (10 + cct) + 20); % an estimate of the number of cells passing through the crypt
     expected_difference = (expected_cell_count * 0.92);
     
     difference = (slough - anoikis);
-
+    fprintf('Simulation results: Slough = %d, Anoikis = %d, Total = %d\n',slough, anoikis, total);
     obj_val = 0.5 * ((difference - expected_difference)/expected_difference)^2 + 0.5 * ((total - expected_cell_count)/expected_cell_count)^2;
     % obj_val = objective(slough, anoikis, total);
 
