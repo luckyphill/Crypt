@@ -43,6 +43,7 @@ for i = 1:length(ees)
         result_upper = run_simulation(cct, ees(i), ms_upper, vf);
     end
     
+    fprintf('Starting with upper of %g and lower of %g\n', ms_upper, ms_lower);
     % Set a fairly wide tolerance
     tol = 1;
     difference = ms_upper - ms_lower;
