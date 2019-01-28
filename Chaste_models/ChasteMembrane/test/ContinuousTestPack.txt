@@ -5,3 +5,4 @@ TestContactNeighbour.hpp
 TestGrowingCellDivision.hpp
 TestForces_CM.hpp
 TestAnoikisResistance.hpp
+TestPopUpLimit.hpp

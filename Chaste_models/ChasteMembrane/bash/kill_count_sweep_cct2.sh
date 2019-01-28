@@ -2,8 +2,8 @@
 #SBATCH -p batch 
 #SBATCH -N 1 
 #SBATCH -n 1 
-#SBATCH --time=00:10:00 
-#SBATCH --mem=4GB 
+#SBATCH --time=00:15:00 
+#SBATCH --mem=2GB 
 #SBATCH --array=0-7564
 #SBATCH --err="output/kill_count_cct2_%a.err" 
 #SBATCH --output="output/kill_count_cct2_%a.out" 
