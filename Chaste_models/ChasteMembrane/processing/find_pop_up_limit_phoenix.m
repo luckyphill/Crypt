@@ -1,4 +1,4 @@
-function find_pop_up_limit(cct, vf)
+function find_pop_up_limit_phoenix(cct, vf)
 
     % This script uses the Chaste program TestPopUpLimit to determine the
     % limiting adhesion force that completely prevents cells popping up.
@@ -86,15 +86,13 @@ function result = run_simulation(cct, ees, ms, vf)
     % parameter set used. First check if it already exists, if not, run the
     % actual simulation to generate it.
     
-    % file = sprintf('/Users/phillipbrown/Research/Crypt/Data/Chaste/PopUpLimit/pop_up_n_20_EES_%g_MS_%g_VF_%g_CCT_%d.txt', ees, ms, 100 * vf, cct);
-    file = sprintf('/Users/phillip/Research/Crypt/Data/Chaste/PopUpLimit/pop_up_n_20_EES_%g_MS_%g_VF_%g_CCT_%d.txt', ees, ms, 100 * vf, cct);
+    file = sprintf('data/PopUpLimit/pop_up_n_20_EES_%g_MS_%g_VF_%g_CCT_%d.txt', ees, ms, 100 * vf, cct);
     try
         result = read_data(file);
         fprintf('Found existing data: EES = %g, MS = %g, VF = %g, CCT = %d\n', ees, ms, vf, cct);
     catch
         fprintf('Running simulation: EES = %g, MS = %g, VF = %g, CCT = %d\n', ees, ms, vf, cct);
-    	% [status,cmdout] = system(['/Users/phillipbrown/chaste_build/projects/ChasteMembrane/test/TestPopUpLimit -cct ' num2str(cct) ' -ees ' num2str(ees) ' -ms ' num2str(ms) ' -vf ' num2str(vf)]);
-        [status,cmdout] = system(['/Users/phillip/chaste_build/projects/ChasteMembrane/test/TestPopUpLimit -cct ' num2str(cct) ' -ees ' num2str(ees) ' -ms ' num2str(ms) ' -vf ' num2str(vf)]);
+        [status,cmdout] = system(['/home/a1738927/fastdir/chaste_build/projects/ChasteMembrane/test/TestPopUpLimit -cct ' num2str(cct) ' -ees ' num2str(ees) ' -ms ' num2str(ms) ' -vf ' num2str(vf)]);
         result = read_data(file);
     end
 
@@ -119,8 +117,7 @@ end
 function write_to_file(ees, ms_limit, cct, vf)
     % Writes the results to file
 
-    % file = sprintf('/Users/phillipbrown/Research/Crypt/Data/Chaste/PopUpLimit/limit_n_20_VF_%g_CCT_%d.txt', 100 * vf, cct);
-    file = sprintf('/Users/phillip/Research/Crypt/Data/Chaste/PopUpLimit/limit_n_20_VF_%g_CCT_%d.txt', 100 * vf, cct);
+    file = sprintf('data/PopUpLimit/limit_n_20_VF_%g_CCT_%d.txt', 100 * vf, cct);
     csvwrite(file, [ees' ms_limit']);
 
 end

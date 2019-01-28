@@ -394,11 +394,11 @@ class TestPopUpLimit : public AbstractCellBasedTestSuite
 
 		std::stringstream pop_up_file_name;
         // Uni Mac path
-        pop_up_file_name << "/Users/phillipbrown/Research/Crypt/Data/Chaste/PopUpLimit/pop_up_" << "n_" << n << "_EES_"<< epithelialStiffness;
+        // pop_up_file_name << "/Users/phillipbrown/Research/Crypt/Data/Chaste/PopUpLimit/pop_up_" << "n_" << n << "_EES_"<< epithelialStiffness;
         // Macbook path
         // pop_up_file_name << "/Users/phillip/Research/Crypt/Data/Chaste/PopUpLimit/pop_up_" << "n_" << n << "_EES_"<< epithelialStiffness;
         // Phoenix path
-        // pop_up_file_name << "data/PopUpLimit/pop_up_" << "n_" << n << "_EES_"<< epithelialStiffness;
+        pop_up_file_name << "data/PopUpLimit/pop_up_" << "n_" << n << "_EES_"<< epithelialStiffness;
         pop_up_file_name << "_MS_" << membraneEpithelialSpringStiffness << "_VF_" << int(100 * quiescentVolumeFraction) << "_CCT_" << int(cellCycleTime) << ".txt";
         // VF and PU don't change here
         //  << "_PU_" << popUpDistance <<
