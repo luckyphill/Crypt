@@ -10,13 +10,6 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=phillip.j.brown@adelaide.edu.au
 
-module load CMake
-module load netCDF-Fortran
-module unload OpenMPI
-module unload HDF5
-
-mkdir -p output
-
 CCT=$1
 VF=$2
 
