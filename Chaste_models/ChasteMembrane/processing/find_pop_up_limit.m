@@ -40,8 +40,10 @@ function find_pop_up_limit(cct, vf)
         while (~result_upper)
             fprintf('Increased upper, trying again\n');
             ms_upper = 2 * ms_upper;
+            ms_lower = ms_upper / 2; % If ms_upper fails, use it as the lower
             result_upper = run_simulation(cct, ees(i), ms_upper, vf);
         end
+        
         
         fprintf('Starting with upper of %g and lower of %g\n', ms_upper, ms_lower);
         % Set a fairly wide tolerance
@@ -86,15 +88,15 @@ function result = run_simulation(cct, ees, ms, vf)
     % parameter set used. First check if it already exists, if not, run the
     % actual simulation to generate it.
     
-    % file = sprintf('/Users/phillipbrown/Research/Crypt/Data/Chaste/PopUpLimit/pop_up_n_20_EES_%g_MS_%g_VF_%g_CCT_%d.txt', ees, ms, 100 * vf, cct);
-    file = sprintf('/Users/phillip/Research/Crypt/Data/Chaste/PopUpLimit/pop_up_n_20_EES_%g_MS_%g_VF_%g_CCT_%d.txt', ees, ms, 100 * vf, cct);
+    file = sprintf('/Users/phillipbrown/Research/Crypt/Data/Chaste/PopUpLimit/pop_up_n_20_EES_%g_MS_%g_VF_%g_CCT_%d.txt', ees, ms, 100 * vf, cct);
+%     file = sprintf('/Users/phillip/Research/Crypt/Data/Chaste/PopUpLimit/pop_up_n_20_EES_%g_MS_%g_VF_%g_CCT_%d.txt', ees, ms, 100 * vf, cct);
     try
         result = read_data(file);
         fprintf('Found existing data: EES = %g, MS = %g, VF = %g, CCT = %d\n', ees, ms, vf, cct);
     catch
         fprintf('Running simulation: EES = %g, MS = %g, VF = %g, CCT = %d\n', ees, ms, vf, cct);
-    	% [status,cmdout] = system(['/Users/phillipbrown/chaste_build/projects/ChasteMembrane/test/TestPopUpLimit -cct ' num2str(cct) ' -ees ' num2str(ees) ' -ms ' num2str(ms) ' -vf ' num2str(vf)]);
-        [status,cmdout] = system(['/Users/phillip/chaste_build/projects/ChasteMembrane/test/TestPopUpLimit -cct ' num2str(cct) ' -ees ' num2str(ees) ' -ms ' num2str(ms) ' -vf ' num2str(vf)]);
+    	[status,cmdout] = system(['/Users/phillipbrown/chaste_build/projects/ChasteMembrane/test/TestPopUpLimit -cct ' num2str(cct) ' -ees ' num2str(ees) ' -ms ' num2str(ms) ' -vf ' num2str(vf)]);
+%         [status,cmdout] = system(['/Users/phillip/chaste_build/projects/ChasteMembrane/test/TestPopUpLimit -cct ' num2str(cct) ' -ees ' num2str(ees) ' -ms ' num2str(ms) ' -vf ' num2str(vf)]);
         result = read_data(file);
     end
 
@@ -112,16 +114,35 @@ function result = read_data(file)
     else
         error('Something failed')
     end
-        
+    
+    fclose(fid);
             
 end
 
 function write_to_file(ees, ms_limit, cct, vf)
     % Writes the results to file
 
-    % file = sprintf('/Users/phillipbrown/Research/Crypt/Data/Chaste/PopUpLimit/limit_n_20_VF_%g_CCT_%d.txt', 100 * vf, cct);
-    file = sprintf('/Users/phillip/Research/Crypt/Data/Chaste/PopUpLimit/limit_n_20_VF_%g_CCT_%d.txt', 100 * vf, cct);
+    file = sprintf('/Users/phillipbrown/Research/Crypt/Data/Chaste/PopUpLimit/limit_n_20_VF_%g_CCT_%d.txt', 100 * vf, cct);
+%     file = sprintf('/Users/phillip/Research/Crypt/Data/Chaste/PopUpLimit/limit_n_20_VF_%g_CCT_%d.txt', 100 * vf, cct);
     csvwrite(file, [ees' ms_limit']);
+    
+    h = figure;
+    l = plot(ees, ms_limit);
+    ylim([0 400]);
+    
+    l.LineWidth = 4;
+    
+    ylabel('Adhesion stiffness limit','Interpreter','latex');
+    xlabel('Epithelial stiffness','Interpreter','latex');
+    title(['Adhesion force to stop cells popping up with G1 length = ' num2str(cct) ', CI fraction = ' num2str(100 * vf) '\%' ],'Interpreter','latex');
+
+    set(h,'Units','Inches');
+    pos = get(h,'Position');
+    set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
+    
+    print(['/Users/phillipbrown/Research/Crypt/Images/Chaste/PopUpLimit/PopUpLimit_VF_' num2str(100 * vf), '_CCT_' num2str(cct) ''],'-dpdf');
+%     print(['/Users/phillip/Research/Crypt/Images/Chaste/PopUpLimit/PopUpLimit_VF_' num2str(100 * vf), '_CCT_' num2str(cct) ''],'-dpdf');
+
 
 end
 

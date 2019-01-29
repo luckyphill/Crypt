@@ -26,7 +26,7 @@ void EpithelialCellForceWriter<ELEMENT_DIM, SPACE_DIM>::VisitCell(CellPtr pCell,
 
         c_vector<double, SPACE_DIM> force = pCellPopulation->GetNode(location_index)->rGetAppliedForce();// / damping_constant;
         c_vector<double, SPACE_DIM> position = pCellPopulation->GetNode(location_index)->rGetLocation();
-        *this->mpOutStream << " | " << pCell->GetCellId() << "," << position[0] << "," << position[1] << "," << force[0] << "," << force[1];
+        *this->mpOutStream << "," << pCell->GetCellId() << "," << position[0] << "," << position[1] << "," << force[0] << "," << force[1];
     }
 }
 

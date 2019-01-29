@@ -65,6 +65,7 @@
 #include "WntConcentration.hpp"
 
 // Writers
+#include "EpithelialCellForceWriter.hpp"
 #include "EpithelialCellBirthWriter.hpp"
 #include "EpithelialCellPositionWriter.hpp"
 
@@ -649,7 +650,6 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
 		MAKE_PTR_ARGS(SimpleAnoikisCellKiller, p_anoikis_killer, (&cell_population));
 		p_anoikis_killer->SetPopUpDistance(popUpDistance);
-		// p_anoikis_killer->SetResistantPoppedUpLifeExpectancy(end_time); // resistant cells don't die from anoikis
 		simulator.AddCellKiller(p_anoikis_killer);
 		// ********************************************************************************************
 
@@ -660,11 +660,13 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		simulator.SetOutputDivisionLocations(true);
 		PRINT_VARIABLE(simulator.GetOutputDivisionLocations())
 
+		cell_population.AddCellWriter<EpithelialCellForceWriter>();
+
 		simulator.Solve();
 		
 		// ********************************************************************************************
 		// Post simulation processing
-		// Probably best implemented as a 'writer', but have to work out how to di that first
+		// Probably best implemented as a 'writer', but have to work out how to do that first
 		// Get the highest cell ID, which should indicate the total number of cells made in the simulation
 		MeshBasedCellPopulation<2,2>* p_tissue = static_cast<MeshBasedCellPopulation<2,2>*>(&simulator.rGetCellPopulation());
 		std::list<CellPtr> pos_cells =  p_tissue->rGetCells();
@@ -677,13 +679,6 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
         	if ((*cell_iter)->GetCellId() > cellId)
         	{
         		cellId = (*cell_iter)->GetCellId();
-        	}
-        	PRINT_VARIABLE((*cell_iter)->GetCellData()->GetItem("parent"))
-        	PRINT_VARIABLE((*cell_iter)->GetAge())
-        	SimpleWntContactInhibitionCellCycleModel* p_ccm = static_cast<SimpleWntContactInhibitionCellCycleModel*>((*cell_iter)->GetCellCycleModel());
-        	if ((*cell_iter)->GetCellProliferativeType()->IsType<TransitCellProliferativeType>())
-    		{
-        		PRINT_VARIABLE(p_ccm->GetG1Duration())
         	}
             
         }

@@ -119,6 +119,23 @@ function write_to_file(ees, ms_limit, cct, vf)
 
     file = sprintf('data/PopUpLimit/limit_n_20_VF_%g_CCT_%d.txt', 100 * vf, cct);
     csvwrite(file, [ees' ms_limit']);
+    % Writes the results to file
+   
+    h = figure;
+    l = plot(ees, ms_limit);
+    ylim([0 400]);
+    
+    l.LineWidth = 4;
+    
+    ylabel('Adhesion stiffness limit','Interpreter','latex');
+    xlabel('Epithelial stiffness','Interpreter','latex');
+    title(['Adhesion force to stop cells popping up with G1 length = ' num2str(cct) ', CI fraction = ' num2str(100 * vf) '\%' ],'Interpreter','latex');
+
+    set(h,'Units','Inches');
+    pos = get(h,'Position');
+    set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
+    
+    print(['images/PopUpLimit/PopUpLimit_VF_' num2str(100 * vf), '_CCT_' num2str(cct) ''],'-dpdf');
 
 end
 
