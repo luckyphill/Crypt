@@ -14,7 +14,7 @@ function v = plot_cell_velocity(ees, ms, cct, vf)
         try
             % Perhaps it hasn't been moved yet ...
             data_file = sprintf('/tmp/phillipbrown/testoutput/TestCryptBasicWnt/n_20_EES_%g_VF_%g_MS_%g_CCT_%g/results_from_time_0/cell_force.txt',ees, vf, ms, cct);
-            system(['mv ' data_file ' ' file]);
+            [status,cmdout] = system(['mv ' data_file ' ' file]);
             data = csvread(file);
             if data(end,1) < 99
                 error('Not enough existing data, need to run simulation\n');
@@ -24,7 +24,7 @@ function v = plot_cell_velocity(ees, ms, cct, vf)
             fprintf('Running simulation for EES = %g, VF = %g, MS = %g, CCT = %g\n',ees, vf, ms, cct);
             [status,cmdout] = system(['/Users/phillipbrown/chaste_build/projects/ChasteMembrane/test/TestCryptCrossSection -sm 100 -cct ' num2str(cct) ' -ees ' num2str(ees) ' -ms ' num2str(ms) ' -vf ' num2str(vf)]);
             data_file = sprintf('/tmp/phillipbrown/testoutput/TestCryptBasicWnt/n_20_EES_%g_VF_%g_MS_%g_CCT_%g/results_from_time_0/cell_force.txt',ees, vf, ms, cct);
-            system(['mv ' data_file ' ' file]);
+            [status,cmdout] = system(['mv ' data_file ' ' file]);
             data = csvread(file);
         end
     end

@@ -10,7 +10,7 @@ for i = 1:length(cct)
             ees = data(:,1);
             ms = data(:,2);
             for k = 1: length(ees)
-                plot_cell_velocity(ees(k), ms(k), cct(i), vf(j));
+                plot_cell_velocity(ees(k), floor(ms(k)), cct(i), vf(j));
             end
         catch
             fprintf('No file - limit_n_20_VF_%g_CCT_%d.txt\n', 100 * vf(j), cct(i));
