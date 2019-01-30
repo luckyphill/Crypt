@@ -47,7 +47,7 @@ function plot_pspace_test(vf,cct)
     set(gca, 'YTickLabel', fliplr(10:5:40))
     ylabel('Epithelial stiffness','Interpreter','latex');
     xlabel('Adhesion stiffness','Interpreter','latex');
-    title(['Parameter space showing cell death cause difference'; 'G1 phase length ' num2str(cct) ', contact inhibition fraction ' num2str(vf) '\%' ],'Interpreter','latex');
+    title({'Parameter space showing cell death cause difference'; 'G1 phase length ' num2str(cct) ', contact inhibition fraction ' num2str(vf) '\%' },'Interpreter','latex');
     colorbar;
 
     set(h,'Units','Inches');

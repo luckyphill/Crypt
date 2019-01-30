@@ -5,7 +5,7 @@
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
 EpithelialCellForceWriter<ELEMENT_DIM, SPACE_DIM>::EpithelialCellForceWriter()
-    : AbstractCellWriter<ELEMENT_DIM, SPACE_DIM>("cell_force.dat")
+    : AbstractCellWriter<ELEMENT_DIM, SPACE_DIM>("cell_force.txt")
 {
     this->mVtkCellDataName = "Location indices";
 }
