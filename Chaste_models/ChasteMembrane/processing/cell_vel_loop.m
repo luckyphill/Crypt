@@ -1,5 +1,5 @@
 
-cct = 2:2:8;
+cct = 6:2:8;
 vf = 0.6:0.05:0.9;
 
 for i = 1:length(cct)

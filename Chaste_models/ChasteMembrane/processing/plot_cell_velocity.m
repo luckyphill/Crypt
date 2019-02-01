@@ -135,7 +135,8 @@ function plot_velocity_data(upper, average, lower, ees, ms, cct, vf)
     plot(upper,'k:');
     plot(lower,'k:');
     
-    ylim([-0.1 1]);
+    ylim([-0.1 1.5]);
+    xlim([0, 20]);
     
     ylabel('Cell velocity','Interpreter','latex');
     xlabel('Cell height','Interpreter','latex');

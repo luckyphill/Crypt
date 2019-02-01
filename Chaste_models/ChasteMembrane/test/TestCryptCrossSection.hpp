@@ -446,6 +446,11 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
         bool multiple_cells = true;
         unsigned n = 20;
+        if(CommandLineArguments::Instance()->OptionExists("-n"))
+        {	
+        	n = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-n");
+
+        }
 
         unsigned node_counter = 0;
 
@@ -453,7 +458,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
 		double maxInteractionRadius = 2.0;
 
-		double wall_top = 20;
+		double wall_top = n;
 
 		double minimumCycleTime = 10;
 
