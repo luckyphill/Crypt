@@ -305,7 +305,8 @@ class TestPopUpLimit : public AbstractCellBasedTestSuite
 		// Building the directory name
 		std::stringstream out;
         out << "n_" << n;
-        out << "_EES_"<< epithelialStiffness << "_VF_" << quiescentVolumeFraction << "_MS_" << membraneEpithelialSpringStiffness << "_CCT_" << int(cellCycleTime);
+        out << "_EES_"<< epithelialStiffness << "_VF_" << quiescentVolumeFraction << "_MS_";
+        out << membraneEpithelialSpringStiffness << "_CCT_" << int(cellCycleTime);
         if(CommandLineArguments::Instance()->OptionExists("-run"))
         {
         	out << "_run_" << run_number;
@@ -399,7 +400,8 @@ class TestPopUpLimit : public AbstractCellBasedTestSuite
         // pop_up_file_name << "/Users/phillip/Research/Crypt/Data/Chaste/PopUpLimit/pop_up_" << "n_" << n << "_EES_"<< epithelialStiffness;
         // Phoenix path
         pop_up_file_name << "data/PopUpLimit/pop_up_" << "n_" << n << "_EES_"<< epithelialStiffness;
-        pop_up_file_name << "_MS_" << membraneEpithelialSpringStiffness << "_VF_" << int(100 * quiescentVolumeFraction) << "_CCT_" << int(cellCycleTime) << ".txt";
+        pop_up_file_name << "_MS_" << membraneEpithelialSpringStiffness << "_VF_" << int(100 * quiescentVolumeFraction) << "_CCT_";
+        pop_up_file_name << int(cellCycleTime) << "_run_" << run_number <<  ".txt";
         // VF and PU don't change here
         //  << "_PU_" << popUpDistance <<
 
