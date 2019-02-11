@@ -12,6 +12,7 @@ This force calculator is to be used in place of membrane cells
 
 #include "TransitCellProliferativeType.hpp"
 #include "StemCellProliferativeType.hpp"
+#include "WeakenedMembraneAdhesion.hpp"
 
 #include "Debug.hpp"
 
@@ -24,7 +25,8 @@ NormalAdhesionForce<ELEMENT_DIM,SPACE_DIM>::NormalAdhesionForce()
     mMembraneEpithelialSpringStiffness(15.0),
     mMembranePreferredRadius(0.1),
     mEpithelialPreferredRadius(0.5),
-    mAdhesionForceLawParameter(5.0)
+    mAdhesionForceLawParameter(5.0),
+    mWeakeningFraction(0.8)
 {
 }
 
@@ -56,7 +58,17 @@ void NormalAdhesionForce<ELEMENT_DIM,SPACE_DIM>::AddForceContribution(AbstractCe
         }
 
         double rest_length = mMembranePreferredRadius + mEpithelialPreferredRadius;
-        double spring_constant = mMembraneEpithelialSpringStiffness;
+        double spring_constant;
+
+
+        // Check if it has the membrane weakened state
+        if ( (*cell_iter)->HasCellProperty<WeakenedMembraneAdhesion>() )
+        {
+            spring_constant = mWeakeningFraction * mMembraneEpithelialSpringStiffness;
+        } else
+        {
+            spring_constant = mMembraneEpithelialSpringStiffness;
+        }
 
         unsigned space_index = 0;
         if (SPACE_DIM == 3)
@@ -115,6 +127,13 @@ void NormalAdhesionForce<ELEMENT_DIM,SPACE_DIM>::SetEpithelialPreferredRadius(do
 {
     assert(stromalPreferredRadius > 0.0);
     mEpithelialPreferredRadius = stromalPreferredRadius;
+}
+
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+void NormalAdhesionForce<ELEMENT_DIM,SPACE_DIM>::SetWeakeningFraction(double weakeningFraction)
+{
+    assert(!(weakeningFraction < 0.0));
+    mWeakeningFraction = weakeningFraction;
 }
 
 

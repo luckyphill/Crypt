@@ -10,6 +10,7 @@
 #include "AbstractForce.hpp"
 #include "MeshBasedCellPopulation.hpp"
 #include "DifferentiatedCellProliferativeType.hpp"
+#include "WeakenedMembraneAdhesion.hpp"
 
 #include "ChasteSerialization.hpp"
 #include <boost/serialization/base_object.hpp>
@@ -47,6 +48,8 @@ protected:
 
     double mAdhesionForceLawParameter; // The maximum distance that adhesion works
 
+    double mWeakeningFraction; // The fraction of mMembraneEpithelialSpringStiffness seen by a cell with the WeakenedMembraneAdhesion mutation
+
 
     bool mDebugMode = false;
 
@@ -69,6 +72,7 @@ public:
     void SetMembranePreferredRadius(double membranePreferredRadius);
     void SetEpithelialPreferredRadius(double stromalPreferredRadius); // Epithelial is the differentiated "filler" cells
     void SetAdhesionForceLawParameter(double adhesionForceLawParameter);
+    void SetWeakeningFraction(double weakeningFraction);
 
    
     virtual void OutputForceParameters(out_stream& rParamsFile);

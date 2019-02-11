@@ -12,8 +12,6 @@
 
 module load CMake
 module load netCDF-Fortran
-module unload OpenMPI
-module unload HDF5
 
 mkdir -p output
 
@@ -21,4 +19,6 @@ CCT=$1
 VF=$2
 
 module load matlab/2016b
+module unload OpenMPI
+module unload HDF5
 matlab -nodisplay -nodesktop -r "find_pop_up_limit_phoenix(${CCT}, ${VF}); quit()"

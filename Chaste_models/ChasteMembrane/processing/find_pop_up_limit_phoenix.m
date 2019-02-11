@@ -117,7 +117,7 @@ end
 function write_to_file(ees, ms_limit, cct, vf)
     % Writes the results to file
 
-    file = sprintf('data/PopUpLimit/limit_n_20_VF_%g_CCT_%d.txt', 100 * vf, cct);
+    file = sprintf('/home/a1738927/fastdir/Chaste/data/PopUpLimit/limit_n_20_VF_%g_CCT_%d.txt', 100 * vf, cct);
     csvwrite(file, [ees' ms_limit']);
     % Writes the results to file
    
@@ -135,7 +135,7 @@ function write_to_file(ees, ms_limit, cct, vf)
     pos = get(h,'Position');
     set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
     
-    print(['images/PopUpLimit/PopUpLimit_VF_' num2str(100 * vf), '_CCT_' num2str(cct) ''],'-dpdf');
+    print(['/home/a1738927/fastdir/Chaste/images/PopUpLimit/PopUpLimit_VF_' num2str(100 * vf), '_CCT_' num2str(cct) ''],'-dpdf');
 
 end
 
