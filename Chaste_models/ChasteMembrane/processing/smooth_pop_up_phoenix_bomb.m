@@ -1,4 +1,4 @@
-function smooth_pop_up_phoenix_bomb
+function smooth_pop_up_phoenix_bomb(vf, cct)
 % Smooth pop-up phoenix bomb
 % A matlab script that controls sbatch to dump a load of simulations on Phoenix
 
@@ -7,8 +7,8 @@ function smooth_pop_up_phoenix_bomb
 	cct = [2, 4, 6, 8];
 
 
-	for i = 1:6
-	    for j=1:4
+	for i = 1:length(vf)
+	    for j=1:length(cct)
 	        bomb(cct(j), vf(i));
 	    end
 	end
@@ -40,7 +40,7 @@ end
 function run_sbatch(ees, ms ,cct, vf)
 	% Calls the sbatch file which creates 10 simulations for each point
 
-	% [status,cmdout] = system(['sbatch /home/a1738927/fastdir/chaste_build/projects/ChasteMembrane/bash/smooth_pop_up.sh' num2str(ees) ' ' num2str(ms) ' ' num2str(cct) ' ' num2str(vf) ]);
+	system(['sbatch /home/a1738927/fastdir/Chaste/projects/ChasteMembrane/bash/smooth_pop_up.sh ' num2str(ees) ' ' num2str(ms) ' ' num2str(cct) ' ' num2str(vf) ]);
 	fprintf('Phoenix bomb for EES = %g, MS = %g, CCT = %g, VF = %g\n',ees, ms ,cct, vf);
 
 end
@@ -65,7 +65,7 @@ end
 
 function [ms_limit, ees] = read_data(cct, vf)
 
-    file = sprintf('/Users/phillipbrown/Research/Crypt/Data/Chaste/PopUpLimit/limit_n_20_VF_%g_CCT_%d.txt', 100 * vf, cct);
+    file = sprintf('/home/a1738927/fastdir/Chaste/data/PopUpLimit/limit_n_20_VF_%g_CCT_%d.txt', 100 * vf, cct);
     data = csvread(file);
     ees = data(:,1);
     ms_limit = data(:,2);
