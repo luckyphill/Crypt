@@ -15,7 +15,7 @@ input_vars = [50, 100, 0.7]; % ees, ms, vf
 step_sizes = [10, 10, 0.05];
 index = 1; % tracking the index of the variable we are optimising
 
-cct = 2;
+cct = 5;
 
 
 % Run the first guess to get the ball rolling

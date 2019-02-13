@@ -344,12 +344,6 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		// a minor element of randomness needs to be added to the division direction nudge
 		// the column out of it's unstable equilibrium.
 
-		// 1: add division nudge - done
-		// 2: add BM force to pull back into column - done 
-		// 3: determine BM force and range needed to get varying amounts of popping up - sort of done
-		// 4: make sure contact neighbours is correct
-		// 5: use phase based and contact inhibition CCM
-		// 6: use e-e force determined from experiments, and CI percentage
 
 
 		double popUpDistance = 1.1;
@@ -445,7 +439,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
         }
 
-        unsigned n_prolif = n - 9; // Number of proliferative cells, counting up from the bottom
+        unsigned n_prolif = n - 10; // Number of proliferative cells, counting up from the bottom
         if(CommandLineArguments::Instance()->OptionExists("-np"))
         {	
         	n_prolif = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-np");
@@ -454,7 +448,11 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
         unsigned node_counter = 0;
 
-		double dt = 0.001;
+		double dt = 0.002; // The minimum to get covergant simulations for a specific parameter set
+		if(CommandLineArguments::Instance()->OptionExists("-dt"))
+        {
+        	dt = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-dt");
+        }
 
 		double maxInteractionRadius = 2.0;
 
@@ -462,7 +460,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
 		double minimumCycleTime = 10;
 
-		unsigned cell_limit = 200; // At the smallest CI limit, there can be at most 400 cells, but we don't want to get there
+		unsigned cell_limit = 2 * n; // At the smallest CI limit, there can be at most 400 cells, but we don't want to get there
 		// A maximum of 350 will give at least 350 divisions, probably more, but the simulation won't run the full time
 		// so in the end, there should be enough to get a decent plot
         
@@ -677,6 +675,8 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		std::list<CellPtr> pos_cells =  p_tissue->rGetCells();
 
 		unsigned cellId = 0;
+		unsigned proliferative = 0;
+		unsigned differentiated = 0;
 
         for (std::list<CellPtr>::iterator cell_iter = pos_cells.begin(); cell_iter != pos_cells.end(); ++cell_iter)
         {
@@ -685,18 +685,29 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
         	{
         		cellId = (*cell_iter)->GetCellId();
         	}
+        	if ((*cell_iter)->GetCellProliferativeType()->IsType<DifferentiatedCellProliferativeType>() && (*cell_iter)->GetCellId() != 0)
+        	{
+        		differentiated++;
+        	}
+        	if ((*cell_iter)->GetCellProliferativeType()->IsType<TransitCellProliferativeType>())
+        	{
+        		proliferative++;
+        	}
             
         }
+
+        unsigned total_cells = proliferative + differentiated;
+
 
         WntConcentration<2>::Instance()->Destroy();
 
         std::stringstream kill_count_file_name;
         // Uni Mac path
-        // kill_count_file_name << "/Users/phillipbrown/Research/Crypt/Data/Chaste/CellKillCount/kill_count_" << "n_" << n << "_EES_"<< epithelialStiffness;
+        // kill_count_file_name << "/Users/phillipbrown/Research/Crypt/Data/Chaste/ParameterSearch/parameter_statistics_" << "n_" << n << "_EES_"<< epithelialStiffness;
         // Macbook path
-        kill_count_file_name << "/Users/phillip/Research/Crypt/Data/Chaste/CellKillCount/kill_count_" << "n_" << n << "_EES_"<< epithelialStiffness;
+        // kill_count_file_name << "/Users/phillip/Research/Crypt/Data/Chaste/ParameterSearch/parameter_statistics_" << "n_" << n << "_EES_"<< epithelialStiffness;
         // Phoenix path
-        // kill_count_file_name << "data/CellKillCount/kill_count_" << "n_" << n << "_EES_"<< epithelialStiffness;
+        kill_count_file_name << "data/ParameterSearch/parameter_statistics_" << "n_" << n << "_EES_"<< epithelialStiffness;
         kill_count_file_name << "_MS_" << membraneEpithelialSpringStiffness << "_VF_" << int(100 * quiescentVolumeFraction) << "_CCT_" << int(cellCycleTime) << ".txt";
         // VF and PU don't change here
         //  << "_PU_" << popUpDistance <<
@@ -704,9 +715,10 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
         ofstream kill_count_file;
         kill_count_file.open(kill_count_file_name.str());
 
-        kill_count_file << "Total cells, killed sloughing, killed anoikis\n";
+        kill_count_file << "Total cells, killed sloughing, killed anoikis, final proliferative, final differentiated, final total\n";
 
         kill_count_file << cellId << "," << p_sloughing_killer->GetCellKillCount() << "," << p_anoikis_killer->GetCellKillCount();
+        kill_count_file << "," << proliferative << "," << differentiated << "," << total_cells; 
 
         kill_count_file.close();
 
@@ -714,6 +726,9 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
         PRINT_VARIABLE(p_sloughing_killer->GetCellKillCount())
 		PRINT_VARIABLE(p_anoikis_killer->GetCellKillCount())
+		PRINT_VARIABLE(proliferative)
+		PRINT_VARIABLE(differentiated)
+		PRINT_VARIABLE(total_cells)
 		PRINT_VARIABLE(cellId)
 	};
 
