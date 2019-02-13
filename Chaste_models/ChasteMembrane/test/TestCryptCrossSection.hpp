@@ -410,13 +410,6 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
         }
 
-        unsigned n_prolif = 15; // Number of proliferative cells, counting up from the bottom
-        if(CommandLineArguments::Instance()->OptionExists("-np"))
-        {	
-        	n_prolif = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-np");
-
-        }
-
         bool wiggle = true; // Default to "2D"
         if(CommandLineArguments::Instance()->OptionExists("-oned"))
         {	
@@ -449,6 +442,13 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
         if(CommandLineArguments::Instance()->OptionExists("-n"))
         {	
         	n = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-n");
+
+        }
+
+        unsigned n_prolif = n - 9; // Number of proliferative cells, counting up from the bottom
+        if(CommandLineArguments::Instance()->OptionExists("-np"))
+        {	
+        	n_prolif = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-np");
 
         }
 
@@ -694,9 +694,9 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
         // Uni Mac path
         // kill_count_file_name << "/Users/phillipbrown/Research/Crypt/Data/Chaste/CellKillCount/kill_count_" << "n_" << n << "_EES_"<< epithelialStiffness;
         // Macbook path
-        // kill_count_file_name << "/Users/phillip/Research/Crypt/Data/Chaste/CellKillCount/kill_count_" << "n_" << n << "_EES_"<< epithelialStiffness;
+        kill_count_file_name << "/Users/phillip/Research/Crypt/Data/Chaste/CellKillCount/kill_count_" << "n_" << n << "_EES_"<< epithelialStiffness;
         // Phoenix path
-        kill_count_file_name << "data/CellKillCount/kill_count_" << "n_" << n << "_EES_"<< epithelialStiffness;
+        // kill_count_file_name << "data/CellKillCount/kill_count_" << "n_" << n << "_EES_"<< epithelialStiffness;
         kill_count_file_name << "_MS_" << membraneEpithelialSpringStiffness << "_VF_" << int(100 * quiescentVolumeFraction) << "_CCT_" << int(cellCycleTime) << ".txt";
         // VF and PU don't change here
         //  << "_PU_" << popUpDistance <<

@@ -397,9 +397,9 @@ class TestPopUpLimit : public AbstractCellBasedTestSuite
         // Uni Mac path
         // pop_up_file_name << "/Users/phillipbrown/Research/Crypt/Data/Chaste/PopUpLimit/pop_up_" << "n_" << n << "_EES_"<< epithelialStiffness;
         // Macbook path
-        // pop_up_file_name << "/Users/phillip/Research/Crypt/Data/Chaste/PopUpLimit/pop_up_" << "n_" << n << "_EES_"<< epithelialStiffness;
+        pop_up_file_name << "/Users/phillip/Research/Crypt/Data/Chaste/PopUpLimit/pop_up_" << "n_" << n << "_EES_"<< epithelialStiffness;
         // Phoenix path
-        pop_up_file_name << "/home/a1738927/fastdir/Chaste/data/PopUpLimit/pop_up_" << "n_" << n << "_EES_"<< epithelialStiffness;
+        // pop_up_file_name << "/home/a1738927/fastdir/Chaste/data/PopUpLimit/pop_up_" << "n_" << n << "_EES_"<< epithelialStiffness;
         pop_up_file_name << "_MS_" << membraneEpithelialSpringStiffness << "_VF_" << int(100 * quiescentVolumeFraction) << "_CCT_";
         pop_up_file_name << int(cellCycleTime) << "_run_" << run_number <<  ".txt";
         // VF and PU don't change here

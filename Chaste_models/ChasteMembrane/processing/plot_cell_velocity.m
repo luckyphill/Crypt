@@ -1,7 +1,7 @@
 function v = plot_cell_velocity(ees, ms, cct, vf)
 
-    file = sprintf('/Users/phillipbrown/Research/Crypt/Data/Chaste/CellVelocity/cell_positions_EES_%g_VF_%g_MS_%g_CCT_%g.txt',ees, 100 * vf, ms, cct);
-
+    file = sprintf('/Users/phillip/Research/Crypt/Data/Chaste/CellVelocity/cell_positions_EES_%g_VF_%g_MS_%g_CCT_%g.txt',ees, 100 * vf, ms, cct)
+    n = 28;
     try
         % See if the data already exists
         data = csvread(file);
@@ -13,7 +13,7 @@ function v = plot_cell_velocity(ees, ms, cct, vf)
         % If not ...
         try
             % Perhaps it hasn't been moved yet ...
-            data_file = sprintf('/tmp/phillipbrown/testoutput/TestCryptBasicWnt/n_20_EES_%g_VF_%g_MS_%g_CCT_%g/results_from_time_0/cell_force.txt',ees, vf, ms, cct);
+            data_file = sprintf('/tmp/phillip/testoutput/TestCryptBasicWnt/n_%d_EES_%g_VF_%g_MS_%g_CCT_%g/results_from_time_0/cell_force.txt',n, ees, vf, ms, cct);
             [status,cmdout] = system(['mv ' data_file ' ' file]);
             data = csvread(file);
             if data(end,1) < 99
@@ -22,8 +22,8 @@ function v = plot_cell_velocity(ees, ms, cct, vf)
         catch
             % If all else fails, run the simulation
             fprintf('Running simulation for EES = %g, VF = %g, MS = %g, CCT = %g\n',ees, vf, ms, cct);
-            [status,cmdout] = system(['/Users/phillipbrown/chaste_build/projects/ChasteMembrane/test/TestCryptCrossSection -sm 100 -cct ' num2str(cct) ' -ees ' num2str(ees) ' -ms ' num2str(ms) ' -vf ' num2str(vf)]);
-            data_file = sprintf('/tmp/phillipbrown/testoutput/TestCryptBasicWnt/n_20_EES_%g_VF_%g_MS_%g_CCT_%g/results_from_time_0/cell_force.txt',ees, vf, ms, cct);
+            [status,cmdout] = system(['/Users/phillip/chaste_build/projects/ChasteMembrane/test/TestCryptCrossSection -sm 100 -cct ' num2str(cct) ' -ees ' num2str(ees) ' -ms ' num2str(ms) ' -vf ' num2str(vf)]);
+            data_file = sprintf('/tmp/phillip/testoutput/TestCryptBasicWnt/n_%d_EES_%g_VF_%g_MS_%g_CCT_%g/results_from_time_0/cell_force.txt',n, ees, vf, ms, cct);
             [status,cmdout] = system(['mv ' data_file ' ' file]);
             data = csvread(file);
         end
@@ -33,7 +33,7 @@ function v = plot_cell_velocity(ees, ms, cct, vf)
     
     [upper, average, lower] = get_quantiles(v);
     
-    plot_velocity_data(upper, average, lower, ees, ms, cct, vf);
+    plot_velocity_data(n, upper, average, lower, ees, ms, cct, vf);
        
         
 end
@@ -118,7 +118,7 @@ function [upper, average, lower] = get_quantiles(v)
         end
     end
     
-    for i = 1:21
+    for i = 1:length(bins)
         output = quantile(bins{i}, [q_u, q_a, q_l]);
         upper(i) = output(1);
         average(i) = output(2);
@@ -127,7 +127,7 @@ function [upper, average, lower] = get_quantiles(v)
 
 end
 
-function plot_velocity_data(upper, average, lower, ees, ms, cct, vf)
+function plot_velocity_data(n, upper, average, lower, ees, ms, cct, vf)
 
     h = figure;
     hold on;
@@ -136,7 +136,7 @@ function plot_velocity_data(upper, average, lower, ees, ms, cct, vf)
     plot(lower,'k:');
     
     ylim([-0.1 1.5]);
-    xlim([0, 20]);
+    xlim([0, n]);
     
     ylabel('Cell velocity','Interpreter','latex');
     xlabel('Cell height','Interpreter','latex');
@@ -146,6 +146,6 @@ function plot_velocity_data(upper, average, lower, ees, ms, cct, vf)
     pos = get(h,'Position');
     set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
     
-    print(['/Users/phillipbrown/Research/Crypt/Images/Chaste/CellVelocity/Cell_Velocity_VF_' num2str(100 * vf), '_CCT_' num2str(cct) '_EES_' num2str(ees) '_MS_' num2str(ms)],'-dpdf');
+    print(['/Users/phillip/Research/Crypt/Images/Chaste/CellVelocity/Cell_Velocity_VF_' num2str(100 * vf), '_CCT_' num2str(cct) '_EES_' num2str(ees) '_MS_' num2str(ms)],'-dpdf');
 
 end

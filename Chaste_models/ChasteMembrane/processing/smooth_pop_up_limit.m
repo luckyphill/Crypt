@@ -1,4 +1,4 @@
-function smooth_pop_up_limit(cct, vf)
+% function out = smooth_pop_up_limit(cct, vf)
     % Load the pop up limit file, get the limit, simulate either side several times to smooth
 
     ms = ms_regression(cct, vf);
@@ -20,7 +20,7 @@ function smooth_pop_up_limit(cct, vf)
     end
 
 
-end
+% end
 
 
 function result = run_simulation(ees, ms ,cct, vf)
@@ -31,15 +31,15 @@ function result = run_simulation(ees, ms ,cct, vf)
     result = 0;
     
     for i = 1:n
-        file = sprintf('/Users/phillipbrown/Research/Crypt/Data/Chaste/PopUpLimit/pop_up_n_20_EES_%g_MS_%g_VF_%g_CCT_%d_run_%d.txt', ees, ms, 100 * vf, cct, i);
-    %     file = sprintf('/Users/phillip/Research/Crypt/Data/Chaste/PopUpLimit/pop_up_n_20_EES_%g_MS_%g_VF_%g_CCT_%d_run_%d.txt', ees, ms, 100 * vf, cct, i);
+%         file = sprintf('/Users/phillipbrown/Research/Crypt/Data/Chaste/PopUpLimit/pop_up_n_20_EES_%g_MS_%g_VF_%g_CCT_%d_run_%d.txt', ees, ms, 100 * vf, cct, i);
+        file = sprintf('/Users/phillip/Research/Crypt/Data/Chaste/PopUpLimit/pop_up_n_20_EES_%g_MS_%g_VF_%g_CCT_%d_run_%d.txt', ees, ms, 100 * vf, cct, i);
         try
             result = result + read_data_file(file);
             fprintf('Found existing data: EES = %g, MS = %g, VF = %g, CCT = %d Run %d\n', ees, ms, vf, cct, i);
         catch
             fprintf('Running simulation: EES = %g, MS = %g, VF = %g, CCT = %d Run %d\n', ees, ms, vf, cct, i);
-            [status,cmdout] = system(['/Users/phillipbrown/chaste_build/projects/ChasteMembrane/test/TestPopUpLimit -cct ' num2str(cct) ' -ees ' num2str(ees) ' -ms ' num2str(ms) ' -vf ' num2str(vf) ' -run ' num2str(i)]);
-    %         [status,cmdout] = system(['/Users/phillip/chaste_build/projects/ChasteMembrane/test/TestPopUpLimit -cct ' num2str(cct) ' -ees ' num2str(ees) ' -ms ' num2str(ms) ' -vf ' num2str(vf) ' -run ' num2str(i)]);
+%             [status,cmdout] = system(['/Users/phillipbrown/chaste_build/projects/ChasteMembrane/test/TestPopUpLimit -cct ' num2str(cct) ' -ees ' num2str(ees) ' -ms ' num2str(ms) ' -vf ' num2str(vf) ' -run ' num2str(i)]);
+            [status,cmdout] = system(['/Users/phillip/chaste_build/projects/ChasteMembrane/test/TestPopUpLimit -cct ' num2str(cct) ' -ees ' num2str(ees) ' -ms ' num2str(ms) ' -vf ' num2str(vf) ' -run ' num2str(i)]);
             result = result + read_data_file(file);
         end
     end
@@ -81,7 +81,8 @@ end
 
 function [ms_limit, ees] = read_data(cct, vf)
 
-    file = sprintf('/Users/phillipbrown/Research/Crypt/Data/Chaste/PopUpLimit/limit_n_20_VF_%g_CCT_%d.txt', 100 * vf, cct);
+%     file = sprintf('/Users/phillipbrown/Research/Crypt/Data/Chaste/PopUpLimit/limit_n_20_VF_%g_CCT_%d.txt', 100 * vf, cct);
+    file = sprintf('/Users/phillip/Research/Crypt/Data/Chaste/PopUpLimit/limit_n_20_VF_%g_CCT_%d.txt', 100 * vf, cct);
     data = csvread(file);
     ees = data(:,1);
     ms_limit = data(:,2);
