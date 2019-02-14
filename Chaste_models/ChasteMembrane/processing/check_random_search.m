@@ -1,9 +1,9 @@
-param_files = dir('/Users/phillipbrown/Research/Crypt/Data/Chaste/ParameterSearch/');
+param_files = dir('/Users/phillip/Research/Crypt/Data/Chaste/ParameterSearch/');
 
 for i = 1:length(param_files)
         
     try
-        file_name = ['/Users/phillipbrown/Research/Crypt/Data/Chaste/ParameterSearch/' param_files(i).name];
+        file_name = ['/Users/phillip/Research/Crypt/Data/Chaste/ParameterSearch/' param_files(i).name];
         data = csvread(file_name,1,0);
         total_count = data(1);
         slough = data(2);
@@ -12,9 +12,10 @@ for i = 1:length(param_files)
         differ = data(5);
         total_end = data(6);
         obj = objective_function(total_count, slough, anoikis, prolif, differ, total_end);
-        if obj < 10
-            fprintf('%s\n',param_files(i).name);
-            fprintf('%d\n',obj);
+        if obj < 3
+            parts = strsplit(file_name,'_');
+            fprintf('Found parameters with objective function %d\n',obj);
+            fprintf('-n %s -ees %s -ms %s -vf %g -cct 5 -sm 100 -dt 0.001\n', parts{4}, parts{6}, parts{8}, str2num(parts{10})/100);
         end
     end
         

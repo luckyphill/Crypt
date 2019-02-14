@@ -1,7 +1,7 @@
-function v = plot_cell_velocity(ees, ms, cct, vf)
+function v = plot_cell_velocity(n, ees, ms, cct, vf)
 
-    file = sprintf('/Users/phillip/Research/Crypt/Data/Chaste/CellVelocity/cell_positions_EES_%g_VF_%g_MS_%g_CCT_%g.txt',ees, 100 * vf, ms, cct)
-    n = 28;
+    file = sprintf('/Users/phillip/Research/Crypt/Data/Chaste/CellVelocity/cell_positions_EES_%g_VF_%g_MS_%g_CCT_%g.txt',ees, 100 * vf, ms, cct);
+
     try
         % See if the data already exists
         data = csvread(file);
@@ -146,6 +146,6 @@ function plot_velocity_data(n, upper, average, lower, ees, ms, cct, vf)
     pos = get(h,'Position');
     set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
     
-    print(['/Users/phillip/Research/Crypt/Images/Chaste/CellVelocity/Cell_Velocity_VF_' num2str(100 * vf), '_CCT_' num2str(cct) '_EES_' num2str(ees) '_MS_' num2str(ms)],'-dpdf');
+    print(['/Users/phillip/Research/Crypt/Images/Chaste/CellVelocity/Cell_Velocity_N_' num2str(n) '_EES_' num2str(ees) '_MS_' num2str(ms) 'VF_' num2str(100 * vf), '_CCT_' num2str(cct)],'-dpdf');
 
 end

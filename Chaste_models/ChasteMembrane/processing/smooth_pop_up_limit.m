@@ -19,6 +19,11 @@
         end
     end
 
+    imagesc(rot90(out),'AlphaData',~isnan(rot90(out)));
+    colorbar;
+    set(gca, 'YTick', linspace(0, 400, 11))
+    set(gca, 'YTickLabel', fliplr(0:40:400))
+    
 
 % end
 
