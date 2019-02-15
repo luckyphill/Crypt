@@ -5,9 +5,9 @@
 #SBATCH --time=00:20:00 
 #SBATCH --mem=1GB 
 #SBATCH --array=0-10000
-#SBATCH --err="output/grid_search_%a.err" 
-#SBATCH --output="output/grid_search_%a.out" 
-#SBATCH --job-name="grid_search"
+#SBATCH --err="output/grid_search_2_%a.err" 
+#SBATCH --output="output/grid_search_2_%a.out" 
+#SBATCH --job-name="grid_search_2"
 # NOTIFICATIONS
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=phillip.j.brown@adelaide.edu.au
@@ -31,12 +31,12 @@ do
         break 
     fi 
     i=$((i + 1)) 
-done < grid_search.txt 
+done < grid_search_2.txt 
 
 if [ $found = 1 ]; then
 
 	echo "/home/a1738927/fastdir/chaste_build/projects/ChasteMembrane/test/TestCryptCrossSection -n ${n} -ees ${ees} -ms ${ms} -cct 5 -vf ${vf}";
 	/home/a1738927/fastdir/chaste_build/projects/ChasteMembrane/test/TestCryptCrossSection -n ${n} -ees ${ees} -ms ${ms} -cct 5 -vf ${vf} -dt 0.001
 else 
-  echo "grid_search.txt does not have enough parameters for $SLURM_ARRAY_TASK_ID index" 
+  echo "grid_search_2.txt does not have enough parameters for $SLURM_ARRAY_TASK_ID index" 
 fi
