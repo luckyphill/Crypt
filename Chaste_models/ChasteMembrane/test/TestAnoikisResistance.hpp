@@ -36,6 +36,7 @@
 #include "UniformContactInhibition.hpp"
 #include "WntUniformContactInhibition.hpp"
 #include "SimpleWntContactInhibitionCellCycleModel.hpp"
+#include "SimpleWntWithAnoikisResistantMitosisArrest.hpp"
 
 // Mutation state
 #include "WildTypeCellMutationState.hpp"
@@ -523,12 +524,6 @@ class TestAnoikisResistance : public AbstractCellBasedTestSuite
 
         }
 
-        unsigned n_prolif = 15; // Number of proliferative cells, counting up from the bottom
-        if(CommandLineArguments::Instance()->OptionExists("-np"))
-        {	
-        	n_prolif = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-np");
-
-        }
 
         bool wiggle = true; // Default to "2D"
         if(CommandLineArguments::Instance()->OptionExists("-oned"))
@@ -586,15 +581,32 @@ class TestAnoikisResistance : public AbstractCellBasedTestSuite
         double equilibriumVolume = M_PI*epithelialPreferredRadius*epithelialPreferredRadius;; // Depends on the preferred radius
 
         bool multiple_cells = true;
+        
         unsigned n = 20;
+        if(CommandLineArguments::Instance()->OptionExists("-n"))
+        {	
+        	n = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-n");
+
+        }
+
+        unsigned n_prolif = n - 10; // Number of proliferative cells, counting up from the bottom
+        if(CommandLineArguments::Instance()->OptionExists("-np"))
+        {	
+        	n_prolif = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-np");
+
+        }
 
         unsigned node_counter = 0;
 
-		double dt = 0.001;
+		double dt = 0.002; // The minimum to get covergant simulations for a specific parameter set
+		if(CommandLineArguments::Instance()->OptionExists("-dt"))
+        {
+        	dt = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-dt");
+        }
 
 		double maxInteractionRadius = 2.0;
 
-		double wall_top = 20;
+		double wall_top = n;
 
 		double minimumCycleTime = 10;
 
@@ -678,7 +690,7 @@ class TestAnoikisResistance : public AbstractCellBasedTestSuite
 			for(unsigned i=1; i<=n; i++)
 			{
 
-				SimpleWntContactInhibitionCellCycleModel* p_cycle_model = new SimpleWntContactInhibitionCellCycleModel();
+				SimpleWntWithAnoikisResistantMitosisArrest* p_cycle_model = new SimpleWntWithAnoikisResistantMitosisArrest();
 				double birth_time = (minimumCycleTime + cellCycleTime - 2) * RandomNumberGenerator::Instance()->ranf();
 				if (customCellCycleTime)
 				{
@@ -689,6 +701,7 @@ class TestAnoikisResistance : public AbstractCellBasedTestSuite
 	   			p_cycle_model->SetQuiescentVolumeFraction(quiescentVolumeFraction);
 	   			p_cycle_model->SetWntThreshold(1 - (double)n_prolif/n);
 				p_cycle_model->SetBirthTime(-birth_time);
+				p_cycle_model->SetPopUpDivision(false);
 
 				CellPtr p_cell(new Cell(p_state, p_cycle_model));
 				p_cell->SetCellProliferativeType(p_trans_type);
@@ -840,9 +853,9 @@ class TestAnoikisResistance : public AbstractCellBasedTestSuite
 
         std::stringstream kill_count_file_name;
         // Uni Mac path
-        kill_count_file_name << "/Users/phillipbrown/Research/Crypt/Data/Chaste/CellKillCount/kill_count_" << "n_" << n << "_EES_"<< epithelialStiffness;
+        // kill_count_file_name << "/Users/phillipbrown/Research/Crypt/Data/Chaste/CellKillCount/kill_count_" << "n_" << n << "_EES_"<< epithelialStiffness;
         // Macbook path
-        // kill_count_file_name << "/Users/phillip/Research/Crypt/Data/Chaste/CellKillCount/kill_count_" << "n_" << n << "_EES_"<< epithelialStiffness;
+        kill_count_file_name << "/Users/phillip/Research/Crypt/Data/Chaste/CellKillCount/kill_count_" << "n_" << n << "_EES_"<< epithelialStiffness;
         // Phoenix path
         // kill_count_file_name << "data/CellKillCount/kill_count_" << "n_" << n << "_EES_"<< epithelialStiffness;
         kill_count_file_name << "_MS_" << membraneEpithelialSpringStiffness << "_VF_" << int(100 * quiescentVolumeFraction) << "_CCT_" << int(cellCycleTime) << ".txt";

@@ -20,12 +20,9 @@ V = length(vf);
 
 cct = 5;
 
-file_path = '/Users/phillipbrown/Research/Crypt/Data/Chaste/ParameterSearch/';
+file_path = '/Users/phillip/Research/Crypt/Data/Chaste/ParameterSearch/';
 
 pspace = nan(E,M,N,V);
-
-[total_count, slough, anoikis, prolif, differ, total_end] = get_data('/Users/phillipbrown/Research/Crypt/Data/Chaste/ParameterSearch/parameter_statistics_n_26_EES_50_MS_200_VF_75_CCT_5.txt');
-objective_function(total_count, slough, anoikis, prolif, differ, total_end)
 
 for k = 1:E
 	for l = 1:M
@@ -35,9 +32,6 @@ for k = 1:E
 					file_name = sprintf('%sparameter_statistics_n_%d_EES_%d_MS_%d_VF_%g_CCT_%d.txt',file_path, n(j), ees(k), ms(l), 100 * vf(m), cct);
 					[total_count, slough, anoikis, prolif, differ, total_end] = get_data(file_name);
 					pspace(k,l,j,m) = objective_function(total_count, slough, anoikis, prolif, differ, total_end);
-                    if strcmp(file_name,'/Users/phillipbrown/Research/Crypt/Data/Chaste/ParameterSearch/parameter_statistics_n_26_EES_50_MS_200_VF_75_CCT_5.txt')
-                        fprintf('%d,%d,%d,%d\n',k,l,j,m);
-                    end
 				end
 			end
 		end
@@ -50,8 +44,8 @@ for j = 1:N
 		h = figure;
 		imagesc(flipud(pspace(:,:,j,m)),'AlphaData',~isnan(flipud(pspace(:,:,j,m))), [0,50]);
 		set(gca, 'YTick', 2:2:E);
-		set(gca, 'YTickLabel', floor(fliplr(linspace(ees(1), ees(end), 8))));
-		set(gca, 'XTick', 4:4:20);
+		set(gca, 'YTickLabel', floor(fliplr(linspace(ees(1), ees(end-1), 8))));
+		set(gca, 'XTick', 1:5:25);
 		set(gca, 'XTickLabel', 150:25:250);
 		colorbar
 		heading = {'Objective function value for', sprintf('$n=$%d, $vf=$%g and G1 phase length = 5',n(j), vf(m))};
@@ -63,7 +57,7 @@ for j = 1:N
 	    pos = get(h,'Position');
 	    set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
 	    
-	    print(['/Users/phillipbrown/Research/Crypt/Images/ObjectiveFunction/MouseColonDesc/ObjectiveFunction_N_' num2str(n(j)) '_VF_' num2str(100 * vf(m)), '_CCT_' num2str(cct)],'-dpdf');
+	    print(['/Users/phillip/Research/Crypt/Images/ObjectiveFunction/MouseColonDesc/ObjectiveFunction_N_' num2str(n(j)) '_VF_' num2str(100 * vf(m)), '_CCT_' num2str(cct)],'-dpdf');
 
 		close(h);
 	end
