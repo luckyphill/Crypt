@@ -205,6 +205,7 @@ void SimpleAnoikisCellKiller::CheckAndLabelCellsForApoptosisOrDeath()
 		{
 			TRACE("About to kill")
 			PRINT_VARIABLE((*cell_iter)->GetCellId())
+			PRINT_VARIABLE((*cell_iter)->GetAge())
 			unsigned node_index = p_tissue->GetNodeCorrespondingToCell(*cell_iter)->GetIndex();
     		CellPtr p_cell = p_tissue->GetCellUsingLocationIndex(node_index);
 			if (mSlowDeath)

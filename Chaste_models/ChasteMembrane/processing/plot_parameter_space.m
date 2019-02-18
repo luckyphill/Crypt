@@ -20,7 +20,7 @@ V = length(vf);
 
 cct = 5;
 
-file_path = '/Users/phillip/Research/Crypt/Data/Chaste/ParameterSearch/';
+file_path = '/Users/phillipbrown/Research/Crypt/Data/Chaste/ParameterSearch/';
 
 pspace = nan(E,M,N,V);
 
@@ -57,7 +57,7 @@ for j = 1:N
 	    pos = get(h,'Position');
 	    set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
 	    
-	    print(['/Users/phillip/Research/Crypt/Images/ObjectiveFunction/MouseColonDesc/ObjectiveFunction_N_' num2str(n(j)) '_VF_' num2str(100 * vf(m)), '_CCT_' num2str(cct)],'-dpdf');
+	    print(['/Users/phillipbrown/Research/Crypt/Images/ObjectiveFunction/MouseColonDesc/ObjectiveFunction_N_' num2str(n(j)) '_VF_' num2str(100 * vf(m)), '_CCT_' num2str(cct)],'-dpdf');
 
 		close(h);
 	end
@@ -113,8 +113,5 @@ function pen = penalty(value, min, max, ramp)
         pen = abs(min - value) ^ ramp;
     end
     
-    if pen < 0
-        fprintf('Fucked up\n')
-    end
     
 end

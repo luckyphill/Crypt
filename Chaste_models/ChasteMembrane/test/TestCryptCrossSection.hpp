@@ -732,28 +732,36 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		PRINT_VARIABLE(cellId)
 	};
 
-	void xTestCryptDivisionRotation() throw(Exception)
+
+
+
+	void TestCryptDivisionRotation() throw(Exception)
 	{
 		// This test simulates a column of cells that can now move in 2 dimensions
 		// In order to retain the cells in a column, an etherial force needs to be added
 		// to approximate the role of the basement membrane
-		// 
-		// Additionally, this tests a 'division-rotation' force. This is designed to act like
-		// a torsion spring for cells undergoing mitosis, to stop them from popping up before
-		// they have finished dividing
+		// But, since there is no 'physical' membrane causing forces perpendicular to the column
+		// a minor element of randomness needs to be added to the division direction nudge
+		// the column out of it's unstable equilibrium.
 
-		// 1: add division nudge - done
-		// 2: add BM force to pull back into column - done 
-		// 3: determine BM force and range needed to get varying amounts of popping up - sort of done
-		// 4: make sure contact neighbours is correct
-		// 5: use phase based and contact inhibition CCM
-		// 6: use e-e force determined from experiments, and CI percentage
 
 
 		double popUpDistance = 1.1;
 		if(CommandLineArguments::Instance()->OptionExists("-pu"))
         {
         	popUpDistance = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-pu");
+        }
+
+        double adhesionForceLawParameter = 5.0; // adhesion atraction parameter
+        if(CommandLineArguments::Instance()->OptionExists("-aap"))
+        {
+        	adhesionForceLawParameter = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-aap");
+        }
+
+        double attractionParameter = 5.0; // epithelial attraction parameter
+        if(CommandLineArguments::Instance()->OptionExists("-eap"))
+        {
+        	attractionParameter = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-eap");
         }
 
         double membraneEpithelialSpringStiffness = 50;
@@ -768,13 +776,6 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
         {
         	epithelialStiffness = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-ees");
         }
-
-        double cellCycleTime = 5;
-        if(CommandLineArguments::Instance()->OptionExists("-cct"))
-        {
-        	cellCycleTime = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-cct");
-        }
-
 
         double meinekeStiffness = epithelialStiffness; // Newly divided spring stiffness
         if(CommandLineArguments::Instance()->OptionExists("-nds"))
@@ -803,20 +804,11 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
         }
 
-        unsigned n_prolif = 15; // Number of proliferative cells, counting up from the bottom
-        if(CommandLineArguments::Instance()->OptionExists("-np"))
-        {	
-        	n_prolif = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-np");
-
-        }
-
         bool wiggle = true; // Default to "2D"
         if(CommandLineArguments::Instance()->OptionExists("-oned"))
         {	
         	wiggle = false;
         }
-
-
 
         bool java_visualiser = false;
         double sampling_multiple = 100000;
@@ -827,24 +819,48 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
         }
 
+        double cellCycleTime = 2.0;
+        bool customCellCycleTime = false;
+        if(CommandLineArguments::Instance()->OptionExists("-cct"))
+        {
+        	customCellCycleTime = true;
+        	cellCycleTime = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-cct");
+        }
+
         double epithelialPreferredRadius = 0.5; // Must have this value due to volume calculation - can't set node radius as SetRadius(epithelialPreferredRadius) doesn't work
 
-        double equilibriumVolume = M_PI*epithelialPreferredRadius*epithelialPreferredRadius; // Depends on the preferred radius
+        double equilibriumVolume = M_PI*epithelialPreferredRadius*epithelialPreferredRadius;; // Depends on the preferred radius
 
         bool multiple_cells = true;
         unsigned n = 20;
+        if(CommandLineArguments::Instance()->OptionExists("-n"))
+        {	
+        	n = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-n");
+
+        }
+
+        unsigned n_prolif = n - 10; // Number of proliferative cells, counting up from the bottom
+        if(CommandLineArguments::Instance()->OptionExists("-np"))
+        {	
+        	n_prolif = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-np");
+
+        }
 
         unsigned node_counter = 0;
 
-		double dt = 0.001;
+		double dt = 0.002; // The minimum to get covergant simulations for a specific parameter set
+		if(CommandLineArguments::Instance()->OptionExists("-dt"))
+        {
+        	dt = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-dt");
+        }
 
 		double maxInteractionRadius = 2.0;
 
-		double wall_top = 20;
+		double wall_top = n;
 
 		double minimumCycleTime = 10;
 
-		unsigned cell_limit = 200; // At the smallest CI limit, there can be at most 400 cells, but we don't want to get there
+		unsigned cell_limit = 2 * n; // At the smallest CI limit, there can be at most 400 cells, but we don't want to get there
 		// A maximum of 350 will give at least 350 divisions, probably more, but the simulation won't run the full time
 		// so in the end, there should be enough to get a decent plot
         
@@ -922,8 +938,11 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 			{
 
 				SimpleWntContactInhibitionCellCycleModel* p_cycle_model = new SimpleWntContactInhibitionCellCycleModel();
-				double birth_time = (minimumCycleTime + cellCycleTime) * RandomNumberGenerator::Instance()->ranf();
-				p_cycle_model->SetTransitCellG1Duration(cellCycleTime);
+				double birth_time = (minimumCycleTime + cellCycleTime - 2) * RandomNumberGenerator::Instance()->ranf();
+				if (customCellCycleTime)
+				{
+					p_cycle_model->SetTransitCellG1Duration(cellCycleTime);
+				}
 				p_cycle_model->SetDimension(2);
 	   			p_cycle_model->SetEquilibriumVolume(equilibriumVolume);
 	   			p_cycle_model->SetQuiescentVolumeFraction(quiescentVolumeFraction);
@@ -943,7 +962,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
 		NodeBasedCellPopulation<2> cell_population(mesh, cells, location_indices);
 
-		// ********************************************************************************************
+
 		//Division vector rules
 		c_vector<double, 2> membraneAxis;
 		membraneAxis(0) = 0;
@@ -953,7 +972,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		pCentreBasedDivisionRule->SetMembraneAxis(membraneAxis);
 		pCentreBasedDivisionRule->SetWiggleDivision(wiggle);
 		cell_population.SetCentreBasedDivisionRule(pCentreBasedDivisionRule);
-		// ********************************************************************************************
+		
 
 
 		// A simulator with a stopping even when there are too many cells
@@ -963,7 +982,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		// Building the directory name
 		std::stringstream out;
         out << "n_" << n;
-        out << "_EES_"<< epithelialStiffness << "_VF_" << quiescentVolumeFraction;
+        out << "_EES_"<< epithelialStiffness << "_VF_" << quiescentVolumeFraction << "_MS_" << membraneEpithelialSpringStiffness << "_CCT_" << int(cellCycleTime);
         if(CommandLineArguments::Instance()->OptionExists("-run"))
         {
         	out << "_run_" << run_number;
@@ -996,6 +1015,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		// ********************************************************************************************
 		// Set force parameters
 		MAKE_PTR(BasicNonLinearSpringForce<2>, p_force);
+		// MAKE_PTR(BasicContactNeighbourSpringForce<2>, p_force);
 		p_force->SetSpringStiffness(epithelialStiffness);
 		p_force->SetRestLength(2 * epithelialPreferredRadius);
 		p_force->SetCutOffLength(3 * epithelialPreferredRadius);
@@ -1003,8 +1023,11 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		p_force->SetMeinekeSpringStiffness(meinekeStiffness);
 		p_force->SetMeinekeSpringGrowthDuration(1);
 
+		p_force->SetAttractionParameter(attractionParameter);
+
 		MAKE_PTR(NormalAdhesionForce<2>, p_adhesion);
         p_adhesion->SetMembraneEpithelialSpringStiffness(membraneEpithelialSpringStiffness);
+        p_adhesion->SetAdhesionForceLawParameter(adhesionForceLawParameter);
 
         MAKE_PTR(DividingRotationForce, p_rotation);
         p_rotation->SetTorsionalStiffness(20.0);
@@ -1045,17 +1068,20 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		simulator.SetOutputDivisionLocations(true);
 		PRINT_VARIABLE(simulator.GetOutputDivisionLocations())
 
-		simulator.Solve();
-		WntConcentration<2>::Instance()->Destroy();
+		cell_population.AddCellWriter<EpithelialCellForceWriter>();
 
+		simulator.Solve();
+		
 		// ********************************************************************************************
 		// Post simulation processing
-		// Probably best implemented as a 'writer', but have to work out how to di that first
+		// Probably best implemented as a 'writer', but have to work out how to do that first
 		// Get the highest cell ID, which should indicate the total number of cells made in the simulation
 		MeshBasedCellPopulation<2,2>* p_tissue = static_cast<MeshBasedCellPopulation<2,2>*>(&simulator.rGetCellPopulation());
 		std::list<CellPtr> pos_cells =  p_tissue->rGetCells();
 
 		unsigned cellId = 0;
+		unsigned proliferative = 0;
+		unsigned differentiated = 0;
 
         for (std::list<CellPtr>::iterator cell_iter = pos_cells.begin(); cell_iter != pos_cells.end(); ++cell_iter)
         {
@@ -1064,31 +1090,51 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
         	{
         		cellId = (*cell_iter)->GetCellId();
         	}
+        	if ((*cell_iter)->GetCellProliferativeType()->IsType<DifferentiatedCellProliferativeType>() && (*cell_iter)->GetCellId() != 0)
+        	{
+        		differentiated++;
+        	}
+        	if ((*cell_iter)->GetCellProliferativeType()->IsType<TransitCellProliferativeType>())
+        	{
+        		proliferative++;
+        	}
             
         }
 
-        // std::stringstream kill_count_file_name;
-        // // Mac path
-        // // kill_count_file_name << "/Users/phillipbrown/Research/Crypt/Data/Chaste/CellKillCount/kill_count_" << "n_" << n << "_EES_"<< epithelialStiffness;
-        // // Phoenix path
-        // kill_count_file_name << "data/CellKillCount/kill_count_" << "n_" << n << "_EES_"<< epithelialStiffness;
-        // kill_count_file_name << "_MS" << membraneEpithelialSpringStiffness << ".txt";
-        // // VF and PU don't change here
-        // // << "_VF_" << quiescentVolumeFraction << "_PU_" << popUpDistance <<
+        unsigned total_cells = proliferative + differentiated;
 
-        // ofstream kill_count_file;
-        // kill_count_file.open(kill_count_file_name.str());
 
-        // kill_count_file << "Total cells, killed sloughing, killed anoikis\n";
+        WntConcentration<2>::Instance()->Destroy();
 
-        // kill_count_file << cellId << "," << p_sloughing_killer->GetCellKillCount() << "," << p_anoikis_killer->GetCellKillCount();
+        std::stringstream kill_count_file_name;
+        // Uni Mac path
+        // kill_count_file_name << "/Users/phillipbrown/Research/Crypt/Data/Chaste/ParameterSearch/parameter_statistics_" << "n_" << n << "_EES_"<< epithelialStiffness;
+        // Macbook path
+        kill_count_file_name << "/Users/phillip/Research/Crypt/Data/Chaste/ParameterSearch/parameter_statistics_" << "n_" << n << "_EES_"<< epithelialStiffness;
+        // Phoenix path
+        // kill_count_file_name << "data/ParameterSearch/parameter_statistics_" << "n_" << n << "_EES_"<< epithelialStiffness;
+        kill_count_file_name << "_MS_" << membraneEpithelialSpringStiffness << "_VF_" << int(100 * quiescentVolumeFraction) << "_CCT_" << int(cellCycleTime) << ".txt";
+        // VF and PU don't change here
+        //  << "_PU_" << popUpDistance <<
 
-        // kill_count_file.close();
+        ofstream kill_count_file;
+        kill_count_file.open(kill_count_file_name.str());
+
+        kill_count_file << "Total cells, killed sloughing, killed anoikis, final proliferative, final differentiated, final total\n";
+
+        kill_count_file << cellId << "," << p_sloughing_killer->GetCellKillCount() << "," << p_anoikis_killer->GetCellKillCount();
+        kill_count_file << "," << proliferative << "," << differentiated << "," << total_cells; 
+
+        kill_count_file.close();
 
         // ********************************************************************************************
 
         PRINT_VARIABLE(p_sloughing_killer->GetCellKillCount())
 		PRINT_VARIABLE(p_anoikis_killer->GetCellKillCount())
+		PRINT_VARIABLE(proliferative)
+		PRINT_VARIABLE(differentiated)
+		PRINT_VARIABLE(total_cells)
 		PRINT_VARIABLE(cellId)
 	};
+
 };
