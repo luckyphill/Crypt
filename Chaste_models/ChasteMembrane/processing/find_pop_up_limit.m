@@ -13,9 +13,6 @@ function find_pop_up_limit(cct, vf)
 
     ms_limit = nan(size(ees));
 
-    % cct = 2;
-    % vf = 0.7;
-
     % Just to get things started
     ms_upper_power = 5;
     ms_lower_power = -inf;

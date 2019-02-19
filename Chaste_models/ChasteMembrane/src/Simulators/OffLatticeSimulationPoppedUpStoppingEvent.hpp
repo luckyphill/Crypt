@@ -6,7 +6,7 @@ Stops the simulation when a cell pops up
 
 #ifndef OffLatticeSimulationPoppedUpStoppingEvent_HPP_
 #define OffLatticeSimulationPoppedUpStoppingEvent_HPP_
-
+#include "SimpleAnoikisCellKiller.hpp"
 #include "OffLatticeSimulation.hpp"
 
 /**
@@ -19,9 +19,13 @@ private:
 	/** Define a stopping event which says stop when there are no mutant or no healthy cells. */
     bool StoppingEventHasOccurred();
 
+    boost::shared_ptr<SimpleAnoikisCellKiller> mPopUpKiller;
+
 
 public:
     OffLatticeSimulationPoppedUpStoppingEvent(AbstractCellPopulation<2>& rCellPopulation);
+
+    void SetPopUpKiller(boost::shared_ptr<SimpleAnoikisCellKiller> popUpKiller);
 
 
 };

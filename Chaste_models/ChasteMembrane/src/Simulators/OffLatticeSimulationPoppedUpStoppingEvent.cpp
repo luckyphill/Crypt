@@ -15,16 +15,25 @@ bool OffLatticeSimulationPoppedUpStoppingEvent::StoppingEventHasOccurred()
 
   std::list<CellPtr> pos_cells =  mrCellPopulation.rGetCells();
 
-  for (std::list<CellPtr>::iterator cell_iter = pos_cells.begin(); cell_iter != pos_cells.end(); ++cell_iter)
+  if (SimulationTime::Instance()->GetTime() > 30 || mPopUpKiller->GetCellKillCount() > 10)
   {
-    
-    if ((*cell_iter)->HasCellProperty<AnoikisCellTagged>())
+
+    for (std::list<CellPtr>::iterator cell_iter = pos_cells.begin(); cell_iter != pos_cells.end(); ++cell_iter)
     {
-      TRACE("FAILED")
-      return true;
+      
+      if ((*cell_iter)->HasCellProperty<AnoikisCellTagged>())
+      {
+        TRACE("FAILED")
+        return true;
+      }
     }
   }
   return false;
+}
+
+void SetPopUpKiller(boost::shared_ptr<SimpleAnoikisCellKiller> popUpKiller)
+{
+  mPopUpKiller = popUpKiller;
 }
 
 OffLatticeSimulationPoppedUpStoppingEvent::OffLatticeSimulationPoppedUpStoppingEvent(

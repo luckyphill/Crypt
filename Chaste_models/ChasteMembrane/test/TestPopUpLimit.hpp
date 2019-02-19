@@ -79,7 +79,8 @@ class TestPopUpLimit : public AbstractCellBasedTestSuite
 
 	void TestLimit() throw(Exception)
 	{
-		// Finds the limiting adhesion force that stops a cell popping up
+		// Determines if the adhesion stiffness allows cells to pop up
+		// PASSED means no cell popped up
 
 
 		double popUpDistance = 1.1;
@@ -133,17 +134,10 @@ class TestPopUpLimit : public AbstractCellBasedTestSuite
 
         }
 
-        unsigned run_number = 1; // For the parameter sweep, must keep track of the run number for saving the output file
+        double run_number = 1; // For the parameter sweep, must keep track of the run number for saving the output file
         if(CommandLineArguments::Instance()->OptionExists("-run"))
         {	
-        	run_number = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-run");
-
-        }
-
-        unsigned n_prolif = 15; // Number of proliferative cells, counting up from the bottom
-        if(CommandLineArguments::Instance()->OptionExists("-np"))
-        {	
-        	n_prolif = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-np");
+        	run_number = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-run");
 
         }
 
@@ -176,17 +170,37 @@ class TestPopUpLimit : public AbstractCellBasedTestSuite
 
         bool multiple_cells = true;
         unsigned n = 20;
+        if(CommandLineArguments::Instance()->OptionExists("-n"))
+        {	
+        	n = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-n");
+
+        }
+
+        unsigned n_prolif = n - 10; // Number of proliferative cells, counting up from the bottom
+        if(CommandLineArguments::Instance()->OptionExists("-np"))
+        {	
+        	n_prolif = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-np");
+
+        }
 
         unsigned node_counter = 0;
 
-		double dt = 0.001;
+		double dt = 0.002; // The minimum to get covergant simulations for a specific parameter set
+		if(CommandLineArguments::Instance()->OptionExists("-dt"))
+        {
+        	dt = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-dt");
+        }
 
 		double maxInteractionRadius = 2.0;
 
-		double wall_top = 20;
+		double wall_top = n;
 
 		double minimumCycleTime = 10;
-      
+
+		unsigned cell_limit = 2 * n; // At the smallest CI limit, there can be at most 400 cells, but we don't want to get there
+		// A maximum of 350 will give at least 350 divisions, probably more, but the simulation won't run the full time
+		// so in the end, there should be enough to get a decent plot
+        
 
         // First things first - need to seed the rng to make sure each simulation is different
         RandomNumberGenerator::Instance()->Reseed(run_number * quiescentVolumeFraction * epithelialStiffness);
@@ -378,6 +392,7 @@ class TestPopUpLimit : public AbstractCellBasedTestSuite
 		p_anoikis_killer->SetPopUpDistance(popUpDistance);
 		// p_anoikis_killer->SetResistantPoppedUpLifeExpectancy(end_time); // resistant cells don't die from anoikis
 		simulator.AddCellKiller(p_anoikis_killer);
+		simulator.SetPopUpKiller(p_anoikis_killer);
 		// ********************************************************************************************
 
 
@@ -395,9 +410,9 @@ class TestPopUpLimit : public AbstractCellBasedTestSuite
 
 		std::stringstream pop_up_file_name;
         // Uni Mac path
-        // pop_up_file_name << "/Users/phillipbrown/Research/Crypt/Data/Chaste/PopUpLimit/pop_up_" << "n_" << n << "_EES_"<< epithelialStiffness;
+        pop_up_file_name << "/Users/phillipbrown/Research/Crypt/Data/Chaste/PopUpLimit/pop_up_" << "n_" << n << "_EES_"<< epithelialStiffness;
         // Macbook path
-        pop_up_file_name << "/Users/phillip/Research/Crypt/Data/Chaste/PopUpLimit/pop_up_" << "n_" << n << "_EES_"<< epithelialStiffness;
+        // pop_up_file_name << "/Users/phillip/Research/Crypt/Data/Chaste/PopUpLimit/pop_up_" << "n_" << n << "_EES_"<< epithelialStiffness;
         // Phoenix path
         // pop_up_file_name << "/home/a1738927/fastdir/Chaste/data/PopUpLimit/pop_up_" << "n_" << n << "_EES_"<< epithelialStiffness;
         pop_up_file_name << "_MS_" << membraneEpithelialSpringStiffness << "_VF_" << int(100 * quiescentVolumeFraction) << "_CCT_";
@@ -407,6 +422,8 @@ class TestPopUpLimit : public AbstractCellBasedTestSuite
 
         ofstream pop_up_file;
         pop_up_file.open(pop_up_file_name.str());
+
+        PRINT_VARIABLE(pop_up_file_name.str())
 
         // If the simulation didn't reach the end
         if (current_time < end_time - dt)

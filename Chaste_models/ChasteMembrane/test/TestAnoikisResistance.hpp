@@ -1233,7 +1233,9 @@ class TestAnoikisResistance : public AbstractCellBasedTestSuite
 		// After running the simulation to homeostasis, we introduce a mutation to the cell n_pos from the bottom
 		MeshBasedCellPopulation<2,2>* p_tissue = static_cast<MeshBasedCellPopulation<2,2>*>(&simulator.rGetCellPopulation());
 		std::list<CellPtr> pos_cells =  p_tissue->rGetCells();
-		std::sort(pos_cells.begin(), pos_cells.end(), 
+		// The following sorts cells into the order of height in the crypt.
+		// If something goes wrong with these lines of code, the errors are useless
+		pos_cells.sort( 
 			[p_tissue](CellPtr A, CellPtr B)
 		{ 
 		    Node<2>* node_A =  p_tissue->GetNodeCorrespondingToCell(A);
