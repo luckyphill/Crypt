@@ -1234,7 +1234,7 @@ class TestAnoikisResistance : public AbstractCellBasedTestSuite
 		MeshBasedCellPopulation<2,2>* p_tissue = static_cast<MeshBasedCellPopulation<2,2>*>(&simulator.rGetCellPopulation());
 		std::list<CellPtr> pos_cells =  p_tissue->rGetCells();
 		// The following sorts cells into the order of height in the crypt.
-		// If something goes wrong with these lines of code, the errors are useless
+		// If something goes wrong with these lines of code, the error messages are useless
 		pos_cells.sort( 
 			[p_tissue](CellPtr A, CellPtr B)
 		{ 
@@ -1640,13 +1640,5 @@ class TestAnoikisResistance : public AbstractCellBasedTestSuite
 		PRINT_VARIABLE(cellId)
 	};
 
-
-	// bool sort_height(CellPtr A, CellPtr B)
-	// { 
-	// 	Node<2>* node_A =  p_tissue->GetNodeCorrespondingToCell(A);
-	// 	Node<2>* node_B =  p_tissue->GetNodeCorrespondingToCell(B);
- //        c_vector<double, 2> node_location = p_node->rGetLocation();
-	//     return (node_A->rGetLocation()[1] < node_B->rGetlocation()[1]); 
-	// };
 
 };

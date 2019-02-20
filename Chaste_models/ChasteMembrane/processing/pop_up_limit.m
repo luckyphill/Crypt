@@ -66,22 +66,47 @@ function result = run_simulation(ms, n, ees, cct, vf, n_trials)
     % The simulation outputs PASSED or FAILED to a file named by the
     % parameter set used. First check if it already exists, if not, run the
     % actual simulation to generate it.
-    result = 0;
+
+    % We want to run simulations until we are certain (beyond a given threshold) that 
+    % the parameter set will result in no cells popping up OR we are certain that
+    % the parameter set will NOT pass
+    result = false;
+    successes = 0;
     for trial = 1:n_trials
         file = sprintf('/Users/phillipbrown/Research/Crypt/Data/Chaste/PopUpLimit/pop_up_n_%d_EES_%g_MS_%g_VF_%g_CCT_%d_run_%d.txt', n, ees, ms, 100 * vf, cct, trial);
     %     file = sprintf('/Users/phillip/Research/Crypt/Data/Chaste/PopUpLimit/pop_up_n_20_EES_%g_MS_%g_VF_%g_CCT_%d.txt', ees, ms, 100 * vf, cct);
         try
-            result = read_data(file);
+            successes = successes + read_data(file);
             fprintf('Found existing data: n = %d, EES = %g, MS = %g, VF = %g, CCT = %d, run %d\n', n, ees, ms, vf, cct, trial);
         catch
             fprintf('Running simulation: n = %d, EES = %g, MS = %g, VF = %g, CCT = %d, run %d\n', n, ees, ms, vf, cct, trial);
         	[status,cmdout] = system(['/Users/phillipbrown/chaste_build/projects/ChasteMembrane/test/TestPopUpLimit -n ' num2str(n) ' -cct ' num2str(cct) ' -ees ' num2str(ees) ' -ms ' num2str(ms) ' -vf ' num2str(vf) ' -run ' num2str(trial)]);
     %         [status,cmdout] = system(['/Users/phillip/chaste_build/projects/ChasteMembrane/test/TestPopUpLimit -cct ' num2str(cct) ' -ees ' num2str(ees) ' -ms ' num2str(ms) ' -vf ' num2str(vf)]);
-            result = read_data(file);
+            successes = successes + read_data(file);
         end
-        if ~result
+
+        failures = trial - successes;
+
+        % Here we use the Beta distribution to check if the bulk of the probability mass
+        % is past a certain threshold
+
+        % The probability mass that is below p = 0.95
+        mass_95 = betacdf(0.95, successes + 1, failures + 1);
+
+        if (trial > 3 && mass_95 > 0.98)
+            % No chance of passing
+            result = false;
+            fprintf('After %d runs: %d successes and %d failures. More than 98%% sure that cell pop up in more than 5%% of simulations\n', trial, successes, failures)
             break;
         end
+
+        if (mass_95 < 0.4)
+            % We are 60% sure that the probility of no pop-ups is above 0.95
+            result = true;
+            fprintf('After %d runs: %d successes and %d failures. More than 60%% sure cells pop up in less than 5%% of simulations\n', trial, successes, failures)
+            break;
+        end
+
     end
 
 end

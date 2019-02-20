@@ -42,6 +42,7 @@
 // Boundary conditions
 #include "BoundaryCellProperty.hpp"
 #include "CryptBoundaryCondition.hpp"
+#include "DividingBoundaryCondition.hpp"
 
 // Cell killers
 #include "SimpleSloughingCellKiller.hpp"
@@ -378,9 +379,15 @@ class TestPopUpLimit : public AbstractCellBasedTestSuite
 		simulator.AddForce(p_force);
 		simulator.AddForce(p_adhesion);
 		// ********************************************************************************************
+		// Add the boundary conditions
 
+		// Bottom cell locked in place
 		MAKE_PTR_ARGS(CryptBoundaryCondition, p_bc, (&cell_population));
 		simulator.AddCellPopulationBoundaryCondition(p_bc);
+
+		// Cells in M phase can't pop up
+		MAKE_PTR_ARGS(DividingBoundaryCondition, p_dbc, (&cell_population));
+		simulator.AddCellPopulationBoundaryCondition(p_dbc);
 
 		// ********************************************************************************************
 		// Add in the cell killers
