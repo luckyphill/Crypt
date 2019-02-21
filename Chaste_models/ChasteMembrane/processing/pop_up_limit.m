@@ -20,6 +20,7 @@ function ms_upper = pop_up_limit(ees, n, cct, vf, n_trials, ms_upper_power_guess
     % The lower bound must fail, so make sure it's low enough
     while (result_lower)
         fprintf('Decreased lower, trying again\n');
+        ms_upper = ms_lower;
         ms_lower = ms_lower/2;
         result_lower = run_simulation(ms_lower, n, ees, cct, vf, n_trials, 0, 0);
     end
@@ -27,8 +28,8 @@ function ms_upper = pop_up_limit(ees, n, cct, vf, n_trials, ms_upper_power_guess
     % The upper bound must pass, so make sure it's high enough
     while (~result_upper)
         fprintf('Increased upper, trying again\n');
+        ms_lower = ms_upper; % If ms_upper fails, use it as the lower
         ms_upper = 2 * ms_upper;
-        ms_lower = ms_upper / 2; % If ms_upper fails, use it as the lower
         result_upper = run_simulation(ms_upper, n, ees, cct, vf, n_trials, 0, 0);
     end
     
@@ -111,7 +112,7 @@ function result = run_simulation(ms, n, ees, cct, vf, n_trials, prior_s, prior_f
             % No chance of passing
             result = false;
             fprintf('After %d runs: %d successes and %d failures. At least %.1f%% sure that cells pop up in more than 5%% of simulations\n', trial, s, f, 100 * mass_95);
-            fprintf('Pasing not possible given the number of trials permitted (%d)\n', n_trials);
+            fprintf('Passing not possible given the number of trials permitted (%d)\n', n_trials);
             break;
         else
             if (mass_95 < 0.4)
