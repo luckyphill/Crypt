@@ -198,7 +198,7 @@ class TestPopUpLimit : public AbstractCellBasedTestSuite
 
 		double minimumCycleTime = 10;
 
-		unsigned cell_limit = 2 * n; // At the smallest CI limit, there can be at most 400 cells, but we don't want to get there
+		// unsigned cell_limit = 2 * n; // At the smallest CI limit, there can be at most 400 cells, but we don't want to get there
 		// A maximum of 350 will give at least 350 divisions, probably more, but the simulation won't run the full time
 		// so in the end, there should be enough to get a decent plot
         
@@ -417,11 +417,11 @@ class TestPopUpLimit : public AbstractCellBasedTestSuite
 
 		std::stringstream pop_up_file_name;
         // Uni Mac path
-        pop_up_file_name << "/Users/phillipbrown/Research/Crypt/Data/Chaste/PopUpLimit/pop_up_" << "n_" << n << "_EES_"<< epithelialStiffness;
+        // pop_up_file_name << "/Users/phillipbrown/Research/Crypt/Data/Chaste/PopUpLimit/pop_up_" << "n_" << n << "_EES_"<< epithelialStiffness;
         // Macbook path
         // pop_up_file_name << "/Users/phillip/Research/Crypt/Data/Chaste/PopUpLimit/pop_up_" << "n_" << n << "_EES_"<< epithelialStiffness;
         // Phoenix path
-        // pop_up_file_name << "/home/a1738927/fastdir/Chaste/data/PopUpLimit/pop_up_" << "n_" << n << "_EES_"<< epithelialStiffness;
+        pop_up_file_name << "/home/a1738927/fastdir/Chaste/data/PopUpLimit/pop_up_" << "n_" << n << "_EES_"<< epithelialStiffness;
         pop_up_file_name << "_MS_" << membraneEpithelialSpringStiffness << "_VF_" << int(100 * quiescentVolumeFraction) << "_CCT_";
         pop_up_file_name << int(cellCycleTime) << "_run_" << run_number <<  ".txt";
         // VF and PU don't change here
