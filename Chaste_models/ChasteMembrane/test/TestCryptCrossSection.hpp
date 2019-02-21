@@ -336,7 +336,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		WntConcentration<2>::Instance()->Destroy();
 	};
 
-	void TestCryptBasicWnt() throw(Exception)
+	void xTestCryptBasicWnt() throw(Exception)
 	{
 		// This test simulates a column of cells that can now move in 2 dimensions
 		// In order to retain the cells in a column, an etherial force needs to be added
@@ -733,7 +733,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		PRINT_VARIABLE(cellId)
 	};
 
-	void TestCryptDivisionRotation() throw(Exception)
+	void xTestCryptDivisionRotation() throw(Exception)
 	{
 		// This test simulates a column of cells that can now move in 2 dimensions
 		// In order to retain the cells in a column, an etherial force needs to be added
