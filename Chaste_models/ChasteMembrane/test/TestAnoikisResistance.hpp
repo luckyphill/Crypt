@@ -76,6 +76,10 @@
 
 class TestAnoikisResistance : public AbstractCellBasedTestSuite
 {
+	// Most up to date test: TestResistantAndWeakenedDivisionBC
+	// Running any other test may not produce output in the expected format
+	// for further processing
+
 	public:
 
 	void xTestCryptAnoikisResistant() throw(Exception)
@@ -1153,10 +1157,7 @@ class TestAnoikisResistance : public AbstractCellBasedTestSuite
 		std::stringstream out;
         out << "n_" << n;
         out << "_EES_"<< epithelialStiffness << "_VF_" << quiescentVolumeFraction << "_MS_" << membraneEpithelialSpringStiffness << "_CCT_" << int(cellCycleTime);
-        if(CommandLineArguments::Instance()->OptionExists("-run"))
-        {
-        	out << "_run_" << run_number;
-        }
+        out << "_run_" << run_number;
         std::string output_directory = "TestCryptAnoikisResistant/" +  out.str();
 
 		simulator.SetOutputDirectory(output_directory);

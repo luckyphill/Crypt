@@ -77,6 +77,10 @@
 
 class TestCryptCrossSection : public AbstractCellBasedTestSuite
 {
+	// Most up to date test is: TestCryptDivisionBoundaryCondition
+	// Running any other test may not produce output in the expected format
+	// for further processing
+
 	public:
 
 	void xTestCryptWiggleDivision() throw(Exception)
@@ -1142,6 +1146,8 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		PRINT_VARIABLE(cellId)
 	};
 
+	// This is the most up-to-date test.
+	// Any output format found in here may not be found in previous tests
 	void TestCryptDivisionBoundaryCondition() throw(Exception)
 	{
 		// This test simulates a column of cells that can now move in 2 dimensions
@@ -1151,7 +1157,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		// a minor element of randomness needs to be added to the division direction nudge
 		// the column out of it's unstable equilibrium.
 
-		// IT IMPLEMENTS A BOUNDARY CONDITION METHOD TO CELLS IN MITOSIS POPPING UP
+		// IT IMPLEMENTS A BOUNDARY CONDITION METHOD TO STOP CELLS IN MITOSIS POPPING UP
 
 
 
@@ -1392,10 +1398,8 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		std::stringstream out;
         out << "n_" << n;
         out << "_EES_"<< epithelialStiffness << "_VF_" << quiescentVolumeFraction << "_MS_" << membraneEpithelialSpringStiffness << "_CCT_" << int(cellCycleTime);
-        if(CommandLineArguments::Instance()->OptionExists("-run"))
-        {
-        	out << "_run_" << run_number;
-        }
+        out << "_run_" << run_number;
+        
         std::string output_directory = "TestCryptDivisionBoundaryCondition/" +  out.str();
 
 		simulator.SetOutputDirectory(output_directory);
@@ -1524,9 +1528,9 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
         // Uni Mac path
         // kill_count_file_name << "/Users/phillipbrown/Research/Crypt/Data/Chaste/ParameterSearch/parameter_statistics_" << "n_" << n << "_EES_"<< epithelialStiffness;
         // Macbook path
-        kill_count_file_name << "/Users/phillip/Research/Crypt/Data/Chaste/ParameterSearch/parameter_statistics_" << "n_" << n << "_EES_"<< epithelialStiffness;
+        // kill_count_file_name << "/Users/phillip/Research/Crypt/Data/Chaste/ParameterSearch/parameter_statistics_" << "n_" << n << "_EES_"<< epithelialStiffness;
         // Phoenix path
-        // kill_count_file_name << "data/ParameterSearch/parameter_statistics_" << "n_" << n << "_EES_"<< epithelialStiffness;
+        kill_count_file_name << "data/ParameterSearch/parameter_statistics_" << "n_" << n << "_EES_"<< epithelialStiffness;
         kill_count_file_name << "_MS_" << membraneEpithelialSpringStiffness << "_VF_" << int(100 * quiescentVolumeFraction) << "_CCT_" << int(cellCycleTime) << ".txt";
         // VF and PU don't change here
         //  << "_PU_" << popUpDistance <<

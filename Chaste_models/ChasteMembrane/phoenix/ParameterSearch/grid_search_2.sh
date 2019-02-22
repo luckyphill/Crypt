@@ -2,9 +2,9 @@
 #SBATCH -p batch 
 #SBATCH -N 1 
 #SBATCH -n 1 
-#SBATCH --time=00:20:00 
+#SBATCH --time=02:00:00 
 #SBATCH --mem=1GB 
-#SBATCH --array=0-10000
+#SBATCH --array=0-4000
 #SBATCH --err="output/grid_search_2_%a.err" 
 #SBATCH --output="output/grid_search_2_%a.out" 
 #SBATCH --job-name="grid_search_2"
@@ -34,9 +34,12 @@ do
 done < grid_search_2.txt 
 
 if [ $found = 1 ]; then
+	for RUN in $(seq 1 1 10)
+	do
 
-	echo "/home/a1738927/fastdir/chaste_build/projects/ChasteMembrane/test/TestCryptCrossSection -n ${n} -ees ${ees} -ms ${ms} -cct 5 -vf ${vf}";
-	/home/a1738927/fastdir/chaste_build/projects/ChasteMembrane/test/TestCryptCrossSection -n ${n} -ees ${ees} -ms ${ms} -cct 5 -vf ${vf} -dt 0.001
-else 
+	echo "/home/a1738927/fastdir/chaste_build/projects/ChasteMembrane/test/TestCryptCrossSection -n ${n} -ees ${ees} -ms ${ms} -cct 5 -vf ${vf} -run ${RUN}";
+	/home/a1738927/fastdir/chaste_build/projects/ChasteMembrane/test/TestCryptCrossSection -n ${n} -ees ${ees} -ms ${ms} -cct 5 -vf ${vf} -dt 0.001 -run ${RUN}
+	done
+else
   echo "grid_search_2.txt does not have enough parameters for $SLURM_ARRAY_TASK_ID index" 
 fi
