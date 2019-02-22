@@ -52,6 +52,7 @@
 #include "SimpleSloughingCellKiller.hpp"
 #include "TopAndBottomSloughing.hpp"
 #include "SimpleAnoikisCellKiller.hpp"
+#include "IsolatedCellKiller.hpp"
 
 //Division Rules
 #include "StickToMembraneDivisionRule.hpp"
@@ -403,6 +404,9 @@ class TestAnoikisResistance : public AbstractCellBasedTestSuite
 		p_anoikis_killer->SetPopUpDistance(popUpDistance);
 		p_anoikis_killer->SetResistantPoppedUpLifeExpectancy(resistantPoppedUpLifeExpectancy); // resistant cells don't die from anoikis immediately
 		simulator.AddCellKiller(p_anoikis_killer);
+
+		MAKE_PTR_ARGS(IsolatedCellKiller<2>, p_isolated_killer, (&cell_population));
+		simulator.AddCellKiller(p_isolated_killer);
 		// ********************************************************************************************
 
 
@@ -821,6 +825,9 @@ class TestAnoikisResistance : public AbstractCellBasedTestSuite
 		p_anoikis_killer->SetPopUpDistance(popUpDistance);
 		p_anoikis_killer->SetResistantPoppedUpLifeExpectancy(resistantPoppedUpLifeExpectancy); // resistant cells don't die from anoikis immediately
 		simulator.AddCellKiller(p_anoikis_killer);
+
+		MAKE_PTR_ARGS(IsolatedCellKiller<2>, p_isolated_killer, (&cell_population));
+		simulator.AddCellKiller(p_isolated_killer);
 		// ********************************************************************************************
 
 
@@ -1223,6 +1230,9 @@ class TestAnoikisResistance : public AbstractCellBasedTestSuite
 		p_anoikis_killer->SetPopUpDistance(popUpDistance);
 		p_anoikis_killer->SetResistantPoppedUpLifeExpectancy(resistantPoppedUpLifeExpectancy); // resistant cells don't die from anoikis immediately
 		simulator.AddCellKiller(p_anoikis_killer);
+
+		MAKE_PTR_ARGS(IsolatedCellKiller<2>, p_isolated_killer, (&cell_population));
+		simulator.AddCellKiller(p_isolated_killer);
 		// ********************************************************************************************
 
 

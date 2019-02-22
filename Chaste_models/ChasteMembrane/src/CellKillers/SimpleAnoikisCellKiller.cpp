@@ -119,27 +119,6 @@ bool SimpleAnoikisCellKiller::IsPoppedUpCellInVector(CellPtr check_cell)
 	return false;
 }
 
-bool SimpleAnoikisCellKiller::IsPoppedUpCellIsolated(CellPtr p_cell)
-{
-		NodeBasedCellPopulation<2>* p_tissue = static_cast<NodeBasedCellPopulation<2>*> (this->mpCellPopulation);
-
-		//Update cell population
-		p_tissue->Update();
-
-		unsigned nodeIndex = p_tissue->GetNodeCorrespondingToCell(p_cell)->GetIndex();
-
-		std::set<unsigned> neighbours;
-		double radius = 1.5; // Distance to check for neighbours
-
-		neighbours = p_tissue->GetNodesWithinNeighbourhoodRadius(nodeIndex, radius);
-
-		if(neighbours.empty())
-		{
-			return true;
-		}
-
-		return false;
-}
 
 std::vector<CellPtr> SimpleAnoikisCellKiller::GetCellsReadyToDie()
 {
@@ -150,33 +129,26 @@ std::vector<CellPtr> SimpleAnoikisCellKiller::GetCellsReadyToDie()
 
 	while(it != mCellsForDelayedAnoikis.end())
 	{
-		if (IsPoppedUpCellIsolated(it->first))
-		{	
-			TRACE("Isolated cell ready to die")
+
+		if (!it->first->GetMutationState()->IsType<TransitCellAnoikisResistantMutationState>() && SimulationTime::Instance()->GetTime() - it->second > mPoppedUpLifeExpectancy)
+		{
+			TRACE("Normal cell ready to die")
 			PRINT_VARIABLE(it->second)
 			cellsReadyToDie.push_back(it->first);
 			it = mCellsForDelayedAnoikis.erase(it);
 		} else
 		{
-			if (!it->first->GetMutationState()->IsType<TransitCellAnoikisResistantMutationState>() && SimulationTime::Instance()->GetTime() - it->second > mPoppedUpLifeExpectancy)
+			if (it->first->GetMutationState()->IsType<TransitCellAnoikisResistantMutationState>() && SimulationTime::Instance()->GetTime() - it->second > mResistantPoppedUpLifeExpectancy)
 			{
-				TRACE("Normal cell ready to die")
+				TRACE("Mutant cell ready to die")
 				PRINT_VARIABLE(it->second)
 				cellsReadyToDie.push_back(it->first);
 				it = mCellsForDelayedAnoikis.erase(it);
-			} else
-			{
-				if (it->first->GetMutationState()->IsType<TransitCellAnoikisResistantMutationState>() && SimulationTime::Instance()->GetTime() - it->second > mResistantPoppedUpLifeExpectancy)
-				{
-					TRACE("Mutant cell ready to die")
-					PRINT_VARIABLE(it->second)
-					cellsReadyToDie.push_back(it->first);
-					it = mCellsForDelayedAnoikis.erase(it);
-				} else {
-					++it;
-				}
+			} else {
+				++it;
 			}
 		}
+		
 
 	}
 	return cellsReadyToDie;

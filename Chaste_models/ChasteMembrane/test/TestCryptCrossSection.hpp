@@ -48,6 +48,7 @@
 #include "SimpleSloughingCellKiller.hpp"
 #include "TopAndBottomSloughing.hpp"
 #include "SimpleAnoikisCellKiller.hpp"
+#include "IsolatedCellKiller.hpp"
 
 //Division Rules
 #include "StickToMembraneDivisionRule.hpp"
@@ -655,6 +656,9 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		MAKE_PTR_ARGS(SimpleAnoikisCellKiller, p_anoikis_killer, (&cell_population));
 		p_anoikis_killer->SetPopUpDistance(popUpDistance);
 		simulator.AddCellKiller(p_anoikis_killer);
+
+		MAKE_PTR_ARGS(IsolatedCellKiller<2>, p_isolated_killer, (&cell_population));
+		simulator.AddCellKiller(p_isolated_killer);
 		// ********************************************************************************************
 
 
@@ -1057,6 +1061,9 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		MAKE_PTR_ARGS(SimpleAnoikisCellKiller, p_anoikis_killer, (&cell_population));
 		p_anoikis_killer->SetPopUpDistance(popUpDistance);
 		simulator.AddCellKiller(p_anoikis_killer);
+
+		MAKE_PTR_ARGS(IsolatedCellKiller<2>, p_isolated_killer, (&cell_population));
+		simulator.AddCellKiller(p_isolated_killer);
 		// ********************************************************************************************
 
 
@@ -1463,6 +1470,9 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		MAKE_PTR_ARGS(SimpleAnoikisCellKiller, p_anoikis_killer, (&cell_population));
 		p_anoikis_killer->SetPopUpDistance(popUpDistance);
 		simulator.AddCellKiller(p_anoikis_killer);
+
+		MAKE_PTR_ARGS(IsolatedCellKiller<2>, p_isolated_killer, (&cell_population));
+		simulator.AddCellKiller(p_isolated_killer);
 		// ********************************************************************************************
 
 

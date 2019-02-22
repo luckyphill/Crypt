@@ -86,8 +86,6 @@ public:
 
     bool IsPoppedUpCellInVector(CellPtr check_cell);
 
-    bool IsPoppedUpCellIsolated(CellPtr p_cell);
-
     /**
      *  Loops over and kills cells by anoikis or at the orifice if instructed.
      */
