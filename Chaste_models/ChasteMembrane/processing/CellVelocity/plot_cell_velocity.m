@@ -1,6 +1,6 @@
 function v = plot_cell_velocity(n, ees, ms, cct, vf)
 
-    file = sprintf('/Users/phillip/Research/Crypt/Data/Chaste/CellVelocity/cell_positions_EES_%g_VF_%g_MS_%g_CCT_%g.txt',ees, 100 * vf, ms, cct);
+    file = sprintf('/Users/phillip/Research/Crypt/Data/Chaste/CellVelocity/cell_positions_n_%d_EES_%g_VF_%g_MS_%g_CCT_%g.txt',n ,ees, 100 * vf, ms, cct);
 
     try
         % See if the data already exists
@@ -8,12 +8,12 @@ function v = plot_cell_velocity(n, ees, ms, cct, vf)
         if data(end,1) < 99
             error('Not enough existing data, need to run simulation\n');
         end
-        fprintf('Found sufficient existing data for EES = %g, VF = %g, MS = %g, CCT = %g\n',ees, vf, ms, cct);
+        fprintf('Found sufficient existing data for n = %d, EES = %g, VF = %g, MS = %g, CCT = %g\n', n, ees, vf, ms, cct);
     catch
         % If not ...
         try
             % Perhaps it hasn't been moved yet ...
-            data_file = sprintf('/tmp/phillip/testoutput/TestCryptBasicWnt/n_%d_EES_%g_VF_%g_MS_%g_CCT_%g/results_from_time_0/cell_force.txt',n, ees, vf, ms, cct);
+            data_file = sprintf('/tmp/phillip/testoutput/TestCryptBasicWnt/n_%d_EES_%g_VF_%g_MS_%g_CCT_%g/results_from_time_0/cell_force.txt',n , ees, vf, ms, cct);
             [status,cmdout] = system(['mv ' data_file ' ' file]);
             data = csvread(file);
             if data(end,1) < 99
@@ -22,8 +22,8 @@ function v = plot_cell_velocity(n, ees, ms, cct, vf)
         catch
             % If all else fails, run the simulation
             fprintf('Running simulation for EES = %g, VF = %g, MS = %g, CCT = %g\n',ees, vf, ms, cct);
-            [status,cmdout] = system(['/Users/phillip/chaste_build/projects/ChasteMembrane/test/TestCryptCrossSection -sm 100 -cct ' num2str(cct) ' -ees ' num2str(ees) ' -ms ' num2str(ms) ' -vf ' num2str(vf)]);
-            data_file = sprintf('/tmp/phillip/testoutput/TestCryptBasicWnt/n_%d_EES_%g_VF_%g_MS_%g_CCT_%g/results_from_time_0/cell_force.txt',n, ees, vf, ms, cct);
+            [status,cmdout] = system(['/Users/phillip/chaste_build/projects/ChasteMembrane/test/TestCryptCrossSection -sm 100 -n ' num2str(n) ' -cct ' num2str(cct) ' -ees ' num2str(ees) ' -ms ' num2str(ms) ' -vf ' num2str(vf)]);
+            data_file = sprintf('/tmp/phillip/testoutput/TestCryptBasicWnt/n_%d_EES_%g_VF_%g_MS_%g_CCT_%g/results_from_time_0/cell_force.txt',n , ees, vf, ms, cct);
             [status,cmdout] = system(['mv ' data_file ' ' file]);
             data = csvread(file);
         end

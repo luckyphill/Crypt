@@ -37,7 +37,7 @@ function ms_upper = pop_up_limit(ees, n, cct, vf, n_trials, ms_upper_power_guess
     fprintf('Starting with upper of %g and lower of %g\n', ms_upper, ms_lower);
     
     % Set a fairly wide tolerance
-    tol = 1;
+    tol = 1.6;
     difference = ms_upper - ms_lower;
     ms_trial = difference/2 + ms_lower;
     it_limit = 10;
@@ -108,11 +108,11 @@ function result = run_simulation(ms, n, ees, cct, vf, n_trials, prior_s, prior_f
         % The probability mass that is below p = 0.95
         mass_95 = betacdf(0.95, s + prior_s + 1, f + prior_f + 1);
 
-        if (f >= f_limit)
+        if (trial > 3 && mass_95 > 0.98)%(f >= f_limit) % Need to go back to the old way to process the phoenix results
             % No chance of passing
             result = false;
             fprintf('After %d runs: %d successes and %d failures. At least %.1f%% sure that cells pop up in more than 5%% of simulations\n', trial, s, f, 100 * mass_95);
-            fprintf('Passing not possible given the number of trials permitted (%d)\n', n_trials);
+            %fprintf('Passing not possible given the number of trials permitted (%d)\n', n_trials);
             break;
         else
             if (mass_95 < 0.4)
