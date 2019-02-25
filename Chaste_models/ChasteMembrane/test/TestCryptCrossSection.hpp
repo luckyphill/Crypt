@@ -1275,7 +1275,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 
 		double minimumCycleTime = 10;
 
-		unsigned cell_limit = 2 * n; // At the smallest CI limit, there can be at most 400 cells, but we don't want to get there
+		unsigned cell_limit = 3 * n; // At the smallest CI limit, there can be at most 400 cells, but we don't want to get there
 		// A maximum of 350 will give at least 350 divisions, probably more, but the simulation won't run the full time
 		// so in the end, there should be enough to get a decent plot
         
@@ -1528,10 +1528,12 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
         // Uni Mac path
         // kill_count_file_name << "/Users/phillipbrown/Research/Crypt/Data/Chaste/ParameterSearch/parameter_statistics_" << "n_" << n << "_EES_"<< epithelialStiffness;
         // Macbook path
-        // kill_count_file_name << "/Users/phillip/Research/Crypt/Data/Chaste/ParameterSearch/parameter_statistics_" << "n_" << n << "_EES_"<< epithelialStiffness;
+        kill_count_file_name << "/Users/phillip/Research/Crypt/Data/Chaste/ParameterSearch/parameter_statistics_" << "n_" << n << "_EES_"<< epithelialStiffness;
         // Phoenix path
-        kill_count_file_name << "data/ParameterSearch/parameter_statistics_" << "n_" << n << "_EES_"<< epithelialStiffness;
-        kill_count_file_name << "_MS_" << membraneEpithelialSpringStiffness << "_VF_" << int(100 * quiescentVolumeFraction) << "_CCT_" << int(cellCycleTime) << ".txt";
+        // kill_count_file_name << "data/ParameterSearch/parameter_statistics_" << "n_" << n << "_EES_"<< epithelialStiffness;
+        
+        kill_count_file_name << "_MS_" << membraneEpithelialSpringStiffness << "_VF_" << int(100 * quiescentVolumeFraction) << "_CCT_" << int(cellCycleTime);
+        kill_count_file_name << "_run_" << run_number << ".txt";
         // VF and PU don't change here
         //  << "_PU_" << popUpDistance <<
 
@@ -1556,3 +1558,6 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 	};
 
 };
+
+
+
