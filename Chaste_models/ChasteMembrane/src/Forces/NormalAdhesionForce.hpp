@@ -46,7 +46,7 @@ protected:
     double mMembranePreferredRadius;
     double mEpithelialPreferredRadius; // Epithelial is the differentiated "filler" cells
 
-    double mAdhesionForceLawParameter; // The maximum distance that adhesion works
+    double mAdhesionForceLawParameter; // A parameter to set how quickly the force drops off with distance
 
     double mWeakeningFraction; // The fraction of mMembraneEpithelialSpringStiffness seen by a cell with the WeakenedMembraneAdhesion mutation
 

@@ -15,7 +15,7 @@ function plot_parameter_space(n,ees,ms,cct,vf, run_count)
 	V = length(vf);
 	C = length(cct);
 
-	file_path = '/Users/phillip/Research/Crypt/Data/Chaste/ParameterSearch/';
+	file_path = '/Users/phillipbrown/Research/Crypt/Data/Chaste/ParameterSearch/';
 
 	pspace = nan(E,M,N,V,C);
 
@@ -36,7 +36,7 @@ function plot_parameter_space(n,ees,ms,cct,vf, run_count)
 									obj_sum = obj_sum + obj;
 								end
 							end
-							if runs > 0
+							if runs == 10
 								pspace(k,l,j,m,i) = obj_sum / runs;
 							end
 						end
@@ -51,7 +51,7 @@ function plot_parameter_space(n,ees,ms,cct,vf, run_count)
 			for i = 1:C
 				% Plot each slice of parameter space
 				h = figure;
-				imagesc(flipud(pspace(:,:,j,m,i)),'AlphaData',~isnan(flipud(pspace(:,:,j,m,i))), [0,50]);
+				imagesc(flipud(pspace(:,:,j,m,i)),'AlphaData',~isnan(flipud(pspace(:,:,j,m,i))), [1,40]);
 				set(gca, 'YTick', 2:2:E);
 				set(gca, 'YTickLabel', floor(fliplr(linspace(ees(1), ees(end-1), 8))));
 				set(gca, 'XTick', 1:5:25);
@@ -66,10 +66,10 @@ function plot_parameter_space(n,ees,ms,cct,vf, run_count)
 			    pos = get(h,'Position');
 			    set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
 			    
-			    image_file = sprintf('/Users/phillip/Research/Crypt/Images/ObjectiveFunction/MouseColonDesc/ObjectiveFunction_N_%d_VF_%d_CCT_%d', n(j), 100 * vf(m), cct(i));
+			    image_file = sprintf('/Users/phillipbrown/Research/Crypt/Images/ObjectiveFunction/MouseColonDesc/ObjectiveFunction_N_%d_VF_%d_CCT_%d', n(j), 100 * vf(m), cct(i));
 			    print(image_file,'-dpdf');
 
-				close(h);
+				%close(h);
 			end
 		end
 	end

@@ -87,6 +87,7 @@ void SimpleAnoikisCellKiller::PopulateAnoikisList()
     		if (HasCellPoppedUp(node_index) && !IsPoppedUpCellInVector(p_cell))
     		{
     			TRACE("Cell popped up")
+    			PRINT_VARIABLE((*cell_iter)->GetAge())
     			PRINT_VARIABLE(p_cell->GetCellId())
     			MAKE_PTR(AnoikisCellTagged,p_tagged);
     			p_cell->AddCellProperty(p_tagged);
@@ -177,7 +178,7 @@ void SimpleAnoikisCellKiller::CheckAndLabelCellsForApoptosisOrDeath()
 		{
 			TRACE("About to kill")
 			PRINT_VARIABLE((*cell_iter)->GetCellId())
-			PRINT_VARIABLE((*cell_iter)->GetAge())
+			
 			unsigned node_index = p_tissue->GetNodeCorrespondingToCell(*cell_iter)->GetIndex();
     		CellPtr p_cell = p_tissue->GetCellUsingLocationIndex(node_index);
 			if (mSlowDeath)

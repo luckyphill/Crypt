@@ -1,4 +1,4 @@
-#include "SimpleWntWithAnoikisResistantMitosisArrest.hpp"
+#include "SimpleWntWithAnoikisResistanceAndSenescence.hpp"
 #include "CellLabel.hpp"
 #include "RandomNumberGenerator.hpp"
 #include "TransitCellProliferativeType.hpp"
@@ -8,17 +8,18 @@
 #include "WntConcentration.hpp"
 #include "Debug.hpp"
 
-SimpleWntWithAnoikisResistantMitosisArrest::SimpleWntWithAnoikisResistantMitosisArrest()
+SimpleWntWithAnoikisResistanceAndSenescence::SimpleWntWithAnoikisResistanceAndSenescence()
     : ContactInhibitionCellCycleModel(),
       mWntThreshold(0.5),
       mPopUpDivision(false)
 {
 }
 
-SimpleWntWithAnoikisResistantMitosisArrest::SimpleWntWithAnoikisResistantMitosisArrest(const SimpleWntWithAnoikisResistantMitosisArrest& rModel)
+SimpleWntWithAnoikisResistanceAndSenescence::SimpleWntWithAnoikisResistanceAndSenescence(const SimpleWntWithAnoikisResistanceAndSenescence& rModel)
    : ContactInhibitionCellCycleModel(rModel),
      mWntThreshold(rModel.mWntThreshold),
-     mPopUpDivision(rModel.mPopUpDivision)
+     mPopUpDivision(rModel.mPopUpDivision),
+     mPoppedUpG1Duration(rModel.mPoppedUpG1Duration)
 {
     /*
      * Set each member variable of the new cell-cycle model that inherits
@@ -37,7 +38,7 @@ SimpleWntWithAnoikisResistantMitosisArrest::SimpleWntWithAnoikisResistantMitosis
      */
 }
 
-void SimpleWntWithAnoikisResistantMitosisArrest::Initialise()
+void SimpleWntWithAnoikisResistanceAndSenescence::Initialise()
 {
     // A brand new cell created in a Test script will need to have it's parent set
     // The parent will be set properly for cells created in the simulation
@@ -46,12 +47,20 @@ void SimpleWntWithAnoikisResistantMitosisArrest::Initialise()
     mpCell->GetCellData()->SetItem("parent", mpCell->GetCellId());
 }
 
-void SimpleWntWithAnoikisResistantMitosisArrest::SetPopUpDivision(bool popUpDivision)
+void SimpleWntWithAnoikisResistanceAndSenescence::SetPopUpDivision(bool popUpDivision)
 {
     mPopUpDivision = popUpDivision;
 }
 
-void SimpleWntWithAnoikisResistantMitosisArrest::UpdateCellCyclePhase()
+void SimpleWntWithAnoikisResistanceAndSenescence::SetPoppedUpG1Duration(double poppedUpG1Duration)
+{
+    mPoppedUpG1Duration = poppedUpG1Duration;
+    mPopUpDivision = true;
+    TRACE("Division while popped up can occur")
+    PRINT_VARIABLE(mPoppedUpG1Duration)
+}
+
+void SimpleWntWithAnoikisResistanceAndSenescence::UpdateCellCyclePhase()
 {
     double wnt_level= GetWntLevel();
 
@@ -84,18 +93,25 @@ void SimpleWntWithAnoikisResistantMitosisArrest::UpdateCellCyclePhase()
                 mpCell->rGetCellPropertyCollection().GetCellPropertyRegistry()->Get<DifferentiatedCellProliferativeType>();
             mpCell->SetCellProliferativeType(p_diff_type);
         }
+    } 
+    else if (mpCell->HasCellProperty<AnoikisCellTagged>())
+    {
+        SetG1Duration();
     }
 
     ContactInhibitionCellCycleModel::UpdateCellCyclePhase();
 }
 
-void SimpleWntWithAnoikisResistantMitosisArrest::SetG1Duration()
+void SimpleWntWithAnoikisResistanceAndSenescence::SetG1Duration()
 {
     assert(mpCell != NULL);
 
     RandomNumberGenerator* p_gen = RandomNumberGenerator::Instance();
-
-    if (mpCell->GetCellProliferativeType()->IsType<TransitCellProliferativeType>())
+    if (mPopUpDivision && mpCell->HasCellProperty<AnoikisCellTagged>())
+    {
+        mG1Duration = p_gen->NormalRandomDeviate(mPoppedUpG1Duration, 2.0);
+    }
+    else if (mpCell->GetCellProliferativeType()->IsType<TransitCellProliferativeType>())
     {
         mG1Duration = p_gen->NormalRandomDeviate(GetTransitCellG1Duration(), 2.0);
     }
@@ -115,7 +131,7 @@ void SimpleWntWithAnoikisResistantMitosisArrest::SetG1Duration()
     }
 }
 
-double SimpleWntWithAnoikisResistantMitosisArrest::GetWntLevel()
+double SimpleWntWithAnoikisResistanceAndSenescence::GetWntLevel()
 {
     assert(mpCell != NULL);
     double level = 0;
@@ -146,14 +162,14 @@ double SimpleWntWithAnoikisResistantMitosisArrest::GetWntLevel()
     return level;
 }
 
-AbstractCellCycleModel* SimpleWntWithAnoikisResistantMitosisArrest::CreateCellCycleModel()
+AbstractCellCycleModel* SimpleWntWithAnoikisResistanceAndSenescence::CreateCellCycleModel()
 {
     // Create a new cell-cycle model
-    return new SimpleWntWithAnoikisResistantMitosisArrest(*this);
+    return new SimpleWntWithAnoikisResistanceAndSenescence(*this);
 }
 
 
-void SimpleWntWithAnoikisResistantMitosisArrest::ResetForDivision()
+void SimpleWntWithAnoikisResistanceAndSenescence::ResetForDivision()
 {
     AbstractPhaseBasedCellCycleModel::ResetForDivision();
     // Used for making sure newly divided cells are handeled properly in the force calculator
@@ -161,17 +177,17 @@ void SimpleWntWithAnoikisResistantMitosisArrest::ResetForDivision()
 }
 
 
-void SimpleWntWithAnoikisResistantMitosisArrest::SetWntThreshold(double wntThreshold)
+void SimpleWntWithAnoikisResistanceAndSenescence::SetWntThreshold(double wntThreshold)
 {
     mWntThreshold = wntThreshold;
 }
 
-double SimpleWntWithAnoikisResistantMitosisArrest::GetWntThreshold()
+double SimpleWntWithAnoikisResistanceAndSenescence::GetWntThreshold()
 {
     return mWntThreshold;
 }
 
-void SimpleWntWithAnoikisResistantMitosisArrest::OutputCellCycleModelParameters(out_stream& rParamsFile)
+void SimpleWntWithAnoikisResistanceAndSenescence::OutputCellCycleModelParameters(out_stream& rParamsFile)
 {
     *rParamsFile << "\t\t\t<WntThreshold>" << mWntThreshold << "</WntThreshold>\n";
 
@@ -181,4 +197,4 @@ void SimpleWntWithAnoikisResistantMitosisArrest::OutputCellCycleModelParameters(
 
 // Serialization for Boost >= 1.36
 #include "SerializationExportWrapperForCpp.hpp"
-CHASTE_CLASS_EXPORT(SimpleWntWithAnoikisResistantMitosisArrest)
+CHASTE_CLASS_EXPORT(SimpleWntWithAnoikisResistanceAndSenescence)

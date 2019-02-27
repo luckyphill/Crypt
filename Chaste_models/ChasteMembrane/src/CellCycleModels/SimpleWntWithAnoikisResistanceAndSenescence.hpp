@@ -1,5 +1,5 @@
-#ifndef SIMPLEWNTWithAnoikisResistantMitosisArrest_HPP_
-#define SIMPLEWNTWithAnoikisResistantMitosisArrest_HPP_
+#ifndef SimpleWntWithAnoikisResistanceAndSenescence_HPP_
+#define SimpleWntWithAnoikisResistanceAndSenescence_HPP_
 
 #include "ContactInhibitionCellCycleModel.hpp"
 
@@ -24,7 +24,7 @@
 // Implements cell_data method of tracing cell parents, in order to deal with newly divided cells
 //************************************************************************************************
 
-class SimpleWntWithAnoikisResistantMitosisArrest
+class SimpleWntWithAnoikisResistanceAndSenescence
  : public ContactInhibitionCellCycleModel
 {
 private:
@@ -48,7 +48,9 @@ private:
      */
     double mWntThreshold;
 
-    bool mPopUpDivision;
+    bool mPopUpDivision = false; //Senescence by default
+
+    double mPoppedUpG1Duration;
 
     /**
      * @return the Wnt level experienced by the cell.
@@ -79,8 +81,8 @@ private:
      *
      * @param rModel the cell cycle model to copy.
      */
-    SimpleWntWithAnoikisResistantMitosisArrest
-    (const SimpleWntWithAnoikisResistantMitosisArrest
+    SimpleWntWithAnoikisResistanceAndSenescence
+    (const SimpleWntWithAnoikisResistanceAndSenescence
         & rModel);
 
 public:
@@ -88,9 +90,11 @@ public:
     /**
      * Constructor.
      */
-    SimpleWntWithAnoikisResistantMitosisArrest();
+    SimpleWntWithAnoikisResistanceAndSenescence();
 
     void SetPopUpDivision(bool popUpDivision);
+
+    void SetPoppedUpG1Duration(double poppedUpG1Duration);
 
     void Initialise();
 
@@ -131,6 +135,6 @@ public:
 
 // Declare identifier for the serializer
 #include "SerializationExportWrapper.hpp"
-CHASTE_CLASS_EXPORT(SimpleWntWithAnoikisResistantMitosisArrest)
+CHASTE_CLASS_EXPORT(SimpleWntWithAnoikisResistanceAndSenescence)
 
-#endif // SIMPLEWNTWithAnoikisResistantMitosisArrest_HPP_
+#endif // SimpleWntWithAnoikisResistanceAndSenescence_HPP_

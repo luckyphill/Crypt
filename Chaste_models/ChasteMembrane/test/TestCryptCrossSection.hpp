@@ -1146,8 +1146,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		PRINT_VARIABLE(cellId)
 	};
 
-	// This is the most up-to-date test.
-	// Any output format found in here may not be found in previous tests
+
 	void TestCryptDivisionBoundaryCondition() throw(Exception)
 	{
 		// This test simulates a column of cells that can now move in 2 dimensions
@@ -1556,6 +1555,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		PRINT_VARIABLE(total_cells)
 		PRINT_VARIABLE(cellId)
 	};
+
 
 };
 
