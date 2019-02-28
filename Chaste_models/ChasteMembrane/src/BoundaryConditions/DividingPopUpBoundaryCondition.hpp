@@ -5,6 +5,7 @@
 #include "CheckpointArchiveTypes.hpp"
 
 #include "AbstractCellPopulationBoundaryCondition.hpp"
+#include "SimplifiedPhaseBasedCellCycleModel.hpp"
 #include "SimplifiedCellCyclePhases.hpp"
 #include "Debug.hpp"
 
@@ -40,20 +41,25 @@ public:
             unsigned node_index = this->mpCellPopulation->GetLocationIndexUsingCell(*cell_iter);
             Node<2>* p_node = this->mpCellPopulation->GetNode(node_index);
 
-            AbstractPhaseBasedCellCycleModel* p_ccm = static_cast<AbstractPhaseBasedCellCycleModel*>(cell_iter->GetCellCycleModel());
+            SimplifiedPhaseBasedCellCycleModel* p_ccm = cell_iter->GetCellCycleModel();
 
             // NOT STARTED YET
 
-            // if (p_ccm->GetCurrentCellCyclePhase() == M_PHASE)
-            // {
+            if (p_ccm->GetCurrentCellCyclePhase() == W_PHASE)
+            {
+                // Must find its pair
+                std::vector<unsigned>& neighbours = p_node->rGetNeighbours();
+                std::vector<unsigned>::iterator neighbour;
+                for (neighbour = neighbours.begin(); neighbour != neighbours.end(); neighbour++)
+                {
 
-            //     typename std::map<Node<2>*, c_vector<double, 2> >::const_iterator it = rOldLocations.find(p_node);
-            //     c_vector<double, 2> previous_location = it->second;
+                typename std::map<Node<2>*, c_vector<double, 2> >::const_iterator it = rOldLocations.find(p_node);
+                c_vector<double, 2> previous_location = it->second;
                 
-            //     // No movement allowed in the x direction
-            //     p_node->rGetModifiableLocation()[0] = previous_location[0];
+                // No movement allowed in the x direction
+                p_node->rGetModifiableLocation()[0] = previous_location[0];
 
-            // }
+            }
         }
     }
 
