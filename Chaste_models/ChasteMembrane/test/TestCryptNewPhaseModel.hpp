@@ -44,6 +44,7 @@
 #include "BoundaryCellProperty.hpp"
 #include "CryptBoundaryCondition.hpp"
 #include "DividingBoundaryCondition.hpp"
+#include "DividingPopUpBoundaryCondition.hpp"
 
 // Cell killers
 #include "SimpleSloughingCellKiller.hpp"
@@ -397,7 +398,7 @@ public:
 		simulator.AddCellPopulationBoundaryCondition(p_bc);
 
 		// Cells in M phase can't pop up
-		MAKE_PTR_ARGS(DividingBoundaryCondition, p_dbc, (&cell_population));
+		MAKE_PTR_ARGS(DividingPopUpBoundaryCondition, p_dbc, (&cell_population));
 		simulator.AddCellPopulationBoundaryCondition(p_dbc);
 
 		// ********************************************************************************************

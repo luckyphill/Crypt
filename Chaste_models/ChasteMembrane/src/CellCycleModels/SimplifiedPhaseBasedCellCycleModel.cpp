@@ -278,6 +278,11 @@ double SimplifiedPhaseBasedCellCycleModel::GetWntThreshold()
     return mWntThreshold;
 }
 
+SimplifiedCellCyclePhase SimplifiedPhaseBasedCellCycleModel::GetCurrentCellCyclePhase()
+{
+    return mCurrentCellCyclePhase;
+}
+
 
 void SimplifiedPhaseBasedCellCycleModel::SetQuiescentVolumeFraction(double quiescentVolumeFraction)
 {

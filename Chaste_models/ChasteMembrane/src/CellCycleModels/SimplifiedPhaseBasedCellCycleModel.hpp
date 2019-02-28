@@ -126,7 +126,7 @@ public:
     /**
      * @return the current cell cycle phase
      */
-    SimplifiedCellCyclePhase GetCurrentCellCyclePhase() const;
+    SimplifiedCellCyclePhase GetCurrentCellCyclePhase();
 
     bool ReadyToDivide();
 

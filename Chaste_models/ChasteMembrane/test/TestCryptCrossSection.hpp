@@ -43,6 +43,7 @@
 #include "BoundaryCellProperty.hpp"
 #include "CryptBoundaryCondition.hpp"
 #include "DividingBoundaryCondition.hpp"
+#include "DividingPopUpBoundaryCondition.hpp"
 
 // Cell killers
 #include "SimpleSloughingCellKiller.hpp"

@@ -9,8 +9,10 @@
 #include "SimplifiedCellCyclePhases.hpp"
 #include "Debug.hpp"
 
-// If a cell is in M phase (and in the crypt monolayer) it doesn't move perpendicular to the membrane axis
-// In this case, perpendicular is 
+// This "boundary condition" allows dividing cells to pop up
+// It forces twin cells in W phase to keep their division axis parallel to
+// the membrane axis. At this stage the membrane axis is assumed to be
+// vertical
 
 class DividingPopUpBoundaryCondition : public AbstractCellPopulationBoundaryCondition<2>
 {
@@ -41,7 +43,7 @@ public:
             unsigned node_index = this->mpCellPopulation->GetLocationIndexUsingCell(*cell_iter);
             Node<2>* p_node = this->mpCellPopulation->GetNode(node_index);
 
-            SimplifiedPhaseBasedCellCycleModel* p_ccm = cell_iter->GetCellCycleModel();
+            SimplifiedPhaseBasedCellCycleModel* p_ccm = static_cast<SimplifiedPhaseBasedCellCycleModel*>(cell_iter->GetCellCycleModel());
 
             // NOT STARTED YET
 
@@ -50,14 +52,32 @@ public:
                 // Must find its pair
                 std::vector<unsigned>& neighbours = p_node->rGetNeighbours();
                 std::vector<unsigned>::iterator neighbour;
-                for (neighbour = neighbours.begin(); neighbour != neighbours.end(); neighbour++)
-                {
 
                 typename std::map<Node<2>*, c_vector<double, 2> >::const_iterator it = rOldLocations.find(p_node);
-                c_vector<double, 2> previous_location = it->second;
-                
+                c_vector<double, 2> location = this->mpCellPopulation->GetLocationOfCellCentre(*cell_iter);
+
+                Node<2>* p_node_neighbour;
+                c_vector<double, 2> location_neighbour;
+
+                for (neighbour = neighbours.begin(); neighbour != neighbours.end(); neighbour++)
+                {
+                    CellPtr p_neighbour_cell = mpCellPopulation->GetCellUsingLocationIndex(*neighbour);
+                    p_node_neighbour = this->mpCellPopulation->GetNode(*neighbour);
+
+                    
+                    if ( p_neighbour_cell->GetCellData()->GetItem("parent") == (*cell_iter)->GetCellData()->GetItem("parent") )
+                    {
+                        location_neighbour = this->mpCellPopulation->GetLocationOfCellCentre(p_neighbour_cell);
+                        break;
+                    }
+
+                }
+
+                // Take the average of the two
+                double average_position = (location[0] + location_neighbour[0]) / 2;
                 // No movement allowed in the x direction
-                p_node->rGetModifiableLocation()[0] = previous_location[0];
+                p_node->rGetModifiableLocation()[0] = average_position;
+                p_node_neighbour->rGetModifiableLocation()[0] = average_position;
 
             }
         }

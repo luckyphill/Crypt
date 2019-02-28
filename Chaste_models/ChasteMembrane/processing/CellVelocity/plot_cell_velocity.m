@@ -1,6 +1,6 @@
-function v = plot_cell_velocity(n, ees, ms, cct, vf)
+function v = plot_cell_velocity(n, ees, ms, cct, vf, run_number)
 
-    file = sprintf('/Users/phillip/Research/Crypt/Data/Chaste/CellVelocity/cell_positions_n_%d_EES_%g_VF_%g_MS_%g_CCT_%g.txt',n ,ees, 100 * vf, ms, cct);
+    file = sprintf('/Users/phillip/Research/Crypt/Data/Chaste/CellVelocity/cell_positions_n_%d_EES_%g_VF_%g_MS_%g_CCT_%g_run_%d.txt',n ,ees, 100 * vf, ms, cct, run_number);
 
     try
         % See if the data already exists
@@ -13,17 +13,19 @@ function v = plot_cell_velocity(n, ees, ms, cct, vf)
         % If not ...
         try
             % Perhaps it hasn't been moved yet ...
-            data_file = sprintf('/tmp/phillip/testoutput/TestCryptBasicWnt/n_%d_EES_%g_VF_%g_MS_%g_CCT_%g/results_from_time_0/cell_force.txt',n , ees, vf, ms, cct);
+
+            data_file = sprintf('/tmp/phillip/testoutput/TestCryptDivisionBoundaryCondition/n_%d_EES_%g_VF_%g_MS_%g_CCT_%g_run_%d/results_from_time_0/cell_force.txt',n , ees, vf, ms, cct, run_number);
             [status,cmdout] = system(['mv ' data_file ' ' file]);
             data = csvread(file);
             if data(end,1) < 99
+                fprintf('Not enough existing data, need to run simulation\n');
                 error('Not enough existing data, need to run simulation\n');
             end
         catch
             % If all else fails, run the simulation
-            fprintf('Running simulation for EES = %g, VF = %g, MS = %g, CCT = %g\n',ees, vf, ms, cct);
-            [status,cmdout] = system(['/Users/phillip/chaste_build/projects/ChasteMembrane/test/TestCryptCrossSection -sm 100 -n ' num2str(n) ' -cct ' num2str(cct) ' -ees ' num2str(ees) ' -ms ' num2str(ms) ' -vf ' num2str(vf)]);
-            data_file = sprintf('/tmp/phillip/testoutput/TestCryptBasicWnt/n_%d_EES_%g_VF_%g_MS_%g_CCT_%g/results_from_time_0/cell_force.txt',n , ees, vf, ms, cct);
+            fprintf('Running simulation for n = %d, EES = %g, VF = %g, MS = %g, CCT = %g, run = %d\n', n, ees, vf, ms, cct, run_number);
+            [status,cmdout] = system(['/Users/phillip/chaste_build/projects/ChasteMembrane/test/TestCryptCrossSection -sm 100 -n ' num2str(n) ' -cct ' num2str(cct) ' -ees ' num2str(ees) ' -ms ' num2str(ms) ' -vf ' num2str(vf), ' -run ' num2str(run_number)]);
+            data_file = sprintf('/tmp/phillip/testoutput/TestCryptDivisionBoundaryCondition/n_%d_EES_%g_VF_%g_MS_%g_CCT_%g_run_%d/results_from_time_0/cell_force.txt',n , ees, vf, ms, cct, run_number);
             [status,cmdout] = system(['mv ' data_file ' ' file]);
             data = csvread(file);
         end
@@ -33,7 +35,7 @@ function v = plot_cell_velocity(n, ees, ms, cct, vf)
     
     [upper, average, lower] = get_quantiles(v);
     
-    plot_velocity_data(n, upper, average, lower, ees, ms, cct, vf);
+    plot_velocity_data(n, upper, average, lower, ees, ms, cct, vf, run_number);
        
         
 end
@@ -127,7 +129,7 @@ function [upper, average, lower] = get_quantiles(v)
 
 end
 
-function plot_velocity_data(n, upper, average, lower, ees, ms, cct, vf)
+function plot_velocity_data(n, upper, average, lower, ees, ms, cct, vf, run_number)
 
     h = figure;
     hold on;
@@ -146,6 +148,6 @@ function plot_velocity_data(n, upper, average, lower, ees, ms, cct, vf)
     pos = get(h,'Position');
     set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
     
-    print(['/Users/phillip/Research/Crypt/Images/Chaste/CellVelocity/Cell_Velocity_N_' num2str(n) '_EES_' num2str(ees) '_MS_' num2str(ms) 'VF_' num2str(100 * vf), '_CCT_' num2str(cct)],'-dpdf');
+    print(['/Users/phillip/Research/Crypt/Images/CellVelocity/Cell_Velocity_N_' num2str(n) '_EES_' num2str(ees) '_MS_' num2str(ms) '_VF_' num2str(100 * vf), '_CCT_' num2str(cct), '_run_' num2str(run_number)],'-dpdf');
 
 end
