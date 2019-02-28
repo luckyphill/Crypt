@@ -36,6 +36,7 @@
 #include "UniformContactInhibition.hpp"
 #include "WntUniformContactInhibition.hpp"
 #include "SimpleWntContactInhibitionCellCycleModel.hpp"
+#include "SimplifiedPhaseBasedCellCycleModel.hpp"
 
 #include "WildTypeCellMutationState.hpp"
 
@@ -78,7 +79,7 @@
 class TestCryptNewPhaseModel : public AbstractCellBasedTestSuite
 {
 	
-
+public:
 	// This is the most up-to-date test.
 	// Any output format found in here may not be found in previous tests
 	void TestCryptAlternatePhaseLengths() throw(Exception)
@@ -169,19 +170,24 @@ class TestCryptNewPhaseModel : public AbstractCellBasedTestSuite
 
         }
 
-        double cellCycleTime = 2.0;
-        bool customCellCycleTime = false;
+        double cellCycleTime = 15.0;
         if(CommandLineArguments::Instance()->OptionExists("-cct"))
         {
-        	customCellCycleTime = true;
         	cellCycleTime = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-cct");
         }
 
+        double wPhaseLength = 10.0;
+        if(CommandLineArguments::Instance()->OptionExists("-wt"))
+        {
+        	wPhaseLength =CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-wt");
+        }
+
+        assert(cellCycleTime - wPhaseLength > 1);
+
         double epithelialPreferredRadius = 0.5; // Must have this value due to volume calculation - can't set node radius as SetRadius(epithelialPreferredRadius) doesn't work
 
-        double equilibriumVolume = M_PI*epithelialPreferredRadius*epithelialPreferredRadius;; // Depends on the preferred radius
+        double equilibriumVolume = M_PI * epithelialPreferredRadius * epithelialPreferredRadius;; // Depends on the preferred radius
 
-        bool multiple_cells = true;
         unsigned n = 20;
         if(CommandLineArguments::Instance()->OptionExists("-n"))
         {	
@@ -241,20 +247,17 @@ class TestCryptNewPhaseModel : public AbstractCellBasedTestSuite
 		location_indices.push_back(node_counter);
 		node_counter++;
 
-		if(multiple_cells)
+
+		for(unsigned i = 1; i <= n; i++)
 		{
-			for(unsigned i = 1; i <= n; i++)
-			{
-				x = x_distance;
-				y = y_distance + 2 * i * epithelialPreferredRadius;
-				Node<2>* single_node_2 =  new Node<2>(node_counter,  false,  x, y);
-				single_node_2->SetRadius(epithelialPreferredRadius);
-				nodes.push_back(single_node_2);
-				transit_nodes.push_back(node_counter);
-				location_indices.push_back(node_counter);
-				node_counter++;
-			}
-			
+			x = x_distance;
+			y = y_distance + 2 * i * epithelialPreferredRadius;
+			Node<2>* single_node_2 =  new Node<2>(node_counter,  false,  x, y);
+			single_node_2->SetRadius(epithelialPreferredRadius);
+			nodes.push_back(single_node_2);
+			transit_nodes.push_back(node_counter);
+			location_indices.push_back(node_counter);
+			node_counter++;
 		}
 
 
@@ -282,32 +285,29 @@ class TestCryptNewPhaseModel : public AbstractCellBasedTestSuite
 			cells.push_back(p_cell);
 		}
 
-		if(multiple_cells)
+
+		for(unsigned i=1; i<=n; i++)
 		{
-			for(unsigned i=1; i<=n; i++)
-			{
 
-				SimpleWntContactInhibitionCellCycleModel* p_cycle_model = new SimpleWntContactInhibitionCellCycleModel();
-				double birth_time = (minimumCycleTime + cellCycleTime - 2) * RandomNumberGenerator::Instance()->ranf();
-				if (customCellCycleTime)
-				{
-					p_cycle_model->SetTransitCellG1Duration(cellCycleTime);
-				}
-				p_cycle_model->SetDimension(2);
-	   			p_cycle_model->SetEquilibriumVolume(equilibriumVolume);
-	   			p_cycle_model->SetQuiescentVolumeFraction(quiescentVolumeFraction);
-	   			p_cycle_model->SetWntThreshold(1 - (double)n_prolif/n);
-				p_cycle_model->SetBirthTime(-birth_time);
+			SimplifiedPhaseBasedCellCycleModel* p_cycle_model = new SimplifiedPhaseBasedCellCycleModel();
+			double birth_time = cellCycleTime * RandomNumberGenerator::Instance()->ranf();
 
-				CellPtr p_cell(new Cell(p_state, p_cycle_model));
-				p_cell->SetCellProliferativeType(p_trans_type);
-				p_cell->InitialiseCellCycleModel();
+			p_cycle_model->SetWDuration(wPhaseLength);
+			p_cycle_model->SetBasePDuration(cellCycleTime - wPhaseLength);
+			p_cycle_model->SetDimension(2);
+   			p_cycle_model->SetEquilibriumVolume(equilibriumVolume);
+   			p_cycle_model->SetQuiescentVolumeFraction(quiescentVolumeFraction);
+   			p_cycle_model->SetWntThreshold(1 - (double)n_prolif/n);
+			p_cycle_model->SetBirthTime(-birth_time);
 
-				cells.push_back(p_cell);
+			CellPtr p_cell(new Cell(p_state, p_cycle_model));
+			p_cell->SetCellProliferativeType(p_trans_type);
+			p_cell->InitialiseCellCycleModel();
 
-				
-			}
+			cells.push_back(p_cell);
+			
 		}
+
 
 
 		NodeBasedCellPopulation<2> cell_population(mesh, cells, location_indices);
@@ -369,7 +369,7 @@ class TestCryptNewPhaseModel : public AbstractCellBasedTestSuite
 		p_force->SetCutOffLength(3 * epithelialPreferredRadius);
 		
 		p_force->SetMeinekeSpringStiffness(meinekeStiffness);
-		p_force->SetMeinekeSpringGrowthDuration(1);
+		p_force->SetMeinekeSpringGrowthDuration(wPhaseLength);
 
 		p_force->SetAttractionParameter(attractionParameter);
 

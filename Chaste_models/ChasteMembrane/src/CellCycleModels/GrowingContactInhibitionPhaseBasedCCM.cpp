@@ -102,7 +102,7 @@ void GrowingContactInhibitionPhaseBasedCCM::UpdateCellCyclePhase()
              * We must therefore access the CellLabel via the cell's CellPropertyCollection.
              */
             boost::shared_ptr<AbstractCellProperty> p_label =
-            mpCell->rGetCellPropertyCollection().GetCellPropertyRegistry()->Get<CellLabel>();
+              mpCell->rGetCellPropertyCollection().GetCellPropertyRegistry()->Get<CellLabel>();
             mpCell->AddCellProperty(p_label);
         }
         else

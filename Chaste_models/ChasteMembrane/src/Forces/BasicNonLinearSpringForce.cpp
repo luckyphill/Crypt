@@ -81,7 +81,7 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::Ca
     }
 
 
-    // Checks if both cells are in M phase and checks if they have the same parent
+    // Checks if both cells have the same parent
     // *****************************************************************************************
     // Implements cell sibling tracking
     double ageA = p_cell_A->GetAge();

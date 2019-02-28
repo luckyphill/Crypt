@@ -37,7 +37,7 @@ private:
         archive & boost::serialization::base_object<AbstractCellCycleModel>(*this);
         archive & mCurrentCellCyclePhase;
         archive & mPDuration;
-        archive & mMinimumWDuration;
+        archive & mMinimumPDuration;
         archive & mWDuration;
     }
 
@@ -55,16 +55,35 @@ protected:
     /**
      * Minimum possible duration of the Growth phase
      */
-    double mMinimumPDuration;
+    double mMinimumPDuration = 1;
 
     /**
-     * Duration of M phase for all cell types.
+     * Duration of W phase for all cell types.
      */
     double mWDuration;
 
+    /**
+     * The fraction of the cells' equilibrium volume in P phase below which these cells are quiescent.
+     */
     double mQuiescentVolumeFraction;
 
+    /**
+     * The cell equilibrium volume while in P phase.
+     */
     double mEquilibriumVolume;
+
+    /**
+     * The time when the current period of quiescence began.
+     */
+    double mCurrentQuiescentOnsetTime;
+
+    /**
+     * How long the current period of quiescence has lasted.
+     * Has units of hours.
+     */
+    double mCurrentQuiescentDuration;
+
+    double mWntThreshold;
 
     /**
      * Protected copy-constructor for use by CreateCellCycleModel.
@@ -88,29 +107,19 @@ public:
      */
     SimplifiedPhaseBasedCellCycleModel();
 
-    /**
-     * Destructor.
-     */
-    virtual ~SimplifiedPhaseBasedCellCycleModel();
+    ~SimplifiedPhaseBasedCellCycleModel();
 
-    /**
-     * See AbstractCellCycleModel::ResetForDivision()
-     *
-     * @return whether the cell is ready to divide (enter M phase).
-     */
-    virtual bool ReadyToDivide();
+    AbstractCellCycleModel* CreateCellCycleModel();
 
+    void Initialise();
+
+    void InitialiseDaughterCell();
+    
     /** See AbstractCellCycleModel::ResetForDivision() */
-    virtual void ResetForDivision();
+    void ResetForDivision();
 
     /**
-     * Set the phase the cell-cycle model is currently in. This method is called
-     * from ReadyToDivide() just prior to deciding whether to divide the cell,
-     * based on how far through the cell cycle it is, i.e. whether it has
-     * completed M, G1, S and G2 phases.
-     *
-     * As this method is pure virtual, it must be overridden
-     * in subclasses.
+     * Set the phase the cell-cycle model is currently in.
      */
     void UpdateCellCyclePhase();
 
@@ -119,29 +128,28 @@ public:
      */
     SimplifiedCellCyclePhase GetCurrentCellCyclePhase() const;
 
-    /**
-     * @return the duration of the G1 phase of the cell cycle
-     */
-    double GetPDuration() const;
+    bool ReadyToDivide();
+
+ 
+    double GetBasePDuration();
+
+    double GetPDuration();
 
     /**
-     * @return the duration of the M phase of the cell cycle mMDuration
-     */
-    double GetWDuration() const;
-
-    /**
-     * Set mSDuration.
+     * Set mBasePDuration.
      *
-     * @param sDuration  the new value of mSDuration
+     * This is the mean value for the normal distribution
      */
     void SetBasePDuration(double basePDuration);
 
+    void SetPDuration();
+
     /**
-     * Set mG2Duration.
-     *
-     * @param g2Duration  the new value of mG2Duration
+     * Set mWDuration.
      */
     void SetWDuration(double wDuration);
+
+    double GetWDuration();
 
     /**
      * @return the typical cell cycle duration for a transit cell, in hours.
@@ -158,7 +166,7 @@ public:
     /**
      * @return mMinimumGapDuration
      */
-    double GetMinimumWDuration() const;
+    double GetMinimumPDuration();
 
     /**
      * Set mMinimumGapDuration
@@ -188,16 +196,31 @@ public:
     double GetEquilibriumVolume() const;
 
     /**
+     * @return mCurrentQuiescentDuration
+     */
+    double GetCurrentQuiescentDuration() const;
+
+    /**
+     * @return mCurrentQuiescentOnsetTime
+     */
+    double GetCurrentQuiescentOnsetTime() const;
+
+
+    void SetWntThreshold(double wntThreshold);
+
+    double GetWntThreshold();
+
+    double GetWntLevel();
+    /**
      * Outputs cell cycle model parameters to file.
      *
-     * As this method is pure virtual, it must be overridden
-     * in subclasses.
      *
      * @param rParamsFile the file stream to which the parameters are output
      */
     virtual void OutputCellCycleModelParameters(out_stream& rParamsFile);
 };
 
-CLASS_IS_ABSTRACT(SimplifiedPhaseBasedCellCycleModel)
+#include "SerializationExportWrapper.hpp"
+CHASTE_CLASS_EXPORT(SimplifiedPhaseBasedCellCycleModel)
 
 #endif /*SimplifiedPhaseBasedCELLCYCLEMODEL_HPP_*/

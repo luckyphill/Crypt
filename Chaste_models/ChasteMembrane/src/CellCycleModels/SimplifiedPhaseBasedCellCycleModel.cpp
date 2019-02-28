@@ -4,10 +4,17 @@
 #include "StemCellProliferativeType.hpp"
 #include "TransitCellProliferativeType.hpp"
 #include "DifferentiatedCellProliferativeType.hpp"
+#include "CellLabel.hpp"
 #include "AnoikisCellTagged.hpp"
 #include "WntConcentration.hpp"
+#include "RandomNumberGenerator.hpp"
 
 SimplifiedPhaseBasedCellCycleModel::SimplifiedPhaseBasedCellCycleModel()
+: AbstractCellCycleModel(),
+    mBasePDuration(5),
+    mMinimumPDuration(1),
+    mWDuration(10),
+    mWntThreshold(0.75)
 {
 }
 
@@ -20,7 +27,10 @@ SimplifiedPhaseBasedCellCycleModel::SimplifiedPhaseBasedCellCycleModel(const Sim
     mBasePDuration(rModel.mBasePDuration),
     mPDuration(rModel.mPDuration),
     mMinimumPDuration(rModel.mMinimumPDuration),
-    mWDuration(rModel.mWDuration)
+    mWDuration(rModel.mWDuration),
+    mQuiescentVolumeFraction(rModel.mQuiescentVolumeFraction),
+    mEquilibriumVolume(rModel.mEquilibriumVolume),
+    mWntThreshold(rModel.mWntThreshold)
 {
     /*
      * The member variables mCurrentCellCyclePhase, mG1Duration,
@@ -40,21 +50,21 @@ void SimplifiedPhaseBasedCellCycleModel::Initialise()
 {
     // A brand new cell created in a Test script will need to have it's parent set
     // The parent will be set properly for cells created in the simulation
-    AbstractSimplePhaseBasedCellCycleModel::Initialise();
+    AbstractCellCycleModel::Initialise();
     assert(mpCell != NULL);
     mpCell->GetCellData()->SetItem("parent", mpCell->GetCellId());
 }
 
 void SimplifiedPhaseBasedCellCycleModel::InitialiseDaughterCell()
 {
-    // Set everything identically. This should be done by reset for division
-    // In fact, this will be handled by the instantiation
+    SetPDuration();
 }
 
 void SimplifiedPhaseBasedCellCycleModel::SetPDuration()
 {
     assert(mpCell != nullptr);
     
+    RandomNumberGenerator* p_gen = RandomNumberGenerator::Instance();
     if (mpCell->GetCellProliferativeType()->IsType<DifferentiatedCellProliferativeType>())
     {
         mPDuration = DBL_MAX;
@@ -62,23 +72,50 @@ void SimplifiedPhaseBasedCellCycleModel::SetPDuration()
     else
     {
         mPDuration = p_gen->NormalRandomDeviate(GetBasePDuration(), 2.0);
-        if (mPDuration < 1)
+        if (mPDuration < mMinimumPDuration)
         {
             // Must have at least some time in P phase because crucial things happen there
-            mPDuration = 1;
+            mPDuration = mMinimumPDuration;
         }
     }
 }
 
+double SimplifiedPhaseBasedCellCycleModel::GetPDuration()
+{
+    return mPDuration;
+}
+
 void SimplifiedPhaseBasedCellCycleModel::SetBasePDuration(double basePDuration)
 {
-    assert(mBasePDuration > 1);
+    assert(mBasePDuration > mMinimumPDuration);
     mBasePDuration = basePDuration;
 }
 
-void SimplifiedPhaseBasedCellCycleModel::GetBasePDuration(double basePDuration)
+double SimplifiedPhaseBasedCellCycleModel::GetBasePDuration()
 {
     return mBasePDuration;
+}
+
+void SimplifiedPhaseBasedCellCycleModel::SetWDuration(double wDuration)
+{
+    assert(wDuration > mMinimumPDuration);
+    mWDuration = wDuration;
+}
+
+double SimplifiedPhaseBasedCellCycleModel::GetWDuration()
+{
+    return mWDuration;
+}
+
+void SimplifiedPhaseBasedCellCycleModel::SetMinimumPDuration(double minimumPDuration)
+{
+    assert(minimumPDuration > 0);
+    mMinimumPDuration = minimumPDuration;
+}
+
+double SimplifiedPhaseBasedCellCycleModel::GetMinimumPDuration()
+{
+    return mMinimumPDuration;
 }
 
 
@@ -91,15 +128,22 @@ void SimplifiedPhaseBasedCellCycleModel::UpdateCellCyclePhase()
     }
 
     double wnt_level= GetWntLevel();
-    MAKE_PTR(DifferentiatedCellProliferativeType, p_diff_type);
-    MAKE_PTR(TransitCellProliferativeType, p_trans_type);
-    MAKE_PTR(CellLabel, p_label);
+    
+    // No idea why this needs to be done this way
+    boost::shared_ptr<AbstractCellProperty> p_transit_type =
+            mpCell->rGetCellPropertyCollection().GetCellPropertyRegistry()->Get<TransitCellProliferativeType>();
+    
+    boost::shared_ptr<AbstractCellProperty> p_diff_type =
+            mpCell->rGetCellPropertyCollection().GetCellPropertyRegistry()->Get<DifferentiatedCellProliferativeType>();
+    
+    boost::shared_ptr<AbstractCellProperty> p_label =
+            mpCell->rGetCellPropertyCollection().GetCellPropertyRegistry()->Get<CellLabel>();
 
     // If the Wnt level is too low and we are in the pausable phase, set to differentiated type
     if (wnt_level < GetWntThreshold() && mCurrentCellCyclePhase == P_PHASE)
     {
         mpCell->SetCellProliferativeType(p_diff_type);
-        mCurrentCellCyclePhase = G_ZERO_PHASE;
+        mCurrentCellCyclePhase = G0_PHASE;
         mpCell->RemoveCellProperty<CellLabel>();
     }
 
@@ -154,11 +198,42 @@ void SimplifiedPhaseBasedCellCycleModel::UpdateCellCyclePhase()
         else if (time_since_birth > GetWDuration() && mCurrentCellCyclePhase == W_PHASE )
         {
             mCurrentCellCyclePhase = P_PHASE;
-            SetPDuration();
+            // SetPDuration(); // This is done in InitialiseDaughterCell now
             // Do the stuff to give random cell cycle time
             // This is where true division happens
         }
     }
+}
+
+double SimplifiedPhaseBasedCellCycleModel::GetWntLevel()
+{
+    assert(mpCell != NULL);
+    double level = 0;
+
+    switch (mDimension)
+    {
+        case 1:
+        {
+            const unsigned DIM = 1;
+            level = WntConcentration<DIM>::Instance()->GetWntLevel(mpCell);
+            break;
+        }
+        case 2:
+        {
+            const unsigned DIM = 2;
+            level = WntConcentration<DIM>::Instance()->GetWntLevel(mpCell);
+            break;
+        }
+        case 3:
+        {
+            const unsigned DIM = 3;
+            level = WntConcentration<DIM>::Instance()->GetWntLevel(mpCell);
+            break;
+        }
+        default:
+            NEVER_REACHED;
+    }
+    return level;
 }
 
 
@@ -167,6 +242,29 @@ void SimplifiedPhaseBasedCellCycleModel::ResetForDivision()
     AbstractCellCycleModel::ResetForDivision();
     // Used for making growing cell pairs are handled properly in the force calculator
     mpCell->GetCellData()->SetItem("parent", mpCell->GetCellId());
+}
+
+bool SimplifiedPhaseBasedCellCycleModel::ReadyToDivide()
+{
+    assert(mpCell != nullptr);
+
+    if (!mReadyToDivide)
+    {
+        UpdateCellCyclePhase();
+        if ( mCurrentCellCyclePhase == P_PHASE && GetAge() >= GetPDuration() + GetWDuration())
+        {
+            mReadyToDivide = true;
+            // Set cell property 'parent_cell' to be this cell
+            // This should be copied over to both new cells
+            mpCell->GetCellData()->SetItem("parent_cell", mpCell->GetCellId());
+        }
+    }
+    return mReadyToDivide;
+}
+
+AbstractCellCycleModel* SimplifiedPhaseBasedCellCycleModel::CreateCellCycleModel()
+{
+    return new SimplifiedPhaseBasedCellCycleModel(*this);
 }
 
 
@@ -178,6 +276,47 @@ void SimplifiedPhaseBasedCellCycleModel::SetWntThreshold(double wntThreshold)
 double SimplifiedPhaseBasedCellCycleModel::GetWntThreshold()
 {
     return mWntThreshold;
+}
+
+
+void SimplifiedPhaseBasedCellCycleModel::SetQuiescentVolumeFraction(double quiescentVolumeFraction)
+{
+    mQuiescentVolumeFraction = quiescentVolumeFraction;
+}
+
+double SimplifiedPhaseBasedCellCycleModel::GetQuiescentVolumeFraction() const
+{
+    return mQuiescentVolumeFraction;
+}
+
+void SimplifiedPhaseBasedCellCycleModel::SetEquilibriumVolume(double equilibriumVolume)
+{
+    mEquilibriumVolume = equilibriumVolume;
+}
+
+double SimplifiedPhaseBasedCellCycleModel::GetEquilibriumVolume() const
+{
+    return mEquilibriumVolume;
+}
+
+double SimplifiedPhaseBasedCellCycleModel::GetCurrentQuiescentDuration() const
+{
+    return mCurrentQuiescentDuration;
+}
+
+double SimplifiedPhaseBasedCellCycleModel::GetCurrentQuiescentOnsetTime() const
+{
+    return mCurrentQuiescentOnsetTime;
+}
+
+double SimplifiedPhaseBasedCellCycleModel::GetAverageTransitCellCycleTime()
+{
+    return 0;
+}
+
+double SimplifiedPhaseBasedCellCycleModel::GetAverageStemCellCycleTime()
+{
+    return 0;
 }
 
 

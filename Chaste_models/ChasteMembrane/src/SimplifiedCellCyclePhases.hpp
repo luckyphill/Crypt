@@ -13,12 +13,12 @@
  */
 typedef enum SimplifiedCellCyclePhase_
 {
-    G_ZERO_PHASE,
+    G0_PHASE,
     T_PHASE,
     P_PHASE,
     W_PHASE
 } SimplifiedCellCyclePhase;
 
-static const unsigned NUM_CELL_CYCLE_PHASES=4;
+static const unsigned NUM_SIMPLIFIED_CELL_CYCLE_PHASES=4;
 
 #endif /*SimplifiedCELLCYCLEPHASES_HPP_*/
