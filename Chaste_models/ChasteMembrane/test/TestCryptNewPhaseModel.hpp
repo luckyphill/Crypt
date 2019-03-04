@@ -81,6 +81,90 @@ class TestCryptNewPhaseModel : public AbstractCellBasedTestSuite
 {
 	
 public:
+
+	void TestSimplifiedPhaseBasedModel() throw(Exception)
+	{
+
+		// This tests the function of SimplifiedPhaseBasedCellCycleModel
+		// Firstly it make sure cells are in their correct phase according to their age
+
+		SimplifiedPhaseBasedCellCycleModel* p_cycle_model = new SimplifiedPhaseBasedCellCycleModel();
+ 		p_cycle_model->SetBirthTime(0);
+ 		p_cycle_model->SetDimension(2);
+
+ 		std::vector<Node<2>*> nodes;
+		std::vector<unsigned> transit_nodes;
+		std::vector<unsigned> location_indices;
+		std::vector<CellPtr> cells;
+
+		location_indices.push_back(0);
+		nodes.push_back(new Node<2>(0,  false,  0, 0));
+
+		NodesOnlyMesh<2> mesh;
+		mesh.ConstructNodesWithoutMesh(nodes, 1);
+
+		MAKE_PTR(WildTypeCellMutationState, p_healthy_state);
+        CellPtr p_cell(new Cell(p_healthy_state, p_cycle_model));
+
+        cells.push_back(p_cell);
+
+ 		NodeBasedCellPopulation<2> cell_population(mesh, cells, location_indices);
+ 		
+
+ 		// Needs a Wnt concentration
+ 		WntConcentration<2>::Instance()->SetType(LINEAR);
+        WntConcentration<2>::Instance()->SetCellPopulation(cell_population);
+        WntConcentration<2>::Instance()->SetCryptLength(10);
+
+		
+
+        SimulationTime* p_simulation_time = SimulationTime::Instance();
+        p_simulation_time->SetEndTimeAndNumberOfTimeSteps(20.0, 10);
+
+        p_cell->GetCellData()->SetItem("volume", 0.9);
+
+        p_cycle_model->Initialise();
+        TS_ASSERT_EQUALS(p_cell->GetCellData()->GetItem("parent"), 0);
+
+        // Cell is currently aged 0, so should still be in the T phase
+        TS_ASSERT_EQUALS(p_cycle_model->GetCurrentCellCyclePhase(), W_PHASE);
+
+
+
+        for (unsigned i = 0; i < 5; i++)
+        {
+            p_simulation_time->IncrementTimeOneStep();
+            TS_ASSERT_EQUALS(p_cell->ReadyToDivide(), false);
+        }
+
+        // At 12 hours after increment
+        p_simulation_time->IncrementTimeOneStep();
+        TS_ASSERT_EQUALS(p_cell->ReadyToDivide(), false);
+        TS_ASSERT_EQUALS(p_cycle_model->GetCurrentCellCyclePhase(), P_PHASE);
+
+        p_simulation_time->IncrementTimeOneStep();
+        p_simulation_time->IncrementTimeOneStep();
+        p_simulation_time->IncrementTimeOneStep();
+        TS_ASSERT_EQUALS(p_cell->ReadyToDivide(), true);
+
+        CellPtr p_new_cell = p_cell->Divide();
+
+        cell_population.AddCell(p_new_cell, p_cell);
+
+        SimplifiedPhaseBasedCellCycleModel* p_ccm = static_cast<SimplifiedPhaseBasedCellCycleModel*>(p_cell->GetCellCycleModel());
+        SimplifiedPhaseBasedCellCycleModel* p_new_ccm = static_cast<SimplifiedPhaseBasedCellCycleModel*>(p_new_cell->GetCellCycleModel());
+        
+        TS_ASSERT_EQUALS(p_ccm->GetCurrentCellCyclePhase(), W_PHASE)
+        TS_ASSERT_EQUALS(p_new_ccm->GetCurrentCellCyclePhase(), W_PHASE)
+
+        TS_ASSERT_EQUALS(p_new_cell->GetCellData()->GetItem("parent"), 0);
+        TS_ASSERT_EQUALS(p_cell->GetCellData()->GetItem("parent"), p_new_cell->GetCellData()->GetItem("parent"))
+
+        WntConcentration<2>::Instance()->Destroy();
+
+
+
+	}
 	// This is the most up-to-date test.
 	// Any output format found in here may not be found in previous tests
 	void TestCryptAlternatePhaseLengths() throw(Exception)
@@ -105,16 +189,8 @@ public:
         }
 
         double adhesionForceLawParameter = 5.0; // adhesion atraction parameter
-        if(CommandLineArguments::Instance()->OptionExists("-aap"))
-        {
-        	adhesionForceLawParameter = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-aap");
-        }
 
         double attractionParameter = 5.0; // epithelial attraction parameter
-        if(CommandLineArguments::Instance()->OptionExists("-eap"))
-        {
-        	attractionParameter = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-eap");
-        }
 
         double membraneEpithelialSpringStiffness = 50;
         if(CommandLineArguments::Instance()->OptionExists("-ms"))
@@ -437,9 +513,13 @@ public:
 		unsigned proliferative = 0;
 		unsigned differentiated = 0;
 
+		unsigned Wcells = 0;
+		unsigned Pcells = 0;
+
         for (std::list<CellPtr>::iterator cell_iter = pos_cells.begin(); cell_iter != pos_cells.end(); ++cell_iter)
         {
-        	
+        	SimplifiedPhaseBasedCellCycleModel* p_ccm = static_cast<SimplifiedPhaseBasedCellCycleModel*>((*cell_iter)->GetCellCycleModel());
+
         	if ((*cell_iter)->GetCellId() > cellId)
         	{
         		cellId = (*cell_iter)->GetCellId();
@@ -451,6 +531,14 @@ public:
         	if ((*cell_iter)->GetCellProliferativeType()->IsType<TransitCellProliferativeType>())
         	{
         		proliferative++;
+        	}
+        	if (p_ccm->GetCurrentCellCyclePhase() == W_PHASE)
+        	{
+        		Wcells++;
+        	}
+        	if (p_ccm->GetCurrentCellCyclePhase() == P_PHASE)
+        	{
+        		Pcells++;
         	}
             
         }
@@ -491,6 +579,8 @@ public:
 		PRINT_VARIABLE(differentiated)
 		PRINT_VARIABLE(total_cells)
 		PRINT_VARIABLE(cellId)
+		PRINT_VARIABLE(Wcells)
+		PRINT_VARIABLE(Pcells)
 	};
 
 };

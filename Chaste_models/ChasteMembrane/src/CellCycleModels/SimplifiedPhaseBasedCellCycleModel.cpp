@@ -8,6 +8,7 @@
 #include "AnoikisCellTagged.hpp"
 #include "WntConcentration.hpp"
 #include "RandomNumberGenerator.hpp"
+#include "Debug.hpp"
 
 SimplifiedPhaseBasedCellCycleModel::SimplifiedPhaseBasedCellCycleModel()
 : AbstractCellCycleModel(),
@@ -53,11 +54,14 @@ void SimplifiedPhaseBasedCellCycleModel::Initialise()
     AbstractCellCycleModel::Initialise();
     assert(mpCell != NULL);
     mpCell->GetCellData()->SetItem("parent", mpCell->GetCellId());
+    SetPDuration();
+    mCurrentCellCyclePhase = W_PHASE;
 }
 
 void SimplifiedPhaseBasedCellCycleModel::InitialiseDaughterCell()
 {
     SetPDuration();
+    mCurrentCellCyclePhase = W_PHASE;
 }
 
 void SimplifiedPhaseBasedCellCycleModel::SetPDuration()
@@ -179,29 +183,18 @@ void SimplifiedPhaseBasedCellCycleModel::UpdateCellCyclePhase()
     double time_since_birth = GetAge();
     assert(time_since_birth >= 0);
 
-    // T Phase is the temporaray phase cells start in to make sure:
-    // 1. We can give cells a wide range of starting times to avoid synchronisation, while;
-    // 2. Stopping cells from expecting to have a pair cell, if they would be starting in W phase
-    if (mCurrentCellCyclePhase == T_PHASE)
+    // All cells will start in W_Phase
+
+    if (time_since_birth < GetWDuration())
     {
-        if (time_since_birth > GetWDuration())
-        {
-            mCurrentCellCyclePhase = P_PHASE;
-        }
+        mCurrentCellCyclePhase = W_PHASE;
     }
-    else
+    else if (time_since_birth > GetWDuration() && mCurrentCellCyclePhase == W_PHASE )
     {
-        if (time_since_birth < GetWDuration())
-        {
-            mCurrentCellCyclePhase = W_PHASE;
-        }
-        else if (time_since_birth > GetWDuration() && mCurrentCellCyclePhase == W_PHASE )
-        {
-            mCurrentCellCyclePhase = P_PHASE;
-            // SetPDuration(); // This is done in InitialiseDaughterCell now
-            // Do the stuff to give random cell cycle time
-            // This is where true division happens
-        }
+        mCurrentCellCyclePhase = P_PHASE;
+        // SetPDuration(); // This is done in InitialiseDaughterCell now
+        // Do the stuff to give random cell cycle time
+        // This is where true division happens
     }
 }
 
@@ -242,6 +235,7 @@ void SimplifiedPhaseBasedCellCycleModel::ResetForDivision()
     AbstractCellCycleModel::ResetForDivision();
     // Used for making growing cell pairs are handled properly in the force calculator
     mpCell->GetCellData()->SetItem("parent", mpCell->GetCellId());
+    mCurrentCellCyclePhase = W_PHASE;
 }
 
 bool SimplifiedPhaseBasedCellCycleModel::ReadyToDivide()
