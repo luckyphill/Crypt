@@ -68,17 +68,16 @@ public:
                     if ( p_neighbour_cell->GetCellData()->GetItem("parent") == (*cell_iter)->GetCellData()->GetItem("parent") )
                     {
                         location_neighbour = this->mpCellPopulation->GetLocationOfCellCentre(p_neighbour_cell);
+
+                        // Take the average of the two
+                        double average_position = (location[0] + location_neighbour[0]) / 2;
+                        
+                        // No movement allowed in the x direction
+                        p_node->rGetModifiableLocation()[0] = average_position;
+                        p_node_neighbour->rGetModifiableLocation()[0] = average_position;
                         break;
                     }
-
                 }
-
-                // Take the average of the two
-                double average_position = (location[0] + location_neighbour[0]) / 2;
-                // No movement allowed in the x direction
-                p_node->rGetModifiableLocation()[0] = average_position;
-                p_node_neighbour->rGetModifiableLocation()[0] = average_position;
-
             }
         }
     }
