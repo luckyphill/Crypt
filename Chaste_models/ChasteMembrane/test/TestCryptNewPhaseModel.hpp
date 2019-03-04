@@ -382,7 +382,7 @@ public:
 		// ********************************************************************************************
 		// These two parameters are inately linked - the initial separation of the daughter nodes
 		// and the initial resting spring length
-		p_force->SetMeinekeDivisionRestingSpringLength(0.05);
+		p_force->SetMeinekeDivisionRestingSpringLength(0.5);
 		cell_population.SetMeinekeDivisionSeparation(0.05); // Set how far apart the cells will be upon division
 		// ********************************************************************************************
 
