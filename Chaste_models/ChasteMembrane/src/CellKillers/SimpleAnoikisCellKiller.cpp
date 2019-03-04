@@ -208,6 +208,11 @@ unsigned SimpleAnoikisCellKiller::GetCellKillCount()
 	return mCellKillCount;
 }
 
+void SimpleAnoikisCellKiller::ResetCellKillCount()
+{
+	mCellKillCount = 0;
+}
+
 void SimpleAnoikisCellKiller::OutputCellKillerParameters(out_stream& rParamsFile)
 {
     *rParamsFile << "\t\t\t<PopUpDistance>" << mPopUpDistance << "</PopUpDistance> \n";

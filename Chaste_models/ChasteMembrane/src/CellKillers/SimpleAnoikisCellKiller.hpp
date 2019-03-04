@@ -109,6 +109,7 @@ public:
     void SetResistantPoppedUpLifeExpectancy(double resistantPoppedUpLifeExpectancy);
 
     unsigned GetCellKillCount();
+    void ResetCellKillCount();
 
 };
 
