@@ -14,7 +14,9 @@
 #include "LinearSpringForcePhaseBased.hpp"
 #include "LinearSpringForceMembraneCellNodeBased.hpp"
 #include "NormalAdhesionForce.hpp"
+#include "NormalAdhesionForceNewPhaseModel.hpp"
 #include "BasicNonLinearSpringForce.hpp"
+#include "BasicNonLinearSpringForceNewPhaseModel.hpp"
 #include "BasicContactNeighbourSpringForce.hpp"
 #include "DividingRotationForce.hpp"
 
@@ -296,6 +298,11 @@ public:
 		unsigned cell_limit = 3 * n; // At the smallest CI limit, there can be at most 400 cells, but we don't want to get there
 		// A maximum of 350 will give at least 350 divisions, probably more, but the simulation won't run the full time
 		// so in the end, there should be enough to get a decent plot
+
+		double growingFinalSpringLength = (2 * sqrt(2) - 2) * 2 * epithelialPreferredRadius; // This is the maximum spring length between two nodes of a growing cell
+		// Modify this to control how large a growing cell is at any time.
+		// = 2 * sqrt(2) - 2 means we use the growing circle approximation
+		// = 2 * pow(2, 1/3) - 2 means we use the growing sphere approximation
         
 
         // First things first - need to seed the rng to make sure each simulation is different
@@ -439,7 +446,7 @@ public:
 
 		// ********************************************************************************************
 		// Set force parameters
-		MAKE_PTR(BasicNonLinearSpringForce<2>, p_force);
+		MAKE_PTR(BasicNonLinearSpringForceNewPhaseModel<2>, p_force);
 		// MAKE_PTR(BasicContactNeighbourSpringForce<2>, p_force);
 		p_force->SetSpringStiffness(epithelialStiffness);
 		p_force->SetRestLength(2 * epithelialPreferredRadius);
@@ -450,7 +457,7 @@ public:
 
 		p_force->SetAttractionParameter(attractionParameter);
 
-		MAKE_PTR(NormalAdhesionForce<2>, p_adhesion);
+		MAKE_PTR(NormalAdhesionForceNewPhaseModel<2>, p_adhesion);
         p_adhesion->SetMembraneEpithelialSpringStiffness(membraneEpithelialSpringStiffness);
         p_adhesion->SetAdhesionForceLawParameter(adhesionForceLawParameter);
 
@@ -458,8 +465,8 @@ public:
 		// ********************************************************************************************
 		// These two parameters are inately linked - the initial separation of the daughter nodes
 		// and the initial resting spring length
-		p_force->SetMeinekeDivisionRestingSpringLength(0.5);
-		cell_population.SetMeinekeDivisionSeparation(0.05); // Set how far apart the cells will be upon division
+		p_force->SetMeinekeDivisionRestingSpringLength( growingFinalSpringLength );
+		cell_population.SetMeinekeDivisionSeparation(0.01); // Set how far apart the cells will be upon division
 		// ********************************************************************************************
 
         // ********************************************************************************************

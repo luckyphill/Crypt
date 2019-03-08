@@ -1,0 +1,173 @@
+/*
+THIS MUST ONLY BE USED WITH OUT MEMBRANE CELLS
+CURRENTLY ASSUMES ALL CELLS CAN CONTACT THE MEMBRANE
+
+Assumes a monolayer of cells arranged in a column
+It applies a force to keep them on the imaginary membrane wall
+This force calculator is to be used in place of membrane cells 
+*/
+
+#include "IsNan.hpp"
+#include "AbstractCellProperty.hpp"
+
+#include "TransitCellProliferativeType.hpp"
+#include "StemCellProliferativeType.hpp"
+#include "WeakenedMembraneAdhesion.hpp"
+
+#include "Debug.hpp"
+
+#include "NormalAdhesionForceNewPhaseModel.hpp"
+#include "SimplifiedPhaseBasedCellCycleModel.hpp"
+
+
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+NormalAdhesionForceNewPhaseModel<ELEMENT_DIM,SPACE_DIM>::NormalAdhesionForceNewPhaseModel()
+   : AbstractForce<ELEMENT_DIM,SPACE_DIM>(),
+    mMembraneEpithelialSpringStiffness(15.0),
+    mMembranePreferredRadius(0.1),
+    mEpithelialPreferredRadius(0.5),
+    mAdhesionForceLawParameter(5.0),
+    mWeakeningFraction(0.8)
+{
+}
+
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+NormalAdhesionForceNewPhaseModel<ELEMENT_DIM,SPACE_DIM>::~NormalAdhesionForceNewPhaseModel()
+{
+}
+
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+void NormalAdhesionForceNewPhaseModel<ELEMENT_DIM,SPACE_DIM>::AddForceContribution(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation)
+{
+   
+    //AbstractCentreBasedCellPopulation<ELEMENT_DIM,SPACE_DIM>* p_tissue = static_cast<AbstractCentreBasedCellPopulation<ELEMENT_DIM,SPACE_DIM>*>(&rCellPopulation);
+    MeshBasedCellPopulation<ELEMENT_DIM,SPACE_DIM>* p_tissue = static_cast<MeshBasedCellPopulation<ELEMENT_DIM,SPACE_DIM>*>(&rCellPopulation);
+
+    std::list<CellPtr> cells =  p_tissue->rGetCells();
+
+    // Loop through each epithelial node/ stromal node (in this case) and add the retaining force
+    // At this stage it assumes that the etherial membrane is a flat line on the y axis
+    for (std::list<CellPtr>::iterator cell_iter = cells.begin(); cell_iter != cells.end(); ++cell_iter)
+    {
+        Node<SPACE_DIM>* p_node =  p_tissue->GetNodeCorrespondingToCell(*cell_iter);
+        c_vector<double, SPACE_DIM> node_location = p_node->rGetLocation();
+
+        c_vector<double, SPACE_DIM> restraining_force;
+        for (unsigned i=0; i < SPACE_DIM; i++)
+        {
+            restraining_force[i] = 0;
+        }
+
+        double rest_length = mMembranePreferredRadius + mEpithelialPreferredRadius;
+        double spring_constant;
+
+
+        // Check if it has the membrane weakened state
+        if ( (*cell_iter)->HasCellProperty<WeakenedMembraneAdhesion>() )
+        {
+            spring_constant = mWeakeningFraction * mMembraneEpithelialSpringStiffness;
+        } else
+        {
+            spring_constant = mMembraneEpithelialSpringStiffness;
+        }
+
+        SimplifiedPhaseBasedCellCycleModel* p_ccm = static_cast<SimplifiedPhaseBasedCellCycleModel*>((*cell_iter)->GetCellCycleModel());
+        // If the cell is in W phase, that means it has a twin, so half the membrane adhesion force
+        if (p_ccm->GetCurrentCellCyclePhase() == W_PHASE)
+        {
+            spring_constant *= 0.5;
+        }
+
+        unsigned space_index = 0;
+        if (SPACE_DIM == 3)
+        {
+            space_index = 2; // The co-ordinate index that the adhesion force is applied to
+        }
+
+        double overlap = node_location[space_index] - rest_length;
+        bool is_closer_than_rest_length = (overlap <= 0);
+
+        if (is_closer_than_rest_length) //overlap is negative
+        {
+            // log(x+1) is undefined for x<=-1
+            assert(overlap > -rest_length);
+            restraining_force[space_index] = - spring_constant * rest_length * log(1.0 + overlap/rest_length);
+
+        }
+        else
+        {
+            //assert(overlap > -rest_length);
+            double alpha = mAdhesionForceLawParameter;
+            restraining_force[space_index] = - spring_constant * overlap * exp(-alpha * overlap/rest_length);
+        }
+
+        p_node->AddAppliedForceContribution(restraining_force);
+
+
+    }
+
+
+}
+
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+void NormalAdhesionForceNewPhaseModel<ELEMENT_DIM,SPACE_DIM>::SetAdhesionForceLawParameter(double adhesionForceLawParameter)
+{
+    mAdhesionForceLawParameter = adhesionForceLawParameter;
+}
+
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+void NormalAdhesionForceNewPhaseModel<ELEMENT_DIM,SPACE_DIM>::SetMembraneEpithelialSpringStiffness(double membraneEpithelialSpringStiffness)
+{
+    assert(!(membraneEpithelialSpringStiffness < 0.0));
+    mMembraneEpithelialSpringStiffness = membraneEpithelialSpringStiffness;
+}
+
+
+
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+void NormalAdhesionForceNewPhaseModel<ELEMENT_DIM,SPACE_DIM>::SetMembranePreferredRadius(double membranePreferredRadius)
+{
+    assert(membranePreferredRadius > 0.0);
+    mMembranePreferredRadius = membranePreferredRadius;
+}
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+void NormalAdhesionForceNewPhaseModel<ELEMENT_DIM,SPACE_DIM>::SetEpithelialPreferredRadius(double stromalPreferredRadius)
+{
+    assert(stromalPreferredRadius > 0.0);
+    mEpithelialPreferredRadius = stromalPreferredRadius;
+}
+
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+void NormalAdhesionForceNewPhaseModel<ELEMENT_DIM,SPACE_DIM>::SetWeakeningFraction(double weakeningFraction)
+{
+    assert(!(weakeningFraction < 0.0));
+    mWeakeningFraction = weakeningFraction;
+}
+
+
+
+
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+void NormalAdhesionForceNewPhaseModel<ELEMENT_DIM,SPACE_DIM>::OutputForceParameters(out_stream& rParamsFile)
+{
+    *rParamsFile << "\t\t\t<MembraneEpithelialSpringStiffness>" << mMembraneEpithelialSpringStiffness << "</MembraneEpithelialSpringStiffness>\n";
+
+    *rParamsFile << "\t\t\t<MembranePreferredRadius>" << mMembranePreferredRadius << "</MembranePreferredRadius>\n";
+    *rParamsFile << "\t\t\t<EpithelialPreferredRadius>" << mEpithelialPreferredRadius << "</EpithelialPreferredRadius>\n";
+
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// Explicit instantiation
+/////////////////////////////////////////////////////////////////////////////
+
+template class NormalAdhesionForceNewPhaseModel<1,1>;
+template class NormalAdhesionForceNewPhaseModel<1,2>;
+template class NormalAdhesionForceNewPhaseModel<2,2>;
+template class NormalAdhesionForceNewPhaseModel<1,3>;
+template class NormalAdhesionForceNewPhaseModel<2,3>;
+template class NormalAdhesionForceNewPhaseModel<3,3>;
+
+// Serialization for Boost >= 1.36
+#include "SerializationExportWrapperForCpp.hpp"
+EXPORT_TEMPLATE_CLASS_SAME_DIMS(NormalAdhesionForceNewPhaseModel)

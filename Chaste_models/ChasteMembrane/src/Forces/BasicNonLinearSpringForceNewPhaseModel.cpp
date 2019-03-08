@@ -16,27 +16,22 @@ As of 19/12/2018 the only CCM that works with this is SimpleWntContactInhibition
 
 #include "Debug.hpp"
 
-#include "BasicNonLinearSpringForce.hpp"
+#include "BasicNonLinearSpringForceNewPhaseModel.hpp"
 
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::BasicNonLinearSpringForce()
-   : AbstractTwoBodyInteractionForce<ELEMENT_DIM,SPACE_DIM>(),
-    mSpringStiffness(15.0),
-    mRestLength(1.0),
-    mCutOffLength(1.1),
-    mAttractionParameter(5.0)
-
+BasicNonLinearSpringForceNewPhaseModel<ELEMENT_DIM,SPACE_DIM>::BasicNonLinearSpringForceNewPhaseModel()
+   : BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>()
 {
 }
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::~BasicNonLinearSpringForce()
+BasicNonLinearSpringForceNewPhaseModel<ELEMENT_DIM,SPACE_DIM>::~BasicNonLinearSpringForceNewPhaseModel()
 {
 }
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-c_vector<double, SPACE_DIM> BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::CalculateForceBetweenNodes(unsigned nodeAGlobalIndex,
+c_vector<double, SPACE_DIM> BasicNonLinearSpringForceNewPhaseModel<ELEMENT_DIM,SPACE_DIM>::CalculateForceBetweenNodes(unsigned nodeAGlobalIndex,
                                                                                     unsigned nodeBGlobalIndex,
                                                                                     AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation)
 {
@@ -75,10 +70,10 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::Ca
     unitForceDirection /= distance_between_nodes;
 
 
-    double rest_length = mRestLength;
-    double spring_constant = mSpringStiffness;
+    double rest_length = this->mRestLength;
+    double spring_constant = this->mSpringStiffness;
 
-    if (distance_between_nodes > mCutOffLength)
+    if (distance_between_nodes > this->mCutOffLength)
     {
         return zero_vector;
     }
@@ -95,13 +90,14 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::Ca
 
     double minimum_length = p_tissue->GetMeinekeDivisionSeparation();
 
+    double duration = this->mMeinekeSpringGrowthDuration;
 
-    if (ageA < mMeinekeSpringGrowthDuration && ageA == ageB && parentA == parentB)
+    if (ageA < duration && ageA == ageB && parentA == parentB)
     {
         // Make the spring length grow.
-        double lambda = mMeinekeDivisionRestingSpringLength;
-        // rest_length = minimum_length + (lambda - minimum_length) * ageA/mMeinekeSpringGrowthDuration;
-        rest_length = lambda + (rest_length - lambda) * ageA/mMeinekeSpringGrowthDuration;
+        double lambda = this->mMeinekeDivisionRestingSpringLength;
+        rest_length = minimum_length + (lambda - minimum_length) * ageA/duration;
+        // rest_length = lambda + (rest_length - lambda) * ageA/mMeinekeSpringGrowthDuration;
     }
     // *****************************************************************************************
 
@@ -117,7 +113,7 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::Ca
     }
     else
     {
-        double alpha = mAttractionParameter;
+        double alpha = this->mAttractionParameter;
         c_vector<double, 2> temp = spring_constant * unitForceDirection * overlap * exp(-alpha * overlap/rest_length);
         return temp;
         // return zero_vector;
@@ -125,66 +121,13 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::Ca
 
 }
 
-template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-void BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::SetAttractionParameter(double attractionParameter)
-{
-    mAttractionParameter = attractionParameter;
-}
-
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-void BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::SetSpringStiffness(double SpringStiffness)
+void BasicNonLinearSpringForceNewPhaseModel<ELEMENT_DIM,SPACE_DIM>::OutputForceParameters(out_stream& rParamsFile)
 {
-    assert(SpringStiffness > 0.0);
-    mSpringStiffness = SpringStiffness;
-}
-template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-void BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::SetRestLength(double RestLength)
-{
-    assert(RestLength > 0.0);
-    mRestLength = RestLength;
-}
-template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-void BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::SetCutOffLength(double CutOffLength)
-{
-    assert(CutOffLength > 0.0);
-    mCutOffLength = CutOffLength;
-}
-
-
-// For growing spring length
-template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-void BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::SetMeinekeSpringStiffness(double springStiffness)
-{
-    assert(springStiffness > 0.0);
-    mMeinekeSpringStiffness = springStiffness;
-}
-
-template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-void BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::SetMeinekeDivisionRestingSpringLength(double divisionRestingSpringLength)
-{
-    assert(divisionRestingSpringLength <= 1.0);
-    assert(divisionRestingSpringLength >= 0.0);
-
-    mMeinekeDivisionRestingSpringLength = divisionRestingSpringLength;
-}
-
-template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-void BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::SetMeinekeSpringGrowthDuration(double springGrowthDuration)
-{
-    assert(springGrowthDuration >= 0.0);
-
-    mMeinekeSpringGrowthDuration = springGrowthDuration;
-}
-
-
-template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-void BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::OutputForceParameters(out_stream& rParamsFile)
-{
-    *rParamsFile << "\t\t\t<SpringStiffness>" << mSpringStiffness << "</SpringStiffness>\n";
 
     // Call method on direct parent class
-    AbstractTwoBodyInteractionForce<ELEMENT_DIM,SPACE_DIM>::OutputForceParameters(rParamsFile);
+    BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::OutputForceParameters(rParamsFile);
     // Call method on direct parent class
 }
 
@@ -192,13 +135,13 @@ void BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::OutputForceParameters(out
 // Explicit instantiation
 /////////////////////////////////////////////////////////////////////////////
 
-template class BasicNonLinearSpringForce<1,1>;
-template class BasicNonLinearSpringForce<1,2>;
-template class BasicNonLinearSpringForce<2,2>;
-template class BasicNonLinearSpringForce<1,3>;
-template class BasicNonLinearSpringForce<2,3>;
-template class BasicNonLinearSpringForce<3,3>;
+template class BasicNonLinearSpringForceNewPhaseModel<1,1>;
+template class BasicNonLinearSpringForceNewPhaseModel<1,2>;
+template class BasicNonLinearSpringForceNewPhaseModel<2,2>;
+template class BasicNonLinearSpringForceNewPhaseModel<1,3>;
+template class BasicNonLinearSpringForceNewPhaseModel<2,3>;
+template class BasicNonLinearSpringForceNewPhaseModel<3,3>;
 
 // Serialization for Boost >= 1.36
 #include "SerializationExportWrapperForCpp.hpp"
-EXPORT_TEMPLATE_CLASS_SAME_DIMS(BasicNonLinearSpringForce)
+EXPORT_TEMPLATE_CLASS_SAME_DIMS(BasicNonLinearSpringForceNewPhaseModel)

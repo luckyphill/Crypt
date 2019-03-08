@@ -8,6 +8,7 @@
 #include "AbstractCellProperty.hpp"
 #include "MeshBasedCellPopulation.hpp"
 #include "NodeBasedCellPopulation.hpp"
+#include "AnoikisCellTagged.hpp"
 #include "Debug.hpp"
 
 
@@ -40,13 +41,14 @@ void IsolatedCellKiller<ELEMENT_DIM,SPACE_DIM>::CheckAndLabelCellsForApoptosisOr
 	{
         unsigned nodeIndex = this->mpCellPopulation->GetLocationIndexUsingCell(*cell_iter);
 		// unsigned nodeIndex = p_tissue->GetNodeCorrespondingToCell(cell_iter->GetIndex());
+        c_vector<double,2> cell_location = p_tissue->GetNode(nodeIndex)->rGetLocation();
 
         std::set<unsigned> neighbours;
         double radius = 1.5; // Distance to check for neighbours
 
         neighbours = p_tissue->GetNodesWithinNeighbourhoodRadius(nodeIndex, radius);
 
-        if(neighbours.empty())
+        if( neighbours.empty() && (*cell_iter)->template HasCellProperty<AnoikisCellTagged>() )
         {
             TRACE("Killing isolated cell")
             cell_iter->Kill();

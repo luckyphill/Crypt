@@ -13,6 +13,7 @@
 /*
  * Cell killer that removes any epithelial cell that has detached from the non-epithelial
  * region and entered the lumen
+ * In terms of the simulation, a cell is killed when it is isolated AND it is considered popped-up
  */
 
 template<unsigned  ELEMENT_DIM, unsigned SPACE_DIM=ELEMENT_DIM>
@@ -28,6 +29,7 @@ private:
     }
 
     unsigned mCellKillCount = 0; // Tracks the number of cells killed by anoikis
+
 
 public:
 

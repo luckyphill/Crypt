@@ -10,7 +10,6 @@
 #include "AbstractCellProperty.hpp"
 #include "MeshBasedCellPopulation.hpp"
 #include "NodeBasedCellPopulation.hpp"
-// #include "PanethCellMutationState.hpp"
 #include "TransitCellAnoikisResistantMutationState.hpp"
 #include "MembraneCellProliferativeType.hpp"
 

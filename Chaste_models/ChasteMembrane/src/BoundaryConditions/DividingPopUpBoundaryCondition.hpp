@@ -45,7 +45,6 @@ public:
 
             SimplifiedPhaseBasedCellCycleModel* p_ccm = static_cast<SimplifiedPhaseBasedCellCycleModel*>(cell_iter->GetCellCycleModel());
 
-            // NOT STARTED YET
 
             if (p_ccm->GetCurrentCellCyclePhase() == W_PHASE)
             {
