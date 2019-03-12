@@ -1,4 +1,6 @@
-function v = plot_cell_velocity(n, ees, ms, cct, vf, run_number)
+function v = plot_cell_velocity_2(n, ees, ms, cct, vf, run_number)
+
+    % This uses the new phase model
 
     file = sprintf('/Users/phillipbrown/Research/Crypt/Data/Chaste/CellVelocity/cell_positions_n_%d_EES_%g_VF_%g_MS_%g_CCT_%g_run_%d.txt',n ,ees, 100 * vf, ms, cct, run_number);
 
@@ -14,7 +16,7 @@ function v = plot_cell_velocity(n, ees, ms, cct, vf, run_number)
         try
             % Perhaps it hasn't been moved yet ...
 
-            data_file = sprintf('/tmp/phillipbrown/testoutput/TestCryptDivisionBoundaryCondition/n_%d_EES_%g_VF_%g_MS_%g_CCT_%g_run_%d/results_from_time_0/cell_force.txt',n , ees, vf, ms, cct, run_number);
+            data_file = sprintf('/tmp/phillipbrown/testoutput/TestCryptAlternatePhaseLengths/n_%d_EES_%g_VF_%g_MS_%g_CCT_%g_run_%d/results_from_time_0/cell_force.txt',n , ees, vf, ms, cct, run_number);
             [status,cmdout] = system(['mv ' data_file ' ' file]);
             data = csvread(file);
             if data(end,1) < 99
@@ -24,8 +26,8 @@ function v = plot_cell_velocity(n, ees, ms, cct, vf, run_number)
         catch
             % If all else fails, run the simulation
             fprintf('Running simulation for n = %d, EES = %g, VF = %g, MS = %g, CCT = %g, run = %d\n', n, ees, vf, ms, cct, run_number);
-            [status,cmdout] = system(['/Users/phillipbrown/chaste_build/projects/ChasteMembrane/test/TestCryptCrossSection -sm 100 -n ' num2str(n) ' -cct ' num2str(cct) ' -ees ' num2str(ees) ' -ms ' num2str(ms) ' -vf ' num2str(vf), ' -run ' num2str(run_number)]);
-            data_file = sprintf('/tmp/phillipbrown/testoutput/TestCryptDivisionBoundaryCondition/n_%d_EES_%g_VF_%g_MS_%g_CCT_%g_run_%d/results_from_time_0/cell_force.txt',n , ees, vf, ms, cct, run_number);
+            [status,cmdout] = system(['/Users/phillipbrown/chaste_build/projects/ChasteMembrane/test/TestCryptNewPhaseModel -sm 100 -n ' num2str(n) ' -cct ' num2str(cct) ' -ees ' num2str(ees) ' -ms ' num2str(ms) ' -vf ' num2str(vf), ' -run ' num2str(run_number)]);
+            data_file = sprintf('/tmp/phillipbrown/testoutput/TestCryptAlternatePhaseLengths/n_%d_EES_%g_VF_%g_MS_%g_CCT_%g_run_%d/results_from_time_0/cell_force.txt',n , ees, vf, ms, cct, run_number);
             [status,cmdout] = system(['mv ' data_file ' ' file]);
             data = csvread(file);
         end
@@ -142,7 +144,7 @@ function plot_velocity_data(n, upper, average, lower, ees, ms, cct, vf, run_numb
     
     ylabel('Cell velocity','Interpreter','latex');
     xlabel('Cell height','Interpreter','latex');
-    title({['Cell velocity as a function of height from the crypt base'] ; ['G1 length = ' num2str(cct) ', CI fraction = ' num2str(100 * vf) '\%, Epithelial stiffness = ' num2str(ees) ', Adhesion Stiffness = ' num2str(ms)]},'Interpreter','latex');
+    title({['Cell velocity as a function of height from the crypt base'] ; ['Cycle length = ' num2str(cct) ', CI fraction = ' num2str(100 * vf) '\%, Epithelial stiffness = ' num2str(ees) ', Adhesion Stiffness = ' num2str(ms)]},'Interpreter','latex');
 
     set(h,'Units','Inches');
     pos = get(h,'Position');

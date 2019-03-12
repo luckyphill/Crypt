@@ -41,12 +41,26 @@ for i = 1:M
 	end
 end
 
+h = figure();
 imagesc(flipud(pop_up_count),'AlphaData',~isnan(flipud(pop_up_count)));
 set(gca, 'XTick', 1:11);
 set(gca, 'XTickLabel', 35:5:85);
-set(gca, 'YTick', 0:12:120);
-set(gca, 'YTickLabel', fliplr(154:24:392));
+set(gca, 'YTick', floor(linspace(1,120,15)));
+set(gca, 'YTickLabel', fliplr(154:17:392));
 colorbar
+
+title(sprintf('Pop up rate per hour, $n=%d$, $vf=%g$, $G1=%dhr$',n, vf, cct), 'Interpreter', 'latex', 'FontSize', 18);
+xlabel('Epithelial Stiffness', 'Interpreter', 'latex', 'FontSize', 18);
+ylabel('Adehsion Stiffness', 'Interpreter', 'latex', 'FontSize', 18);
+
+path2files = '/Users/phillipbrown/Research/Crypt/Images/PopUpRate/';
+
+filename = [path2files, sprintf('pop_up_rate_n_%d_VF_%d_CCT_%d',n, 100*vf, cct)]
+
+set(h,'Units','Inches');
+pos = get(h,'Position');
+set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
+print(filename, '-dpdf')
 
 
 end

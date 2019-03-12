@@ -72,6 +72,7 @@ print_figure(h, [path2file, 'surfaceplot']);
 
 function print_figure(h,name)
 
+	set(h,'Units','Inches');
     pos = get(h,'Position');
     set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
     print(name, '-dpdf')

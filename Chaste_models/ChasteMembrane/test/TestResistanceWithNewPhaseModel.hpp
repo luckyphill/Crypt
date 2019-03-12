@@ -14,17 +14,20 @@
 #include "LinearSpringForcePhaseBased.hpp"
 #include "LinearSpringForceMembraneCellNodeBased.hpp"
 #include "NormalAdhesionForce.hpp"
-#include "NormalAdhesionForceNewPhaseModel.hpp"
 #include "BasicNonLinearSpringForce.hpp"
+#include "NormalAdhesionForceNewPhaseModel.hpp"
 #include "BasicNonLinearSpringForceNewPhaseModel.hpp"
-#include "BasicContactNeighbourSpringForce.hpp"
 #include "DividingRotationForce.hpp"
+#include "BasicContactNeighbourSpringForce.hpp"
 
+// Mesh
 #include "HoneycombMeshGenerator.hpp" //Generates mesh
 #include "NodesOnlyMesh.hpp"
 #include "CellsGenerator.hpp"
 
+// Cell Populations
 #include "NodeBasedCellPopulation.hpp"
+#include "MonolayerNodeBasedCellPopulation.hpp"
 
 // Proliferative types
 #include "MembraneCellProliferativeType.hpp"
@@ -38,9 +41,12 @@
 #include "UniformContactInhibition.hpp"
 #include "WntUniformContactInhibition.hpp"
 #include "SimpleWntContactInhibitionCellCycleModel.hpp"
-#include "SimplifiedPhaseBasedCellCycleModel.hpp"
+#include "SimpleWntWithAnoikisResistanceAndSenescence.hpp"
 
+// Mutation state
 #include "WildTypeCellMutationState.hpp"
+#include "TransitCellAnoikisResistantMutationState.hpp"
+#include "WeakenedMembraneAdhesion.hpp"
 
 // Boundary conditions
 #include "BoundaryCellProperty.hpp"
@@ -63,15 +69,10 @@
 //Division Rules
 #include "StickToMembraneDivisionRule.hpp"
 
-#include "PushForceModifier.hpp"
-#include "BasicNonLinearSpringForce.hpp"
-#include "NormalAdhesionForce.hpp"
-
 // Wnt Concentration for position tracking
 #include "WntConcentration.hpp"
 
 // Writers
-#include "EpithelialCellForceWriter.hpp"
 #include "EpithelialCellBirthWriter.hpp"
 #include "EpithelialCellPositionWriter.hpp"
 
@@ -79,109 +80,25 @@
 #include "FakePetscSetup.hpp"
 #include "Debug.hpp"
 
-class TestCryptNewPhaseModel : public AbstractCellBasedTestSuite
+class TestAnoikisResistanceWithNewPhaseModel : public AbstractCellBasedTestSuite
 {
-	
-public:
+	// Most up to date test: TestResistantAndWeakenedDivisionBC
+	// Running any other test may not produce output in the expected format
+	// for further processing
 
-	void TestSimplifiedPhaseBasedModel() throw(Exception)
+	public:
+
+	void TestResistanceWithNewPhaseModel() throw(Exception)
 	{
+		// This test runs a healthy crypt and introduces a single anoikis resistant cell
+		// The resistant cell position is specified as a cell position
+		// The position of both the anoikis resistance and adhesion weakening can be specified
+		// If adhesion weakening position not specified, assumed to be the same cell as
+		// anoikis resistance
 
-		// This tests the function of SimplifiedPhaseBasedCellCycleModel
-		// Firstly it make sure cells are in their correct phase according to their age
-
-		SimplifiedPhaseBasedCellCycleModel* p_cycle_model = new SimplifiedPhaseBasedCellCycleModel();
- 		p_cycle_model->SetBirthTime(0);
- 		p_cycle_model->SetDimension(2);
-
- 		std::vector<Node<2>*> nodes;
-		std::vector<unsigned> transit_nodes;
-		std::vector<unsigned> location_indices;
-		std::vector<CellPtr> cells;
-
-		location_indices.push_back(0);
-		nodes.push_back(new Node<2>(0,  false,  0, 0));
-
-		NodesOnlyMesh<2> mesh;
-		mesh.ConstructNodesWithoutMesh(nodes, 1);
-
-		MAKE_PTR(WildTypeCellMutationState, p_healthy_state);
-        CellPtr p_cell(new Cell(p_healthy_state, p_cycle_model));
-
-        cells.push_back(p_cell);
-
- 		NodeBasedCellPopulation<2> cell_population(mesh, cells, location_indices);
- 		
-
- 		// Needs a Wnt concentration
- 		WntConcentration<2>::Instance()->SetType(LINEAR);
-        WntConcentration<2>::Instance()->SetCellPopulation(cell_population);
-        WntConcentration<2>::Instance()->SetCryptLength(10);
-
-		
-
-        SimulationTime* p_simulation_time = SimulationTime::Instance();
-        p_simulation_time->SetEndTimeAndNumberOfTimeSteps(20.0, 10);
-
-        p_cell->GetCellData()->SetItem("volume", 0.9);
-
-        p_cycle_model->Initialise();
-        TS_ASSERT_EQUALS(p_cell->GetCellData()->GetItem("parent"), 0);
-
-        // Cell is currently aged 0, so should still be in the T phase
-        TS_ASSERT_EQUALS(p_cycle_model->GetCurrentCellCyclePhase(), W_PHASE);
-
-
-
-        for (unsigned i = 0; i < 5; i++)
-        {
-            p_simulation_time->IncrementTimeOneStep();
-            TS_ASSERT_EQUALS(p_cell->ReadyToDivide(), false);
-        }
-
-        // At 12 hours after increment
-        p_simulation_time->IncrementTimeOneStep();
-        TS_ASSERT_EQUALS(p_cell->ReadyToDivide(), false);
-        TS_ASSERT_EQUALS(p_cycle_model->GetCurrentCellCyclePhase(), P_PHASE);
-
-        p_simulation_time->IncrementTimeOneStep();
-        p_simulation_time->IncrementTimeOneStep();
-        p_simulation_time->IncrementTimeOneStep();
-        TS_ASSERT_EQUALS(p_cell->ReadyToDivide(), true);
-
-        CellPtr p_new_cell = p_cell->Divide();
-
-        cell_population.AddCell(p_new_cell, p_cell);
-
-        SimplifiedPhaseBasedCellCycleModel* p_ccm = static_cast<SimplifiedPhaseBasedCellCycleModel*>(p_cell->GetCellCycleModel());
-        SimplifiedPhaseBasedCellCycleModel* p_new_ccm = static_cast<SimplifiedPhaseBasedCellCycleModel*>(p_new_cell->GetCellCycleModel());
-        
-        TS_ASSERT_EQUALS(p_ccm->GetCurrentCellCyclePhase(), W_PHASE)
-        TS_ASSERT_EQUALS(p_new_ccm->GetCurrentCellCyclePhase(), W_PHASE)
-
-        TS_ASSERT_EQUALS(p_new_cell->GetCellData()->GetItem("parent"), 0);
-        TS_ASSERT_EQUALS(p_cell->GetCellData()->GetItem("parent"), p_new_cell->GetCellData()->GetItem("parent"))
-
-        WntConcentration<2>::Instance()->Destroy();
-
-
-
-	}
-	// This is the most up-to-date test.
-	// Any output format found in here may not be found in previous tests
-	void TestCryptAlternatePhaseLengths() throw(Exception)
-	{
-		// This test simulates a column of cells that can now move in 2 dimensions
-		// In order to retain the cells in a column, an etherial force needs to be added
-		// to approximate the role of the basement membrane
-		// But, since there is no 'physical' membrane causing forces perpendicular to the column
-		// a minor element of randomness needs to be added to the division direction nudge
-		// the column out of it's unstable equilibrium.
-
-		// IT IMPLEMENTS A BOUNDARY CONDITION METHOD TO STOP CELLS IN MITOSIS POPPING UP
-
-		// The cell cycle model times are changed to make growth happen over a longer period
-
+		// The simulation runs for a set amount of time before mutations are introduced, which is
+		// specified by the flag -bt (burn-in time). The flag -t specifies the length of simulation
+		// after burn-in
 
 
 		double popUpDistance = 1.1;
@@ -190,16 +107,11 @@ public:
         	popUpDistance = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-pu");
         }
 
-        double adhesionForceLawParameter = 5.0; // adhesion atraction parameter
-
-        double attractionParameter = 5.0; // epithelial attraction parameter
-
         double membraneEpithelialSpringStiffness = 50;
         if(CommandLineArguments::Instance()->OptionExists("-ms"))
         {
         	membraneEpithelialSpringStiffness = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-ms");
         }
-
 
 		double epithelialStiffness = 20;
         if(CommandLineArguments::Instance()->OptionExists("-ees"))
@@ -213,6 +125,15 @@ public:
         	meinekeStiffness = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-nds");
         }
 
+        // The length of time to allow the simulation to reach "dynamic equilibrium"
+        double burn_in_time = 100;
+        if(CommandLineArguments::Instance()->OptionExists("-bt"))
+        {	
+        	burn_in_time = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-bt");
+
+        }
+
+        // The length of time after burn-in
         double end_time = 100;
         if(CommandLineArguments::Instance()->OptionExists("-t"))
         {	
@@ -233,6 +154,7 @@ public:
         	run_number = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-run");
 
         }
+
 
         bool wiggle = true; // Default to "2D"
         if(CommandLineArguments::Instance()->OptionExists("-oned"))
@@ -263,10 +185,46 @@ public:
 
         assert(cellCycleTime - wPhaseLength > 1);
 
+        double resistantPoppedUpLifeExpectancy = DBL_MAX; // By default, popped up cells won't die within the simulation
+        if(CommandLineArguments::Instance()->OptionExists("-rple"))
+        {
+        	resistantPoppedUpLifeExpectancy = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-rple");
+        }
+
+        unsigned resistantPosition = 1;
+        if(CommandLineArguments::Instance()->OptionExists("-rpos"))
+        {	
+        	resistantPosition = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-rpos");
+
+        }
+
+        double resistantCellCycleTime = 2.0;
+        if(CommandLineArguments::Instance()->OptionExists("-rcct"))
+        {
+        	resistantCellCycleTime = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-rcct");
+        }
+
+        unsigned weakenedPosition = resistantPosition;
+        if(CommandLineArguments::Instance()->OptionExists("-wpos"))
+        {	
+        	weakenedPosition = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-wpos");
+
+        }
+
+        double weakeningFraction = 1.0; // Default is no weakening
+        if(CommandLineArguments::Instance()->OptionExists("-wf"))
+        {
+        	weakeningFraction = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-wf");
+        }
+
+
+
         double epithelialPreferredRadius = 0.5; // Must have this value due to volume calculation - can't set node radius as SetRadius(epithelialPreferredRadius) doesn't work
 
-        double equilibriumVolume = M_PI * epithelialPreferredRadius * epithelialPreferredRadius;; // Depends on the preferred radius
+        double equilibriumVolume = M_PI*epithelialPreferredRadius*epithelialPreferredRadius;; // Depends on the preferred radius
 
+        bool multiple_cells = true;
+        
         unsigned n = 20;
         if(CommandLineArguments::Instance()->OptionExists("-n"))
         {	
@@ -295,14 +253,9 @@ public:
 
 		double minimumCycleTime = 10;
 
-		unsigned cell_limit = 3 * n; // At the smallest CI limit, there can be at most 400 cells, but we don't want to get there
+		unsigned cell_limit = 5 * n; // At the smallest CI limit, there can be at most 400 cells, but we don't want to get there
 		// A maximum of 350 will give at least 350 divisions, probably more, but the simulation won't run the full time
 		// so in the end, there should be enough to get a decent plot
-
-		double growingFinalSpringLength = (2 * sqrt(2) - 2) * 2 * epithelialPreferredRadius; // This is the maximum spring length between two nodes of a growing cell
-		// Modify this to control how large a growing cell is at any time.
-		// = 2 * sqrt(2) - 2 means we use the growing circle approximation
-		// = 2 * pow(2, 1/3) - 2 means we use the growing sphere approximation
         
 
         // First things first - need to seed the rng to make sure each simulation is different
@@ -331,7 +284,6 @@ public:
 		location_indices.push_back(node_counter);
 		node_counter++;
 
-
 		for(unsigned i = 1; i <= n; i++)
 		{
 			x = x_distance;
@@ -345,6 +297,7 @@ public:
 		}
 
 
+
 		NodesOnlyMesh<2> mesh;
 		mesh.ConstructNodesWithoutMesh(nodes, maxInteractionRadius);
 
@@ -354,6 +307,9 @@ public:
 		MAKE_PTR(TransitCellProliferativeType, p_trans_type);
 		MAKE_PTR(WildTypeCellMutationState, p_state);
 		MAKE_PTR(BoundaryCellProperty, p_boundary);
+
+		MAKE_PTR(TransitCellAnoikisResistantMutationState, p_resistant);
+		MAKE_PTR(WeakenedMembraneAdhesion, p_weakened);
 
 		// Make the single cell
 
@@ -370,6 +326,8 @@ public:
 		}
 
 
+
+
 		for(unsigned i=1; i<=n; i++)
 		{
 
@@ -383,15 +341,19 @@ public:
    			p_cycle_model->SetQuiescentVolumeFraction(quiescentVolumeFraction);
    			p_cycle_model->SetWntThreshold(1 - (double)n_prolif/n);
 			p_cycle_model->SetBirthTime(-birth_time);
+			// if(CommandLineArguments::Instance()->OptionExists("-rcct"))
+			// {
+			// 	p_cycle_model->SetPoppedUpG1Duration(resistantCellCycleTime);
+			// }
 
 			CellPtr p_cell(new Cell(p_state, p_cycle_model));
 			p_cell->SetCellProliferativeType(p_trans_type);
 			p_cell->InitialiseCellCycleModel();
 
 			cells.push_back(p_cell);
+
 			
 		}
-
 
 
 		NodeBasedCellPopulation<2> cell_population(mesh, cells, location_indices);
@@ -418,8 +380,7 @@ public:
         out << "n_" << n;
         out << "_EES_"<< epithelialStiffness << "_VF_" << quiescentVolumeFraction << "_MS_" << membraneEpithelialSpringStiffness << "_CCT_" << int(cellCycleTime);
         out << "_run_" << run_number;
-        
-        std::string output_directory = "TestCryptAlternatePhaseLengths/" +  out.str();
+        std::string output_directory = "TestCryptResistantNewPhaseModel/" +  out.str();
 
 		simulator.SetOutputDirectory(output_directory);
 
@@ -438,8 +399,6 @@ public:
         cell_population.SetOutputResultsForChasteVisualizer(java_visualiser);
         // ********************************************************************************************
 
-		PRINT_VARIABLE(end_time)
-		simulator.SetEndTime(end_time);
 		simulator.SetDt(dt);
 		simulator.SetSamplingTimestepMultiple(sampling_multiple);
 		simulator.SetCellLimit(cell_limit);
@@ -455,18 +414,22 @@ public:
 		p_force->SetMeinekeSpringStiffness(meinekeStiffness);
 		p_force->SetMeinekeSpringGrowthDuration(wPhaseLength);
 
-		p_force->SetAttractionParameter(attractionParameter);
 
 		MAKE_PTR(NormalAdhesionForceNewPhaseModel<2>, p_adhesion);
         p_adhesion->SetMembraneEpithelialSpringStiffness(membraneEpithelialSpringStiffness);
-        p_adhesion->SetAdhesionForceLawParameter(adhesionForceLawParameter);
-
+        p_adhesion->SetWeakeningFraction(weakeningFraction);
 		
 		// ********************************************************************************************
 		// These two parameters are inately linked - the initial separation of the daughter nodes
 		// and the initial resting spring length
+
+		double growingFinalSpringLength = (2 * sqrt(2) - 2) * 2 * epithelialPreferredRadius; // This is the maximum spring length between two nodes of a growing cell
+		// Modify this to control how large a growing cell is at any time.
+		// = 2 * sqrt(2) - 2 means we use the growing circle approximation
+		// = 2 * pow(2, 1/3) - 2 means we use the growing sphere approximation
+
 		p_force->SetMeinekeDivisionRestingSpringLength( growingFinalSpringLength );
-		cell_population.SetMeinekeDivisionSeparation(0.01); // Set how far apart the cells will be upon division
+		cell_population.SetMeinekeDivisionSeparation(0.01);
 		// ********************************************************************************************
 
         // ********************************************************************************************
@@ -492,6 +455,7 @@ public:
 
 		MAKE_PTR_ARGS(SimpleAnoikisCellKiller, p_anoikis_killer, (&cell_population));
 		p_anoikis_killer->SetPopUpDistance(popUpDistance);
+		p_anoikis_killer->SetResistantPoppedUpLifeExpectancy(resistantPoppedUpLifeExpectancy); // resistant cells don't die from anoikis immediately
 		simulator.AddCellKiller(p_anoikis_killer);
 
 		MAKE_PTR_ARGS(IsolatedCellKiller<2>, p_isolated_killer, (&cell_population));
@@ -503,12 +467,11 @@ public:
 		simulator.AddSimulationModifier(p_mod);
 
 		simulator.SetOutputDivisionLocations(true);
-		PRINT_VARIABLE(simulator.GetOutputDivisionLocations())
-
-		cell_population.AddCellWriter<EpithelialCellForceWriter>();
-
+		simulator.SetEndTime(burn_in_time);
 		simulator.Solve();
-		
+		TRACE("Burn-in complete")
+
+
 		// ********************************************************************************************
 		// Post simulation processing
 		// Probably best implemented as a 'writer', but have to work out how to do that first
@@ -516,81 +479,34 @@ public:
 		MeshBasedCellPopulation<2,2>* p_tissue = static_cast<MeshBasedCellPopulation<2,2>*>(&simulator.rGetCellPopulation());
 		std::list<CellPtr> pos_cells =  p_tissue->rGetCells();
 
-		unsigned cellId = 0;
-		unsigned proliferative = 0;
-		unsigned differentiated = 0;
 
-		unsigned Wcells = 0;
-		unsigned Pcells = 0;
+		// Sort the cells in order of height
+		// If errors occur with useless error messages, this might be the cause
+		pos_cells.sort(
+			[p_tissue](CellPtr A, CellPtr B)
+		{
+				Node<2>* node_A = p_tissue->GetNodeCorrespondingToCell(A);
+				Node<2>* node_B = p_tissue->GetNodeCorrespondingToCell(B);
+				return (node_A->rGetLocation()[1] < node_B->rGetLocation()[1]);
+		});
 
-        for (std::list<CellPtr>::iterator cell_iter = pos_cells.begin(); cell_iter != pos_cells.end(); ++cell_iter)
-        {
-        	SimplifiedPhaseBasedCellCycleModel* p_ccm = static_cast<SimplifiedPhaseBasedCellCycleModel*>((*cell_iter)->GetCellCycleModel());
+		std::list<CellPtr>::iterator it = pos_cells.begin();
+		std::advance(it, resistantPosition);
 
-        	if ((*cell_iter)->GetCellId() > cellId)
-        	{
-        		cellId = (*cell_iter)->GetCellId();
-        	}
-        	if ((*cell_iter)->GetCellProliferativeType()->IsType<DifferentiatedCellProliferativeType>() && (*cell_iter)->GetCellId() != 0)
-        	{
-        		differentiated++;
-        	}
-        	if ((*cell_iter)->GetCellProliferativeType()->IsType<TransitCellProliferativeType>())
-        	{
-        		proliferative++;
-        	}
-        	if (p_ccm->GetCurrentCellCyclePhase() == W_PHASE)
-        	{
-        		Wcells++;
-        	}
-        	if (p_ccm->GetCurrentCellCyclePhase() == P_PHASE)
-        	{
-        		Pcells++;
-        	}
-            
-        }
+		(*it)->SetMutationState(p_resistant);
 
-        unsigned total_cells = proliferative + differentiated;
+		it = pos_cells.begin();
+		std::advance(it, weakenedPosition);
+
+		(*it)->AddCellProperty(p_weakened);
+
+		simulator.SetEndTime(burn_in_time + end_time);
+		simulator.Solve();
+
+		WntConcentration<2>::Instance()->Destroy();
 
 
-        WntConcentration<2>::Instance()->Destroy();
-
-        std::stringstream kill_count_file_name;
-        // Uni Mac path
-        // kill_count_file_name << "/Users/phillipbrown/Research/Crypt/Data/Chaste/ParameterSearch/parameter_statistics_" << "n_" << n << "_EES_"<< epithelialStiffness;
-        // Macbook path
-        kill_count_file_name << "/Users/phillip/Research/Crypt/Data/Chaste/ParameterSearch/parameter_statistics_" << "n_" << n << "_EES_"<< epithelialStiffness;
-        // Phoenix path
-        // kill_count_file_name << "data/ParameterSearch/parameter_statistics_" << "n_" << n << "_EES_"<< epithelialStiffness;
-        
-        kill_count_file_name << "_MS_" << membraneEpithelialSpringStiffness << "_VF_" << int(100 * quiescentVolumeFraction) << "_CCT_" << int(cellCycleTime);
-        kill_count_file_name << "_run_" << run_number << ".txt";
-        // VF and PU don't change here
-        //  << "_PU_" << popUpDistance <<
-
-        ofstream kill_count_file;
-        kill_count_file.open(kill_count_file_name.str());
-
-        kill_count_file << "Total cells, killed sloughing, killed anoikis, final proliferative, final differentiated, final total\n";
-
-        kill_count_file << cellId << "," << p_sloughing_killer->GetCellKillCount() << "," << p_anoikis_killer->GetCellKillCount();
-        kill_count_file << "," << proliferative << "," << differentiated << "," << total_cells; 
-
-        kill_count_file.close();
-
-        // ********************************************************************************************
-
-        PRINT_VARIABLE(p_sloughing_killer->GetCellKillCount())
-		PRINT_VARIABLE(p_anoikis_killer->GetCellKillCount())
-		PRINT_VARIABLE(proliferative)
-		PRINT_VARIABLE(differentiated)
-		PRINT_VARIABLE(total_cells)
-		PRINT_VARIABLE(cellId)
-		PRINT_VARIABLE(Wcells)
-		PRINT_VARIABLE(Pcells)
 	};
 
+
 };
-
-
-

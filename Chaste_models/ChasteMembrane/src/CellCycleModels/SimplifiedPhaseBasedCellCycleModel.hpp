@@ -85,6 +85,8 @@ protected:
 
     double mWntThreshold;
 
+    bool mPopUpDivision = false; // If we allow cells to continue cycling when they pop up
+
     /**
      * Protected copy-constructor for use by CreateCellCycleModel.
      * The only way for external code to create a copy of a cell cycle model
@@ -207,6 +209,8 @@ public:
 
 
     void SetWntThreshold(double wntThreshold);
+
+    void SetPopUpDivision(bool popUpDivision);
 
     double GetWntThreshold();
 

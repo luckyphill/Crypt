@@ -7,3 +7,4 @@ TestForces_CM.hpp
 TestAnoikisResistance.hpp
 TestPopUpLimit.hpp
 TestCryptNewPhaseModel.hpp
+TestResistanceWithNewPhaseModel.hpp

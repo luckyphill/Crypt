@@ -160,24 +160,36 @@ void SimplifiedPhaseBasedCellCycleModel::UpdateCellCyclePhase()
         // If we're in the pausable phase, check to see if the cell is too squashed
         double cell_volume = mpCell->GetCellData()->GetItem("volume");
         double quiescent_volume = mEquilibriumVolume * mQuiescentVolumeFraction;
-
-        if (cell_volume < quiescent_volume)
+        if (!mpCell->HasCellProperty<AnoikisCellTagged>())
         {
-            // The cell is too squashed to continue in the cell cycle, so pause
-            // In practice, the pause is done by increasing the length of time needed
-            // to be spent in P phase by the simulation time step
-            mCurrentQuiescentDuration = SimulationTime::Instance()->GetTime() - mCurrentQuiescentOnsetTime;
-            mPDuration += SimulationTime::Instance()->GetTimeStep();
+            if (cell_volume < quiescent_volume)
+            {
+                // The cell is too squashed to continue in the cell cycle, so pause
+                // In practice, the pause is done by increasing the length of time needed
+                // to be spent in P phase by the simulation time step
+                mCurrentQuiescentDuration = SimulationTime::Instance()->GetTime() - mCurrentQuiescentOnsetTime;
+                mPDuration += SimulationTime::Instance()->GetTimeStep();
 
-            // Put the label back so the visualiser knows the cell is compressed
-            mpCell->AddCellProperty(p_label);
-        }
-        else
+                // Put the label back so the visualiser knows the cell is compressed
+                mpCell->AddCellProperty(p_label);
+            }
+            else
+            {
+                // Reset the cell's quiescent duration and update the time at which the onset of quiescent occurs
+                mCurrentQuiescentDuration = 0.0;
+                mCurrentQuiescentOnsetTime = SimulationTime::Instance()->GetTime();
+            }
+        } else 
         {
-            // Reset the cell's quiescent duration and update the time at which the onset of quiescent occurs
-            mCurrentQuiescentDuration = 0.0;
-            mCurrentQuiescentOnsetTime = SimulationTime::Instance()->GetTime();
+            if (!mPopUpDivision)
+            {
+                // If the cell is tagged for anoikis, and we are not allowing cells to divide after popping up, then make the
+                // cell differentiated
+                mCurrentCellCyclePhase = G0_PHASE;
+                mpCell->SetCellProliferativeType(p_diff_type);
+            }            
         }
+        
     }
 
     double time_since_birth = GetAge();
@@ -316,6 +328,11 @@ double SimplifiedPhaseBasedCellCycleModel::GetAverageTransitCellCycleTime()
 double SimplifiedPhaseBasedCellCycleModel::GetAverageStemCellCycleTime()
 {
     return 0;
+}
+
+void SimplifiedPhaseBasedCellCycleModel::SetPopUpDivision(bool popUpDivision)
+{
+    mPopUpDivision = popUpDivision;
 }
 
 
