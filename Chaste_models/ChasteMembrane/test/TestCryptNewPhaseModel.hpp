@@ -74,6 +74,7 @@
 #include "EpithelialCellForceWriter.hpp"
 #include "EpithelialCellBirthWriter.hpp"
 #include "EpithelialCellPositionWriter.hpp"
+#include "NewPhaseModelBirthWriter.hpp"
 
 // Misc
 #include "FakePetscSetup.hpp"
@@ -289,7 +290,7 @@ public:
         	dt = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-dt");
         }
 
-		double maxInteractionRadius = 2.0;
+		double maxInteractionRadius = 3 * epithelialPreferredRadius;
 
 		double wall_top = n;
 
@@ -506,6 +507,12 @@ public:
 		PRINT_VARIABLE(simulator.GetOutputDivisionLocations())
 
 		cell_population.AddCellWriter<EpithelialCellForceWriter>();
+		boost::shared_ptr<NewPhaseModelBirthWriter<2,2> > p_writer{new NewPhaseModelBirthWriter<2,2>};
+		
+		p_writer->SetSamplingMultiple(sampling_multiple);
+		cell_population.AddCellWriter(p_writer);
+		
+
 
 		simulator.Solve();
 		

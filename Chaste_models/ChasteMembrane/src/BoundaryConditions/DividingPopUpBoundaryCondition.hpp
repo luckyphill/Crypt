@@ -68,12 +68,26 @@ public:
                     {
                         location_neighbour = this->mpCellPopulation->GetLocationOfCellCentre(p_neighbour_cell);
 
-                        // Take the average of the two
+                        // // Take the average of the two
                         double average_position = (location[0] + location_neighbour[0]) / 2;
                         
                         // No movement allowed in the x direction
                         p_node->rGetModifiableLocation()[0] = average_position;
                         p_node_neighbour->rGetModifiableLocation()[0] = average_position;
+
+                        // Move to 3/4 position
+
+                        // double difference = abs(location[0] - location_neighbour[0]);
+
+                        // if (location[0] > location_neighbour[0])
+                        // {
+                        //     p_node->rGetModifiableLocation()[0] -= 0.1 * difference;
+                        //     p_node_neighbour->rGetModifiableLocation()[0] += 0.9 * difference;
+                        // } else 
+                        // {
+                        //     p_node->rGetModifiableLocation()[0] += 0.9 * difference;
+                        //     p_node_neighbour->rGetModifiableLocation()[0] -= 0.1 * difference;
+                        // }
                         break;
                     }
                 }
@@ -84,7 +98,7 @@ public:
     bool VerifyBoundaryCondition()
     {
         bool condition_satisfied = true;
-
+        // Check condition here
         return condition_satisfied;
     }
 

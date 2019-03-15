@@ -13,8 +13,11 @@ function find_optimal_region(chaste_test, obj, p)
 	% Cells died from anoikis
 	% Cells died from sloughing
 	% Final cell count
-	% Final proliferative zone count
-	
+	% Highest point where a cell division has occurred (defines the proliferative compartment size)
+
+	% The output of the simulation will be found in the directory structure:
+	% /Users/phillipbrown/Research/Crypt/Data/Chaste/ParameterSearch/{chaste_test}
+	% The file will be named parameter_statistics_n_ etc.
 
 
 	simulation_command = ['/Users/phillipbrown/chaste_build/projects/ChasteMembrane/test/', chaste_test];

@@ -98,6 +98,9 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForceNewPhaseModel<ELEMENT_DIM,S
         double lambda = this->mMeinekeDivisionRestingSpringLength;
         rest_length = minimum_length + (lambda - minimum_length) * ageA/duration;
         // rest_length = lambda + (rest_length - lambda) * ageA/mMeinekeSpringGrowthDuration;
+        double overlap = distance_between_nodes - rest_length;
+        c_vector<double, 2> temp = spring_constant * unitForceDirection * overlap; 
+        return temp;
     }
     // *****************************************************************************************
 
