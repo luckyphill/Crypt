@@ -31,7 +31,7 @@ BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SPACE_DIM>::~BasicNonLinearSpr
 }
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-std::set<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SPACE_DIM>::FindPairsToRemove(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation)
+std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SPACE_DIM>::FindPairsToRemove(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation)
 {
 
     MeshBasedCellPopulation<ELEMENT_DIM,SPACE_DIM>* p_tissue = static_cast<MeshBasedCellPopulation<ELEMENT_DIM,SPACE_DIM>*>(&rCellPopulation);
@@ -58,22 +58,22 @@ std::set<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> BasicNonLinearSpringFor
         // If an interaction already exists, then compare the distances and keep the shorter one
         // Move the longer one into removed_interactions
 
-        std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > node_pair = (*iter);
+        std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > node_pair_AB = (*iter);
 
-        CellPtr cellA = mpCellPopulation->GetCellUsingLocationIndex(node_pair->first);
-        CellPtr cellB = mpCellPopulation->GetCellUsingLocationIndex(node_pair->second);
+        CellPtr cellA = rCellPopulation.GetCellUsingLocationIndex(node_pair_AB.first->GetIndex());
+        CellPtr cellB = rCellPopulation.GetCellUsingLocationIndex(node_pair_AB.second->GetIndex());
 
-        std::vector< std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > >::iterator it; 
+        typename std::vector< std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > >::iterator it; 
         it = std::find_if( interactions.begin(), interactions.end(),
-            [&node_pair](const std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* >& interaction_pair)
+            [&rCellPopulation, node_pair_AB, cellA, cellB](const std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* >& interaction_pair)
             {
                 // The interaction we are interested in is one that is already in the vector
                 // but is between an external cell and the other internal node
                 // In this case, adding it to the interaction vector will have an external cell
                 // providing a force to both nodes
 
-                CellPtr cell1 = mpCellPopulation->GetCellUsingLocationIndex(interaction_pair->first);
-                CellPtr cell2 = mpCellPopulation->GetCellUsingLocationIndex(interaction_pair->second);
+                CellPtr cell1 = rCellPopulation.GetCellUsingLocationIndex(interaction_pair.first->GetIndex());
+                CellPtr cell2 = rCellPopulation.GetCellUsingLocationIndex(interaction_pair.second->GetIndex());
 
                 bool ages_A1 = cellA->GetAge() == cell1->GetAge();
                 bool ages_B2 = cellB->GetAge() == cell2->GetAge();
@@ -93,7 +93,21 @@ std::set<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> BasicNonLinearSpringFor
                 bool parents_A2 = cellA->GetCellData()->GetItem("parent") == cell2->GetCellData()->GetItem("parent");
                 bool parents_B1 = cellB->GetCellData()->GetItem("parent") == cell1->GetCellData()->GetItem("parent");
 
-                return ages_A1*ages_B2 * ids11*ids22 * parents_A1*parents_B2  +  ages_A2*ages_B1 * idsA2*ids21  * parents_A2*parents_B1 == 1;
+                unsigned result = ages_A1*ages_B2 * ids_A1*ids_B2 * parents_A1*parents_B2  +  ages_A2*ages_B1 * ids_A2*ids_B1  * parents_A2*parents_B1;
+
+                if ((node_pair_AB.first->GetIndex() == 13 && node_pair_AB.second->GetIndex() == 11) || (node_pair_AB.first->GetIndex() == 11 && node_pair_AB.second->GetIndex() == 13))
+                {
+                    PRINT_VARIABLE(result)
+                    PRINT_VARIABLE(node_pair_AB.first->GetIndex())
+                    PRINT_VARIABLE(node_pair_AB.second->GetIndex())
+                    PRINT_VARIABLE(interaction_pair.first->GetIndex())
+                    PRINT_VARIABLE(interaction_pair.second->GetIndex())
+                    PRINT_3_VARIABLES(ages_B2, ids_B2, parents_B2)
+                    PRINT_2_VARIABLES(cellB->GetCellData()->GetItem("parent"), cell2->GetCellData()->GetItem("parent"))
+                }
+                
+
+                return result == 1;
                 // If neither forward or flipped match, result is 0, returns 0 - this interaction is not the interaction vector
                 // If one of forward or flipped match, result is 1, returns 1 - the interaction is in the interaction vetctor
                 // If we have found the twin nodes of a growing cell and they are already in the vector, result is 2, returns 0
@@ -101,33 +115,40 @@ std::set<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> BasicNonLinearSpringFor
                 // longer interaction within a cell with twin nodes
             });
 
-        if (it != interaction.end())
+        if (it != interactions.end())
         {
             // We have found an duplicated cell-cell interaction
+            std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > node_pair_12 = (*it);
 
             // Check which one is longer
-            c_vector<double, SPACE_DIM> directionAB = rCellPopulation.rGetMesh().GetVectorFromAtoB(node_pair->first, node_pair->second);
+            c_vector<double, SPACE_DIM> directionAB = rCellPopulation.rGetMesh().GetVectorFromAtoB(node_pair_AB.first->rGetLocation(), node_pair_AB.second->rGetLocation());
             double distanceAB = norm_2(directionAB);
 
-            c_vector<double, SPACE_DIM> direction12 = rCellPopulation.rGetMesh().GetVectorFromAtoB((*it)->first, (*it)->second);
+            c_vector<double, SPACE_DIM> direction12 = rCellPopulation.rGetMesh().GetVectorFromAtoB(node_pair_12.first->rGetLocation(), node_pair_12.second->rGetLocation());
             double distance12 = norm_2(direction12);
 
             // Put the longer one in the removed_interactions vector
             // Put the shorter one int the interactions vector
             if (distanceAB < distance12)
             {
-                removed_interactions.push_back((*it));
+                // The pair in the interactions vector is longer, so remove it
+                // and replace it with the new pair
+                removed_interactions.push_back(node_pair_12);
+                interactions.erase(it);
+                interactions.push_back(node_pair_AB);
+
             } else
             {
-                removed_interactions.push_back(node_pair);
-                interactions.erase(node_pair);
+                // The pair in the interations vector is meant to be there
+                // Put the new pair in the removed vector
+                removed_interactions.push_back(node_pair_AB);
             }
 
 
         } else 
         {
-            // We have found a new interaction, add it to the interactions vector
-            interactions.push_back(cell_pair);
+            // We have found a cell-cell interaction not in the vector, add it to the interactions vector
+            interactions.push_back(node_pair_AB);
 
         }
 
@@ -135,6 +156,7 @@ std::set<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> BasicNonLinearSpringFor
     }
 
     return removed_interactions;
+    // return interactions;
 
 };
 
@@ -148,7 +170,7 @@ void BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SPACE_DIM>::AddForceContr
 
 
     // Checks if this is a 1D columnor a 2D column (i.e. cells can pop up)
-    std::set< std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > > nodes_to_remove;
+    std::vector< std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > > nodes_to_remove;
     nodes_to_remove = FindPairsToRemove(rCellPopulation);
 
 
@@ -159,7 +181,7 @@ void BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SPACE_DIM>::AddForceContr
         iter++)
     {
         std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > pair = *iter;
-        if( contact_nodes.find(pair) != contact_nodes.end() )
+        if( find(nodes_to_remove.begin(), nodes_to_remove.end(), pair) != nodes_to_remove.end() )
         {
             std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > pair = *iter;
         
@@ -176,8 +198,8 @@ void BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SPACE_DIM>::AddForceContr
     
             // Add the force contribution to each node
             c_vector<double, SPACE_DIM> negative_force = -1.0 * force;
-            pair.first->AddAppliedForceContribution(force);
-            pair.second->AddAppliedForceContribution(negative_force);
+            pair.first->AddAppliedForceContribution(-force);
+            pair.second->AddAppliedForceContribution(-negative_force);
         }
     }
 }

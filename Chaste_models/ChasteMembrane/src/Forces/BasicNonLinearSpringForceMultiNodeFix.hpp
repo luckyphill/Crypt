@@ -23,7 +23,7 @@ cell from having fore applied twice
 template<unsigned  ELEMENT_DIM, unsigned SPACE_DIM=ELEMENT_DIM>
 class BasicNonLinearSpringForceMultiNodeFix : public AbstractForce<ELEMENT_DIM, SPACE_DIM>
 {
-    friend class TestForces;
+    friend class TestForces_CM;
 
 private:
 
@@ -40,8 +40,6 @@ private:
     {
         archive & boost::serialization::base_object<AbstractForce<ELEMENT_DIM, SPACE_DIM> >(*this);
         archive & mSpringStiffness; // Epithelial covers stem and transit
-        archive & mMeinekeDivisionRestingSpringLength;
-        archive & mMeinekeSpringGrowthDuration;
     }
 
 protected:
@@ -83,7 +81,7 @@ public:
 
     void AddForceContribution(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation);
 
-    std::set<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> FindPairsToRemove(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation);
+    std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> FindPairsToRemove(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation);
 
     void SetSpringStiffness(double SpringStiffness);
 

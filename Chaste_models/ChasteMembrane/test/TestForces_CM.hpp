@@ -5,7 +5,6 @@
 #include "SmartPointers.hpp"
 #include "CommandLineArguments.hpp"
 
-#include "DividingRotationForce.hpp"
 #include "SimpleWntContactInhibitionCellCycleModel.hpp"
 #include "NodeBasedCellPopulation.hpp"
 #include "NodesOnlyMesh.hpp"
@@ -15,6 +14,16 @@
 #include "WildTypeCellMutationState.hpp"
 #include "WntConcentration.hpp"
 
+// Forces
+#include "DividingRotationForce.hpp"
+#include "BasicNonLinearSpringForceMultiNodeFix.hpp"
+
+// Cell Cycle Models
+#include "SimplifiedPhaseBasedCellCycleModel.hpp"
+
+// Modifiers
+#include "VolumeTrackingModifier.hpp"
+
 // Misc
 #include "FakePetscSetup.hpp"
 #include "Debug.hpp"
@@ -23,7 +32,7 @@
 class TestForces_CM : public AbstractCellBasedTestSuite
 {
 	public:
-	void TestDividingRotationForce() throw(Exception)
+	void xTestDividingRotationForce() throw(Exception)
 	{
 		
 		unsigned n = 10;
@@ -174,6 +183,124 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 		
 		WntConcentration<2>::Instance()->Destroy();
 
+	};
+
+	void TestMultiNodeFix() throw(Exception)
+	{
+		// This tests the function FindPairsToRemove in BasicNonLinearSpringForceMultiNodeFix
+		// The algorithm in the function finds interactions between two cells, and makes sure
+		// that a given cell only interacts with one of the internal nodes
+
+		// Make a collection of nodes
+
+		std::vector<Node<2>*> nodes;
+
+		unsigned cells_up = 5;
+		unsigned cells_across = 5;
+		unsigned node_counter = 0;
+
+		for (unsigned i = 0; i< cells_across; i++)
+		{
+			for (unsigned j = 0; j< cells_up; j++)
+			{
+				double x = 0;
+				double y = 0;
+				if (j == 2* unsigned(j/2))
+				{
+					x = i;
+				} else 
+				{
+					// stagger for hex mesh
+					x = i + 0.5;
+				}
+				y = j * (sqrt(3.0)/2);
+
+				// Puts two nodes close to each other to represent the nodes in W phase
+				if( node_counter == 12)
+				{
+					nodes.push_back(new Node<2>(node_counter,  false,  x - 0.1, y));
+					node_counter++;
+					nodes.push_back(new Node<2>(node_counter,  false,  x + 0.1, y));
+					node_counter++;
+				} else 
+				{
+					nodes.push_back(new Node<2>(node_counter,  false,  x, y));
+					node_counter++;
+				}
+				
+			}
+		}
+
+		NodesOnlyMesh<2> mesh;
+		mesh.ConstructNodesWithoutMesh(nodes, 3.0);
+
+		std::vector<CellPtr> cells;
+
+		MAKE_PTR(DifferentiatedCellProliferativeType, p_diff_type);
+		MAKE_PTR(TransitCellProliferativeType, p_trans_type);
+
+		MAKE_PTR(WildTypeCellMutationState, p_state);
+
+		for (unsigned i = 0; i < nodes.size(); i++)
+		{
+
+			// Set the middle cell to be proliferating
+			SimplifiedPhaseBasedCellCycleModel* p_cycle_model = new SimplifiedPhaseBasedCellCycleModel();
+
+			p_cycle_model->SetWDuration(10);
+			p_cycle_model->SetBasePDuration(5);
+			p_cycle_model->SetDimension(2);
+   			p_cycle_model->SetEquilibriumVolume(2);
+   			p_cycle_model->SetQuiescentVolumeFraction(0.8);
+   			p_cycle_model->SetWntThreshold(0.5);
+			p_cycle_model->SetBirthTime(-12);
+			if ( i ==12 || i == 13)
+			{
+				p_cycle_model->SetBirthTime(-5);
+			}
+
+			CellPtr p_cell(new Cell(p_state, p_cycle_model));
+			p_cell->SetCellProliferativeType(p_trans_type);
+			p_cell->InitialiseCellCycleModel();
+			
+			if ( i ==12 || i == 13)
+			{
+				p_cell->GetCellData()->SetItem("parent", 100);
+			}
+
+			cells.push_back(p_cell);
+
+
+		}
+
+        NodeBasedCellPopulation<2> cell_population(mesh, cells);
+
+        OffLatticeSimulation<2> simulator(cell_population);
+        simulator.SetOutputDirectory("TestMultiNodeFix");
+        simulator.SetSamplingTimestepMultiple(1);
+        simulator.SetEndTime(0.001);
+        simulator.SetDt(0.001);
+        MAKE_PTR(VolumeTrackingModifier<2>, p_mod);
+		simulator.AddSimulationModifier(p_mod);
+
+        WntConcentration<2>::Instance()->SetType(LINEAR);
+        WntConcentration<2>::Instance()->SetCellPopulation(cell_population);
+        WntConcentration<2>::Instance()->SetCryptLength(10);
+
+        simulator.Solve();
+
+        MAKE_PTR(BasicNonLinearSpringForceMultiNodeFix<2>, p_force);
+
+        std::vector<std::pair<Node<2>*, Node<2>* >> node_pairs = p_force->FindPairsToRemove(cell_population);
+
+        for (typename std::vector< std::pair<Node<2>*, Node<2>* > >::iterator iter = node_pairs.begin();
+        iter != node_pairs.end();
+        iter++)
+    	{
+    		unsigned node1 = (*iter).first->GetIndex();
+    		unsigned node2 = (*iter).second->GetIndex();
+    		PRINT_2_VARIABLES(node1, node2)
+    	}
 	};
 
 };
