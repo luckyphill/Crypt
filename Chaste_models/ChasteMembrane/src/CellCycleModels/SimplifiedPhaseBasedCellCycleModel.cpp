@@ -53,7 +53,14 @@ void SimplifiedPhaseBasedCellCycleModel::Initialise()
     // The parent will be set properly for cells created in the simulation
     AbstractCellCycleModel::Initialise();
     assert(mpCell != NULL);
-    mpCell->GetCellData()->SetItem("parent", mpCell->GetCellId());
+    try
+    {
+        unsigned parent = mpCell->GetCellData()->GetItem("parent");
+    } 
+    catch (...)
+    {
+        mpCell->GetCellData()->SetItem("parent", mpCell->GetCellId());
+    }
     SetPDuration();
     mCurrentCellCyclePhase = W_PHASE;
 }

@@ -51,6 +51,15 @@ protected:
 
     double mCutOffLength;
 
+    double mAttractionParameter;
+
+    // Spring growth parameters for newly divided cells
+    double mMeinekeSpringStiffness;
+
+    double mMeinekeDivisionRestingSpringLength;
+
+    double mMeinekeSpringGrowthDuration;
+
 public:
 
     /**
@@ -81,13 +90,22 @@ public:
 
     void AddForceContribution(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation);
 
-    std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> FindPairsToRemove(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation);
+    std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> FindOneInteractionBetweenCellPair(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation);
 
     void SetSpringStiffness(double SpringStiffness);
 
     void SetRestLength(double RestLength);
 
     void SetCutOffLength(double CutOffLength);
+
+    void SetAttractionParameter(double attractionParameter);
+
+    // Spring growth for newly divided cells
+    void SetMeinekeSpringStiffness(double springStiffness);
+
+    void SetMeinekeDivisionRestingSpringLength(double divisionRestingSpringLength);
+
+    void SetMeinekeSpringGrowthDuration(double springGrowthDuration);
     
     virtual void OutputForceParameters(out_stream& rParamsFile);
 };

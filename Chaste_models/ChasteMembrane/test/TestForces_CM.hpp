@@ -232,7 +232,7 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 		}
 
 		NodesOnlyMesh<2> mesh;
-		mesh.ConstructNodesWithoutMesh(nodes, 3.0);
+		mesh.ConstructNodesWithoutMesh(nodes, 1.5);
 
 		std::vector<CellPtr> cells;
 
@@ -254,7 +254,7 @@ class TestForces_CM : public AbstractCellBasedTestSuite
    			p_cycle_model->SetQuiescentVolumeFraction(0.8);
    			p_cycle_model->SetWntThreshold(0.5);
 			p_cycle_model->SetBirthTime(-12);
-			if ( i ==12 || i == 13)
+			if ( i == 12 || i == 13)
 			{
 				p_cycle_model->SetBirthTime(-5);
 			}
@@ -262,11 +262,6 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 			CellPtr p_cell(new Cell(p_state, p_cycle_model));
 			p_cell->SetCellProliferativeType(p_trans_type);
 			p_cell->InitialiseCellCycleModel();
-			
-			if ( i ==12 || i == 13)
-			{
-				p_cell->GetCellData()->SetItem("parent", 100);
-			}
 
 			cells.push_back(p_cell);
 
@@ -274,6 +269,11 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 		}
 
         NodeBasedCellPopulation<2> cell_population(mesh, cells);
+
+        CellPtr cellA = cell_population.GetCellUsingLocationIndex(12);
+		CellPtr cellB = cell_population.GetCellUsingLocationIndex(13);
+		cellA->GetCellData()->SetItem("parent", 100);
+		cellB->GetCellData()->SetItem("parent", 100);
 
         OffLatticeSimulation<2> simulator(cell_population);
         simulator.SetOutputDirectory("TestMultiNodeFix");
@@ -291,7 +291,11 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 
         MAKE_PTR(BasicNonLinearSpringForceMultiNodeFix<2>, p_force);
 
-        std::vector<std::pair<Node<2>*, Node<2>* >> node_pairs = p_force->FindPairsToRemove(cell_population);
+        std::vector<std::pair<Node<2>*, Node<2>* > > node_pairs = p_force->FindPairsToRemove(cell_population);
+
+        std::vector< std::pair<Node<2>*, Node<2>* >>& all_node_pairs = cell_population.rGetNodePairs();
+
+        unsigned counter = 0;
 
         for (typename std::vector< std::pair<Node<2>*, Node<2>* > >::iterator iter = node_pairs.begin();
         iter != node_pairs.end();
@@ -300,7 +304,16 @@ class TestForces_CM : public AbstractCellBasedTestSuite
     		unsigned node1 = (*iter).first->GetIndex();
     		unsigned node2 = (*iter).second->GetIndex();
     		PRINT_2_VARIABLES(node1, node2)
+
+    		if (node1 == 12 || node1 == 13 || node2 == 12 || node2 == 13)
+    		{
+    			counter++;
+    		}
+
     	}
+    	PRINT_VARIABLE(all_node_pairs.size());
+    	PRINT_VARIABLE(node_pairs.size());
+    	PRINT_VARIABLE(counter);
 	};
 
 };
