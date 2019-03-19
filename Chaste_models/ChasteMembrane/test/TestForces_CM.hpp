@@ -314,6 +314,9 @@ class TestForces_CM : public AbstractCellBasedTestSuite
     	PRINT_VARIABLE(all_node_pairs.size());
     	PRINT_VARIABLE(node_pairs.size());
     	PRINT_VARIABLE(counter);
+
+    	assert(all_node_pairs.size() == 210); // Will fail if the simulation is changed at all
+    	assert(node_pairs.size() == 173); // Will fail if simulation changes or force calculator changes
 	};
 
 };

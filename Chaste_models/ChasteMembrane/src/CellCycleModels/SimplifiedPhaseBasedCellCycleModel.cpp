@@ -211,9 +211,8 @@ void SimplifiedPhaseBasedCellCycleModel::UpdateCellCyclePhase()
     else if (time_since_birth > GetWDuration() && mCurrentCellCyclePhase == W_PHASE )
     {
         mCurrentCellCyclePhase = P_PHASE;
-        // SetPDuration(); // This is done in InitialiseDaughterCell now
-        // Do the stuff to give random cell cycle time
-        // This is where true division happens
+        mpCell->GetCellData()->SetItem("parent", mpCell->GetCellId());
+        // Reset the parent tracker since we only care about this in W phase
     }
 }
 
@@ -253,7 +252,7 @@ void SimplifiedPhaseBasedCellCycleModel::ResetForDivision()
 {
     AbstractCellCycleModel::ResetForDivision();
     // Used for making growing cell pairs are handled properly in the force calculator
-    mpCell->GetCellData()->SetItem("parent", mpCell->GetCellId());
+    mpCell->GetCellData()->SetItem("parent", mpCell->GetCellId()); // Now done in the W to P transition, but can't hurt to leave it here
     mCurrentCellCyclePhase = W_PHASE;
 }
 

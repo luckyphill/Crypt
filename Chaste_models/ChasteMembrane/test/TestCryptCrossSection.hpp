@@ -71,6 +71,7 @@
 #include "EpithelialCellForceWriter.hpp"
 #include "EpithelialCellBirthWriter.hpp"
 #include "EpithelialCellPositionWriter.hpp"
+#include "ParentWriter.hpp"
 
 // Misc
 #include "FakePetscSetup.hpp"
@@ -1487,6 +1488,7 @@ class TestCryptCrossSection : public AbstractCellBasedTestSuite
 		PRINT_VARIABLE(simulator.GetOutputDivisionLocations())
 
 		cell_population.AddCellWriter<EpithelialCellForceWriter>();
+		cell_population.AddCellWriter<ParentWriter>();
 
 		simulator.Solve();
 		

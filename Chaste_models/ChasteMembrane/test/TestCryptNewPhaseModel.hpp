@@ -76,6 +76,7 @@
 #include "EpithelialCellBirthWriter.hpp"
 #include "EpithelialCellPositionWriter.hpp"
 #include "NewPhaseModelBirthWriter.hpp"
+#include "ParentWriter.hpp"
 
 // Misc
 #include "FakePetscSetup.hpp"
@@ -448,8 +449,8 @@ public:
 
 		// ********************************************************************************************
 		// Set force parameters
-		MAKE_PTR(BasicNonLinearSpringForceMultiNodeFix<2>, p_force);
-		// MAKE_PTR(BasicNonLinearSpringForceNewPhaseModel<2>, p_force);
+		// MAKE_PTR(BasicNonLinearSpringForceMultiNodeFix<2>, p_force);
+		MAKE_PTR(BasicNonLinearSpringForceNewPhaseModel<2>, p_force);
 		// MAKE_PTR(BasicContactNeighbourSpringForce<2>, p_force);
 		p_force->SetSpringStiffness(epithelialStiffness);
 		p_force->SetRestLength(2 * epithelialPreferredRadius);
@@ -513,6 +514,8 @@ public:
 		
 		p_writer->SetSamplingMultiple(sampling_multiple);
 		cell_population.AddCellWriter(p_writer);
+
+		cell_population.AddCellWriter<ParentWriter>();
 		
 
 

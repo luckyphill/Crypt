@@ -8,6 +8,10 @@
 #include "WntConcentration.hpp"
 #include "Debug.hpp"
 
+// Contains a bug where the parent tracking doesn't update upon transition to G1 phase
+// This is not an issue if it is feasible to check the cell agees as well to confrim
+// a pair of cells in M phase
+
 SimpleWntWithAnoikisResistanceAndSenescence::SimpleWntWithAnoikisResistanceAndSenescence()
     : ContactInhibitionCellCycleModel(),
       mWntThreshold(0.5),
