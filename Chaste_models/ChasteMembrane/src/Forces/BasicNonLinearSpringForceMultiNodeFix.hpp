@@ -90,7 +90,7 @@ public:
 
     void AddForceContribution(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation);
 
-    std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> FindOneInteractionBetweenCellPair(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation);
+    std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> FindOneInteractionBetweenCellPairs(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation);
 
     void SetSpringStiffness(double SpringStiffness);
 

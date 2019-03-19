@@ -597,6 +597,20 @@ public:
 		PRINT_VARIABLE(cellId)
 		PRINT_VARIABLE(Wcells)
 		PRINT_VARIABLE(Pcells)
+
+		ofstream deathAge;
+        deathAge.open("deathAge.txt");
+
+        std::vector<double> deathAges = p_anoikis_killer->GetAgesAtDeath();
+
+        std::vector<double>::iterator it;
+
+        for (it = deathAges.begin(); it != deathAges.end(); ++it)
+        {
+        	deathAge << (*it) << "\n";
+        }
+
+        deathAge.close();
 	};
 
 };

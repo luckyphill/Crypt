@@ -291,7 +291,7 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 
         MAKE_PTR(BasicNonLinearSpringForceMultiNodeFix<2>, p_force);
 
-        std::vector<std::pair<Node<2>*, Node<2>* > > node_pairs = p_force->FindPairsToRemove(cell_population);
+        std::vector<std::pair<Node<2>*, Node<2>* > > node_pairs = p_force->FindOneInteractionBetweenCellPairs(cell_population);
 
         std::vector< std::pair<Node<2>*, Node<2>* >>& all_node_pairs = cell_population.rGetNodePairs();
 

@@ -28,6 +28,8 @@ private:
 
     std::vector<std::pair<CellPtr, double>> mCellsForDelayedAnoikis;
 
+    std::vector<double> mAgesAtDeath;
+
     bool mSlowDeath;
 
     double mPoppedUpLifeExpectancy;
@@ -108,6 +110,7 @@ public:
     void SetPoppedUpLifeExpectancy(double poppedUpLifeExpectancy);
     void SetResistantPoppedUpLifeExpectancy(double resistantPoppedUpLifeExpectancy);
 
+    std::vector<double> GetAgesAtDeath();
     unsigned GetCellKillCount();
     void ResetCellKillCount();
 

@@ -189,8 +189,9 @@ void SimpleAnoikisCellKiller::CheckAndLabelCellsForApoptosisOrDeath()
 			}
 			else
 			{
+				mAgesAtDeath.push_back(p_cell->GetAge());
 				p_cell->Kill();
-				mCellKillCount += 1;//Increment the cell kill count by one for each cell killed
+				mCellKillCount++;//Increment the cell kill count by one for each cell killed
 			}
 			
 		}
@@ -210,6 +211,11 @@ unsigned SimpleAnoikisCellKiller::GetCellKillCount()
 void SimpleAnoikisCellKiller::ResetCellKillCount()
 {
 	mCellKillCount = 0;
+}
+
+std::vector<double> SimpleAnoikisCellKiller::GetAgesAtDeath()
+{
+	return mAgesAtDeath;
 }
 
 void SimpleAnoikisCellKiller::OutputCellKillerParameters(out_stream& rParamsFile)

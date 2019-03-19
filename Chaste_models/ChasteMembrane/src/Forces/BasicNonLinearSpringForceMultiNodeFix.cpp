@@ -32,7 +32,7 @@ BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SPACE_DIM>::~BasicNonLinearSpr
 }
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SPACE_DIM>::FindOneInteractionBetweenCellPair(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation)
+std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SPACE_DIM>::FindOneInteractionBetweenCellPairs(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation)
 {
 
     MeshBasedCellPopulation<ELEMENT_DIM,SPACE_DIM>* p_tissue = static_cast<MeshBasedCellPopulation<ELEMENT_DIM,SPACE_DIM>*>(&rCellPopulation);
@@ -51,7 +51,7 @@ std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> BasicNonLinearSpring
 
     for (typename std::vector< std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > >::iterator iter = r_node_pairs.begin();
         iter != r_node_pairs.end();
-        iter++)
+        ++iter)
     {
 
         // Loop through all the node pairs and store the interactions
@@ -191,11 +191,11 @@ void BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SPACE_DIM>::AddForceContr
 
     // Checks if this is a 1D columnor a 2D column (i.e. cells can pop up)
     std::vector< std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > > interactions;
-    interactions = FindOneInteractionBetweenCellPair(rCellPopulation);
+    interactions = FindOneInteractionBetweenCellPairs(rCellPopulation);
 
     for (typename std::vector< std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > >::iterator iter = interactions.begin();
         iter != interactions.end();
-        iter++)
+        ++iter)
     {
         std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > pair = *iter;
         
