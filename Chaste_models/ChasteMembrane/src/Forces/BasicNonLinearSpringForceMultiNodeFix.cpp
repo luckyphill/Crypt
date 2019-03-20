@@ -53,6 +53,98 @@ std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> BasicNonLinearSpring
         iter != r_node_pairs.end();
         ++iter)
     {
+        std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > test_pair_AB = (*iter);
+
+        Node<SPACE_DIM>* pnodeA = test_pair_AB.first;
+        Node<SPACE_DIM>* pnodeB = test_pair_AB.second;
+
+        CellPtr cellA = rCellPopulation.GetCellUsingLocationIndex(pnodeA->GetIndex());
+        CellPtr cellB = rCellPopulation.GetCellUsingLocationIndex(pnodeB->GetIndex());
+
+        SimplifiedPhaseBasedCellCycleModel* p_ccmA = static_cast<SimplifiedPhaseBasedCellCycleModel*>(cellA->GetCellCycleModel());
+        SimplifiedPhaseBasedCellCycleModel* p_ccmB = static_cast<SimplifiedPhaseBasedCellCycleModel*>(cellB->GetCellCycleModel());
+
+        SimplifiedCellCyclePhases phaseA = pccmA->GetCurrentCellCyclePhase();
+        SimplifiedCellCyclePhases phaseB = pccmB->GetCurrentCellCyclePhase();
+
+        if (phaseA == W_PHASE)
+        {
+            // Do the thing to decide if the interaction should be added
+            std::vector<unsigned>& neighbours = pnodeB->rGetNeighbours();
+
+            // Go through the neighbours to see if one of them is the twin to A
+            // If one of them is, check if it's longer or not, then distribute appropriately
+            std::vector<unsigned>::iterator it;
+            for (it = neighbours.begin(); it!=neighbours.end(); ++it)
+            {
+                // If neighbour is part of the same cell as A
+                CellPtr pcell_test = p_tissue->GetCellUsingLocationIndex((*it));
+                if (pcell_test->GetCellData()->GetItem("parent") == cellA->GetCellData()->GetItem("parent"))
+                {
+                    // ... check which vector is longer
+
+                    c_vector<double, SPACE_DIM> test_directionAB = rCellPopulation.rGetMesh().GetVectorFromAtoB(test_pair_AB.first->rGetLocation(), test_pair_AB.second->rGetLocation());
+                    double test_distanceAB = norm_2(test_directionAB);
+
+                    c_vector<double, SPACE_DIM> existing_direction12 = rCellPopulation.rGetMesh().GetVectorFromAtoB(existing_pair_12.first->rGetLocation(), existing_pair_12.second->rGetLocation());
+                    double existing_distance12 = norm_2(existing_direction12);
+
+                    // Put the longer one in the removed_interactions vector
+                    // Put the shorter one int the interactions vector
+                    if (test_distanceAB < existing_distance12)
+                    {
+                        // The pair in the interactions vector is longer, so remove it
+                        // and replace it with the new pair
+                        removed_interactions.push_back(existing_pair_12);
+                        interactions.erase(existing_it);
+                        interactions.push_back(test_pair_AB);
+
+                    } else
+                    {
+                        // The pair in the interations vector is meant to be there
+                        // Put the new pair in the removed vector
+                        removed_interactions.push_back(test_pair_AB);
+                    }
+
+                }
+            }
+
+        } else if (phaseB == W_PHASE)
+        {
+            // Repeat for cellB
+        }
+        else 
+        {
+            interactions.push_back(test_pair_AB);
+        }
+
+    };
+
+};
+
+
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SPACE_DIM>::FindOneInteractionBetweenCellPairs(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation)
+{
+
+    MeshBasedCellPopulation<ELEMENT_DIM,SPACE_DIM>* p_tissue = static_cast<MeshBasedCellPopulation<ELEMENT_DIM,SPACE_DIM>*>(&rCellPopulation);
+
+    // Loop through list of nodes, finds the cell in W phase and
+    // if both nodes are interacting with a cell then only the 
+    // shortest interaction is considered - that is to say in this calculator the longer interaction
+    // is negated by applying the opposite force.
+
+    std::list<CellPtr> cells =  p_tissue->rGetCells();
+
+    
+    std::vector< std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > > interactions;
+    std::vector< std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > > removed_interactions;
+    std::vector< std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > > r_node_pairs = p_tissue->rGetNodePairs();
+
+    for (typename std::vector< std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > >::iterator iter = r_node_pairs.begin();
+        iter != r_node_pairs.end();
+        ++iter)
+    {
 
         // Loop through all the node pairs and store the interactions
         // If an interaction already exists, then compare the distances and keep the shorter one
