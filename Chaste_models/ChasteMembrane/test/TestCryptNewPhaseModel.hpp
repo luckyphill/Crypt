@@ -449,8 +449,8 @@ public:
 
 		// ********************************************************************************************
 		// Set force parameters
-		// MAKE_PTR(BasicNonLinearSpringForceMultiNodeFix<2>, p_force);
-		MAKE_PTR(BasicNonLinearSpringForceNewPhaseModel<2>, p_force);
+		MAKE_PTR(BasicNonLinearSpringForceMultiNodeFix<2>, p_force);
+		// MAKE_PTR(BasicNonLinearSpringForceNewPhaseModel<2>, p_force);
 		// MAKE_PTR(BasicContactNeighbourSpringForce<2>, p_force);
 		p_force->SetSpringStiffness(epithelialStiffness);
 		p_force->SetRestLength(2 * epithelialPreferredRadius);
