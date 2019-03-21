@@ -76,67 +76,69 @@ std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> BasicNonLinearSpring
         unsigned parentA = cellA->GetCellData()->GetItem("parent");
         unsigned parentB = cellB->GetCellData()->GetItem("parent");
 
-        
+        c_vector<double, SPACE_DIM> direction = rCellPopulation.rGetMesh().GetVectorFromAtoB(pnodeA->rGetLocation(), pnodeB->rGetLocation());
+        double distance = norm_2(direction);
 
         // Easiest pairs to categorise: 
         // cellA and cellB are both single node cells - put straight into vector
         // pnodeA and pnodeB are twin nodes of one cell - put straigh into vector
-        if ((phaseA != W_PHASE && phaseB != W_PHASE) || ( parentA == parentB))
+        if (distance < this->mCutOffLength)
         {
-            interactions.push_back(node_pair_AB);
-        }
-        else
-        {
-            unsigned lower;
-            unsigned higer;
-
-            lower = parentA < parentB ? parentA: parentB;
-            higer = parentA > parentB ? parentA: parentB;
-
-            std::pair<unsigned, unsigned> parent_pair = std::make_pair(lower, higer);
-
-            std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > pair_to_add; // To be determined
-
-            // If the parent pair doesn't exist, then we need to look through all interactions between these two cells
-            if (completed_parent_pairs.find(parent_pair) == completed_parent_pairs.end())
+            if ((phaseA != W_PHASE && phaseB != W_PHASE) || ( parentA == parentB))
             {
-                // Assuming there are no errors, we will always solve a cell-cell interaction in this scope
-                completed_parent_pairs.insert(parent_pair);
-
-                if (phaseA == W_PHASE && phaseB != W_PHASE)
-                {
-                    pair_to_add = FindShortestOneWPhase(rCellPopulation, pnodeA, pnodeB);
-                }
-
-                if (phaseA != W_PHASE && phaseB == W_PHASE)
-                {
-                    pair_to_add = FindShortestOneWPhase(rCellPopulation, pnodeB, pnodeA);
-                }
-
-                if (phaseA == W_PHASE && phaseB == W_PHASE)
-                {
-                    std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > forwards;
-                    std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > bacwards;
-
-                    forwards = FindShortestOneWPhase(rCellPopulation, pnodeA, pnodeB);
-                    bacwards = FindShortestOneWPhase(rCellPopulation, pnodeB, pnodeA);
-
-                    // Pick the shorter of the two outcomes
-                    c_vector<double, SPACE_DIM> direction_forwards = rCellPopulation.rGetMesh().GetVectorFromAtoB(forwards.first->rGetLocation(), forwards.second->rGetLocation());
-                    double distance_forwards = norm_2(direction_forwards);
-
-                    c_vector<double, SPACE_DIM> direction_bacwards = rCellPopulation.rGetMesh().GetVectorFromAtoB(bacwards.first->rGetLocation(), bacwards.second->rGetLocation());
-                    double distance_bacwards = norm_2(direction_bacwards);
-
-                    pair_to_add = (distance_forwards > distance_bacwards) ? forwards : bacwards;
-                    
-
-                }
-                // correct pair identified
-                interactions.push_back(pair_to_add);
+                interactions.push_back(node_pair_AB);
             }
+            else
+            {
+                unsigned lower;
+                unsigned higer;
 
-            
+                lower = parentA < parentB ? parentA: parentB;
+                higer = parentA > parentB ? parentA: parentB;
+
+                std::pair<unsigned, unsigned> parent_pair = std::make_pair(lower, higer);
+
+                std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > pair_to_add; // To be determined
+
+                // If the parent pair doesn't exist, then we need to look through all interactions between these two cells
+                if (completed_parent_pairs.find(parent_pair) == completed_parent_pairs.end())
+                {
+                    // Assuming there are no errors, we will always solve a cell-cell interaction in this scope
+                    completed_parent_pairs.insert(parent_pair);
+
+                    if (phaseA == W_PHASE && phaseB != W_PHASE)
+                    {
+                        pair_to_add = FindShortestOneWPhase(rCellPopulation, pnodeA, pnodeB);
+                    }
+
+                    if (phaseA != W_PHASE && phaseB == W_PHASE)
+                    {
+                        pair_to_add = FindShortestOneWPhase(rCellPopulation, pnodeB, pnodeA);
+                    }
+
+                    if (phaseA == W_PHASE && phaseB == W_PHASE)
+                    {
+                        std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > forwards;
+                        std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > bacwards;
+
+                        forwards = FindShortestOneWPhase(rCellPopulation, pnodeA, pnodeB);
+                        bacwards = FindShortestOneWPhase(rCellPopulation, pnodeB, pnodeA);
+
+                        // Pick the shorter of the two outcomes
+                        c_vector<double, SPACE_DIM> direction_forwards = rCellPopulation.rGetMesh().GetVectorFromAtoB(forwards.first->rGetLocation(), forwards.second->rGetLocation());
+                        c_vector<double, SPACE_DIM> direction_bacwards = rCellPopulation.rGetMesh().GetVectorFromAtoB(bacwards.first->rGetLocation(), bacwards.second->rGetLocation());
+
+                        double distance_forwards = norm_2(direction_forwards);
+                        double distance_bacwards = norm_2(direction_bacwards);
+
+                        pair_to_add = (distance_forwards > distance_bacwards) ? forwards : bacwards;
+                        
+
+                    }
+                    // correct pair identified
+                    interactions.push_back(pair_to_add);
+                }
+            }
         }
     }
 
@@ -151,8 +153,6 @@ std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > BasicNonLinearSpringForceMultiNod
 {
 
     // This function expects cell A to be the cell in W phase
-    // If both are in W phase, use the other function
-
 
     // A -   -   -   -  B
     //  \            -
@@ -173,37 +173,41 @@ std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > BasicNonLinearSpringForceMultiNod
     std::vector<unsigned>& neighbours = pnodeB->rGetNeighbours();
 
     // Go through the neighbours to see if one of them is the twin to A
-    // If one of them is, check if it's longer or not, then distribute appropriately
+    // If one of them is, check if AB or BC is longer, and return the shorter pair
     std::vector<unsigned>::iterator it;
     for (it = neighbours.begin(); it!=neighbours.end(); ++it)
     {
         // If neighbour is part of the same cell as A
-        CellPtr cellC = rCellPopulation.GetCellUsingLocationIndex((*it));
-        Node<SPACE_DIM>* pnodeC = rCellPopulation.GetNode((*it));
+        unsigned index = (*it);
+        CellPtr cellC = rCellPopulation.GetCellUsingLocationIndex(index);
+        Node<SPACE_DIM>* pnodeC = rCellPopulation.GetNode(index);
 
-        if (cellC->GetCellData()->GetItem("parent") == cellA->GetCellData()->GetItem("parent"))
+        if (cellC->GetCellData()->GetItem("parent") == cellA->GetCellData()->GetItem("parent") && cellC->GetCellId() != cellA->GetCellId())
         {
             // ... check which vector is longer
 
             std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > node_pair_BC = std::make_pair(pnodeB, pnodeC);
 
             c_vector<double, SPACE_DIM> directionAB = rCellPopulation.rGetMesh().GetVectorFromAtoB(pnodeA->rGetLocation(), pnodeB->rGetLocation());
-            double distanceAB = norm_2(directionAB);
-
             c_vector<double, SPACE_DIM> directionBC = rCellPopulation.rGetMesh().GetVectorFromAtoB(pnodeB->rGetLocation(), pnodeC->rGetLocation());
+
+            double distanceAB = norm_2(directionAB);
             double distanceBC = norm_2(directionBC);
 
             // Put the longer one in the removed_interactions vector
-            // Put the shorter one int the interactions vector
+            // Put the shorter one in the interactions vector
+            
+            if (distanceAB == distanceBC)
+            {
+                TRACE("Unicorn found")
+            }
             if (distanceAB < distanceBC)
             {
                 return node_pair_AB;
-
             } else
             {
                 return node_pair_BC;
             }
-
         }
     }
 

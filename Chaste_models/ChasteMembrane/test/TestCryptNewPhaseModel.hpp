@@ -87,7 +87,7 @@ class TestCryptNewPhaseModel : public AbstractCellBasedTestSuite
 	
 public:
 
-	void TestSimplifiedPhaseBasedModel() throw(Exception)
+	void xTestSimplifiedPhaseBasedModel() throw(Exception)
 	{
 
 		// This tests the function of SimplifiedPhaseBasedCellCycleModel

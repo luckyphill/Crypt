@@ -102,7 +102,6 @@ public:
 
     void SetMeinekeSpringGrowthDuration(double springGrowthDuration);
 
-    std::set<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> FindContactNeighbourPairs(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation);
     /**
      * Overridden OutputForceParameters() method.
      *

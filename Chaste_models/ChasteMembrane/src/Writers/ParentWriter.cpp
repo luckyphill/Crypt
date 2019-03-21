@@ -20,7 +20,7 @@ template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
 void ParentWriter<ELEMENT_DIM, SPACE_DIM>::VisitCell(CellPtr pCell, AbstractCellPopulation<ELEMENT_DIM, SPACE_DIM>* pCellPopulation)
 {
 
-    *this->mpOutStream <<  ", " << pCell->GetCellData()->GetItem("parent");
+    *this->mpOutStream <<  ", " << pCell->GetCellId() << ", " << pCell->GetCellData()->GetItem("parent");
 
 }
 
