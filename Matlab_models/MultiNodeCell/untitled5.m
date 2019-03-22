@@ -6,7 +6,7 @@ time = data(:,1);
 dataID = data2(:,1:5:(n-1));
 dataY = data2(:,3:5:(n-1));
 dataX = data2(:,2:5:(n-1));
-IDS = [1,2,3,4,100:180];
+IDS = 1:40';
 
 % When doing the equality, matlab treats matrices as vectors, where
 % each column from 1:end is concatentated to the end of the previous
@@ -22,4 +22,4 @@ for i = 1:length(IDS)
     plot(time(sum(dataID == IDS(i),2) == 1), dataYT(dataID' == IDS(i)));
 end
 
-xlim([100,200]);
+xlim([0,100]);

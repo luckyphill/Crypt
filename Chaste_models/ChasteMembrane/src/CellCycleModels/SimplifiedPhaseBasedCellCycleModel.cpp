@@ -82,7 +82,7 @@ void SimplifiedPhaseBasedCellCycleModel::SetPDuration()
     }
     else
     {
-        mPDuration = p_gen->NormalRandomDeviate(GetBasePDuration(), 2.0);
+        mPDuration = p_gen->NormalRandomDeviate(GetBasePDuration(), 1.0);
         if (mPDuration < mMinimumPDuration)
         {
             // Must have at least some time in P phase because crucial things happen there

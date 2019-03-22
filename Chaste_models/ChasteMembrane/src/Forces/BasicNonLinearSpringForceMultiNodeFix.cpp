@@ -108,31 +108,42 @@ std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> BasicNonLinearSpring
 
                     if (phaseA == W_PHASE && phaseB != W_PHASE)
                     {
-                        pair_to_add = FindShortestOneWPhase(rCellPopulation, pnodeA, pnodeB);
+                        pair_to_add = FindShortestInteraction(rCellPopulation, pnodeA, pnodeB);
                     }
 
                     if (phaseA != W_PHASE && phaseB == W_PHASE)
                     {
-                        pair_to_add = FindShortestOneWPhase(rCellPopulation, pnodeB, pnodeA);
+                        pair_to_add = FindShortestInteraction(rCellPopulation, pnodeB, pnodeA);
                     }
 
                     if (phaseA == W_PHASE && phaseB == W_PHASE)
                     {
                         std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > forwards;
                         std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > bacwards;
+                        std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > crossing;
+                        std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > bfwinner;
 
-                        forwards = FindShortestOneWPhase(rCellPopulation, pnodeA, pnodeB);
-                        bacwards = FindShortestOneWPhase(rCellPopulation, pnodeB, pnodeA);
+                        forwards = FindShortestInteraction(rCellPopulation, pnodeA, pnodeB);
+                        bacwards = FindShortestInteraction(rCellPopulation, pnodeB, pnodeA);
+                        crossing = FindShortestInteraction(rCellPopulation, forwards.second, bacwards.second);
+                        PRINT_2_VARIABLES(pnodeA->GetIndex(), pnodeB->GetIndex())
 
                         // Pick the shorter of the two outcomes
                         c_vector<double, SPACE_DIM> direction_forwards = rCellPopulation.rGetMesh().GetVectorFromAtoB(forwards.first->rGetLocation(), forwards.second->rGetLocation());
                         c_vector<double, SPACE_DIM> direction_bacwards = rCellPopulation.rGetMesh().GetVectorFromAtoB(bacwards.first->rGetLocation(), bacwards.second->rGetLocation());
+                        c_vector<double, SPACE_DIM> direction_crossing = rCellPopulation.rGetMesh().GetVectorFromAtoB(crossing.first->rGetLocation(), crossing.second->rGetLocation());
 
                         double distance_forwards = norm_2(direction_forwards);
                         double distance_bacwards = norm_2(direction_bacwards);
+                        double distance_crossing = norm_2(direction_crossing);
+                        double distance_bfwinner;
 
-                        pair_to_add = (distance_forwards > distance_bacwards) ? forwards : bacwards;
+                        distance_bfwinner = (distance_forwards > distance_bacwards) ? distance_bacwards : distance_forwards;
                         
+                        bfwinner = (distance_forwards > distance_bacwards) ? bacwards : forwards;
+
+                        pair_to_add = (distance_bfwinner > distance_crossing) ? crossing : bfwinner;
+                        PRINT_2_VARIABLES(pair_to_add.first->GetIndex(), pair_to_add.second->GetIndex())
 
                     }
                     // correct pair identified
@@ -149,7 +160,7 @@ std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> BasicNonLinearSpring
 };
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SPACE_DIM>::FindShortestOneWPhase(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation, Node<SPACE_DIM>* pnodeA, Node<SPACE_DIM>* pnodeB)
+std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SPACE_DIM>::FindShortestInteraction(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation, Node<SPACE_DIM>* pnodeA, Node<SPACE_DIM>* pnodeB)
 {
 
     // This function expects cell A to be the cell in W phase
@@ -196,7 +207,7 @@ std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > BasicNonLinearSpringForceMultiNod
 
             // Put the longer one in the removed_interactions vector
             // Put the shorter one in the interactions vector
-            
+
             if (distanceAB == distanceBC)
             {
                 TRACE("Unicorn found")
@@ -374,10 +385,8 @@ template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
 void BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SPACE_DIM>::AddForceContribution(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation)
 {
    
-    //AbstractCentreBasedCellPopulation<ELEMENT_DIM,SPACE_DIM>* p_tissue = static_cast<AbstractCentreBasedCellPopulation<ELEMENT_DIM,SPACE_DIM>*>(&rCellPopulation);
     MeshBasedCellPopulation<ELEMENT_DIM,SPACE_DIM>* p_tissue = static_cast<MeshBasedCellPopulation<ELEMENT_DIM,SPACE_DIM>*>(&rCellPopulation);
 
-    // Checks if this is a 1D columnor a 2D column (i.e. cells can pop up)
     std::vector< std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > > interactions;
     interactions = FindOneInteractionBetweenCellPairs(rCellPopulation);
 
@@ -446,10 +455,10 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SP
     unitForceDirection /= distance_between_nodes;
 
 
-    double rest_length = this->mRestLength;
-    double spring_constant = this->mSpringStiffness;
+    double rest_length = mRestLength;
+    double spring_constant = mSpringStiffness;
 
-    if (distance_between_nodes > this->mCutOffLength)
+    if (distance_between_nodes > mCutOffLength)
     {
         return zero_vector;
     }
@@ -466,12 +475,12 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SP
 
     double minimum_length = p_tissue->GetMeinekeDivisionSeparation();
 
-    double duration = this->mMeinekeSpringGrowthDuration;
+    double duration = mMeinekeSpringGrowthDuration;
 
     if (ageA < duration && ageA == ageB && parentA == parentB)
     {
         // Make the spring length grow.
-        double lambda = this->mMeinekeDivisionRestingSpringLength;
+        double lambda = mMeinekeDivisionRestingSpringLength;
         rest_length = minimum_length + (lambda - minimum_length) * ageA/duration;
         // rest_length = lambda + (rest_length - lambda) * ageA/mMeinekeSpringGrowthDuration;
         double overlap = distance_between_nodes - rest_length;
@@ -492,7 +501,7 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SP
     }
     else
     {
-        double alpha = this->mAttractionParameter;
+        double alpha = mAttractionParameter;
         c_vector<double, 2> temp = spring_constant * unitForceDirection * overlap * exp(-alpha * overlap/rest_length);
         return temp;
         // return zero_vector;

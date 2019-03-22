@@ -295,28 +295,8 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 
         std::vector< std::pair<Node<2>*, Node<2>* >>& all_node_pairs = cell_population.rGetNodePairs();
 
-        unsigned counter = 0;
-
-        for (typename std::vector< std::pair<Node<2>*, Node<2>* > >::iterator iter = node_pairs.begin();
-        iter != node_pairs.end();
-        iter++)
-    	{
-    		unsigned node1 = (*iter).first->GetIndex();
-    		unsigned node2 = (*iter).second->GetIndex();
-    		PRINT_2_VARIABLES(node1, node2)
-
-    		if (node1 == 12 || node1 == 13 || node2 == 12 || node2 == 13)
-    		{
-    			counter++;
-    		}
-
-    	}
-    	PRINT_VARIABLE(all_node_pairs.size());
-    	PRINT_VARIABLE(node_pairs.size());
-    	PRINT_VARIABLE(counter);
-
-    	// assert(all_node_pairs.size() == 210); // Will fail if the simulation is changed at all
-    	// assert(node_pairs.size() == 173); // Will fail if simulation changes or force calculator changes
+    	assert(all_node_pairs.size() == 194); // Will fail if the simulation is changed at all
+    	assert(node_pairs.size() == 57); // Will fail if simulation changes or force calculator changes
     	WntConcentration<2>::Instance()->Destroy();
 	};
 
@@ -334,7 +314,7 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 		
 		double x[39] = {0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6};
 		double y[39] = {0, 1.40003, 2.08308, 3.59692, 6.32319, 7.02052, 7.71518, 9.23429, 11.8626, 12.6771, 14.3088, 16.0033, 18.6148, 19.5069, 20.4113, 21.329, 22.2611, 23.2087, 24.1729, 25.1546, 11.0925, 12.8551, 2.83952, 15.1519, 4.96266, 17.7341, 4.28318, 0.720704, 8.45481, 10.366, 5.64309, 16.8638, 13.4896, 9.61334, 13.287, 2.63715, 11.6617, 7.95722, 6.33578};
-		unsigned parents[39] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 28, 7, 9, 2, 27, 6, 4};
+		unsigned parents[39] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 9, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 7, 32, 22, 8, 6, 4};
 
 		unsigned node_counter = 0;
 		for (unsigned i = 0; i <39; i++)
@@ -342,7 +322,6 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 			nodes.push_back(new Node<2>(node_counter,  false,  x[i], y[i]));
 			node_counter++;
 		}
-		
 
 		NodesOnlyMesh<2> mesh;
 		mesh.ConstructNodesWithoutMesh(nodes, 1.5);
@@ -367,6 +346,10 @@ class TestForces_CM : public AbstractCellBasedTestSuite
    			p_cycle_model->SetQuiescentVolumeFraction(0.8);
    			p_cycle_model->SetWntThreshold(0.5);
 			p_cycle_model->SetBirthTime(-12);
+			if (i == 22 || i == 4 || i == 6 || i == 7 || i == 9 || i == 8 || i == 21 || i == 32 || i == 33 || i == 34 || i == 35 || i == 36 || i == 37 || i == 38)
+			{
+				p_cycle_model->SetBirthTime(-5);
+			}
 
 			CellPtr p_cell(new Cell(p_state, p_cycle_model));
 			p_cell->SetCellProliferativeType(p_trans_type);
@@ -397,7 +380,7 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 
         WntConcentration<2>::Instance()->SetType(LINEAR);
         WntConcentration<2>::Instance()->SetCellPopulation(cell_population);
-        WntConcentration<2>::Instance()->SetCryptLength(10);
+        WntConcentration<2>::Instance()->SetCryptLength(26);
 
         simulator.Solve();
 
@@ -407,23 +390,17 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 
         std::vector< std::pair<Node<2>*, Node<2>* >>& all_node_pairs = cell_population.rGetNodePairs();
 
-        unsigned counter = 0;
+        std::vector< std::pair<Node<2>*, Node<2>* >>::iterator it;
 
-        for (typename std::vector< std::pair<Node<2>*, Node<2>* > >::iterator iter = node_pairs.begin();
-        iter != node_pairs.end();
-        iter++)
-    	{
-    		unsigned node1 = (*iter).first->GetIndex();
-    		unsigned node2 = (*iter).second->GetIndex();
-    		PRINT_2_VARIABLES(node1, node2)
+        for (it = node_pairs.begin(); it != node_pairs.end(); ++it)
+        {
+        	Node<2>* pnodeA = (*it).first;
+        	Node<2>* pnodeB = (*it).second;
+        	PRINT_2_VARIABLES(pnodeA->GetIndex(), pnodeB->GetIndex())
+        }
 
-    	}
-    	PRINT_VARIABLE(all_node_pairs.size());
-    	PRINT_VARIABLE(node_pairs.size());
-    	PRINT_VARIABLE(counter);
-
-    	// assert(all_node_pairs.size() == 210); // Will fail if the simulation is changed at all
-    	// assert(node_pairs.size() == 173); // Will fail if simulation changes or force calculator changes
+    	assert(all_node_pairs.size() == 117); // Will fail if the simulation is changed at all
+    	assert(node_pairs.size() == 38); // Will fail if simulation changes or force calculator changes
     	WntConcentration<2>::Instance()->Destroy();
 	};
 

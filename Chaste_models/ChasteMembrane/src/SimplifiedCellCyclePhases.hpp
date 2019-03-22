@@ -5,11 +5,9 @@
 /**
  * Possible phases of the cell cycle.
  *
- * When our cells 'divide' they are actually entering M phase,
- * so a cell progresses round the cell cycle in the following sequence from its birth time
- * Divide-> M -> G0/G1 -> S -> G2 -> Divide.
- *
- * G0 is a cell which stays in the G1 phase and is not going to divide. (i.e. quiescent or differentiated.)
+ * G0 Phase - a state where the cell is differentiated and no longer divides
+ * P Phase - the phase immediately after cell division, cells can pause due to contact inhibition, cell do not grow
+ * W Phase - after P, the cell is growing and cannot be paused. Cells are represented by two nodes
  */
 typedef enum SimplifiedCellCyclePhase_
 {
