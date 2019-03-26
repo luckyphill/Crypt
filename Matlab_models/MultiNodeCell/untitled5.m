@@ -6,7 +6,7 @@ time = data(:,1);
 dataID = data2(:,1:5:(n-1));
 dataY = data2(:,3:5:(n-1));
 dataX = data2(:,2:5:(n-1));
-IDS = 1:40';
+IDS = (1:40)';
 
 % When doing the equality, matlab treats matrices as vectors, where
 % each column from 1:end is concatentated to the end of the previous

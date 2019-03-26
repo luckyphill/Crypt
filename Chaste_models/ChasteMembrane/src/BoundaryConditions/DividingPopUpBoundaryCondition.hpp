@@ -68,26 +68,34 @@ public:
                     {
                         location_neighbour = this->mpCellPopulation->GetLocationOfCellCentre(p_neighbour_cell);
 
-                        // // Take the average of the two
-                        double average_position = (location[0] + location_neighbour[0]) / 2;
+                        // // // Take the average of the two
+                        // double average_position = (location[0] + location_neighbour[0]) / 2;
                         
-                        // No movement allowed in the x direction
-                        p_node->rGetModifiableLocation()[0] = average_position;
-                        p_node_neighbour->rGetModifiableLocation()[0] = average_position;
+                        // // No movement allowed in the x direction
+                        // p_node->rGetModifiableLocation()[0] = average_position;
+                        // p_node_neighbour->rGetModifiableLocation()[0] = average_position;
 
                         // Move to 3/4 position
 
-                        // double difference = abs(location[0] - location_neighbour[0]);
+                        double difference = abs(location[0] - location_neighbour[0]);
 
-                        // if (location[0] > location_neighbour[0])
-                        // {
-                        //     p_node->rGetModifiableLocation()[0] -= 0.1 * difference;
-                        //     p_node_neighbour->rGetModifiableLocation()[0] += 0.9 * difference;
-                        // } else 
-                        // {
-                        //     p_node->rGetModifiableLocation()[0] += 0.9 * difference;
-                        //     p_node_neighbour->rGetModifiableLocation()[0] -= 0.1 * difference;
-                        // }
+                        double frd = 0.05;
+                        double fru = 1 - frd;
+                        if (location[0] > location_neighbour[0])
+                        {
+                            p_node->rGetModifiableLocation()[0] -= frd * difference;
+                            p_node_neighbour->rGetModifiableLocation()[0] += fru * difference;
+                        } else 
+                        {
+                            p_node->rGetModifiableLocation()[0] += fru * difference;
+                            p_node_neighbour->rGetModifiableLocation()[0] -= frd * difference;
+                        }
+
+                        // Move to furthest position
+
+                        // double max_position = fmax(location[0], location_neighbour[0]);
+                        // p_node->rGetModifiableLocation()[0] = max_position;
+                        // p_node_neighbour->rGetModifiableLocation()[0] = max_position;
                         break;
                     }
                 }

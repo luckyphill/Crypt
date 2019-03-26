@@ -390,15 +390,6 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 
         std::vector< std::pair<Node<2>*, Node<2>* >>& all_node_pairs = cell_population.rGetNodePairs();
 
-        std::vector< std::pair<Node<2>*, Node<2>* >>::iterator it;
-
-        for (it = node_pairs.begin(); it != node_pairs.end(); ++it)
-        {
-        	Node<2>* pnodeA = (*it).first;
-        	Node<2>* pnodeB = (*it).second;
-        	PRINT_2_VARIABLES(pnodeA->GetIndex(), pnodeB->GetIndex())
-        }
-
     	assert(all_node_pairs.size() == 117); // Will fail if the simulation is changed at all
     	assert(node_pairs.size() == 38); // Will fail if simulation changes or force calculator changes
     	WntConcentration<2>::Instance()->Destroy();

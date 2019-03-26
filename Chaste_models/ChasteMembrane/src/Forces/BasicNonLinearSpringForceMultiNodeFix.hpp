@@ -95,6 +95,8 @@ public:
 
     std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> FindOneInteractionBetweenCellPairs(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation);
 
+    Node<SPACE_DIM>* FindTwinNode(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation, Node<SPACE_DIM>* pnodeA);
+
     void SetSpringStiffness(double SpringStiffness);
 
     void SetRestLength(double RestLength);

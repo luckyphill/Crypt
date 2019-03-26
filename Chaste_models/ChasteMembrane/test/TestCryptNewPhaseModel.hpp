@@ -302,8 +302,9 @@ public:
 		// A maximum of 350 will give at least 350 divisions, probably more, but the simulation won't run the full time
 		// so in the end, there should be enough to get a decent plot
 
-		double growingFinalSpringLength = (2 * sqrt(2) - 2) * 2 * epithelialPreferredRadius; // This is the maximum spring length between two nodes of a growing cell
+		double growingFinalSpringLength = 1;//(2 * sqrt(2) - 2) * 2 * epithelialPreferredRadius * 1.2; // This is the maximum spring length between two nodes of a growing cell
 		// Modify this to control how large a growing cell is at any time.
+		// = 1 means we use the growing line approximation
 		// = 2 * sqrt(2) - 2 means we use the growing circle approximation
 		// = 2 * pow(2, 1/3) - 2 means we use the growing sphere approximation
         
