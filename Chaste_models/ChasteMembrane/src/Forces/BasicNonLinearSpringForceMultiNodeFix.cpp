@@ -354,10 +354,8 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SP
         // Make the spring length grow.
         double lambda = mMeinekeDivisionRestingSpringLength;
         rest_length = minimum_length + (lambda - minimum_length) * ageA/duration;
-        // rest_length = lambda + (rest_length - lambda) * ageA/mMeinekeSpringGrowthDuration;
+
         double overlap = distance_between_nodes - rest_length;
-        c_vector<double, 2> temp = spring_constant * unitForceDirection * overlap; 
-        return temp;
     }
     // *****************************************************************************************
 
@@ -375,6 +373,13 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SP
     {
         double alpha = mAttractionParameter;
         c_vector<double, 2> temp = spring_constant * unitForceDirection * overlap * exp(-alpha * overlap/rest_length);
+        
+        // Multi-node cells have a stronger internal attraction
+        // Using a linear spring instead
+        if (ageA < duration && ageA == ageB && parentA == parentB)
+        {
+            c_vector<double, 2> temp = spring_constant * unitForceDirection * overlap;
+        }
         return temp;
         // return zero_vector;
     }

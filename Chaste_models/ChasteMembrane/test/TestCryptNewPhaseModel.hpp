@@ -302,7 +302,9 @@ public:
 		// A maximum of 350 will give at least 350 divisions, probably more, but the simulation won't run the full time
 		// so in the end, there should be enough to get a decent plot
 
-		double growingFinalSpringLength = 1;//(2 * sqrt(2) - 2) * 2 * epithelialPreferredRadius * 1.2; // This is the maximum spring length between two nodes of a growing cell
+		// This is the maximum spring length between two nodes of a growing cell
+		// The cell will have this resting spring length just before division
+		double growingFinalSpringLength = 1;//(2 * sqrt(2) - 2) * 2 * epithelialPreferredRadius * 1.2; 
 		// Modify this to control how large a growing cell is at any time.
 		// = 1 means we use the growing line approximation
 		// = 2 * sqrt(2) - 2 means we use the growing circle approximation
@@ -593,6 +595,7 @@ public:
 
         // ********************************************************************************************
 
+        TRACE("START")
         PRINT_VARIABLE(p_sloughing_killer->GetCellKillCount())
 		PRINT_VARIABLE(p_anoikis_killer->GetCellKillCount())
 		PRINT_VARIABLE(proliferative)
@@ -601,6 +604,8 @@ public:
 		PRINT_VARIABLE(cellId)
 		PRINT_VARIABLE(Wcells)
 		PRINT_VARIABLE(Pcells)
+		PRINT_VARIABLE(p_writer->GetBirthCount()/2)
+		TRACE("END")
 
 		ofstream deathAge;
         deathAge.open("deathAge.txt");

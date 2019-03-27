@@ -32,7 +32,7 @@ void NewPhaseModelBirthWriter<ELEMENT_DIM, SPACE_DIM>::VisitCell(CellPtr pCell, 
 
     double y = 0.0; // The y position of the cell to be written
 
-    if (pCell->GetAge() < W_phase_length + mSamplingMultiple * dt && pCell->GetAge() > W_phase_length) // && phase == P_PHASE
+    if (pCell->GetAge() <= W_phase_length + mSamplingMultiple * dt && (phase == P_PHASE || phase == G0_PHASE))// && pCell->GetAge() >= W_phase_length) // && phase == P_PHASE
     {
         // Find the node's twin and take the average position
         unsigned node_index = pCellPopulation->GetLocationIndexUsingCell(pCell);
@@ -55,7 +55,7 @@ void NewPhaseModelBirthWriter<ELEMENT_DIM, SPACE_DIM>::VisitCell(CellPtr pCell, 
             double ageB = p_neighbour_cell->GetAge();
             double parentB = p_neighbour_cell->GetCellData()->GetItem("parent");
 
-            if ( ageA == ageB && parentA == parentB )
+            if ( ageA == ageB)// && parentA == parentB )
             {
                 double location = pCellPopulation->GetLocationOfCellCentre(pCell)[1];
                 double location_neighbour = pCellPopulation->GetLocationOfCellCentre(p_neighbour_cell)[1];
@@ -65,6 +65,7 @@ void NewPhaseModelBirthWriter<ELEMENT_DIM, SPACE_DIM>::VisitCell(CellPtr pCell, 
 
                 unsigned location_index = pCellPopulation->GetLocationIndexUsingCell(pCell);
                 *this->mpOutStream << ", " << y;
+                mBirthCount++;
 
             }
         }
@@ -77,6 +78,12 @@ template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
 void NewPhaseModelBirthWriter<ELEMENT_DIM, SPACE_DIM>::SetSamplingMultiple(double samplingMultiple)
 {
     mSamplingMultiple = samplingMultiple;
+}
+
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+unsigned NewPhaseModelBirthWriter<ELEMENT_DIM, SPACE_DIM>::GetBirthCount()
+{
+    return mBirthCount;
 }
 
 // Explicit instantiation

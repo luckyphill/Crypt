@@ -38,6 +38,8 @@ private:
 
     double mSamplingMultiple = DOUBLE_UNSET;
 
+    unsigned mBirthCount = 0;
+
 public:
 
     /**
@@ -61,6 +63,8 @@ public:
     // Duplicates the sampling multiple from the simulator.
     // Necessary to catch all the divisions that happen within the steps between samples
     void SetSamplingMultiple(double samplingMultiple);
+
+    unsigned GetBirthCount();
 
     /**
      * Overridden VisitCell() method.
