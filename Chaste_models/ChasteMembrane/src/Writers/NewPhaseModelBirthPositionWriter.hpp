@@ -1,5 +1,5 @@
-#ifndef NewPhaseModelBirthWriter_HPP_
-#define NewPhaseModelBirthWriter_HPP_
+#ifndef NewPhaseModelBirthPositionWriter_HPP_
+#define NewPhaseModelBirthPositionWriter_HPP_
 
 #include "ChasteSerialization.hpp"
 #include <boost/serialization/base_object.hpp>
@@ -15,7 +15,7 @@
  * and the maximum height at which a division occurs
  */
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-class NewPhaseModelBirthWriter : public AbstractCellWriter<ELEMENT_DIM, SPACE_DIM>
+class NewPhaseModelBirthPositionWriter : public AbstractCellWriter<ELEMENT_DIM, SPACE_DIM>
 {
 private:
 
@@ -39,14 +39,14 @@ private:
 
     unsigned mBirthCount = 0;
 
-    double maxDivisionCellPosition = 0;
+    unsigned maxDivisionCellPosition = 0;
 
 public:
 
     /**
      * Default constructor.
      */
-    NewPhaseModelBirthWriter();
+    NewPhaseModelBirthPositionWriter();
 
     /**
      * Overridden GetVectorCellDataForVtkOutput() method.
@@ -66,7 +66,7 @@ public:
     void SetSamplingMultiple(double samplingMultiple);
 
     unsigned GetBirthCount();
-    double GetMaxDivisionCellPosition();
+    unsigned GetMaxDivisionCellPosition();
 
     /**
      * Overridden VisitCell() method.
@@ -87,6 +87,6 @@ public:
 };
 
 #include "SerializationExportWrapper.hpp"
-EXPORT_TEMPLATE_CLASS_ALL_DIMS(NewPhaseModelBirthWriter)
+EXPORT_TEMPLATE_CLASS_ALL_DIMS(NewPhaseModelBirthPositionWriter)
 
-#endif /* NewPhaseModelBirthWriter_HPP_ */
+#endif /* NewPhaseModelBirthPositionWriter_HPP_ */

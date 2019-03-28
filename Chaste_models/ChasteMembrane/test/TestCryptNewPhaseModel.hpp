@@ -75,6 +75,7 @@
 #include "EpithelialCellForceWriter.hpp"
 #include "EpithelialCellBirthWriter.hpp"
 #include "EpithelialCellPositionWriter.hpp"
+#include "NewPhaseModelBirthPositionWriter.hpp"
 #include "NewPhaseModelBirthWriter.hpp"
 #include "ParentWriter.hpp"
 
@@ -513,7 +514,8 @@ public:
 		PRINT_VARIABLE(simulator.GetOutputDivisionLocations())
 
 		cell_population.AddCellWriter<EpithelialCellForceWriter>();
-		boost::shared_ptr<NewPhaseModelBirthWriter<2,2> > p_writer{new NewPhaseModelBirthWriter<2,2>};
+		// boost::shared_ptr<NewPhaseModelBirthWriter<2,2> > p_writer{new NewPhaseModelBirthWriter<2,2>};
+		boost::shared_ptr<NewPhaseModelBirthPositionWriter<2,2> > p_writer{new NewPhaseModelBirthPositionWriter<2,2>};
 		
 		p_writer->SetSamplingMultiple(sampling_multiple);
 		cell_population.AddCellWriter(p_writer);
@@ -597,14 +599,13 @@ public:
 
         TRACE("START")
         PRINT_VARIABLE(p_sloughing_killer->GetCellKillCount())
-		PRINT_VARIABLE(p_anoikis_killer->GetCellKillCount())
-		PRINT_VARIABLE(proliferative)
+		PRINT_VARIABLE(p_anoikis_killer->GetCellKillCount()
 		PRINT_VARIABLE(differentiated)
-		PRINT_VARIABLE(total_cells)
-		PRINT_VARIABLE(cellId)
+		// PRINT_VARIABLE(total_cells)
+		// PRINT_VARIABLE(cellId)
 		PRINT_VARIABLE(Wcells)
 		PRINT_VARIABLE(Pcells)
-		PRINT_VARIABLE(p_writer->GetBirthCount()/2)
+		PRINT_VARIABLE(p_writer->GetMaxDivisionCellPosition())
 		TRACE("END")
 
 		ofstream deathAge;

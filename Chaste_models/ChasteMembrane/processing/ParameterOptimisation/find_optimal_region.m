@@ -24,7 +24,7 @@ function find_optimal_region(chaste_test, obj, input_flags, prange)
 	% in other words, it treats each objective function like the specification of a different type of crypt  
 
 	% A test to ensure basic functionality
-	test(1);
+	% test(1);
 
 	% Optimisation in three stages:
 	% Stage 1: A super coarse sweep, as determined by prange
@@ -32,12 +32,14 @@ function find_optimal_region(chaste_test, obj, input_flags, prange)
 	% Stage 3: With an optimal solution (assuming penalty of 0) branch out in multiple directions to
 	%		   find the boundaries of the zero region
 
-	best_coarse_parameter_set = coarse_sweep(chaste_test, obj, input_flags, prange);
+	best_input_values = coarse_sweep(chaste_test, obj, input_flags, prange)
+
+
 
 
 end
 
-function best_coarse_parameter_set = coarse_sweep(chaste_test, obj, input_flags, prange);
+function best_input_values = coarse_sweep(chaste_test, obj, input_flags, prange);
 	% This function does a super coarse parameter sweep in order to find a starting zone
 	% It expects prange to be a cell array with containing vectors
 	% Each vector should have at most three entries, otherwise computation time will _really_
@@ -48,21 +50,86 @@ function best_coarse_parameter_set = coarse_sweep(chaste_test, obj, input_flags,
 	% When it stops, it returns the parameter set that is the best/first below 10,
 	% so that can be fed into the fine grain root finding algorithm
 
-	n = length(prange)
-	n_sets = 1;
-	lengths = nan(1,n);
-	for i = 1:n
-		n_sets = n_sets * length(prange{i});
-		lengths(i) = length(prange{i});
+	target_penalty = 5;
+
+	n = length(prange);
+
+	n_sets = uint8(1); % the number of parameter sets
+	counts = nan(1,n); % used for it2indices - essentially it is a set of conversion rates
+
+	for i = n:-1:1
+	    counts(i) = n_sets;
+	    n_sets = n_sets * uint8(length(prange{i}));
 	end
 
-	params = nan(n_sets,n);
+	% indices is a completely enumerated list of all possible parameter index combinations
+	indices = nan(n_sets,n);
 
-	params(3:3:n_sets,n) = prange{end}(end);
+	for i = 1:n_sets
+	   
+	   % it2indices uses a pretty nifty algorithm to convert the iterator i into a set
+	   % indices refencing the position in prange that gives the parameter we want
+	   % it avoids trying to code a set of nested for loops to an unknown depth
+	   indices(i,:) = it2indices(i, n, counts);
+	    
+	end
 
+	best_result = 10000;
+	best_input_values = [];
 
+	iters = 0;
+	while best_result > target_penalty && iters < n_sets
+		% Randomly sample the parameter sets until we get one with objective function
+		% less than some limit
+		
+		% get the indices
+		set_index = randi(length(indices));
+		index_collection = indices(set_index,:);
+		
+		% delete the indices
+		indices(set_index,:) = [];
+
+		input_values = [];
+		for i = 1:n
+			input_values = [input_values; prange{i}(index_collection(i))];
+		end
+
+		result = run_simulation(chaste_test, obj, input_flags, input_values);
+
+		if result < best_result
+			best_input_values = input_values;
+			best_result = result;
+			fprintf('New best result: %d\n', best_result);
+		end
+
+		iters = iters + 1;
+
+	end
 
 end
+
+function indices = it2indices(i, n, counts)
+    
+    % This function takes a base 10 number 
+    % and converts it to a non uniform base
+    % using the conversion rates specified in counts
+    
+    % This is essentially the same process as converting
+    % say, 100,000s in to days, hours, minutes and seconds, or
+    % 200p into pounds, schillings pence
+    % counts is the conversion rate for each level
+    % i.e. if we are talking time conversion then
+    % counts = (86400, 3600, 60, 1)
+
+    indices = nan(1,n);
+        
+    for j = 1:n
+       indices(j) = idivide(i, counts(j),'ceil');
+       i = i - counts(j) * (indices(j)-1);  % -1 necessary because matlab indexes from 1 -\(o-o)/-
+    end
+    
+end
+
 
 function penalty = run_simulation(chaste_test, obj, input_flags, input_values)
 	% This function takes the parameter input and the chaste test
@@ -77,7 +144,10 @@ function penalty = run_simulation(chaste_test, obj, input_flags, input_values)
 	data_file_dir = [base_path, 'Research/Crypt/Data/Chaste/ParameterOptimisation/', chaste_test, '/', func2str(obj), '/'];
 	if exist(data_file_dir,'dir')~=7
 		% Make the full path
-		mkdir([base_path, 'Research/Crypt/Data/Chaste/ParameterOptimisation/', chaste_test, '/']);
+		if exist([base_path, 'Research/Crypt/Data/Chaste/ParameterOptimisation/', chaste_test, '/'],'dir')~=7
+			mkdir([base_path, 'Research/Crypt/Data/Chaste/ParameterOptimisation/', chaste_test, '/']);
+		end
+
 		mkdir(data_file_dir);
 
 	end
@@ -89,13 +159,17 @@ function penalty = run_simulation(chaste_test, obj, input_flags, input_values)
 	data_file = [data_file_dir, data_file_name];
 
 	if exist(data_file, 'file') == 2
+		fprintf('Found existing data\n');
 		data = get_data_from_file(data_file);
 	else
-		[status,cmdout] = system([simulation_command, input_string]);
+		fprintf('Data does not exist. Simulating with input: %s\n', input_string);
+		[status,cmdout] = system([simulation_command, input_string],'-echo');
 		data = get_data_from_output(cmdout, data_file);
 	end
 
 	penalty = obj(data);
+
+	fprintf('Penalty for this parameter set: %g\n', penalty);
 
 end
 
@@ -116,7 +190,7 @@ function file_name = generate_file_name(input_flags, input_values)
 	file_name = 'parameter_search';
 
 	for i = 1:n
-		file_name = [file_name, sprintf('_%s_%g',input_flags{i}, input_values{i})];
+		file_name = [file_name, sprintf('_%s_%g',input_flags{i}, input_values(i))];
 	end
 
 	file_name = [file_name, '.txt'];
@@ -136,14 +210,13 @@ function input_string = generate_input_string(input_flags, input_values)
 	input_string = '';
 
 	for i = 1:n
-		input_string = [input_string, sprintf(' -%s %g',input_flags{i}, input_values{i})];
+		input_string = [input_string, sprintf(' -%s %g',input_flags{i}, input_values(i))];
 	end
 
 end
 
 
 function data = get_data_from_file(data_file)
-
 	% Reads the data from file
 	data = csvread(data_file);
 end
@@ -175,7 +248,7 @@ function test(n)
 
 	% Tests to make sure the funcitons work correctly
 	input_flags = {'n', 'ees', 'ms', 'cct', 'vf', 'np', 'run'};
-	input_values = {26, 50, 120, 15, 0.75, 13, 1};
+	input_values = [26, 50, 120, 15, 0.75, 13, 1];
 
 	file_name = generate_file_name(input_flags, input_values);
 	assert(strcmp(file_name, 'parameter_search_n_26_ees_50_ms_120_cct_15_vf_0.75_np_13_run_1.txt'));
