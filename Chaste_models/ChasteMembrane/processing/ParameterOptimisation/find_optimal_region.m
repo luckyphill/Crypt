@@ -1,4 +1,4 @@
-function find_optimal_region(chaste_test, obj, input_flags, prange)
+function find_optimal_region(chaste_test, obj, input_flags, prange, ignore_existing)
 
 	% This function takes in the name of a Chaste test, and an associated objective function
 	% The goal is to explore the parameter space and find a point/region where the objective function
@@ -32,14 +32,98 @@ function find_optimal_region(chaste_test, obj, input_flags, prange)
 	% Stage 3: With an optimal solution (assuming penalty of 0) branch out in multiple directions to
 	%		   find the boundaries of the zero region
 
-	best_input_values = coarse_sweep(chaste_test, obj, input_flags, prange)
+	best_input_values = coarse_sweep(chaste_test, obj, input_flags, prange, ignore_existing);
+
+	minimum_point = pattern_search(chaste_test, obj, input_flags, best_input_values, ignore_existing);
 
 
 
 
 end
 
-function best_input_values = coarse_sweep(chaste_test, obj, input_flags, prange);
+function minimum_point = pattern_search(chaste_test, obj, input_flags, input_values, ignore_existing)
+	% This script uses the pattern search optimisation algorithm to find the
+	% point in parameter space that gives the best column crypt behaviour.
+	% See https://en.wikipedia.org/wiki/Pattern_search_(optimization)
+	%
+	% Briefly, in a multidimensional problem, the algorithm takes steps along
+	% one axis until the objective function fails to improve. When it fails, it
+	% halves the step size in that coordinate, then moves to the next axis and
+	% repeats the process. This continues until the objective function reaches
+	% it target.
+
+	iterations = 0;
+	it_limit = 20;
+
+	first_step = true; % When we start searching in a new variable/dimension
+					   % we need to look both directions before we start stepping
+
+	penalty = run_simulation(chaste_test, obj, input_flags, input_values, ignore_existing);
+
+	fprintf('Starting loop\n');
+	% Start the optimisation procedure
+	while penalty > 0 && iterations < it_limit
+	    % choose an axis, choose a direction, take steps until no improvement
+	    % if no improvement, halve the step size, try a new axis
+	    temp_vars = input_vars;
+	    
+	    temp_vars(index) = input_vars(index) + direction * step_sizes(index);
+	    
+	    % enforce ranges
+	    if index==1 && temp_vars(index) < 1; temp_vars(index) = 1; end
+	    if index==2 && temp_vars(index) < 0; temp_vars(index) = 0; end
+	    if index==3 && temp_vars(index) < 0; temp_vars(index) = 0; end
+	    if index==3 && temp_vars(index) > 1; temp_vars(index) = 1; end
+	    
+	    fprintf('Simulating\n');
+	    new_penalty = run_simulation(temp_vars, cct);
+	    fprintf('Done\n');
+	    
+	    if first_step
+	        % Run again, but this time stepping in the oposite direction
+	        temp_vars = input_vars;
+	    
+	        temp_vars(index) = input_vars(index) - step_sizes(index);
+	        
+	        if ( index==1 && temp_vars(index) < 1 ); temp_vars(index) = 1; end
+	        if ( index==2 && temp_vars(index) < 0 ); temp_vars(index) = 0; end
+	        if ( index==3 && temp_vars(index) < 0 ); temp_vars(index) = 0; end
+	        if ( index==3 && temp_vars(index) > 1 ); temp_vars(index) = 1; end
+	        
+	        fprintf('Simulating opposite direction\n');
+	        new_penalty_2 = run_simulation(temp_vars, cct);
+	        fprintf('Done\n');
+	        
+	        if new_penalty_2 < new_penalty
+	            fprintf('Opposite direction better, stepping that direction\n');
+	            new_penalty = new_penalty_2;
+	            direction = -1;
+	        end
+	        first_step = false;
+
+	    end
+	    
+	    % if the result is better...
+	    if new_penalty < penalty
+	        fprintf('Step produced improvement\n');
+	        penalty = new_penalty;
+	        input_vars(index) = input_vars(index) + direction * step_sizes(index);
+	    else
+	        % if it is not better, halve the step size, move to the next
+	        % axis, reset the stepping direction and reset the first step tracker
+	        step_sizes(index) = step_sizes(index)/2;
+	        if (index == 3); index = 1; else; index = index + 1; end
+	        fprintf('Step did not improve penaltyective function, moving to variable %d\n', index);
+	        first_step = true;
+	        direction = +1;
+	    end
+	    fprintf('penaltyective = %.5f, with params: EES = %g, MS = %g, VF = %g,\n', penalty,input_vars(1),input_vars(2),input_vars(3));
+	    iterations = iterations + 1;
+	        
+	end
+end
+
+function best_input_values = coarse_sweep(chaste_test, obj, input_flags, prange, ignore_existing);
 	% This function does a super coarse parameter sweep in order to find a starting zone
 	% It expects prange to be a cell array with containing vectors
 	% Each vector should have at most three entries, otherwise computation time will _really_
@@ -83,7 +167,7 @@ function best_input_values = coarse_sweep(chaste_test, obj, input_flags, prange)
 		% less than some limit
 		
 		% get the indices
-		set_index = randi(length(indices));
+		set_index = randi(length(indices))
 		index_collection = indices(set_index,:);
 		
 		% delete the indices
@@ -94,7 +178,7 @@ function best_input_values = coarse_sweep(chaste_test, obj, input_flags, prange)
 			input_values = [input_values; prange{i}(index_collection(i))];
 		end
 
-		result = run_simulation(chaste_test, obj, input_flags, input_values);
+		result = run_simulation(chaste_test, obj, input_flags, input_values, ignore_existing);
 
 		if result < best_result
 			best_input_values = input_values;
@@ -131,7 +215,7 @@ function indices = it2indices(i, n, counts)
 end
 
 
-function penalty = run_simulation(chaste_test, obj, input_flags, input_values)
+function penalty = run_simulation(chaste_test, obj, input_flags, input_values, ignore_existing)
 	% This function takes the parameter input and the chaste test
 	% It first checks that data doesn't already exist (can provide an option to ignore this step)
 	% If data does exist, it returns that data
@@ -158,7 +242,7 @@ function penalty = run_simulation(chaste_test, obj, input_flags, input_values)
 
 	data_file = [data_file_dir, data_file_name];
 
-	if exist(data_file, 'file') == 2
+	if exist(data_file, 'file') == 2 && ~ignore_existing
 		fprintf('Found existing data\n');
 		data = get_data_from_file(data_file);
 	else
@@ -207,7 +291,7 @@ function input_string = generate_input_string(input_flags, input_values)
 
 	assert(n==m);
 
-	input_string = '';
+	input_string = ' -sm 10';
 
 	for i = 1:n
 		input_string = [input_string, sprintf(' -%s %g',input_flags{i}, input_values(i))];
