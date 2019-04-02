@@ -4,7 +4,7 @@
  * Also incorporates delayed anoikis
  */
 
-#include "SimpleAnoikisCellKiller.hpp"
+#include "AnoikisCellKillerNewPhaseModel.hpp"
 #include "AnoikisCellTagged.hpp"
 #include "AbstractCellKiller.hpp"
 #include "AbstractCellProperty.hpp"
@@ -12,10 +12,12 @@
 #include "NodeBasedCellPopulation.hpp"
 #include "TransitCellAnoikisResistantMutationState.hpp"
 #include "MembraneCellProliferativeType.hpp"
+#include "SimplifiedPhaseBasedCellCycleModel.hpp"
+#include "SimplifiedCellCyclePhases.hpp"
 
 #include "Debug.hpp"
 
-SimpleAnoikisCellKiller::SimpleAnoikisCellKiller(AbstractCellPopulation<2>* pCellPopulation)
+AnoikisCellKillerNewPhaseModel::AnoikisCellKillerNewPhaseModel(AbstractCellPopulation<2>* pCellPopulation)
     : AbstractCellKiller<2>(pCellPopulation),
     mCellsRemovedByAnoikis(0),
     mSlowDeath(false),
@@ -27,22 +29,22 @@ SimpleAnoikisCellKiller::SimpleAnoikisCellKiller(AbstractCellPopulation<2>* pCel
 //	mAnoikisOutputFile = output_file_handler.OpenOutputFile("results.anoikis");
 }
 
-SimpleAnoikisCellKiller::~SimpleAnoikisCellKiller()
+AnoikisCellKillerNewPhaseModel::~AnoikisCellKillerNewPhaseModel()
 {
 //    mAnoikisOutputFile->close();
 }
 
-void SimpleAnoikisCellKiller::SetPopUpDistance(double popUpDistance)
+void AnoikisCellKillerNewPhaseModel::SetPopUpDistance(double popUpDistance)
 {
 	mPopUpDistance = popUpDistance;
 }
 
-void SimpleAnoikisCellKiller::SetPoppedUpLifeExpectancy(double poppedUpLifeExpectancy)
+void AnoikisCellKillerNewPhaseModel::SetPoppedUpLifeExpectancy(double poppedUpLifeExpectancy)
 {
 	mPoppedUpLifeExpectancy = poppedUpLifeExpectancy;
 }
 
-void SimpleAnoikisCellKiller::SetResistantPoppedUpLifeExpectancy(double resistantPoppedUpLifeExpectancy)
+void AnoikisCellKillerNewPhaseModel::SetResistantPoppedUpLifeExpectancy(double resistantPoppedUpLifeExpectancy)
 {
 	mResistantPoppedUpLifeExpectancy = resistantPoppedUpLifeExpectancy;
 }
@@ -51,7 +53,7 @@ void SimpleAnoikisCellKiller::SetResistantPoppedUpLifeExpectancy(double resistan
  * TRUE if cell has popped up
  * FALSE if cell remains in the monolayer
  */
-bool SimpleAnoikisCellKiller::HasCellPoppedUp(unsigned nodeIndex)
+bool AnoikisCellKillerNewPhaseModel::HasCellPoppedUp(unsigned nodeIndex)
 {
 	bool has_cell_popped_up = false;	// Initialising
 
@@ -68,7 +70,7 @@ bool SimpleAnoikisCellKiller::HasCellPoppedUp(unsigned nodeIndex)
 	return has_cell_popped_up;
 }
 
-void SimpleAnoikisCellKiller::PopulateAnoikisList()
+void AnoikisCellKillerNewPhaseModel::PopulateAnoikisList()
 {
 	// Loop through, check if popped up and if so, store the cell pointer and the time
 
@@ -99,7 +101,7 @@ void SimpleAnoikisCellKiller::PopulateAnoikisList()
 
 }
 
-bool SimpleAnoikisCellKiller::IsPoppedUpCellInVector(CellPtr check_cell)
+bool AnoikisCellKillerNewPhaseModel::IsPoppedUpCellInVector(CellPtr check_cell)
 {
 
 	// Checks if the popped up cell is in the list mCellsForDelayedAnoikis
@@ -120,7 +122,7 @@ bool SimpleAnoikisCellKiller::IsPoppedUpCellInVector(CellPtr check_cell)
 }
 
 
-std::vector<CellPtr> SimpleAnoikisCellKiller::GetCellsReadyToDie()
+std::vector<CellPtr> AnoikisCellKillerNewPhaseModel::GetCellsReadyToDie()
 {
 	// Go through the anoikis list, if the lenght of time since it popped up is past a certain
 	// threshold, then that cell is ready to be killed
@@ -160,7 +162,7 @@ std::vector<CellPtr> SimpleAnoikisCellKiller::GetCellsReadyToDie()
  *
  * Also will remove differentiated cells at the orifice if mSloughOrifice is true
  */
-void SimpleAnoikisCellKiller::CheckAndLabelCellsForApoptosisOrDeath()
+void AnoikisCellKillerNewPhaseModel::CheckAndLabelCellsForApoptosisOrDeath()
 {
 
 	if (dynamic_cast<NodeBasedCellPopulation<2>*>(this->mpCellPopulation))
@@ -188,36 +190,46 @@ void SimpleAnoikisCellKiller::CheckAndLabelCellsForApoptosisOrDeath()
 			}
 			else
 			{
+				SimplifiedPhaseBasedCellCycleModel* p_ccm = static_cast<SimplifiedPhaseBasedCellCycleModel*>(p_cell->GetCellCycleModel());
+				SimplifiedCellCyclePhase p_phase = p_ccm->GetCurrentCellCyclePhase();
 				mAgesAtDeath.push_back(p_cell->GetAge());
 				p_cell->Kill();
-				mCellKillCount++;//Increment the cell kill count by one for each cell killed
+
+				if (p_phase == W_PHASE)
+				{
+					mCellKillCount += 0.5;
+				}
+				else
+				{
+					mCellKillCount += 1.0;//Increment the cell kill count by one for each cell killed
+				}
 			}
 			
 		}
 	}
 }
 
-void SimpleAnoikisCellKiller::SetSlowDeath(bool slowDeath)
+void AnoikisCellKillerNewPhaseModel::SetSlowDeath(bool slowDeath)
 {
 	mSlowDeath = slowDeath;
 }
 
-unsigned SimpleAnoikisCellKiller::GetCellKillCount()
+unsigned AnoikisCellKillerNewPhaseModel::GetCellKillCount()
 {
-	return mCellKillCount;
+	return unsigned(mCellKillCount);
 }
 
-void SimpleAnoikisCellKiller::ResetCellKillCount()
+void AnoikisCellKillerNewPhaseModel::ResetCellKillCount()
 {
 	mCellKillCount = 0;
 }
 
-std::vector<double> SimpleAnoikisCellKiller::GetAgesAtDeath()
+std::vector<double> AnoikisCellKillerNewPhaseModel::GetAgesAtDeath()
 {
 	return mAgesAtDeath;
 }
 
-void SimpleAnoikisCellKiller::OutputCellKillerParameters(out_stream& rParamsFile)
+void AnoikisCellKillerNewPhaseModel::OutputCellKillerParameters(out_stream& rParamsFile)
 {
     *rParamsFile << "\t\t\t<PopUpDistance>" << mPopUpDistance << "</PopUpDistance> \n";
     *rParamsFile << "\t\t\t<PoppedUpLifeExpectancy>" << mPoppedUpLifeExpectancy << "</PoppedUpLifeExpectancy> \n";
@@ -230,4 +242,4 @@ void SimpleAnoikisCellKiller::OutputCellKillerParameters(out_stream& rParamsFile
 
 
 #include "SerializationExportWrapperForCpp.hpp"
-CHASTE_CLASS_EXPORT(SimpleAnoikisCellKiller)
+CHASTE_CLASS_EXPORT(AnoikisCellKillerNewPhaseModel)

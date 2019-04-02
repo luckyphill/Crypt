@@ -54,6 +54,8 @@
 #include "TopAndBottomSloughing.hpp"
 #include "SimpleAnoikisCellKiller.hpp"
 #include "IsolatedCellKiller.hpp"
+#include "AnoikisCellKillerNewPhaseModel.hpp"
+#include "SloughingCellKillerNewPhaseModel.hpp"
 
 //Division Rules
 #include "StickToMembraneDivisionRule.hpp"
@@ -494,11 +496,13 @@ public:
 
 		// ********************************************************************************************
 		// Add in the cell killers
-		MAKE_PTR_ARGS(SimpleSloughingCellKiller<2>, p_sloughing_killer, (&cell_population));
+		// MAKE_PTR_ARGS(SimpleSloughingCellKiller<2>, p_sloughing_killer, (&cell_population));
+		MAKE_PTR_ARGS(SloughingCellKillerNewPhaseModel<2>, p_sloughing_killer, (&cell_population));
 		p_sloughing_killer->SetCryptTop(wall_top);
 		simulator.AddCellKiller(p_sloughing_killer);
 
-		MAKE_PTR_ARGS(SimpleAnoikisCellKiller, p_anoikis_killer, (&cell_population));
+		// MAKE_PTR_ARGS(SimpleAnoikisCellKiller, p_anoikis_killer, (&cell_population));
+		MAKE_PTR_ARGS(AnoikisCellKillerNewPhaseModel, p_anoikis_killer, (&cell_population));
 		p_anoikis_killer->SetPopUpDistance(popUpDistance);
 		simulator.AddCellKiller(p_anoikis_killer);
 
@@ -599,7 +603,7 @@ public:
 
         TRACE("START")
         PRINT_VARIABLE(p_sloughing_killer->GetCellKillCount())
-		PRINT_VARIABLE(p_anoikis_killer->GetCellKillCount()
+		PRINT_VARIABLE(p_anoikis_killer->GetCellKillCount())
 		PRINT_VARIABLE(differentiated)
 		// PRINT_VARIABLE(total_cells)
 		// PRINT_VARIABLE(cellId)
