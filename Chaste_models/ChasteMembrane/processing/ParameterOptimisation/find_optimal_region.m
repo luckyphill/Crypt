@@ -6,18 +6,21 @@ function find_optimal_region(chaste_test, obj, input_flags, prange, limits, min_
 	% range for each parameter
 
 	% obj is a function handle. It takes a vector of numbers and returns a single number representing the score
-	% of the relevant parameter set. The order of the number will be determined by the output {chaste_test}
+	% of the relevant parameter set. The order of the numbers will be determined by the output {chaste_test}
 	% produces. If there is an issue with the expected values in the input vector not matching
-	% it should be addressed in the file {chaste_test}
+	% it should be addressed in the file {chaste_test} or {obj}
 
 	% input_flags contains the input flag names
 	% prange gives the initial coarse grained parameters to test
+	% limits gives the [min, max] values thta parameters can take
+	% min_step_size is the minimum step size allowed in pattern_search - necessary since some inputs ar integers
+	% ignore existing is a true/false flag that says if to run simulations even when data exists - important if {chaste_test} is modified
 
 	% The Chaste test will print all the relevent data to the command line
 	% This output will be captured and saved to file
 	% The capture function will look for output between the lines "DEBUG: START" and "DEBUG: END"
 	% and on each line will put the data (assumed numerical) found after the "=" into a vector
-	% This vector will be passed to the objective function for processing
+	% This vector will be passed to {obj} for processing
 	% The file name will be automatically generated using the parameter names in input_flags
 	% and the parameter values used by the particular simulation instance
 	% Files will be stored in the directory structure: "/Users/phillipbrown/Research/Crypt/Data/Chaste/ParameterSearch/{chaste_test}/{obj}"

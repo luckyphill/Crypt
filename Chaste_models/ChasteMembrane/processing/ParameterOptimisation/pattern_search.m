@@ -48,7 +48,7 @@ function values = pattern_search(chaste_test, obj, input_flags, values, limits, 
 	    new_penalty = run_simulation(chaste_test, obj, input_flags, test_values, ignore_existing);
 	    fprintf('Done\n\n');
 	    
-	    if first_step
+	    if first_step && new_penalty > penalty
 	        % Run again, but this time stepping in the oposite direction
 	        test_values = values;
 	    
@@ -99,5 +99,22 @@ function values = pattern_search(chaste_test, obj, input_flags, values, limits, 
 	    iterations = iterations + 1;
 	        
 	end
+
+end
+
+
+function penalty = run_multiple(chaste_test, obj, input_flags, test_values, ignore_existing, n)
+	% Runs multiple tests for each parameter set and returns the average penalty
+
+	penalties = nan(n,1);
+
+	for i = 1:n
+		% Set the run number here
+		run_index = find(ismember(input_flags, 'run'));
+		test_values(run_index) = i;
+		penalties(i) = run_simulation(chaste_test, obj, input_flags, test_values, ignore_existing);
+	end
+
+
 
 end

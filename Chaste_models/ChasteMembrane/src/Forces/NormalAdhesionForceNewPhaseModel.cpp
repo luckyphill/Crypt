@@ -116,7 +116,7 @@ void NormalAdhesionForceNewPhaseModel<ELEMENT_DIM,SPACE_DIM>::SetAdhesionForceLa
 }
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-void NormalAdhesionForceNewPhaseModel<ELEMENT_DIM,SPACE_DIM>::SetMembraneEpithelialSpringStiffness(double membraneEpithelialSpringStiffness)
+void NormalAdhesionForceNewPhaseModel<ELEMENT_DIM,SPACE_DIM>::SetMembraneSpringStiffness(double membraneEpithelialSpringStiffness)
 {
     assert(!(membraneEpithelialSpringStiffness < 0.0));
     mMembraneEpithelialSpringStiffness = membraneEpithelialSpringStiffness;

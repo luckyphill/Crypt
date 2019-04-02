@@ -67,7 +67,7 @@ public:
 
     void AddForceContribution(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation);
 
-    void SetMembraneEpithelialSpringStiffness(double membraneEpithelialSpringStiffness);
+    void SetMembraneSpringStiffness(double membraneEpithelialSpringStiffness);
 
     void SetMembranePreferredRadius(double membranePreferredRadius);
     void SetEpithelialPreferredRadius(double stromalPreferredRadius); // Epithelial is the differentiated "filler" cells

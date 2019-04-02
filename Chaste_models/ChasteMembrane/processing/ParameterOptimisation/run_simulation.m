@@ -2,7 +2,8 @@ function penalty = run_simulation(chaste_test, obj, input_flags, input_values, i
 	% This function takes the parameter input and the chaste test
 	% It first checks that data doesn't already exist (can provide an option to ignore this step)
 	% If data does exist, it returns that data
-	% If not, then it runs the simulation to generate that data, then returns it
+	% If not, then it runs the simulation to generate that data, then applies the objective function
+	% to produce a penalty. The penalty is returned
 
 	base_path = '/Users/phillipbrown/';
 
@@ -36,6 +37,6 @@ function penalty = run_simulation(chaste_test, obj, input_flags, input_values, i
 
 	penalty = obj(data);
 
-	fprintf('Penalty for this parameter set: %g\n', penalty);
+	fprintf('Penalty for this parameter set: %g\n\n', penalty);
 
 end

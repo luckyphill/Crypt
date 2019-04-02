@@ -8,3 +8,4 @@ TestAnoikisResistance.hpp
 TestPopUpLimit.hpp
 TestCryptNewPhaseModel.hpp
 TestResistanceWithNewPhaseModel.hpp
+TestCryptColumn.hpp
