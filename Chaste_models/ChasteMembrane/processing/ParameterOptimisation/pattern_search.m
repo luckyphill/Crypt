@@ -11,12 +11,13 @@ function values = pattern_search(chaste_test, obj, input_flags, values, limits, 
 
 	iterations = 0;
 	it_limit = 20;
+	repetitions = 10;
 
 	first_step = true; % When we start searching in a new variable/dimension
 					   % we need to look both directions before we start stepping
 	fprintf('Pre-loop re-test\n');
 	fprintf('Testing parameters %s\n', generate_input_string(input_flags, values));
-	penalty = run_simulation(chaste_test, obj, input_flags, values, ignore_existing);
+	penalty = run_multiple(chaste_test, obj, input_flags, values, ignore_existing, repetitions);
 	fprintf('Done\n\n');
 
 	step_size = set_initial_step_size(min_step_size, limits, input_flags); % Make this start off at 0.1 of the limit range
@@ -45,7 +46,7 @@ function values = pattern_search(chaste_test, obj, input_flags, values, limits, 
 	    
 	    fprintf('Stepping in direction of %s\n', input_flags{axis_index});
 	    fprintf('Testing parameters %s\n', generate_input_string(input_flags, test_values));
-	    new_penalty = run_simulation(chaste_test, obj, input_flags, test_values, ignore_existing);
+	    new_penalty = run_multiple(chaste_test, obj, input_flags, test_values, ignore_existing, repetitions);
 	    fprintf('Done\n\n');
 	    
 	    if first_step && new_penalty > penalty
@@ -64,7 +65,7 @@ function values = pattern_search(chaste_test, obj, input_flags, values, limits, 
 	        
 		        fprintf('Simulating opposite direction\n');
 		        fprintf('Testing parameters %s\n', generate_input_string(input_flags, test_values));
-		        new_penalty_2 = run_simulation(chaste_test, obj, input_flags, test_values, ignore_existing);
+		        new_penalty_2 = run_multiple(chaste_test, obj, input_flags, test_values, ignore_existing, repetitions);
 		        fprintf('Done\n\n');
 		        
 		        if new_penalty_2 < new_penalty
@@ -115,6 +116,7 @@ function penalty = run_multiple(chaste_test, obj, input_flags, test_values, igno
 		penalties(i) = run_simulation(chaste_test, obj, input_flags, test_values, ignore_existing);
 	end
 
-
+	penalty = mean(penalties);
+	fprintf('Penalty for this parameter set: %g\n\n', penalty);
 
 end
