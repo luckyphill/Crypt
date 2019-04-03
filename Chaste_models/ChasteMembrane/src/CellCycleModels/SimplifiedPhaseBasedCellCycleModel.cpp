@@ -210,7 +210,7 @@ void SimplifiedPhaseBasedCellCycleModel::UpdateCellCyclePhase()
     }
     else 
     {
-        if (time_since_birth == GetWDuration() && mCurrentCellCyclePhase == W_PHASE)
+        if (mCurrentCellCyclePhase == W_PHASE)
         {
             mCurrentCellCyclePhase = P_PHASE;
             mpCell->GetCellData()->SetItem("parent", mpCell->GetCellId());

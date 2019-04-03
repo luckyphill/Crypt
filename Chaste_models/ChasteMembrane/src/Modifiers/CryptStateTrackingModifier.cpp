@@ -75,7 +75,7 @@ void CryptStateTrackingModifier<DIM>::UpdateBirthStats(AbstractCellPopulation<DI
 
             // Hopefully this means it jumps past the next cell because the next cell will be the sibling cell
             // and we don't want to double count
-            ++it;
+            // ++it;
         }
 
         position_count++;
