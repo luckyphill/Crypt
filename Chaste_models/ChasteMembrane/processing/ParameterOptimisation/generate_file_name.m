@@ -1,4 +1,4 @@
-function file_name = generate_file_name(input_flags, input_values)
+function data_file = generate_file_name(chaste_test, obj, input_flags, input_values, base_path);
 
 	% This function takes in the flags and values for this particular simulation,
 	% and produces the file name. There are numerous variables that can be provided
@@ -12,6 +12,17 @@ function file_name = generate_file_name(input_flags, input_values)
 
 	assert(n==m);
 
+	file_dir = [base_path, 'Research/Crypt/Data/Chaste/ParameterOptimisation/', chaste_test, '/', func2str(obj), '/'];
+	if exist(file_dir,'dir')~=7
+		% Make the full path
+		if exist([base_path, 'Research/Crypt/Data/Chaste/ParameterOptimisation/', chaste_test, '/'],'dir')~=7
+			mkdir([base_path, 'Research/Crypt/Data/Chaste/ParameterOptimisation/', chaste_test, '/']);
+		end
+
+		mkdir(file_dir);
+
+	end
+
 	file_name = 'parameter_search';
 
 	for i = 1:n
@@ -19,5 +30,7 @@ function file_name = generate_file_name(input_flags, input_values)
 	end
 
 	file_name = [file_name, '.txt'];
+
+	data_file = [file_dir, file_name];
 
 end

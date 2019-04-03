@@ -104,7 +104,7 @@ function values = pattern_search(chaste_test, obj, input_flags, values, limits, 
 end
 
 
-function penalty = run_multiple(chaste_test, obj, input_flags, test_values, ignore_existing, n)
+function penalty = run_multiple(chaste_test, obj, input_flags, test_values, ignore_existing, n, best_penalty)
 	% Runs multiple tests for each parameter set and returns the average penalty
 
 	penalties = nan(n,1);
@@ -114,6 +114,7 @@ function penalty = run_multiple(chaste_test, obj, input_flags, test_values, igno
 		run_index = find(ismember(input_flags, 'run'));
 		test_values(run_index) = i;
 		penalties(i) = run_simulation(chaste_test, obj, input_flags, test_values, ignore_existing);
+		penalty = mean(penalties);
 	end
 
 	penalty = mean(penalties);

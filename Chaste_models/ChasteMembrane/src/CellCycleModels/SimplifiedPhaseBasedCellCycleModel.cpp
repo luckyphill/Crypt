@@ -208,11 +208,14 @@ void SimplifiedPhaseBasedCellCycleModel::UpdateCellCyclePhase()
     {
         mCurrentCellCyclePhase = W_PHASE;
     }
-    else if (time_since_birth > GetWDuration() && mCurrentCellCyclePhase == W_PHASE )
+    else 
     {
-        mCurrentCellCyclePhase = P_PHASE;
-        mpCell->GetCellData()->SetItem("parent", mpCell->GetCellId());
-        // Reset the parent tracker since we only care about this in W phase
+        if (time_since_birth == GetWDuration() && mCurrentCellCyclePhase == W_PHASE)
+        {
+            mCurrentCellCyclePhase = P_PHASE;
+            mpCell->GetCellData()->SetItem("parent", mpCell->GetCellId());
+            // Reset the parent tracker since we only care about this in W phase
+        }
     }
 }
 

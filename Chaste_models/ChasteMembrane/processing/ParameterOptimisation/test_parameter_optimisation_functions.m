@@ -3,12 +3,16 @@ function test_parameter_optimisation_functions
 	% Tests to make sure the funcitons work correctly
 	input_flags = {'n', 'ees', 'ms', 'cct', 'vf', 'np', 'run'};
 	input_values = [26, 50, 120, 15, 0.75, 13, 1];
+	base_path = '/Users/phillipbrown/';
 
-	file_name = generate_file_name(input_flags, input_values);
-	assert(strcmp(file_name, 'parameter_search_n_26_ees_50_ms_120_cct_15_vf_0.75_np_13_run_1.txt'));
+	file_name = generate_file_name('TestCryptNewPhaseModel', @sin, input_flags, input_values, base_path);
+	assert(strcmp(file_name, '/Users/phillipbrown/Research/Crypt/Data/Chaste/ParameterOptimisation/TestCryptNewPhaseModel/sin/parameter_search_n_26_ees_50_ms_120_cct_15_vf_0.75_np_13_run_1.txt'));
+	new_dir = '/Users/phillipbrown/Research/Crypt/Data/Chaste/ParameterOptimisation/TestCryptNewPhaseModel/sin/';
+	assert(exist(new_dir, 'dir')==7);
+
 
 	input_string = generate_input_string(input_flags, input_values);
-	assert(strcmp(input_string, ' -n 26 -ees 50 -ms 120 -cct 15 -vf 0.75 -np 13 -run 1'));
+	assert(strcmp(input_string, ' -sm 10 -n 26 -ees 50 -ms 120 -cct 15 -vf 0.75 -np 13 -run 1'));
 
 	cmdout = ['DEBUG: Cell popped up' newline ...
 	'DEBUG: (*cell_iter)->GetAge() = 13.186' newline ...
@@ -38,23 +42,19 @@ function test_parameter_optimisation_functions
 	'Passed' newline ...
 	'OK!'];
 
-	file_dir = '/Users/phillipbrown/Research/Crypt/Chaste_models/ChasteMembrane/processing/ParameterOptimisation/';
-	data_file = [file_dir, file_name];
+	test_read_file = '/Users/phillipbrown/Research/Crypt/Chaste_models/ChasteMembrane/processing/ParameterOptimisation/testing/parameter_search_n_26_ees_50_ms_120_cct_15_vf_0.75_np_13_run_1.txt';
 
-	data = get_data_from_output(cmdout, data_file);
+	data = get_data_from_output(cmdout, test_read_file);
 	assert(prod(data == [68; 14; 26; 12; 38; 120; 20; 6; 0])==1);
-	assert(exist(data_file,'file')==2);
+	assert(exist(test_read_file,'file')==2);
 	
-	data2 = get_data_from_file(data_file);
+	data2 = get_data_from_file(test_read_file);
 	assert(prod(data2 == [68; 14; 26; 12; 38; 120; 20; 6; 0])==1);
 
 
-	penalty = run_simulation('TestCryptNewPhaseModel', @sin, input_flags, input_values);
-	new_dir = '/Users/phillipbrown/Research/Crypt/Data/Chaste/ParameterOptimisation/TestCryptNewPhaseModel/sin/';
-	assert(exist(new_dir, 'dir')==7);
+	penalty = run_simulation('TestCryptNewPhaseModel', @sin, input_flags, input_values, false);
 
-	data_file = [new_dir, file_name];
-	data3 = get_data_from_file(data_file);
+	data3 = get_data_from_file(file_name);
 	assert(prod(data3 == [68; 14; 26; 12; 38; 120; 20; 6; 0])==1);
 
 

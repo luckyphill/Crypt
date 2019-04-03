@@ -9,22 +9,9 @@ function penalty = run_simulation(chaste_test, obj, input_flags, input_values, i
 
 	simulation_command = [base_path, 'chaste_build/projects/ChasteMembrane/test/', chaste_test];
 
-	data_file_dir = [base_path, 'Research/Crypt/Data/Chaste/ParameterOptimisation/', chaste_test, '/', func2str(obj), '/'];
-	if exist(data_file_dir,'dir')~=7
-		% Make the full path
-		if exist([base_path, 'Research/Crypt/Data/Chaste/ParameterOptimisation/', chaste_test, '/'],'dir')~=7
-			mkdir([base_path, 'Research/Crypt/Data/Chaste/ParameterOptimisation/', chaste_test, '/']);
-		end
-
-		mkdir(data_file_dir);
-
-	end
-
-	data_file_name = generate_file_name(input_flags, input_values);
+	data_file = generate_file_name(chaste_test, obj, input_flags, input_values, base_path);
 
 	input_string = generate_input_string(input_flags, input_values);
-
-	data_file = [data_file_dir, data_file_name];
 
 	if exist(data_file, 'file') == 2 && ~ignore_existing
 		fprintf('Found existing data\n');

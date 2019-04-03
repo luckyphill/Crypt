@@ -46,6 +46,7 @@
 
 // Modifiers
 #include "VolumeTrackingModifier.hpp"
+#include "CryptStateTrackingModifier.hpp"
 
 // Wnt Concentration for position tracking
 #include "WntConcentration.hpp"
@@ -53,6 +54,7 @@
 // Writers
 #include "EpithelialCellForceWriter.hpp"
 #include "NewPhaseModelBirthPositionWriter.hpp"
+#include "NewPhaseCountWriter.hpp"
 
 // Misc
 #include "FakePetscSetup.hpp"
@@ -436,8 +438,8 @@ public:
 
 		// ********************************************************************************************
 		// Modifiers
-		MAKE_PTR(VolumeTrackingModifier<2>, p_mod);
-		simulator.AddSimulationModifier(p_mod);
+		MAKE_PTR(VolumeTrackingModifier<2>, p_vmod);
+		simulator.AddSimulationModifier(p_vmod);
 		// ********************************************************************************************
 
 
@@ -475,11 +477,18 @@ public:
 
 		// ********************************************************************************************
 		// Writers for output files
-		cell_population.AddCellWriter<EpithelialCellForceWriter>();
 		boost::shared_ptr<NewPhaseModelBirthPositionWriter<2,2> > p_writer{new NewPhaseModelBirthPositionWriter<2,2>};
-		
 		p_writer->SetSamplingMultiple(sampling_multiple);
 		cell_population.AddCellWriter(p_writer);
+
+		boost::shared_ptr<NewPhaseCountWriter<2,2> > p_count{new NewPhaseCountWriter<2,2>};
+		cell_population.AddCellPopulationCountWriter(p_count);
+		// ********************************************************************************************
+
+		// ********************************************************************************************
+		// Modifier to track the average number of crypt cells
+		MAKE_PTR(CryptStateTrackingModifier<2>, p_mod);
+		simulator.AddSimulationModifier(p_mod);
 		// ********************************************************************************************
 
 		// ********************************************************************************************
@@ -544,13 +553,13 @@ public:
 
         // ********************************************************************************************
         // Output data to the command line
-        TRACE("START")
-        PRINT_VARIABLE(p_sloughing_killer_2->GetCellKillCount())
+		TRACE("START")
+		PRINT_VARIABLE(p_sloughing_killer_2->GetCellKillCount())
 		PRINT_VARIABLE(p_anoikis_killer_2->GetCellKillCount())
-		PRINT_VARIABLE(differentiated)
-		PRINT_VARIABLE(Wcells)
-		PRINT_VARIABLE(Pcells)
 		PRINT_VARIABLE(p_writer->GetMaxDivisionCellPosition())
+		PRINT_VARIABLE(p_mod->GetAverageCount())
+		PRINT_VARIABLE(p_mod->GetBirthCount())
+		PRINT_VARIABLE(p_mod->GetMaxBirthPosition())
 		TRACE("END")
 		// ********************************************************************************************
 
