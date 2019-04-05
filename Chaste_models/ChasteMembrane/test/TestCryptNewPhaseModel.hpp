@@ -62,6 +62,7 @@
 
 // Modifiers
 #include "VolumeTrackingModifier.hpp"
+#include "CryptStateTrackingModifier.hpp"
 
 //Division Rules
 #include "StickToMembraneDivisionRule.hpp"
@@ -468,7 +469,7 @@ public:
 		p_force->SetAttractionParameter(attractionParameter);
 
 		MAKE_PTR(NormalAdhesionForceNewPhaseModel<2>, p_adhesion);
-        p_adhesion->SetMembraneEpithelialSpringStiffness(membraneEpithelialSpringStiffness);
+        p_adhesion->SetMembraneSpringStiffness(membraneEpithelialSpringStiffness);
         p_adhesion->SetAdhesionForceLawParameter(adhesionForceLawParameter);
 
 		
@@ -511,8 +512,8 @@ public:
 		// ********************************************************************************************
 
 
-		MAKE_PTR(VolumeTrackingModifier<2>, p_mod);
-		simulator.AddSimulationModifier(p_mod);
+		MAKE_PTR(VolumeTrackingModifier<2>, p_mod_vol);
+		simulator.AddSimulationModifier(p_mod_vol);
 
 		simulator.SetOutputDivisionLocations(true);
 		PRINT_VARIABLE(simulator.GetOutputDivisionLocations())
@@ -526,7 +527,8 @@ public:
 
 		cell_population.AddCellWriter<ParentWriter>();
 		
-
+		MAKE_PTR(CryptStateTrackingModifier<2>, p_mod);
+		simulator.AddSimulationModifier(p_mod);
 
 		simulator.Solve();
 		
@@ -611,6 +613,10 @@ public:
 		PRINT_VARIABLE(Pcells)
 		PRINT_VARIABLE(p_writer->GetMaxDivisionCellPosition())
 		TRACE("END")
+
+		PRINT_VARIABLE(p_mod->GetAverageCount())
+		PRINT_VARIABLE(p_mod->GetBirthCount())
+		PRINT_VARIABLE(p_mod->GetMaxBirthPosition())
 
 		ofstream deathAge;
         deathAge.open("deathAge.txt");

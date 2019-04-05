@@ -22,7 +22,7 @@ CryptStateTrackingModifier<DIM>::~CryptStateTrackingModifier()
 template<unsigned DIM>
 void CryptStateTrackingModifier<DIM>::UpdateAtEndOfTimeStep(AbstractCellPopulation<DIM,DIM>& rCellPopulation)
 {
-    rCellPopulation.Update();
+    // rCellPopulation.Update();
 
     UpdateRunningAverage(rCellPopulation);
 
@@ -75,7 +75,10 @@ void CryptStateTrackingModifier<DIM>::UpdateBirthStats(AbstractCellPopulation<DI
             position_count += 1.0;
         }
 
-        if (      !p_ccm->IsAgeGreaterThan(W_phase_length + dt)     &&     phase != W_PHASE    )
+        double age = (*it)->GetAge();
+
+        // if (      !p_ccm->IsAgeLessThan(W_phase_length)     &&     phase == W_PHASE    )
+        if (   (age > W_phase_length - dt /2)  && (age < W_phase_length + dt /2)   )
         {
             // Presuming one node out of a multi node cell can never die
             // mBirthCount will always be twice the actual birth count

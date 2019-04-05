@@ -241,14 +241,16 @@ std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > BasicNonLinearSpringForceMultiNod
             }
             if (distanceAB < distanceBC)
             {
+                PRINT_2_VARIABLES(pnodeA->GetIndex(),pnodeB->GetIndex())
                 return node_pair_AB;
             } else
             {
+                PRINT_2_VARIABLES(pnodeB->GetIndex(),pnodeC->GetIndex())
                 return node_pair_BC;
             }
         }
     }
-
+    PRINT_2_VARIABLES(pnodeA->GetIndex(),pnodeB->GetIndex())
     return node_pair_AB;
 
 }

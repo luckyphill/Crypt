@@ -5,7 +5,7 @@ function penalty = run_simulation(chaste_test, obj, input_flags, input_values, f
 	% If not, then it runs the simulation to generate that data, then applies the objective function
 	% to produce a penalty. The penalty is returned
 
-	base_path = '/Users/phillip/';
+	base_path = '/Users/phillipbrown/';
 
 	simulation_command = [base_path, 'chaste_build/projects/ChasteMembrane/test/', chaste_test];
 

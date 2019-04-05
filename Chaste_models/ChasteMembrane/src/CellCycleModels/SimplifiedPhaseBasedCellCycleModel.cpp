@@ -200,8 +200,10 @@ void SimplifiedPhaseBasedCellCycleModel::UpdateCellCyclePhase()
     }
 
     // All cells will start in W_Phase
+    double dt = SimulationTime::Instance()->GetTimeStep();
 
-    if (  IsAgeLessThan( GetWDuration() )  )
+    // if (  IsAgeLessThan( GetWDuration() )  )
+    if (  GetAge() + dt/2 < GetWDuration()  ) // A cell exactly WDuration old will fail this
     {
         mCurrentCellCyclePhase = W_PHASE;
     }
@@ -219,7 +221,7 @@ void SimplifiedPhaseBasedCellCycleModel::UpdateCellCyclePhase()
 bool SimplifiedPhaseBasedCellCycleModel::IsAgeLessThan(double comparison)
 {
 
-    double eps = SimulationTime::Instance()->GetTimeStep() / 1000;
+    double eps = SimulationTime::Instance()->GetTimeStep() / 10;
     double age = GetAge();
 
     return ( age < comparison && abs(comparison - GetAge()) > eps );
@@ -229,7 +231,7 @@ bool SimplifiedPhaseBasedCellCycleModel::IsAgeLessThan(double comparison)
 bool SimplifiedPhaseBasedCellCycleModel::IsAgeGreaterThan(double comparison)
 {
 
-    double eps = SimulationTime::Instance()->GetTimeStep() / 1000;
+    double eps = SimulationTime::Instance()->GetTimeStep() / 10;
     double age = GetAge();
 
     return ( age > comparison && abs(comparison - GetAge()) > eps );

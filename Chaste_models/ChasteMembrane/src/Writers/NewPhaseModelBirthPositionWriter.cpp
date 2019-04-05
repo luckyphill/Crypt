@@ -38,8 +38,8 @@ void NewPhaseModelBirthPositionWriter<ELEMENT_DIM, SPACE_DIM>::VisitCell(CellPtr
     std::list<CellPtr> cells = pCellPopulation->rGetCells();
 
     // Detect if a division event has occurred in the time interval between samples
-    // if (pCell->GetAge() <= W_phase_length + mSamplingMultiple * dt && (phase == P_PHASE || phase == G0_PHASE))
-    if ( !p_ccm->IsAgeGreaterThan(W_phase_length + mSamplingMultiple * dt) && (phase == P_PHASE || phase == G0_PHASE))   
+    if (pCell->GetAge() <= W_phase_length + mSamplingMultiple * dt && (phase == P_PHASE || phase == G0_PHASE))
+    // if ( !p_ccm->IsAgeGreaterThan(W_phase_length + mSamplingMultiple * dt) && (phase == P_PHASE || phase == G0_PHASE))   
     {
         // Put the cells in order of height
         // Count through until we hit this cell

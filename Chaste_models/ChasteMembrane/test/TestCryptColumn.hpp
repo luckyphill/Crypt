@@ -9,6 +9,7 @@
 #include "OffLatticeSimulationTooManyCells.hpp"
 
 // Forces
+#include "BasicNonLinearSpringForceNewPhaseModel.hpp"
 #include "NormalAdhesionForceNewPhaseModel.hpp"
 #include "BasicNonLinearSpringForceMultiNodeFix.hpp"
 
@@ -384,7 +385,8 @@ public:
 
 		// ********************************************************************************************
 		// Add forces
-		MAKE_PTR(BasicNonLinearSpringForceMultiNodeFix<2>, p_force);
+		MAKE_PTR(BasicNonLinearSpringForceNewPhaseModel<2>, p_force);
+		// MAKE_PTR(BasicNonLinearSpringForceMultiNodeFix<2>, p_force);
 		p_force->SetSpringStiffness(epithelialStiffness);
 		p_force->SetRestLength(2 * epithelialPreferredRadius);
 		p_force->SetCutOffLength(3 * epithelialPreferredRadius);
@@ -461,7 +463,15 @@ public:
 
 		// ********************************************************************************************
 		// Prepare for proper simulation
+		// ********************************************************************************************
 
+		// ********************************************************************************************
+		// Capture the number of cell births during the transient time
+		unsigned transient_births = simulator.GetNumBirths();
+		// ********************************************************************************************
+
+
+		// ********************************************************************************************
 		// Reset the cell killers
 		simulator.RemoveAllCellKillers();
 		MAKE_PTR_ARGS(SloughingCellKillerNewPhaseModel<2>, p_sloughing_killer_2, (&cell_population));
@@ -486,18 +496,50 @@ public:
 		simulator.SetEndTime(burn_in_time + simulation_length);
 		// ********************************************************************************************
 
+		// ********************************************************************************************
+		// Run the simulation to be observed
 		TRACE("Starting simulation proper")
 		simulator.Solve();
-
-		WntConcentration<2>::Instance()->Destroy();
 		// ********************************************************************************************
 
 
+
+		// ********************************************************************************************
+		// Post simulation tasks
+		WntConcentration<2>::Instance()->Destroy();
+		// ********************************************************************************************
+
+		// ********************************************************************************************
+		// Collate simulation data
+		unsigned simulation_births = simulator.GetNumBirths() - transient_births;
+
+		// GetNumBirths() returns the number of times a node is introduced
+		// This is not the same as an actual division event in the new phase model
+		// Therefore, to get the correct count, need to subtract the number of cells
+		// that haven't exited W_PHASE at the end of the simulation.
+
+		MeshBasedCellPopulation<2,2>* p_tissue = static_cast<MeshBasedCellPopulation<2,2>*>(&simulator.rGetCellPopulation());
+		std::list<CellPtr> pos_cells =  p_tissue->rGetCells();
+
+		unsigned Wcells = 0;
+
+        for (std::list<CellPtr>::iterator cell_iter = pos_cells.begin(); cell_iter != pos_cells.end(); ++cell_iter)
+        {
+        	SimplifiedPhaseBasedCellCycleModel* p_ccm = static_cast<SimplifiedPhaseBasedCellCycleModel*>((*cell_iter)->GetCellCycleModel());
+
+        	if (p_ccm->GetCurrentCellCyclePhase() == W_PHASE)
+        	{
+        		Wcells++;
+        	}
+        }
+
+        simulation_births -= Wcells/2;
+ 
 
 		// ********************************************************************************************
 		// Simulation characteristic data output
 		// ********************************************************************************************
-		unsigned 	anoikis 			= p_anoikis_killer_2->GetCellKillCount()/simulation_length;
+		unsigned 	anoikis 			= double(p_anoikis_killer_2->GetCellKillCount())/simulation_length;
 		double 		averageCellCount 	= p_mod->GetAverageCount() - 1;
 		double 		birthRate 			= double(p_mod->GetBirthCount())/simulation_length;
 		unsigned 	maxBirthPosition 	= p_mod->GetMaxBirthPosition();
@@ -509,6 +551,9 @@ public:
 		PRINT_VARIABLE(averageCellCount)
 		PRINT_VARIABLE(birthRate)
 		PRINT_VARIABLE(maxBirthPosition)
+
+		PRINT_VARIABLE(simulation_births)
+		PRINT_VARIABLE(simulation_births/simulation_length)
 
 		PRINT_VARIABLE(p_anoikis_killer_2->GetCellKillCount())
 		PRINT_VARIABLE(p_mod->GetAverageCount())

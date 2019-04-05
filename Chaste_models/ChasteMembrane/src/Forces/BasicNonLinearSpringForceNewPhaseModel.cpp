@@ -5,6 +5,8 @@ Expects only one type of cell, and provides one type of spring length, stiffness
 Implements the cell property method for determining if two cells should have a growing spring between them
 As of 19/12/2018 the only CCM that works with this is SimpleWntContactInhibitionCellCycleModel
 
+
+This implements a linear spring for the internal nodes of a twin-node cell
 */
 
 #include "IsNan.hpp"
@@ -92,6 +94,7 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForceNewPhaseModel<ELEMENT_DIM,S
     double duration = this->mMeinekeSpringGrowthDuration;
 
     if (ageA < duration && ageA == ageB && parentA == parentB)
+    // if (ageA < duration && ageB < duration && parentA == parentB)
     {
         // Make the spring length grow.
         double lambda = this->mMeinekeDivisionRestingSpringLength;
