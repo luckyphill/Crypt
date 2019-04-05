@@ -1,4 +1,4 @@
-function best_input_values = coarse_sweep(chaste_test, obj, input_flags, prange, ignore_existing);
+function best_input_values = coarse_sweep(chaste_test, obj, input_flags, prange, fixed_parameters, ignore_existing);
 	% This function does a super coarse parameter sweep in order to find a starting zone
 	% It expects prange to be a cell array with containing vectors
 	% Each vector should have at most three entries, otherwise computation time will _really_
@@ -54,13 +54,13 @@ function best_input_values = coarse_sweep(chaste_test, obj, input_flags, prange,
 			input_values = [input_values; prange{i}(index_collection(i))];
 		end
 
-		result = run_simulation(chaste_test, obj, input_flags, input_values, ignore_existing);
+		result = run_simulation(chaste_test, obj, input_flags, input_values, fixed_parameters, ignore_existing);
 
 		if result < best_result
 			best_input_values = input_values;
 			best_result = result;
 			fprintf('New best result: %d\n', best_result);
-			fprintf('Using parameters: %s\n', generate_input_string(input_flags, input_values));
+			fprintf('Using parameters: %s\n', generate_input_string(input_flags, input_values, fixed_parameters));
 		end
 
 		iters = iters + 1;

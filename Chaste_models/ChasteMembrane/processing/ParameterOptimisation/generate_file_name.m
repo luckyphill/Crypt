@@ -1,4 +1,4 @@
-function data_file = generate_file_name(chaste_test, obj, input_flags, input_values, base_path);
+function data_file = generate_file_name(chaste_test, obj, input_flags, input_values, base_path)
 
 	% This function takes in the flags and values for this particular simulation,
 	% and produces the file name. There are numerous variables that can be provided

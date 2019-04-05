@@ -199,12 +199,9 @@ void SimplifiedPhaseBasedCellCycleModel::UpdateCellCyclePhase()
         
     }
 
-    double time_since_birth = GetAge();
-    assert(time_since_birth >= 0);
-
     // All cells will start in W_Phase
 
-    if (time_since_birth < GetWDuration())
+    if (  IsAgeLessThan( GetWDuration() )  )
     {
         mCurrentCellCyclePhase = W_PHASE;
     }
@@ -218,6 +215,27 @@ void SimplifiedPhaseBasedCellCycleModel::UpdateCellCyclePhase()
         }
     }
 }
+
+bool SimplifiedPhaseBasedCellCycleModel::IsAgeLessThan(double comparison)
+{
+
+    double eps = SimulationTime::Instance()->GetTimeStep() / 10;
+    double age = GetAge();
+
+    return ( age < comparison && abs(comparison - GetAge()) > eps );
+
+}
+
+bool SimplifiedPhaseBasedCellCycleModel::IsAgeGreaterThan(double comparison)
+{
+
+    double eps = SimulationTime::Instance()->GetTimeStep() / 10;
+    double age = GetAge();
+
+    return ( age > comparison && abs(comparison - GetAge()) > eps );
+
+}
+
 
 double SimplifiedPhaseBasedCellCycleModel::GetWntLevel()
 {

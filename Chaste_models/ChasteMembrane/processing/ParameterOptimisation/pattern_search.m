@@ -1,4 +1,4 @@
-function values = pattern_search(chaste_test, obj, input_flags, values, limits, min_step_size, ignore_existing)
+function values = pattern_search(chaste_test, obj, input_flags, values, limits, min_step_size, fixed_parameters, ignore_existing)
 	% This script uses the pattern search optimisation algorithm to find the
 	% point in parameter space that gives the best column crypt behaviour.
 	% See https://en.wikipedia.org/wiki/Pattern_search_(optimization)
@@ -16,8 +16,8 @@ function values = pattern_search(chaste_test, obj, input_flags, values, limits, 
 	first_step = true; % When we start searching in a new variable/dimension
 					   % we need to look both directions before we start stepping
 	fprintf('Pre-loop re-test\n');
-	fprintf('Testing parameters %s\n', generate_input_string(input_flags, values));
-	penalty = run_multiple(chaste_test, obj, input_flags, values, ignore_existing, repetitions);
+	fprintf('Testing parameters %s\n', generate_input_string(input_flags, values, fixed_parameters));
+	penalty = run_multiple(chaste_test, obj, input_flags, values, fixed_parameters, ignore_existing, repetitions);
 	fprintf('Done\n\n');
 
 	step_size = set_initial_step_size(min_step_size, limits, input_flags); % Make this start off at 0.1 of the limit range
@@ -45,8 +45,8 @@ function values = pattern_search(chaste_test, obj, input_flags, values, limits, 
 	    end
 	    
 	    fprintf('Stepping in direction of %s\n', input_flags{axis_index});
-	    fprintf('Testing parameters %s\n', generate_input_string(input_flags, test_values));
-	    new_penalty = run_multiple(chaste_test, obj, input_flags, test_values, ignore_existing, repetitions);
+	    fprintf('Testing parameters %s\n', generate_input_string(input_flags, test_values, fixed_parameters));
+	    new_penalty = run_multiple(chaste_test, obj, input_flags, test_values, fixed_parameters, ignore_existing, repetitions);
 	    fprintf('Done\n\n');
 	    
 	    if first_step && new_penalty > penalty
@@ -64,8 +64,8 @@ function values = pattern_search(chaste_test, obj, input_flags, values, limits, 
 	    	else
 	        
 		        fprintf('Simulating opposite direction\n');
-		        fprintf('Testing parameters %s\n', generate_input_string(input_flags, test_values));
-		        new_penalty_2 = run_multiple(chaste_test, obj, input_flags, test_values, ignore_existing, repetitions);
+		        fprintf('Testing parameters %s\n', generate_input_string(input_flags, test_values, fixed_parameters));
+		        new_penalty_2 = run_multiple(chaste_test, obj, input_flags, test_values, fixed_parameters, ignore_existing, repetitions);
 		        fprintf('Done\n\n');
 		        
 		        if new_penalty_2 < new_penalty
@@ -83,7 +83,7 @@ function values = pattern_search(chaste_test, obj, input_flags, values, limits, 
 	        fprintf('Step produced improvement\n');
 	        penalty = new_penalty;
 	        values(axis_index) = values(axis_index) + direction * step_size(axis_index);
-	        fprintf('penalty = %g, with input %s\n\n', penalty, generate_input_string(input_flags, values));
+	        fprintf('penalty = %g, with input %s\n\n', penalty, generate_input_string(input_flags, values, fixed_parameters));
 	    else
 	        % if it is not better, halve the step size, move to the next
 	        % axis, reset the stepping direction and reset the first step tracker
@@ -104,7 +104,7 @@ function values = pattern_search(chaste_test, obj, input_flags, values, limits, 
 end
 
 
-function penalty = run_multiple(chaste_test, obj, input_flags, test_values, ignore_existing, n, best_penalty)
+function penalty = run_multiple(chaste_test, obj, input_flags, test_values, fixed_parameters, ignore_existing, n, best_penalty)
 	% Runs multiple tests for each parameter set and returns the average penalty
 
 	penalties = nan(n,1);
@@ -113,7 +113,7 @@ function penalty = run_multiple(chaste_test, obj, input_flags, test_values, igno
 		% Set the run number here
 		run_index = find(ismember(input_flags, 'run'));
 		test_values(run_index) = i;
-		penalties(i) = run_simulation(chaste_test, obj, input_flags, test_values, ignore_existing);
+		penalties(i) = run_simulation(chaste_test, obj, input_flags, test_values, fixed_parameters, ignore_existing);
 		penalty = mean(penalties);
 	end
 

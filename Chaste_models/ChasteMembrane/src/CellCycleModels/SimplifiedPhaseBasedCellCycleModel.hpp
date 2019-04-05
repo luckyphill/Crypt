@@ -153,6 +153,11 @@ public:
 
     double GetWDuration();
 
+
+    bool IsAgeLessThan(double comparison);
+
+    bool IsAgeGreaterThan(double comparison);
+
     /**
      * @return the typical cell cycle duration for a transit cell, in hours.
      * This method is overridden in some subclasses.

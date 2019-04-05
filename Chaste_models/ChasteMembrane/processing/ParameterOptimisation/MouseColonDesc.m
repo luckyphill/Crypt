@@ -1,18 +1,13 @@
 function obj = MouseColonDesc(data)
 
 	% This order must match the order in the corresponding test
-	% in this case it is TestCryptNewPhaseModel
-	slough = data(1);
-	anoikis = data(2);
-	dcells = data(3);
-	wcells = data(4);
-	pcells = data(5);
-	max_division_position = data(6);
+	% in this case it is TestCryptColumn
+	anoikis_rate = data(1);
+	average_cell_count = data(2);
+	birth_rate = data(3);
+	max_division_position = data(4);
 	
-	total_end = dcells + pcells + wcells/2;
-
-	
-    obj =  penalty(anoikis,0,4,1) + penalty(total_end,31,35,1) + penalty(max_division_position,18,21,1) + penalty(anoikis + slough,85,95,1);
+    obj =  penalty(100*anoikis_rate,0,4,1) + penalty(average_cell_count,31,35,1) + penalty(max_division_position,18,21,1) + penalty(100*birth_rate,91,95,1);
 
 
 end

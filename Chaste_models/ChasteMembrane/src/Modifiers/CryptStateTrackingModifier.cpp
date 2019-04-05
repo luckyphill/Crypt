@@ -28,8 +28,16 @@ void CryptStateTrackingModifier<DIM>::UpdateAtEndOfTimeStep(AbstractCellPopulati
 
     UpdateBirthStats(rCellPopulation);
   
+  // Does nothing right now, testing end of solve
 
     
+}
+
+template<unsigned DIM>
+void CryptStateTrackingModifier<DIM>::UpdateAtEndOfSolve(AbstractCellPopulation<DIM,DIM>& rCellPopulation)
+{
+    // Nothing
+
 }
 
 template<unsigned DIM>
@@ -46,10 +54,8 @@ void CryptStateTrackingModifier<DIM>::UpdateBirthStats(AbstractCellPopulation<DI
         });
 
 
-    unsigned position_count = 1;
+    double position_count = 0;
     double dt = SimulationTime::Instance()->GetTimeStep();
-    // PRINT_VARIABLE(SimulationTime::Instance()->GetTime())
-    // PRINT_VARIABLE(dt)
 
     for (std::list<CellPtr>::iterator it = cells.begin(); it != cells.end(); ++it)
     {
@@ -59,26 +65,39 @@ void CryptStateTrackingModifier<DIM>::UpdateBirthStats(AbstractCellPopulation<DI
         SimplifiedCellCyclePhase phase = p_ccm->GetCurrentCellCyclePhase();
 
         double W_phase_length = p_ccm->GetWDuration();
-        // PRINT_VARIABLE(rCellPopulation.GetLocationOfCellCentre((*it))[1])
-        // PRINT_VARIABLE((*it)->GetAge())
-        // PRINT_VARIABLE(phase)
 
-        // Detect if a division event has occurred in the time interval between samples
-        if ((*it)->GetAge() <= (W_phase_length + dt) && (phase == P_PHASE || phase == G0_PHASE))
+        if (phase == W_PHASE)
         {
-            // This means the cell has just divided
-            mBirthCount++;
-            if (position_count > mMaxBirthPosition)
-            {
-                mMaxBirthPosition = position_count;
-            }
-
-            // Hopefully this means it jumps past the next cell because the next cell will be the sibling cell
-            // and we don't want to double count
-            // ++it;
+            position_count += 0.5;
+        }
+        else
+        {
+            position_count += 1.0;
         }
 
-        position_count++;
+        if (      !p_ccm->IsAgeGreaterThan(W_phase_length + dt)     &&     phase != W_PHASE    )
+        {
+            // Presuming one node out of a multi node cell can never die
+            // mBirthCount will always be twice the actual birth count
+            // There is one very unlikely case where this will end up with an odd
+            // number, and that is if a dividing cell has one node killed when
+            // by sloughing off the top. This will need to be repaired in
+            // the sloughing cell killer
+            mBirthCount += 1;
+
+            // Since the cell has actually divided as this point, the two nodes
+            // we visit will both be in P or G0 phase
+            // We will hence enter the above if statement twice per division event
+            // Since both cells are counted as full cells, we enter the if statement
+            // with position_count = n and n+1. We only want n counted in max position
+            // because that is the position the parent cell had immediately before division
+            // n+1 will always be the bigger number, so just subtract 1 for the max
+            // division check
+            if (unsigned(position_count - 1) > mMaxBirthPosition)
+            {
+                mMaxBirthPosition = unsigned(position_count - 1);
+            }
+        }
     }  
 }
 
@@ -137,7 +156,7 @@ double CryptStateTrackingModifier<DIM>::GetAverageCount()
 template<unsigned DIM>
 unsigned CryptStateTrackingModifier<DIM>::GetBirthCount()
 {
-    return mBirthCount;
+    return mBirthCount/2;
 }
 
 

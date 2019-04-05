@@ -476,17 +476,7 @@ public:
 		// ********************************************************************************************
 
 		// ********************************************************************************************
-		// Writers for output files
-		boost::shared_ptr<NewPhaseModelBirthPositionWriter<2,2> > p_writer{new NewPhaseModelBirthPositionWriter<2,2>};
-		p_writer->SetSamplingMultiple(sampling_multiple);
-		cell_population.AddCellWriter(p_writer);
-
-		boost::shared_ptr<NewPhaseCountWriter<2,2> > p_count{new NewPhaseCountWriter<2,2>};
-		cell_population.AddCellPopulationCountWriter(p_count);
-		// ********************************************************************************************
-
-		// ********************************************************************************************
-		// Modifier to track the average number of crypt cells
+		// Modifier to track the crypt statistics
 		MAKE_PTR(CryptStateTrackingModifier<2>, p_mod);
 		simulator.AddSimulationModifier(p_mod);
 		// ********************************************************************************************
@@ -505,58 +495,22 @@ public:
 
 
 		// ********************************************************************************************
-		// Post processing
+		// Simulation characteristic data output
 		// ********************************************************************************************
-		
-
-
-		// ********************************************************************************************
-		// Get the individual cell type counts
-		MeshBasedCellPopulation<2,2>* p_tissue = static_cast<MeshBasedCellPopulation<2,2>*>(&simulator.rGetCellPopulation());
-		std::list<CellPtr> pos_cells =  p_tissue->rGetCells();
-
-		unsigned cellId = 0;
-		unsigned proliferative = 0;
-		unsigned differentiated = 0;
-
-		unsigned Wcells = 0;
-		unsigned Pcells = 0;
-
-        for (std::list<CellPtr>::iterator cell_iter = pos_cells.begin(); cell_iter != pos_cells.end(); ++cell_iter)
-        {
-        	SimplifiedPhaseBasedCellCycleModel* p_ccm = static_cast<SimplifiedPhaseBasedCellCycleModel*>((*cell_iter)->GetCellCycleModel());
-
-        	if ((*cell_iter)->GetCellId() > cellId)
-        	{
-        		cellId = (*cell_iter)->GetCellId();
-        	}
-        	if ((*cell_iter)->GetCellProliferativeType()->IsType<DifferentiatedCellProliferativeType>() && (*cell_iter)->GetCellId() != 0)
-        	{
-        		differentiated++;
-        	}
-        	if ((*cell_iter)->GetCellProliferativeType()->IsType<TransitCellProliferativeType>())
-        	{
-        		proliferative++;
-        	}
-        	if (p_ccm->GetCurrentCellCyclePhase() == W_PHASE)
-        	{
-        		Wcells++;
-        	}
-        	if (p_ccm->GetCurrentCellCyclePhase() == P_PHASE)
-        	{
-        		Pcells++;
-        	}
-            
-        }
-
-        // ********************************************************************************************
+		unsigned 	anoikis 			= p_anoikis_killer_2->GetCellKillCount()/simulation_length;
+		double 		averageCellCount 	= p_mod->GetAverageCount() - 1;
+		double 		birthRate 			= double(p_mod->GetBirthCount())/simulation_length;
+		unsigned 	maxBirthPosition 	= p_mod->GetMaxBirthPosition();
 
         // ********************************************************************************************
         // Output data to the command line
 		TRACE("START")
-		PRINT_VARIABLE(p_sloughing_killer_2->GetCellKillCount())
+		PRINT_VARIABLE(anoikis)
+		PRINT_VARIABLE(averageCellCount)
+		PRINT_VARIABLE(birthRate)
+		PRINT_VARIABLE(maxBirthPosition)
+
 		PRINT_VARIABLE(p_anoikis_killer_2->GetCellKillCount())
-		PRINT_VARIABLE(p_writer->GetMaxDivisionCellPosition())
 		PRINT_VARIABLE(p_mod->GetAverageCount())
 		PRINT_VARIABLE(p_mod->GetBirthCount())
 		PRINT_VARIABLE(p_mod->GetMaxBirthPosition())
@@ -566,6 +520,20 @@ public:
 	};
 
 };
+
+
+		// double total = differentiated - 1 + Pcells + (double)Wcells/2;
+
+		// TRACE("START")
+		// PRINT_VARIABLE(p_sloughing_killer_2->GetCellKillCount())
+		// PRINT_VARIABLE(p_anoikis_killer_2->GetCellKillCount())
+		// PRINT_VARIABLE(total)
+		// PRINT_VARIABLE(p_mod->GetAverageCount() - 1)
+		// PRINT_VARIABLE(p_mod->GetBirthCount())
+		// PRINT_VARIABLE(p_writer->GetBirthCount())
+		// PRINT_VARIABLE(p_mod->GetMaxBirthPosition())
+		// PRINT_VARIABLE(p_writer->GetMaxDivisionCellPosition())
+		// TRACE("END")
 
 
 

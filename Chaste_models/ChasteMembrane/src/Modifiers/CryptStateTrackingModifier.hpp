@@ -54,29 +54,22 @@ public:
      */
     virtual ~CryptStateTrackingModifier();
 
-    /**
-     * Overridden UpdateAtEndOfTimeStep() method.
-     *
-     * Specify what to do in the simulation at the end of each time step.
-     *
-     * @param rCellPopulation reference to the cell population
-     */
-    virtual void UpdateAtEndOfTimeStep(AbstractCellPopulation<DIM,DIM>& rCellPopulation);
-
-    /**
-     * Overridden SetupSolve() method.
-     *
-     * Specify what to do in the simulation before the start of the time loop.
-     *
-     * @param rCellPopulation reference to the cell population
-     * @param outputDirectory the output directory, relative to where Chaste output is stored
-     */
+    // Required for the Abstract class inheriting from
+    // Probably for doing things before starting to solve
     virtual void SetupSolve(AbstractCellPopulation<DIM,DIM>& rCellPopulation, std::string outputDirectory);
 
-    
+    // After all movement is done I think
+    virtual void UpdateAtEndOfTimeStep(AbstractCellPopulation<DIM,DIM>& rCellPopulation);
+
+    // When everything is complete
+    virtual void UpdateAtEndOfSolve(AbstractCellPopulation<DIM,DIM>& rCellPopulation);
+
+
+    // Does the stuff    
     void UpdateRunningAverage(AbstractCellPopulation<DIM,DIM>& rCellPopulation);
     void UpdateBirthStats(AbstractCellPopulation<DIM,DIM>& rCellPopulation);
     
+    // Makes the stuff accessable
     double GetAverageCount();
     unsigned GetBirthCount();
     unsigned GetMaxBirthPosition();

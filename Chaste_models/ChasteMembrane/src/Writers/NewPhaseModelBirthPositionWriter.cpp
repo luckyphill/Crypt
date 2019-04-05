@@ -31,14 +31,15 @@ void NewPhaseModelBirthPositionWriter<ELEMENT_DIM, SPACE_DIM>::VisitCell(CellPtr
     c_vector<double, 2> location = pCellPopulation->GetLocationOfCellCentre(pCell);
     double W_phase_length = p_ccm->GetWDuration();
 
-    double y = 1; // The y position of the cell to be written.
+    double y = 0; // The y position of the cell to be written.
     // The algorithm to follow only counts cells below, meaning the actual position number
     // is one more than y, so start y at 1 to account for this 
 
     std::list<CellPtr> cells = pCellPopulation->rGetCells();
 
     // Detect if a division event has occurred in the time interval between samples
-    if (pCell->GetAge() <= W_phase_length + mSamplingMultiple * dt && (phase == P_PHASE || phase == G0_PHASE))
+    // if (pCell->GetAge() <= W_phase_length + mSamplingMultiple * dt && (phase == P_PHASE || phase == G0_PHASE))
+    if ( !p_ccm->IsAgeGreaterThan(W_phase_length + mSamplingMultiple * dt) && (phase == P_PHASE || phase == G0_PHASE))   
     {
         // Put the cells in order of height
         // Count through until we hit this cell
@@ -79,6 +80,8 @@ void NewPhaseModelBirthPositionWriter<ELEMENT_DIM, SPACE_DIM>::VisitCell(CellPtr
             maxDivisionCellPosition = yu - 1;
         }
 
+        mBirthCount++;
+
     }
 }
 
@@ -91,7 +94,7 @@ void NewPhaseModelBirthPositionWriter<ELEMENT_DIM, SPACE_DIM>::SetSamplingMultip
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
 unsigned NewPhaseModelBirthPositionWriter<ELEMENT_DIM, SPACE_DIM>::GetBirthCount()
 {
-    return mBirthCount;
+    return mBirthCount/2;
 }
 
 
