@@ -4,7 +4,7 @@ input_flags= {'n','np','ees','ms','cct','vf','run'};
 input_values = [26,12,50,200,15,0.7,1];
 fixed_parameters = ' -t 2 -sm 1';
 
-file = '/tmp/phillip/testoutput/TestCryptColumn/n_26_np_12_EES_50_MS_200_CCT_15_VF_0.7_run_1/results_from_time_0/cell_force.txt';
+file = '/tmp/phillipbrown/testoutput/TestCryptColumn/n_26_np_12_EES_50_MS_200_CCT_15_VF_0.7_run_1/results_from_time_0/cell_force.txt';
 
 run_simulation('TestCryptColumn', @MouseColonDesc, input_flags, input_values, fixed_parameters, true);
 
