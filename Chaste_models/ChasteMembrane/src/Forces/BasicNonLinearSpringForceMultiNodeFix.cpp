@@ -55,6 +55,7 @@ std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> BasicNonLinearSpring
     // When making the parent pairs, the lower parent number goes first (there will always be a lower)
     std::set< std::pair<unsigned, unsigned> > completed_parent_pairs;
 
+
     for (typename std::vector< std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > >::iterator iter = r_node_pairs.begin();
         iter != r_node_pairs.end();
         ++iter)
@@ -81,10 +82,10 @@ std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> BasicNonLinearSpring
 
         // Easiest pairs to categorise: 
         // cellA and cellB are both single node cells - put straight into vector
-        // pnodeA and pnodeB are twin nodes of one cell - put straigh into vector
+        // pnodeA and pnodeB are twin nodes of one cell - put straight into vector
         if (distance < this->mCutOffLength)
         {
-            if ((phaseA != W_PHASE && phaseB != W_PHASE) || ( parentA == parentB))
+            if ((phaseA != W_PHASE && phaseB != W_PHASE) || ( parentA == parentB ))
             {
                 interactions.push_back(node_pair_AB);
             }
@@ -120,26 +121,47 @@ std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> BasicNonLinearSpring
                     {
                         // Need to find all interactions between the two multinode cells, and compare the lengths
 
-                        // Find the other nodes:
+                        // Find the other nodes
+                        // This returns the origin node if no twin was found
                         Node<SPACE_DIM>* pnodeC = FindTwinNode(rCellPopulation, pnodeA);
                         Node<SPACE_DIM>* pnodeD = FindTwinNode(rCellPopulation, pnodeB);
 
-                        std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > forwards;
-                        std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > bacwards;
-                        std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > crossing;
-                        std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > bfwinner;
+                        // If neither has a twin
+                        if (pnodeA == pnodeC && pnodeB == pnodeD)
+                        {
+                            // This will happen for a short period immediately after starting
+                            // because all cells start out as W_PHASE, and none of them will have
+                            // twin node
+                            pair_to_add = node_pair_AB;
+                        }
+                        // If both have twins - the most common situation
+                        if (pnodeA != pnodeC && pnodeB != pnodeD)
+                        {
+                            std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > forwards;
+                            std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > bacwards;
 
-                        forwards = FindShortestInteraction(rCellPopulation, pnodeA, pnodeB);
-                        bacwards = FindShortestInteraction(rCellPopulation, pnodeC, pnodeD);
+                            forwards = FindShortestInteraction(rCellPopulation, pnodeA, pnodeB);
+                            bacwards = FindShortestInteraction(rCellPopulation, pnodeC, pnodeD);
 
-                        // Pick the shorter of the two outcomes
-                        c_vector<double, SPACE_DIM> direction_forwards = rCellPopulation.rGetMesh().GetVectorFromAtoB(forwards.first->rGetLocation(), forwards.second->rGetLocation());
-                        c_vector<double, SPACE_DIM> direction_bacwards = rCellPopulation.rGetMesh().GetVectorFromAtoB(bacwards.first->rGetLocation(), bacwards.second->rGetLocation());
+                            // Pick the shorter of the two outcomes
+                            c_vector<double, SPACE_DIM> direction_forwards = rCellPopulation.rGetMesh().GetVectorFromAtoB(forwards.first->rGetLocation(), forwards.second->rGetLocation());
+                            c_vector<double, SPACE_DIM> direction_bacwards = rCellPopulation.rGetMesh().GetVectorFromAtoB(bacwards.first->rGetLocation(), bacwards.second->rGetLocation());
 
-                        double distance_forwards = norm_2(direction_forwards);
-                        double distance_bacwards = norm_2(direction_bacwards);
+                            double distance_forwards = norm_2(direction_forwards);
+                            double distance_bacwards = norm_2(direction_bacwards);
 
-                        pair_to_add = (distance_forwards > distance_bacwards) ? bacwards : forwards;
+                            pair_to_add = (distance_forwards > distance_bacwards) ? bacwards : forwards;
+                        }
+                        // If only A has a twin
+                        if (pnodeA != pnodeC && pnodeB == pnodeD)
+                        {
+                            pair_to_add = FindShortestInteraction(rCellPopulation, pnodeA, pnodeB);
+                        }
+                        // If only B has a twin
+                        if (pnodeA == pnodeC && pnodeB != pnodeD)
+                        {
+                            pair_to_add = FindShortestInteraction(rCellPopulation, pnodeB, pnodeA);
+                        }
 
                     }
                     // correct pair identified
@@ -148,7 +170,7 @@ std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> BasicNonLinearSpring
             }
         }
     }
-
+    
     return interactions;
 
 };
@@ -176,7 +198,7 @@ Node<SPACE_DIM>* BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SPACE_DIM>::F
         CellPtr cellB = rCellPopulation.GetCellUsingLocationIndex(index);
         Node<SPACE_DIM>* pnodeB = rCellPopulation.GetNode(index);
 
-        if (cellB->GetCellData()->GetItem("parent") == cellA->GetCellData()->GetItem("parent") && cellB->GetCellId() != cellA->GetCellId())
+        if (cellB->GetCellData()->GetItem("parent") == cellA->GetCellData()->GetItem("parent") && cellB->GetCellId() != cellA->GetCellId() && cellA->GetAge() == cellB->GetAge())
         {
             return pnodeB;
         }
@@ -208,52 +230,77 @@ std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > BasicNonLinearSpringForceMultiNod
     CellPtr cellA = rCellPopulation.GetCellUsingLocationIndex(pnodeA->GetIndex());
     std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > node_pair_AB = std::make_pair(pnodeA, pnodeB);
 
+    // By default, the shortest pair is the one given unless proved otherwise
+    std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > shortest_pair = node_pair_AB;
+
     std::vector<unsigned>& neighbours = pnodeB->rGetNeighbours();
 
     // Go through the neighbours to see if one of them is the twin to A
     // If one of them is, check if AB or BC is longer, and return the shorter pair
-    std::vector<unsigned>::iterator it;
-    for (it = neighbours.begin(); it!=neighbours.end(); ++it)
+
+    // If there is no twin node, either we are in the initial 15 hours where W_PHASE
+    // cells can be isolated, or something has gone wrong and a half cell has died
+    // In this case, just return the pair given
+
+    // For debugging
+    ofstream forceNodes;
+    // For debugging
+    forceNodes.open("forceNodes1.txt", fstream::app);
+
+    Node<SPACE_DIM>* pnodeC = FindTwinNode(rCellPopulation, pnodeA);
+
+    if (pnodeA != pnodeC)
     {
-        // If neighbour is part of the same cell as A
-        unsigned index = (*it);
-        CellPtr cellC = rCellPopulation.GetCellUsingLocationIndex(index);
-        Node<SPACE_DIM>* pnodeC = rCellPopulation.GetNode(index);
-
-        if (cellC->GetCellData()->GetItem("parent") == cellA->GetCellData()->GetItem("parent") && cellC->GetCellId() != cellA->GetCellId())
+        std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > node_pair_BC = std::make_pair(pnodeB, pnodeC);
+    
+        c_vector<double, SPACE_DIM> directionAB = rCellPopulation.rGetMesh().GetVectorFromAtoB(pnodeA->rGetLocation(), pnodeB->rGetLocation());
+        c_vector<double, SPACE_DIM> directionBC = rCellPopulation.rGetMesh().GetVectorFromAtoB(pnodeB->rGetLocation(), pnodeC->rGetLocation());
+    
+        double distanceAB = norm_2(directionAB);
+        double distanceBC = norm_2(directionBC);
+    
+        // Put the longer one in the removed_interactions vector
+        // Put the shorter one in the interactions vector
+    
+        if (abs(distanceAB - distanceBC) < 1e-5)
         {
-            // ... check which vector is longer
-
-            std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > node_pair_BC = std::make_pair(pnodeB, pnodeC);
-
-            c_vector<double, SPACE_DIM> directionAB = rCellPopulation.rGetMesh().GetVectorFromAtoB(pnodeA->rGetLocation(), pnodeB->rGetLocation());
-            c_vector<double, SPACE_DIM> directionBC = rCellPopulation.rGetMesh().GetVectorFromAtoB(pnodeB->rGetLocation(), pnodeC->rGetLocation());
-
-            double distanceAB = norm_2(directionAB);
-            double distanceBC = norm_2(directionBC);
-
-            // Put the longer one in the removed_interactions vector
-            // Put the shorter one in the interactions vector
-
-            if (distanceAB == distanceBC)
-            {
-                TRACE("Unicorn found")
-            }
-            if (distanceAB < distanceBC)
-            {
-                PRINT_2_VARIABLES(pnodeA->GetIndex(),pnodeB->GetIndex())
-                return node_pair_AB;
-            } else
-            {
-                PRINT_2_VARIABLES(pnodeB->GetIndex(),pnodeC->GetIndex())
-                return node_pair_BC;
-            }
+            TRACE("Unicorn found")
+            PRINT_VARIABLE(SimulationTime::Instance()->GetTime())
+            PRINT_2_VARIABLES(distanceAB, distanceBC)
+            printf("%.16f\n", distanceAB);
+            printf("%.16f\n", distanceBC);
+            PRINT_3_VARIABLES(pnodeA->GetIndex(), pnodeB->GetIndex(), pnodeC->GetIndex())
+            PRINT_VARIABLE(pnodeA->rGetLocation()[1])
+            PRINT_VARIABLE(pnodeB->rGetLocation()[1])
+            PRINT_VARIABLE(pnodeC->rGetLocation()[1])
+        }
+        if (distanceAB < distanceBC)
+        {
+            shortest_pair =  node_pair_AB;
+            // For debugging
+            forceNodes << SimulationTime::Instance()->GetTime() << ", " << node_pair_AB.first->GetIndex() << ", " <<  node_pair_AB.second->GetIndex();
+            // For debugging
+            forceNodes << ", " << node_pair_BC.first->GetIndex() << ", " <<  node_pair_BC.second->GetIndex() << ", ";
+            // For debugging
+            forceNodes << distanceAB << ", " << distanceBC << ", 1, " << pnodeA->rGetLocation()[1]<< ", " << pnodeB->rGetLocation()[1]<< ", " << pnodeC->rGetLocation()[1] << "\n";
+        }
+        else
+        {
+            shortest_pair =  node_pair_BC;
+            // For debugging
+            forceNodes << SimulationTime::Instance()->GetTime() << ", " << node_pair_BC.first->GetIndex() << ", " <<  node_pair_BC.second->GetIndex();
+            // For debugging
+            forceNodes << ", " << node_pair_AB.first->GetIndex() << ", " <<  node_pair_AB.second->GetIndex() << ", ";
+            // For debugging
+            forceNodes << distanceBC << ", " << distanceAB << ", 2, " << pnodeA->rGetLocation()[1]<< ", " << pnodeB->rGetLocation()[1]<< ", " << pnodeC->rGetLocation()[1] << "\n";
         }
     }
-    PRINT_2_VARIABLES(pnodeA->GetIndex(),pnodeB->GetIndex())
-    return node_pair_AB;
+    // For Debugging
+    forceNodes.close();
+    return shortest_pair;
 
 }
+
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
 void BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SPACE_DIM>::AddForceContribution(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation)
@@ -263,6 +310,7 @@ void BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SPACE_DIM>::AddForceContr
 
     std::vector< std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > > interactions;
     interactions = FindOneInteractionBetweenCellPairs(rCellPopulation);
+    
 
     for (typename std::vector< std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > >::iterator iter = interactions.begin();
         iter != interactions.end();
@@ -286,7 +334,10 @@ void BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SPACE_DIM>::AddForceContr
         pair.first->AddAppliedForceContribution(force);
         pair.second->AddAppliedForceContribution(negative_force);
 
+        
+
     }
+    
 }
 
 

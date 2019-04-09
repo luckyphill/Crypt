@@ -385,8 +385,8 @@ public:
 
 		// ********************************************************************************************
 		// Add forces
-		MAKE_PTR(BasicNonLinearSpringForceNewPhaseModel<2>, p_force);
-		// MAKE_PTR(BasicNonLinearSpringForceMultiNodeFix<2>, p_force);
+		// MAKE_PTR(BasicNonLinearSpringForceNewPhaseModel<2>, p_force);
+		MAKE_PTR(BasicNonLinearSpringForceMultiNodeFix<2>, p_force);
 		p_force->SetSpringStiffness(epithelialStiffness);
 		p_force->SetRestLength(2 * epithelialPreferredRadius);
 		p_force->SetCutOffLength(3 * epithelialPreferredRadius);
@@ -404,7 +404,7 @@ public:
 		// These two parameters are inately linked - the initial separation of the daughter nodes
 		// and the initial resting spring length
 		p_force->SetMeinekeDivisionRestingSpringLength( growingFinalSpringLength );
-		cell_population.SetMeinekeDivisionSeparation(0.01); // Set how far apart the cells will be upon division
+		cell_population.SetMeinekeDivisionSeparation(0.05); // Set how far apart the cells will be upon division
 		// ********************************************************************************************
 
         // ********************************************************************************************
@@ -442,6 +442,8 @@ public:
 		// Modifiers
 		MAKE_PTR(VolumeTrackingModifier<2>, p_vmod);
 		simulator.AddSimulationModifier(p_vmod);
+
+		cell_population.AddCellWriter<EpithelialCellForceWriter>();
 		// ********************************************************************************************
 
 

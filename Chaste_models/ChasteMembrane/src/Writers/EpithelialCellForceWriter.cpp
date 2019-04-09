@@ -2,6 +2,8 @@
 #include "AbstractCellPopulation.hpp"
 #include "TransitCellProliferativeType.hpp"
 #include "DifferentiatedCellProliferativeType.hpp"
+#include "SimplifiedPhaseBasedCellCycleModel.hpp"
+#include "SimplifiedCellCyclePhases.hpp"
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
 EpithelialCellForceWriter<ELEMENT_DIM, SPACE_DIM>::EpithelialCellForceWriter()
@@ -23,10 +25,13 @@ void EpithelialCellForceWriter<ELEMENT_DIM, SPACE_DIM>::VisitCell(CellPtr pCell,
     if (pCell->GetCellProliferativeType()->IsType<TransitCellProliferativeType>() || pCell->GetCellProliferativeType()->IsType<DifferentiatedCellProliferativeType>())
     {
         unsigned location_index = pCellPopulation->GetLocationIndexUsingCell(pCell);
+        SimplifiedPhaseBasedCellCycleModel* pccm = static_cast<SimplifiedPhaseBasedCellCycleModel*>(pCell->GetCellCycleModel());
+
+        SimplifiedCellCyclePhase phase = pccm->GetCurrentCellCyclePhase();
 
         c_vector<double, SPACE_DIM> force = pCellPopulation->GetNode(location_index)->rGetAppliedForce();// / damping_constant;
         c_vector<double, SPACE_DIM> position = pCellPopulation->GetNode(location_index)->rGetLocation();
-        *this->mpOutStream << "," << pCell->GetCellId() << "," << position[0] << "," << position[1] << "," << force[0] << "," << force[1];
+        *this->mpOutStream << "," << pCell->GetCellId() << "," << std::setprecision(15) << position[0] << "," << position[1] << "," << force[0] << "," << force[1] << "," << pCell->GetAge() << ", " << pCell->GetCellData()->GetItem("parent") << ", " << phase;
     }
 }
 
