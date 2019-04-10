@@ -83,6 +83,7 @@ std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> BasicNonLinearSpring
 
         Node<SPACE_DIM>* pnodeA = node_pair_AB.first;
         Node<SPACE_DIM>* pnodeB = node_pair_AB.second;
+        assert(pnodeA != pnodeB);
 
         CellPtr cellA = rCellPopulation.GetCellUsingLocationIndex(pnodeA->GetIndex());
         CellPtr cellB = rCellPopulation.GetCellUsingLocationIndex(pnodeB->GetIndex());
@@ -132,66 +133,66 @@ std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> BasicNonLinearSpring
 
                     // Assuming there are no errors, we will always solve a cell-cell interaction in this scope
                     // Commenting this out for the moment, and placing it in specific cases that are suspected to work
-                    // completed_parent_pairs.insert(parent_pair);
+                    completed_parent_pairs.insert(parent_pair);
 
                     if (phaseA == W_PHASE && phaseB != W_PHASE)
                     {
                         pair_to_add = FindShortestInteraction(rCellPopulation, pnodeA, pnodeB);
-                        completed_parent_pairs.insert(parent_pair);
+
                     }
 
                     if (phaseA != W_PHASE && phaseB == W_PHASE)
                     {
                         pair_to_add = FindShortestInteraction(rCellPopulation, pnodeB, pnodeA);
-                        completed_parent_pairs.insert(parent_pair);
+
                     }
 
                     if (phaseA == W_PHASE && phaseB == W_PHASE)
                     {
-                        // // Need to find all interactions between the two multinode cells, and compare the lengths
+                        // Need to find all interactions between the two multinode cells, and compare the lengths
 
-                        // // Find the other nodes
-                        // // This returns the origin node if no twin was found
+                        // Find the other nodes
+                        // This returns the origin node if no twin was found
 
-                        // Node<SPACE_DIM>* pnodeC = FindTwinNode(rCellPopulation, pnodeA);
-                        // Node<SPACE_DIM>* pnodeD = FindTwinNode(rCellPopulation, pnodeB);
+                        Node<SPACE_DIM>* pnodeC = FindTwinNode(rCellPopulation, pnodeA);
+                        Node<SPACE_DIM>* pnodeD = FindTwinNode(rCellPopulation, pnodeB);
 
-                        // // If neither has a twin
-                        // if (pnodeA == pnodeC && pnodeB == pnodeD)
-                        // {
-                        //     // This will happen for a short period immediately after starting
-                        //     // because all cells start out as W_PHASE, and none of them will have
-                        //     // twin node
+                        // If neither has a twin
+                        if (pnodeA == pnodeC && pnodeB == pnodeD)
+                        {
+                            // This will happen for a short period immediately after starting
+                            // because all cells start out as W_PHASE, and none of them will have
+                            // twin node
                             pair_to_add = node_pair_AB;
-                        // }
-                        // // If both have twins - the most common situation
-                        // if (pnodeA != pnodeC && pnodeB != pnodeD)
-                        // {
-                        //     std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > forwards;
-                        //     std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > bacwards;
+                        }
+                        // If both have twins - the most common situation
+                        if (pnodeA != pnodeC && pnodeB != pnodeD)
+                        {
+                            std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > forwards;
+                            std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > bacwards;
 
-                        //     forwards = FindShortestInteraction(rCellPopulation, pnodeA, pnodeB);
-                        //     bacwards = FindShortestInteraction(rCellPopulation, pnodeC, pnodeD);
+                            forwards = FindShortestInteraction(rCellPopulation, pnodeA, pnodeB);
+                            bacwards = FindShortestInteraction(rCellPopulation, pnodeC, pnodeD);
 
-                        //     // Pick the shorter of the two outcomes
-                        //     c_vector<double, SPACE_DIM> direction_forwards = rCellPopulation.rGetMesh().GetVectorFromAtoB(forwards.first->rGetLocation(), forwards.second->rGetLocation());
-                        //     c_vector<double, SPACE_DIM> direction_bacwards = rCellPopulation.rGetMesh().GetVectorFromAtoB(bacwards.first->rGetLocation(), bacwards.second->rGetLocation());
+                            // Pick the shorter of the two outcomes
+                            c_vector<double, SPACE_DIM> direction_forwards = rCellPopulation.rGetMesh().GetVectorFromAtoB(forwards.first->rGetLocation(), forwards.second->rGetLocation());
+                            c_vector<double, SPACE_DIM> direction_bacwards = rCellPopulation.rGetMesh().GetVectorFromAtoB(bacwards.first->rGetLocation(), bacwards.second->rGetLocation());
 
-                        //     double distance_forwards = norm_2(direction_forwards);
-                        //     double distance_bacwards = norm_2(direction_bacwards);
+                            double distance_forwards = norm_2(direction_forwards);
+                            double distance_bacwards = norm_2(direction_bacwards);
 
-                        //     pair_to_add = (distance_forwards > distance_bacwards) ? bacwards : forwards;
-                        // }
-                        // // If only A has a twin
-                        // if (pnodeA != pnodeC && pnodeB == pnodeD)
-                        // {
-                        //     pair_to_add = FindShortestInteraction(rCellPopulation, pnodeA, pnodeB);
-                        // }
-                        // // If only B has a twin
-                        // if (pnodeA == pnodeC && pnodeB != pnodeD)
-                        // {
-                        //     pair_to_add = FindShortestInteraction(rCellPopulation, pnodeB, pnodeA);
-                        // }
+                            pair_to_add = (distance_forwards > distance_bacwards) ? bacwards : forwards;
+                        }
+                        // If only A has a twin
+                        if (pnodeA != pnodeC && pnodeB == pnodeD)
+                        {
+                            pair_to_add = FindShortestInteraction(rCellPopulation, pnodeA, pnodeB);
+                        }
+                        // If only B has a twin
+                        if (pnodeA == pnodeC && pnodeB != pnodeD)
+                        {
+                            pair_to_add = FindShortestInteraction(rCellPopulation, pnodeB, pnodeA);
+                        }
 
                     }
                     // correct pair identified
@@ -284,6 +285,8 @@ std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > BasicNonLinearSpringForceMultiNod
         double distanceAB = norm_2(directionAB);
         double distanceBC = norm_2(directionBC);
     
+        assert(distanceAB > 0);
+        assert(distanceBC > 0);
         // Put the longer one in the removed_interactions vector
         // Put the shorter one in the interactions vector
     
@@ -427,7 +430,7 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SP
 
     double duration = mMeinekeSpringGrowthDuration;
 
-    if (ageA < duration && ageA == ageB && parentA == parentB)
+    if (ageA < duration && parentA == parentB)
     {
         // Make the spring length grow.
         double lambda = mMeinekeDivisionRestingSpringLength;
@@ -454,7 +457,7 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SP
         
         // Multi-node cells have a stronger internal attraction
         // Using a linear spring instead
-        if (ageA < duration && ageA == ageB && parentA == parentB)
+        if (ageA < duration && parentA == parentB)
         {
             c_vector<double, 2> temp = spring_constant * unitForceDirection * overlap;
         }

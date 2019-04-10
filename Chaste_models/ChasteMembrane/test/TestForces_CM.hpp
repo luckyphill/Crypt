@@ -395,4 +395,102 @@ class TestForces_CM : public AbstractCellBasedTestSuite
     	WntConcentration<2>::Instance()->Destroy();
 	};
 
+	void TestMultiNodeFixBeforeSplit() throw(Exception)
+	{
+		// This tests the function FindPairsToRemove in BasicNonLinearSpringForceMultiNodeFix
+		// The algorithm in the function finds interactions between two cells, and makes sure
+		// that a given cell only interacts with one of the internal nodes
+
+		// This set of positions appeared immediately before two simulations forked
+
+		std::vector<Node<2>*> nodes;
+		double x[39] = {0.6, 0.600000000272702, 0.599999995122016, 0.600000064171990, 0.599999999128723, 0.600000000000175, 0.6, 0.6, 0.6, 0.6, 0.599999999898938, 0.6, 0.599999999999988, 0.599999974629623, 0.600000001764502, 0.600000010596402, 0.6, 0.6, 0.6, 0.600000321699527, 0.600000000828741, 0.600000000024627, 0.6, 0.6, 0.599999999997798, 0.599999999944892, 0.600000013186203, 0.600000000000001, 0.599999999409445, 0.6, 0.599999971865908, 0.599999866357506, 0.6, 0.599999974629623, 0.600000000828741, 0.600000000024627, 0.600000000272702, 0.599999999128723, 0.600000321699527};
+		double y[39] = {0, 1.40383294393280, 3.41117552845353, 6.95341038328207, 9.00170365944317, 13.1030846630868, 16.4603878684981, 19.9999497807384, 22.7865999321540, 24.7131882365403, 10.6247851217727, 21.8443593851380, 13.9263761519447, 4.88807393359707, 2.74299596908329, 8.30999698190507, 17.3274883753523, 23.7427480431537, 25.6982636517558, 5.60388475277227, 9.84183256071220, 11.4136311136017, 19.0969529954643, 20.9156157195651, 12.2897101781060, 0.717565947613127, 4.07976585246533, 14.7601113518611, 2.07454595918953, 18.2062453589394, 7.62957845139079, 6.27977432847745, 15.6046818764670, 4.76179408876294, 9.76088631597615, 11.4855685445588, 1.39341922526955, 9.02211187427056, 5.57449777258031};
+		
+		// Save the parents here. This is what they were from the simulation, but they needed to be adjusted to match the new cell IDs
+		// unsigned parents[39] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 35, 43, 44, 1, 4, 42};
+		
+		unsigned ids[39] = 		{0, 1, 2, 3, 4, 5, 6, 7, 8, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61};
+		unsigned parents[39] = 	{0, 1, 2, 3, 4, 5, 6, 7, 8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 1, 4, 19};
+		
+		unsigned phases[39] = {0, 2, 1, 1, 2, 0, 0, 0, 0, 0, 1, 0, 0, 2, 1, 1, 0, 0, 0, 2, 2, 2, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 2, 2, 2, 2, 2, 2};
+		double ages[39] = {36.46, 0.592, 14.12, 10.922, 0.288, 15.024, 10.678, 15.56, 22.790, 19.964, 15.744, 15.354, 13.944, 2.976, 12.932, 10.990, 12.106, 22.790, 19.964, 0.082, 1.950, 1.702, 15.560, 15.354, 15.024, 14.838, 14.120, 13.944, 12.932, 12.106, 10.990, 10.922, 10.678, 2.976, 1.950, 1.702, 0.592, 0.288, 0.082};
+		TRACE("A")
+		unsigned node_counter = 0;
+		
+		for (unsigned i = 0; i <39; i++)
+		{
+			nodes.push_back(new Node<2>(node_counter,  false,  x[i], y[i]));
+			node_counter++;
+		}
+
+		NodesOnlyMesh<2> mesh;
+		mesh.ConstructNodesWithoutMesh(nodes, 1.5);
+
+		std::vector<CellPtr> cells;
+
+		MAKE_PTR(DifferentiatedCellProliferativeType, p_diff_type);
+		MAKE_PTR(TransitCellProliferativeType, p_trans_type);
+
+		MAKE_PTR(WildTypeCellMutationState, p_state);
+		TRACE("B")
+		for (unsigned i = 0; i < nodes.size(); i++)
+		{
+
+			// Set the middle cell to be proliferating
+			SimplifiedPhaseBasedCellCycleModel* p_cycle_model = new SimplifiedPhaseBasedCellCycleModel();
+
+			p_cycle_model->SetWDuration(10);
+			p_cycle_model->SetBasePDuration(5);
+			p_cycle_model->SetDimension(2);
+   			p_cycle_model->SetEquilibriumVolume(2);
+   			p_cycle_model->SetQuiescentVolumeFraction(0.8);
+   			p_cycle_model->SetWntThreshold(0.5);
+
+			p_cycle_model->SetBirthTime(-ages[i]);
+
+			CellPtr p_cell(new Cell(p_state, p_cycle_model));
+			p_cell->SetCellProliferativeType(p_trans_type);
+			p_cell->InitialiseCellCycleModel();
+			p_cell->GetCellData()->SetItem("volume", 0.7);
+
+			cells.push_back(p_cell);
+
+
+		}
+		TRACE("C")
+		NodeBasedCellPopulation<2> cell_population(mesh, cells);
+
+		for (unsigned i = 0; i <39; i++)
+		{
+			CellPtr cellA = cell_population.GetCellUsingLocationIndex(i);
+			cellA->GetCellData()->SetItem("parent", parents[i]);
+			cellA->GetCellData()->SetItem("volume", 0.7);
+		}
+		TRACE("D")
+        OffLatticeSimulation<2> simulator(cell_population);
+        simulator.SetOutputDirectory("TestMultiNodeFixCrypt");
+        simulator.SetSamplingTimestepMultiple(1);
+        simulator.SetEndTime(0.002);
+        simulator.SetDt(0.002);
+        MAKE_PTR(VolumeTrackingModifier<2>, p_mod);
+		simulator.AddSimulationModifier(p_mod);
+		TRACE("E")
+        WntConcentration<2>::Instance()->SetType(LINEAR);
+        WntConcentration<2>::Instance()->SetCellPopulation(cell_population);
+        WntConcentration<2>::Instance()->SetCryptLength(26);
+
+        simulator.Solve();
+        TRACE("F")
+        MAKE_PTR(BasicNonLinearSpringForceMultiNodeFix<2>, p_force);
+
+        std::vector<std::pair<Node<2>*, Node<2>* > > node_pairs = p_force->FindOneInteractionBetweenCellPairs(cell_population);
+
+        std::vector< std::pair<Node<2>*, Node<2>* >>& all_node_pairs = cell_population.rGetNodePairs();
+
+    	assert(all_node_pairs.size() == 117); // Will fail if the simulation is changed at all
+    	assert(node_pairs.size() == 38); // Will fail if simulation changes or force calculator changes
+    	WntConcentration<2>::Instance()->Destroy();
+	};
+
 };

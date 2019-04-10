@@ -93,16 +93,13 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForceNewPhaseModel<ELEMENT_DIM,S
 
     double duration = this->mMeinekeSpringGrowthDuration;
 
-    if (ageA < duration && ageA == ageB && parentA == parentB)
-    // if (ageA < duration && ageB < duration && parentA == parentB)
+    if (ageA < duration && parentA == parentB)
     {
         // Make the spring length grow.
         double lambda = this->mMeinekeDivisionRestingSpringLength;
         rest_length = minimum_length + (lambda - minimum_length) * ageA/duration;
-        // rest_length = lambda + (rest_length - lambda) * ageA/mMeinekeSpringGrowthDuration;
+
         double overlap = distance_between_nodes - rest_length;
-        c_vector<double, 2> temp = spring_constant * unitForceDirection * overlap; 
-        return temp;
     }
     // *****************************************************************************************
 
@@ -120,6 +117,13 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForceNewPhaseModel<ELEMENT_DIM,S
     {
         double alpha = this->mAttractionParameter;
         c_vector<double, 2> temp = spring_constant * unitForceDirection * overlap * exp(-alpha * overlap/rest_length);
+        
+        // Multi-node cells have a stronger internal attraction
+        // Using a linear spring instead
+        if (ageA < duration && parentA == parentB)
+        {
+            c_vector<double, 2> temp = spring_constant * unitForceDirection * overlap;
+        }
         return temp;
         // return zero_vector;
     }

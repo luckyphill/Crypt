@@ -202,7 +202,7 @@ void SimplifiedPhaseBasedCellCycleModel::UpdateCellCyclePhase()
     // All cells will start in W_Phase
     double dt = SimulationTime::Instance()->GetTimeStep();
 
-    // if (  IsAgeLessThan( GetWDuration() )  )
+
     if (  GetAge() + dt/2 < GetWDuration()  ) // A cell exactly WDuration old will fail this
     {
         mCurrentCellCyclePhase = W_PHASE;
@@ -289,9 +289,9 @@ bool SimplifiedPhaseBasedCellCycleModel::ReadyToDivide()
         if ( mCurrentCellCyclePhase == P_PHASE && GetAge() >= GetPDuration() + GetWDuration())
         {
             mReadyToDivide = true;
-            // Set cell property 'parent_cell' to be this cell
+            // Set cell property 'parent' to be this cell
             // This should be copied over to both new cells
-            mpCell->GetCellData()->SetItem("parent_cell", mpCell->GetCellId());
+            mpCell->GetCellData()->SetItem("parent", mpCell->GetCellId());
         }
     }
     return mReadyToDivide;
