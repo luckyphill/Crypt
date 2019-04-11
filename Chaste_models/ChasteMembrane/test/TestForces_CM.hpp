@@ -487,7 +487,7 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 		
 		unsigned node_counter = 0;
 		
-		for (unsigned i = 0; i < ids.size(); i++)
+		for (unsigned i = 0; i < id.size(); i++)
 		{
 			nodes.push_back(new Node<2>(node_counter,  false,  x[i], y[i]));
 			node_counter++;
@@ -550,20 +550,186 @@ class TestForces_CM : public AbstractCellBasedTestSuite
         WntConcentration<2>::Instance()->SetCryptLength(26);
 
         simulator.Solve();
+
+        // ********************************************************************************************
+        // Verify the simulation still has the correct input data
+        // ********************************************************************************************
+
+        MeshBasedCellPopulation<2,2>* p_tissue = static_cast<MeshBasedCellPopulation<2,2>*>(&simulator.rGetCellPopulation());
+		std::list<CellPtr> newcells =  p_tissue->rGetCells();
+
+		PRINT_VARIABLE(newcells.size())
+
+		for (std::list<CellPtr>::iterator it = newcells.begin(); it != newcells.end(); ++it)
+		{
+			// For each cell check:
+			// ID 
+			// Age (should be age + 0.002)
+			// x
+			// y
+			// parent
+			// phase
+
+			// These should all be identical to the loaded data
+		}
+
+
+
+        // ********************************************************************************************
+        // Set up the force calculator
+        // ********************************************************************************************
         
         MAKE_PTR(BasicNonLinearSpringForceMultiNodeFix<2>, p_force);
 
-        std::vector< std::pair<Node<2>*, Node<2>* >>& all_node_pairs = cell_population.rGetNodePairs();
+        std::vector< std::pair<Node<2>*, Node<2>* >>& node_pairs_population = cell_population.rGetNodePairs();     
 
-        // Turn each set of cellID pairs into node pairs
-        
+		// ********************************************************************************************
 
-        std::vector<std::pair<Node<2>*, Node<2>* > > node_pairs = p_force->FindOneInteractionBetweenCellPairs(cell_population, all_node_pairs);
 
-        
 
-    	PRINT_VARIABLE(all_node_pairs.size()); // Will fail if the simulation is changed at all
-    	PRINT_VARIABLE(node_pairs.size()); // Will fail if simulation changes or force calculator changes
+
+		// ********************************************************************************************
+		// Make the vector of node pairs from A
+		// ********************************************************************************************
+
+		std::vector< std::pair<Node<2>*, Node<2>* >> node_pairs_A;
+		
+		for (std::list< std::pair<unsigned, unsigned> >::iterator it = nodesA.begin(); it != nodesA.end(); ++it)
+		{
+			// Find the matching cells in newcells
+			// create a node pair
+			// put into a vector of node pairs
+			std::pair<unsigned, unsigned> single_pair = (*it);
+			unsigned cell1ID = single_pair.first;
+			unsigned cell2ID = single_pair.second;
+			std::list<CellPtr>::iterator cell_it1 = std::find_if(newcells.begin(), newcells.end(),
+				[&](const CellPtr test)
+				{
+					return test->GetCellId() == cell1ID;
+				});
+
+			std::list<CellPtr>::iterator cell_it2 = std::find_if(newcells.begin(), newcells.end(),
+				[&](const CellPtr test)
+				{
+					return test->GetCellId() == cell2ID;
+				});
+
+			Node<2>* node1 = p_tissue->GetNodeCorrespondingToCell( (*cell_it1) );
+			Node<2>* node2 = p_tissue->GetNodeCorrespondingToCell( (*cell_it2) );
+
+			node_pairs_A.push_back(std::make_pair(node1, node2));
+
+		}
+		// ********************************************************************************************
+		PRINT_VARIABLE(node_pairs_A.size());
+		// ********************************************************************************************
+
+
+
+
+		// ********************************************************************************************
+		// Make the vector of node pairs from B
+		// ********************************************************************************************
+
+		std::vector< std::pair<Node<2>*, Node<2>* >> node_pairs_B;
+		
+		for (std::list< std::pair<unsigned, unsigned> >::iterator it = nodesB.begin(); it != nodesB.end(); ++it)
+		{
+			// Find the matching cells in newcells
+			// create a node pair
+			// put into a vector of node pairs
+			std::pair<unsigned, unsigned> single_pair = (*it);
+			unsigned cell1ID = single_pair.first;
+			unsigned cell2ID = single_pair.second;
+			std::list<CellPtr>::iterator cell_it1 = std::find_if(newcells.begin(), newcells.end(),
+				[&](const CellPtr test)
+				{
+					return test->GetCellId() == cell1ID;
+				});
+
+			std::list<CellPtr>::iterator cell_it2 = std::find_if(newcells.begin(), newcells.end(),
+				[&](const CellPtr test)
+				{
+					return test->GetCellId() == cell2ID;
+				});
+
+			Node<2>* node1 = p_tissue->GetNodeCorrespondingToCell( (*cell_it1) );
+			Node<2>* node2 = p_tissue->GetNodeCorrespondingToCell( (*cell_it2) );
+
+			node_pairs_B.push_back(std::make_pair(node1, node2));
+
+		}
+		// ********************************************************************************************
+		PRINT_VARIABLE(node_pairs_B.size());
+		// ********************************************************************************************
+
+
+		// ********************************************************************************************
+		// Get the Node interactions from singel interaction algorithm
+		// ********************************************************************************************
+
+        std::vector<std::pair<Node<2>*, Node<2>* > > out_node_pairs_A = p_force->FindOneInteractionBetweenCellPairs(cell_population, node_pairs_A);
+
+        std::vector<std::pair<Node<2>*, Node<2>* > > out_node_pairs_B = p_force->FindOneInteractionBetweenCellPairs(cell_population, node_pairs_B);
+
+        PRINT_VARIABLE(out_node_pairs_A.size());
+        PRINT_VARIABLE(out_node_pairs_B.size());
+
+
+
+        // ********************************************************************************************
+        // Sort both output vectors
+        // ********************************************************************************************
+
+        // Sort A
+        std::sort (out_node_pairs_A.begin(), out_node_pairs_A.end(), 
+        [&](const std::pair< Node<2>*, Node<2>* > pairA, const std::pair< Node<2>*, Node<2>* > pairB)
+        {
+            unsigned smallerA = pairA.first->GetIndex() < pairA.second->GetIndex() ? pairA.first->GetIndex() : pairA.second->GetIndex();
+            unsigned smallerB = pairB.first->GetIndex() < pairB.second->GetIndex() ? pairB.first->GetIndex() : pairB.second->GetIndex();
+
+            if (smallerA == smallerB)
+            {   
+                unsigned largerA = pairA.first->GetIndex() > pairA.second->GetIndex() ? pairA.first->GetIndex() : pairA.second->GetIndex();
+                unsigned largerB = pairB.first->GetIndex() > pairB.second->GetIndex() ? pairB.first->GetIndex() : pairB.second->GetIndex();
+
+                return largerA < largerB;
+            }
+            
+
+            return smallerA < smallerB;
+        });
+
+        // Sort B
+        std::sort (out_node_pairs_B.begin(), out_node_pairs_B.end(), 
+        [&](const std::pair< Node<2>*, Node<2>* > pairA, const std::pair< Node<2>*, Node<2>* > pairB)
+        {
+            unsigned smallerA = pairA.first->GetIndex() < pairA.second->GetIndex() ? pairA.first->GetIndex() : pairA.second->GetIndex();
+            unsigned smallerB = pairB.first->GetIndex() < pairB.second->GetIndex() ? pairB.first->GetIndex() : pairB.second->GetIndex();
+
+            if (smallerA == smallerB)
+            {   
+                unsigned largerA = pairA.first->GetIndex() > pairA.second->GetIndex() ? pairA.first->GetIndex() : pairA.second->GetIndex();
+                unsigned largerB = pairB.first->GetIndex() > pairB.second->GetIndex() ? pairB.first->GetIndex() : pairB.second->GetIndex();
+
+                return largerA < largerB;
+            }
+            
+
+            return smallerA < smallerB;
+        });
+
+        // ********************************************************************************************
+        // Compare both vectors
+        // ********************************************************************************************
+
+        for (unsigned i = 0; i < out_node_pairs_A.size(); i++)
+        {
+        	PRINT_VARIABLE(i)
+        	PRINT_2_VARIABLES(out_node_pairs_A[i].first->GetIndex(), out_node_pairs_A[i].second->GetIndex())
+        	PRINT_2_VARIABLES(out_node_pairs_B[i].first->GetIndex(), out_node_pairs_B[i].second->GetIndex())
+        	TRACE(" ")
+        }
     	WntConcentration<2>::Instance()->Destroy();
 	};
 
