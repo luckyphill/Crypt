@@ -53,6 +53,7 @@
 #include "WntConcentration.hpp"
 
 // Writers
+#include "NodePairWriter.hpp"
 #include "EpithelialCellForceWriter.hpp"
 #include "NewPhaseModelBirthPositionWriter.hpp"
 #include "NewPhaseCountWriter.hpp"
@@ -444,6 +445,9 @@ public:
 		simulator.AddSimulationModifier(p_vmod);
 
 		cell_population.AddCellWriter<EpithelialCellForceWriter>();
+		// MAKE_PTR(NodePairWriter<2,2>, p_writer1);
+		boost::shared_ptr<NodePairWriter<2,2> > p_writer1{new NodePairWriter<2,2>};
+		cell_population.AddCellPopulationCountWriter(p_writer1);
 		// ********************************************************************************************
 
 

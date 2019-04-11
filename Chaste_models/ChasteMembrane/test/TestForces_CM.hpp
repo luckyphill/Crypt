@@ -168,12 +168,12 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 		//===========================================================================
 		// Test that the forces are correct
 
-		TRACE("AddForceContribution starting")
+		
 		div_force.AddForceContribution(cell_population);
 
 		it1 = node_pairs.begin();
 
-		TRACE("AddForceContribution done")
+		
 		c_vector<double, 2> forceOn1 =  (it1->first)->rGetAppliedForce();
 		++it1;
 		c_vector<double, 2> forceOn3 =  (it1->first)->rGetAppliedForce();
@@ -291,9 +291,9 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 
         MAKE_PTR(BasicNonLinearSpringForceMultiNodeFix<2>, p_force);
 
-        std::vector<std::pair<Node<2>*, Node<2>* > > node_pairs = p_force->FindOneInteractionBetweenCellPairs(cell_population);
-
         std::vector< std::pair<Node<2>*, Node<2>* >>& all_node_pairs = cell_population.rGetNodePairs();
+
+        std::vector<std::pair<Node<2>*, Node<2>* > > node_pairs = p_force->FindOneInteractionBetweenCellPairs(cell_population, all_node_pairs);
 
     	assert(all_node_pairs.size() == 194); // Will fail if the simulation is changed at all
     	assert(node_pairs.size() == 57); // Will fail if simulation changes or force calculator changes
@@ -386,9 +386,11 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 
         MAKE_PTR(BasicNonLinearSpringForceMultiNodeFix<2>, p_force);
 
-        std::vector<std::pair<Node<2>*, Node<2>* > > node_pairs = p_force->FindOneInteractionBetweenCellPairs(cell_population);
-
         std::vector< std::pair<Node<2>*, Node<2>* >>& all_node_pairs = cell_population.rGetNodePairs();
+
+        std::vector<std::pair<Node<2>*, Node<2>* > > node_pairs = p_force->FindOneInteractionBetweenCellPairs(cell_population, all_node_pairs);
+
+        
 
     	assert(all_node_pairs.size() == 117); // Will fail if the simulation is changed at all
     	assert(node_pairs.size() == 38); // Will fail if simulation changes or force calculator changes
@@ -411,11 +413,11 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 		// unsigned parents[39] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 35, 43, 44, 1, 4, 42};
 		
 		unsigned ids[39] = 		{0, 1, 2, 3, 4, 5, 6, 7, 8, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61};
-		unsigned parents[39] = 	{0, 1, 2, 3, 4, 5, 6, 7, 8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 1, 4, 19};
+		unsigned parents[39] = 	{0, 1, 2, 3, 4, 5, 6, 7, 8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 13, 20, 21, 1, 4, 19};
 		
 		unsigned phases[39] = {0, 2, 1, 1, 2, 0, 0, 0, 0, 0, 1, 0, 0, 2, 1, 1, 0, 0, 0, 2, 2, 2, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 2, 2, 2, 2, 2, 2};
 		double ages[39] = {36.46, 0.592, 14.12, 10.922, 0.288, 15.024, 10.678, 15.56, 22.790, 19.964, 15.744, 15.354, 13.944, 2.976, 12.932, 10.990, 12.106, 22.790, 19.964, 0.082, 1.950, 1.702, 15.560, 15.354, 15.024, 14.838, 14.120, 13.944, 12.932, 12.106, 10.990, 10.922, 10.678, 2.976, 1.950, 1.702, 0.592, 0.288, 0.082};
-		TRACE("A")
+		
 		unsigned node_counter = 0;
 		
 		for (unsigned i = 0; i <39; i++)
@@ -433,7 +435,7 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 		MAKE_PTR(TransitCellProliferativeType, p_trans_type);
 
 		MAKE_PTR(WildTypeCellMutationState, p_state);
-		TRACE("B")
+		
 		for (unsigned i = 0; i < nodes.size(); i++)
 		{
 
@@ -458,7 +460,7 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 
 
 		}
-		TRACE("C")
+		
 		NodeBasedCellPopulation<2> cell_population(mesh, cells);
 
 		for (unsigned i = 0; i <39; i++)
@@ -467,7 +469,7 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 			cellA->GetCellData()->SetItem("parent", parents[i]);
 			cellA->GetCellData()->SetItem("volume", 0.7);
 		}
-		TRACE("D")
+		
         OffLatticeSimulation<2> simulator(cell_population);
         simulator.SetOutputDirectory("TestMultiNodeFixCrypt");
         simulator.SetSamplingTimestepMultiple(1);
@@ -475,18 +477,20 @@ class TestForces_CM : public AbstractCellBasedTestSuite
         simulator.SetDt(0.002);
         MAKE_PTR(VolumeTrackingModifier<2>, p_mod);
 		simulator.AddSimulationModifier(p_mod);
-		TRACE("E")
+		
         WntConcentration<2>::Instance()->SetType(LINEAR);
         WntConcentration<2>::Instance()->SetCellPopulation(cell_population);
         WntConcentration<2>::Instance()->SetCryptLength(26);
 
         simulator.Solve();
-        TRACE("F")
+        
         MAKE_PTR(BasicNonLinearSpringForceMultiNodeFix<2>, p_force);
 
-        std::vector<std::pair<Node<2>*, Node<2>* > > node_pairs = p_force->FindOneInteractionBetweenCellPairs(cell_population);
-
         std::vector< std::pair<Node<2>*, Node<2>* >>& all_node_pairs = cell_population.rGetNodePairs();
+
+        std::vector<std::pair<Node<2>*, Node<2>* > > node_pairs = p_force->FindOneInteractionBetweenCellPairs(cell_population, all_node_pairs);
+
+        
 
     	assert(all_node_pairs.size() == 117); // Will fail if the simulation is changed at all
     	assert(node_pairs.size() == 38); // Will fail if simulation changes or force calculator changes

@@ -34,23 +34,16 @@ BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SPACE_DIM>::~BasicNonLinearSpr
 }
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SPACE_DIM>::FindOneInteractionBetweenCellPairs(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation)
+std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SPACE_DIM>::FindOneInteractionBetweenCellPairs(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation, std::vector< std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > > r_node_pairs)
 {
-
-    MeshBasedCellPopulation<ELEMENT_DIM,SPACE_DIM>* p_tissue = static_cast<MeshBasedCellPopulation<ELEMENT_DIM,SPACE_DIM>*>(&rCellPopulation);
 
     // Loop through list of nodes, finds the cell in W phase and
     // if both nodes are interacting with a cell then only the 
     // shortest interaction is considered - that is to say in this calculator the longer interaction
     // is negated by applying the opposite force.
 
-    std::list<CellPtr> cells =  p_tissue->rGetCells();
-
     
     std::vector< std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > > interactions;
-
-    std::vector< std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > > r_node_pairs = p_tissue->rGetNodePairs();
-
 
     // std::sort (r_node_pairs.begin(), r_node_pairs.end(), 
     //     [&](const std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > pairA, const std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > pairB)
@@ -266,11 +259,6 @@ std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > BasicNonLinearSpringForceMultiNod
 
     std::vector<unsigned>& neighbours = pnodeB->rGetNeighbours();
 
-    // For debugging
-    ofstream forceNodes;
-    // For debugging
-    forceNodes.open("forceNodes1.txt", fstream::app);
-
 
     Node<SPACE_DIM>* pnodeC = FindTwinNode(rCellPopulation, pnodeA);
 
@@ -305,26 +293,12 @@ std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > BasicNonLinearSpringForceMultiNod
         if (distanceAB < distanceBC)
         {
             shortest_pair =  node_pair_AB;
-            // For debugging
-            forceNodes << SimulationTime::Instance()->GetTime() << ", " << node_pair_AB.first->GetIndex() << ", " <<  node_pair_AB.second->GetIndex();
-            // For debugging
-            forceNodes << ", " << node_pair_BC.first->GetIndex() << ", " <<  node_pair_BC.second->GetIndex() << ", ";
-            // For debugging
-            forceNodes << distanceAB << ", " << distanceBC << ", 1, " << pnodeA->rGetLocation()[1]<< ", " << pnodeB->rGetLocation()[1]<< ", " << pnodeC->rGetLocation()[1] << "\n";
         }
         else
         {
             shortest_pair =  node_pair_BC;
-            // For debugging
-            forceNodes << SimulationTime::Instance()->GetTime() << ", " << node_pair_BC.first->GetIndex() << ", " <<  node_pair_BC.second->GetIndex();
-            // For debugging
-            forceNodes << ", " << node_pair_AB.first->GetIndex() << ", " <<  node_pair_AB.second->GetIndex() << ", ";
-            // For debugging
-            forceNodes << distanceBC << ", " << distanceAB << ", 2, " << pnodeA->rGetLocation()[1]<< ", " << pnodeB->rGetLocation()[1]<< ", " << pnodeC->rGetLocation()[1] << "\n";
         }
     }
-    // For Debugging
-    forceNodes.close();
     return shortest_pair;
 
 }
@@ -336,8 +310,12 @@ void BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SPACE_DIM>::AddForceContr
    
     MeshBasedCellPopulation<ELEMENT_DIM,SPACE_DIM>* p_tissue = static_cast<MeshBasedCellPopulation<ELEMENT_DIM,SPACE_DIM>*>(&rCellPopulation);
 
+    
+
+    std::vector< std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > > r_node_pairs = p_tissue->rGetNodePairs();
+
     std::vector< std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > > interactions;
-    interactions = FindOneInteractionBetweenCellPairs(rCellPopulation);
+    interactions = FindOneInteractionBetweenCellPairs(rCellPopulation, r_node_pairs);
     
 
     for (typename std::vector< std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > >::iterator iter = interactions.begin();
