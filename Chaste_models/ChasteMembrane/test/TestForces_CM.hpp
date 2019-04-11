@@ -404,23 +404,90 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 		// that a given cell only interacts with one of the internal nodes
 
 		// This set of positions appeared immediately before two simulations forked
+		// The data is saved in a file in the testing directory for ParameterOptimisation
+		unsigned step = 13071;
+
+		std::stringstream nodeA_infile_name;
+		nodeA_infile_name << "/Users/phillipbrown/Chaste/projects/ChasteMembrane/processing/ParameterOptimisation/testing/nodesA_"<< step << ".txt";
+		std::ifstream nodeA_infile(nodeA_infile_name.str());
+
+		std::list< std::pair<unsigned, unsigned> > nodesA;
+		std::string line;
+		while (std::getline(nodeA_infile, line))
+		{
+		    std::istringstream iss(line);
+		    unsigned a, b;
+		    char c;
+		    if (!(iss >> a >> c >> b) || !(c==','))
+		    {
+		    	break;
+		    }
+		    nodesA.push_back(std::make_pair(a,b));
+		}
+
+		std::stringstream nodeB_infile_name;
+		nodeB_infile_name << "/Users/phillipbrown/Chaste/projects/ChasteMembrane/processing/ParameterOptimisation/testing/nodesB_"<< step << ".txt";
+		std::ifstream nodeB_infile(nodeB_infile_name.str());
+
+		std::list< std::pair<unsigned, unsigned> > nodesB;
+
+		while (std::getline(nodeB_infile, line))
+		{
+		    std::istringstream iss(line);
+		    unsigned a, b;
+		    char c;
+		    if (!(iss >> a >> c >> b) || !(c==','))
+		    {
+		    	break;
+		    }
+
+		    nodesB.push_back(std::make_pair(a,b));
+		}
+
+		std::stringstream stateA_infile_name;
+		stateA_infile_name << "/Users/phillipbrown/Chaste/projects/ChasteMembrane/processing/ParameterOptimisation/testing/stateA_"<< step << ".txt";
+		std::ifstream stateA_infile(stateA_infile_name.str());
+
+		// First line is cell IDs
+		std::getline( stateA_infile, line );
+		std::vector<unsigned> id = GetCsvLineUnsigned(line);
+
+
+  		// Second line is cell x
+		std::getline( stateA_infile, line );
+		std::vector<double> x = GetCsvLineDouble(line);
+
+  		// Third line is cell y
+		std::getline( stateA_infile, line );
+		std::vector<double> y = GetCsvLineDouble(line);
+
+  		// Forth line is cell age
+		std::getline( stateA_infile, line );
+		std::vector<double> age = GetCsvLineDouble(line);
+
+  		// Fifth line is cell parent
+		std::getline( stateA_infile, line );
+  		std::vector<unsigned> parent = GetCsvLineUnsigned(line);
+
+
 
 		std::vector<Node<2>*> nodes;
-		double x[39] = {0.6, 0.600000000272702, 0.599999995122016, 0.600000064171990, 0.599999999128723, 0.600000000000175, 0.6, 0.6, 0.6, 0.6, 0.599999999898938, 0.6, 0.599999999999988, 0.599999974629623, 0.600000001764502, 0.600000010596402, 0.6, 0.6, 0.6, 0.600000321699527, 0.600000000828741, 0.600000000024627, 0.6, 0.6, 0.599999999997798, 0.599999999944892, 0.600000013186203, 0.600000000000001, 0.599999999409445, 0.6, 0.599999971865908, 0.599999866357506, 0.6, 0.599999974629623, 0.600000000828741, 0.600000000024627, 0.600000000272702, 0.599999999128723, 0.600000321699527};
-		double y[39] = {0, 1.40383294393280, 3.41117552845353, 6.95341038328207, 9.00170365944317, 13.1030846630868, 16.4603878684981, 19.9999497807384, 22.7865999321540, 24.7131882365403, 10.6247851217727, 21.8443593851380, 13.9263761519447, 4.88807393359707, 2.74299596908329, 8.30999698190507, 17.3274883753523, 23.7427480431537, 25.6982636517558, 5.60388475277227, 9.84183256071220, 11.4136311136017, 19.0969529954643, 20.9156157195651, 12.2897101781060, 0.717565947613127, 4.07976585246533, 14.7601113518611, 2.07454595918953, 18.2062453589394, 7.62957845139079, 6.27977432847745, 15.6046818764670, 4.76179408876294, 9.76088631597615, 11.4855685445588, 1.39341922526955, 9.02211187427056, 5.57449777258031};
+
+		// double x[39] = {0.6, 0.600000000272702, 0.599999995122016, 0.600000064171990, 0.599999999128723, 0.600000000000175, 0.6, 0.6, 0.6, 0.6, 0.599999999898938, 0.6, 0.599999999999988, 0.599999974629623, 0.600000001764502, 0.600000010596402, 0.6, 0.6, 0.6, 0.600000321699527, 0.600000000828741, 0.600000000024627, 0.6, 0.6, 0.599999999997798, 0.599999999944892, 0.600000013186203, 0.600000000000001, 0.599999999409445, 0.6, 0.599999971865908, 0.599999866357506, 0.6, 0.599999974629623, 0.600000000828741, 0.600000000024627, 0.600000000272702, 0.599999999128723, 0.600000321699527};
+		// double y[39] = {0, 1.40383294393280, 3.41117552845353, 6.95341038328207, 9.00170365944317, 13.1030846630868, 16.4603878684981, 19.9999497807384, 22.7865999321540, 24.7131882365403, 10.6247851217727, 21.8443593851380, 13.9263761519447, 4.88807393359707, 2.74299596908329, 8.30999698190507, 17.3274883753523, 23.7427480431537, 25.6982636517558, 5.60388475277227, 9.84183256071220, 11.4136311136017, 19.0969529954643, 20.9156157195651, 12.2897101781060, 0.717565947613127, 4.07976585246533, 14.7601113518611, 2.07454595918953, 18.2062453589394, 7.62957845139079, 6.27977432847745, 15.6046818764670, 4.76179408876294, 9.76088631597615, 11.4855685445588, 1.39341922526955, 9.02211187427056, 5.57449777258031};
 		
 		// Save the parents here. This is what they were from the simulation, but they needed to be adjusted to match the new cell IDs
 		// unsigned parents[39] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 35, 43, 44, 1, 4, 42};
 		
-		unsigned ids[39] = 		{0, 1, 2, 3, 4, 5, 6, 7, 8, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61};
-		unsigned parents[39] = 	{0, 1, 2, 3, 4, 5, 6, 7, 8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 13, 20, 21, 1, 4, 19};
+		// unsigned ids[39] = 		{0, 1, 2, 3, 4, 5, 6, 7, 8, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61};
+		// unsigned parents[39] = 	{0, 1, 2, 3, 4, 5, 6, 7, 8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 13, 20, 21, 1, 4, 19};
 		
-		unsigned phases[39] = {0, 2, 1, 1, 2, 0, 0, 0, 0, 0, 1, 0, 0, 2, 1, 1, 0, 0, 0, 2, 2, 2, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 2, 2, 2, 2, 2, 2};
-		double ages[39] = {36.46, 0.592, 14.12, 10.922, 0.288, 15.024, 10.678, 15.56, 22.790, 19.964, 15.744, 15.354, 13.944, 2.976, 12.932, 10.990, 12.106, 22.790, 19.964, 0.082, 1.950, 1.702, 15.560, 15.354, 15.024, 14.838, 14.120, 13.944, 12.932, 12.106, 10.990, 10.922, 10.678, 2.976, 1.950, 1.702, 0.592, 0.288, 0.082};
+		// unsigned phases[39] = {0, 2, 1, 1, 2, 0, 0, 0, 0, 0, 1, 0, 0, 2, 1, 1, 0, 0, 0, 2, 2, 2, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 2, 2, 2, 2, 2, 2};
+		// double ages[39] = {36.46, 0.592, 14.12, 10.922, 0.288, 15.024, 10.678, 15.56, 22.790, 19.964, 15.744, 15.354, 13.944, 2.976, 12.932, 10.990, 12.106, 22.790, 19.964, 0.082, 1.950, 1.702, 15.560, 15.354, 15.024, 14.838, 14.120, 13.944, 12.932, 12.106, 10.990, 10.922, 10.678, 2.976, 1.950, 1.702, 0.592, 0.288, 0.082};
 		
 		unsigned node_counter = 0;
 		
-		for (unsigned i = 0; i <39; i++)
+		for (unsigned i = 0; i < ids.size(); i++)
 		{
 			nodes.push_back(new Node<2>(node_counter,  false,  x[i], y[i]));
 			node_counter++;
@@ -449,7 +516,7 @@ class TestForces_CM : public AbstractCellBasedTestSuite
    			p_cycle_model->SetQuiescentVolumeFraction(0.8);
    			p_cycle_model->SetWntThreshold(0.5);
 
-			p_cycle_model->SetBirthTime(-ages[i]);
+			p_cycle_model->SetBirthTime(-age[i]);
 
 			CellPtr p_cell(new Cell(p_state, p_cycle_model));
 			p_cell->SetCellProliferativeType(p_trans_type);
@@ -466,7 +533,7 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 		for (unsigned i = 0; i <39; i++)
 		{
 			CellPtr cellA = cell_population.GetCellUsingLocationIndex(i);
-			cellA->GetCellData()->SetItem("parent", parents[i]);
+			cellA->GetCellData()->SetItem("parent", parent[i]);
 			cellA->GetCellData()->SetItem("volume", 0.7);
 		}
 		
@@ -488,13 +555,48 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 
         std::vector< std::pair<Node<2>*, Node<2>* >>& all_node_pairs = cell_population.rGetNodePairs();
 
+        // Turn each set of cellID pairs into node pairs
+        
+
         std::vector<std::pair<Node<2>*, Node<2>* > > node_pairs = p_force->FindOneInteractionBetweenCellPairs(cell_population, all_node_pairs);
 
         
 
-    	assert(all_node_pairs.size() == 117); // Will fail if the simulation is changed at all
-    	assert(node_pairs.size() == 38); // Will fail if simulation changes or force calculator changes
+    	PRINT_VARIABLE(all_node_pairs.size()); // Will fail if the simulation is changed at all
+    	PRINT_VARIABLE(node_pairs.size()); // Will fail if simulation changes or force calculator changes
     	WntConcentration<2>::Instance()->Destroy();
 	};
+
+	std::vector<unsigned> GetCsvLineUnsigned(std::string line)
+	{
+	
+		std::istringstream is( line );
+		std::vector<unsigned> vec;
+		std::string field;
+  		while (getline( is, field, ',' ))
+  		{
+  			std::stringstream fs( field );
+		    unsigned f = 0;
+		    fs >> f;
+		    vec.push_back(f);
+  		}
+  		return vec;
+	}
+
+	std::vector<double> GetCsvLineDouble(std::string line)
+	{
+	
+		std::istringstream is( line );
+		std::vector<double> vec;
+		std::string field;
+  		while (getline( is, field, ',' ))
+  		{
+  			std::stringstream fs( field );
+		    double f = 0.0;  // (default value is 0.0)
+		    fs >> f;
+		    vec.push_back(f);
+  		}
+  		return vec;
+	}
 
 };

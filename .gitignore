@@ -3,3 +3,4 @@
 *.m~
 Data/*
 Images/*
+Chaste_models/ChasteMembrane/processing/ParameterOptimisation/testing/*
