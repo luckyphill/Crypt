@@ -362,7 +362,6 @@ void BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SPACE_DIM>::AddForceContr
         pair.first->AddAppliedForceContribution(force);
         pair.second->AddAppliedForceContribution(negative_force);
 
-        // printf("Force x = %20.15f, Force y = %20.15f\n", force[0], force[1]);
 
     }
     
@@ -446,7 +445,7 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SP
         // This version uses a rough force balance to make sure the
         // force from the internal spring roughly balances the force from the external spring
         // It assumes a compression of 0.75
-        minimum_length = (minimum_length +0.1)/0.7;
+        minimum_length = (minimum_length + 0.1)/0.7;
 
         rest_length = minimum_length + (lambda - minimum_length) * ageA/duration;
 

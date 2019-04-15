@@ -408,22 +408,9 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 		// The data is saved in a file in the testing directory for ParameterOptimisation
 
 		unsigned step = 13071;
-        if(CommandLineArguments::Instance()->OptionExists("-step"))
-        {	
-        	step = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-step");
-        	PRINT_VARIABLE(step)
-        }
 
         std::string branch = "A";
-        if(CommandLineArguments::Instance()->OptionExists("-A"))
-        {	
-        	branch = "A";
-        }
 
-        if(CommandLineArguments::Instance()->OptionExists("-B"))
-        {	
-        	branch = "B";
-        }
 		
         std::string path = "/Users/phillip/Chaste/projects/ChasteMembrane/processing/ParameterOptimisation/testing/";
         // std::string path = "/Users/phillipbrown/Chaste/projects/ChasteMembrane/processing/ParameterOptimisation/testing/";

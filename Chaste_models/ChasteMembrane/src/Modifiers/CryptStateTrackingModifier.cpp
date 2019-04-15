@@ -78,7 +78,7 @@ void CryptStateTrackingModifier<DIM>::UpdateBirthStats(AbstractCellPopulation<DI
         double age = (*it)->GetAge();
 
         // if (      !p_ccm->IsAgeLessThan(W_phase_length)     &&     phase == W_PHASE    )
-        if (   (age > W_phase_length - dt /2)  && (age < W_phase_length + dt /2)   )
+        if (   (age > W_phase_length - dt /4)  && (age < W_phase_length + dt /4)   &&     phase == W_PHASE)
         {
             // Presuming one node out of a multi node cell can never die
             // mBirthCount will always be twice the actual birth count
@@ -131,7 +131,9 @@ void CryptStateTrackingModifier<DIM>::UpdateRunningAverage(AbstractCellPopulatio
             pCount++;
         }
 
-        if (p_ccm->GetCurrentCellCyclePhase() == G0_PHASE)
+        // Need to count the "not P or W" phase cells because there is a bug with reading the phase for
+        // cells with the NoCellCycleModelPhase ccm - sometimes the phase is not set so p_ccm->GetCurrentCellCyclePhase() = 1.9785423653e9
+        if (p_ccm->GetCurrentCellCyclePhase() != W_PHASE && p_ccm->GetCurrentCellCyclePhase() != P_PHASE)
         {
             g0Count++;
         }

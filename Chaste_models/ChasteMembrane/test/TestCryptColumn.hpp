@@ -444,11 +444,6 @@ public:
 		// Modifiers
 		MAKE_PTR(VolumeTrackingModifier<2>, p_vmod);
 		simulator.AddSimulationModifier(p_vmod);
-
-		cell_population.AddCellWriter<EpithelialCellForceWriter>();
-		// MAKE_PTR(NodePairWriter<2,2>, p_writer1);
-		boost::shared_ptr<NodePairWriter<2,2> > p_writer1{new NodePairWriter<2,2>};
-		cell_population.AddCellPopulationCountWriter(p_writer1);
 		// ********************************************************************************************
 
 
@@ -540,7 +535,7 @@ public:
         	}
         }
 
-        simulation_births -= Wcells/2;
+        // simulation_births -= Wcells/2;
  
 
 		// ********************************************************************************************
@@ -556,6 +551,7 @@ public:
 		TRACE("START")
 		PRINT_VARIABLE(anoikis)
 		PRINT_VARIABLE(averageCellCount)
+		printf("%20.15f\n", averageCellCount);
 		PRINT_VARIABLE(birthRate)
 		PRINT_VARIABLE(maxBirthPosition)
 
@@ -564,6 +560,7 @@ public:
 
 		PRINT_VARIABLE(p_anoikis_killer_2->GetCellKillCount())
 		PRINT_VARIABLE(p_mod->GetAverageCount())
+		printf("%20.15f\n", p_mod->GetAverageCount());
 		PRINT_VARIABLE(p_mod->GetBirthCount())
 		PRINT_VARIABLE(p_mod->GetMaxBirthPosition())
 		TRACE("END")
