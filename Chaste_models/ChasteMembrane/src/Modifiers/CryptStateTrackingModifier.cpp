@@ -80,7 +80,7 @@ void CryptStateTrackingModifier<DIM>::UpdateBirthStats(AbstractCellPopulation<DI
         // if (      !p_ccm->IsAgeLessThan(W_phase_length)     &&     phase == W_PHASE    )
         if (   (age > W_phase_length - dt /4)  && (age < W_phase_length + dt /4)   &&     phase == W_PHASE)
         {
-            // Presuming one node out of a multi node cell can never die
+            // Presuming one node out of a multi node cell can never die separately
             // mBirthCount will always be twice the actual birth count
             // There is one very unlikely case where this will end up with an odd
             // number, and that is if a dividing cell has one node killed when

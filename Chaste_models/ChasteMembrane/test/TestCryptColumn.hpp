@@ -513,29 +513,17 @@ public:
 
 		// ********************************************************************************************
 		// Collate simulation data
+		// This number will not match the cell births from CryptStateTrackingModifier
+		// The Chaste Division event is connected to the actual division event, so there will
+		// always be a 1-1 ratio, however, some Chaste divisions happen just before the burn in
+		// time finishes, while their paired actual divisions happen after, thus the Chaste divisions
+		// won't be counted, but the actual divisions will.
+		// The reverse happens when the simulation stops, some Chaste divisions will be counted, but
+		// the paired actual divisions won't have happened before the simulation ends
+		// The numbers will actually be close because those Chaste divisions missed before the start
+		// will be roughly the same as the actual divisions missed after the end.
+		// The modifier division count will be the "correct" division count for the model
 		unsigned simulation_births = simulator.GetNumBirths() - transient_births;
-
-		// GetNumBirths() returns the number of times a node is introduced
-		// This is not the same as an actual division event in the new phase model
-		// Therefore, to get the correct count, need to subtract the number of cells
-		// that haven't exited W_PHASE at the end of the simulation.
-
-		MeshBasedCellPopulation<2,2>* p_tissue = static_cast<MeshBasedCellPopulation<2,2>*>(&simulator.rGetCellPopulation());
-		std::list<CellPtr> pos_cells =  p_tissue->rGetCells();
-
-		unsigned Wcells = 0;
-
-        for (std::list<CellPtr>::iterator cell_iter = pos_cells.begin(); cell_iter != pos_cells.end(); ++cell_iter)
-        {
-        	SimplifiedPhaseBasedCellCycleModel* p_ccm = static_cast<SimplifiedPhaseBasedCellCycleModel*>((*cell_iter)->GetCellCycleModel());
-
-        	if (p_ccm->GetCurrentCellCyclePhase() == W_PHASE)
-        	{
-        		Wcells++;
-        	}
-        }
-
-        // simulation_births -= Wcells/2;
  
 
 		// ********************************************************************************************
@@ -549,40 +537,16 @@ public:
         // ********************************************************************************************
         // Output data to the command line
 		TRACE("START")
-		PRINT_VARIABLE(anoikis)
-		PRINT_VARIABLE(averageCellCount)
-		printf("%20.15f\n", averageCellCount);
-		PRINT_VARIABLE(birthRate)
-		PRINT_VARIABLE(maxBirthPosition)
-
-		PRINT_VARIABLE(simulation_births)
-		PRINT_VARIABLE(simulation_births/simulation_length)
-
-		PRINT_VARIABLE(p_anoikis_killer_2->GetCellKillCount())
-		PRINT_VARIABLE(p_mod->GetAverageCount())
-		printf("%20.15f\n", p_mod->GetAverageCount());
-		PRINT_VARIABLE(p_mod->GetBirthCount())
-		PRINT_VARIABLE(p_mod->GetMaxBirthPosition())
+		PRINT_VARIABLE(anoikis)   				// Anoikis rate
+		PRINT_VARIABLE(averageCellCount) 		// Expected total number of cells in the crypt
+		PRINT_VARIABLE(birthRate)				// Birth rate
+		PRINT_VARIABLE(maxBirthPosition)		// Highest cell position where cell division happens
 		TRACE("END")
 		// ********************************************************************************************
 
 	};
 
 };
-
-
-		// double total = differentiated - 1 + Pcells + (double)Wcells/2;
-
-		// TRACE("START")
-		// PRINT_VARIABLE(p_sloughing_killer_2->GetCellKillCount())
-		// PRINT_VARIABLE(p_anoikis_killer_2->GetCellKillCount())
-		// PRINT_VARIABLE(total)
-		// PRINT_VARIABLE(p_mod->GetAverageCount() - 1)
-		// PRINT_VARIABLE(p_mod->GetBirthCount())
-		// PRINT_VARIABLE(p_writer->GetBirthCount())
-		// PRINT_VARIABLE(p_mod->GetMaxBirthPosition())
-		// PRINT_VARIABLE(p_writer->GetMaxDivisionCellPosition())
-		// TRACE("END")
 
 
 
