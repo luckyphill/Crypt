@@ -20,6 +20,7 @@ ages = num2cell(data(6:8:n));
 parents = num2cell(data(7:8:n));
 phases = num2cell(data(8:8:n));
 N = length(ids);
+ids = num2cell(0:(N-1));
 
 cells = struct(f1,ids,f2,xs,f3,ys,f4,ages,f5,parents,f6,phases);
 cells(1).phase = 0;
@@ -30,10 +31,13 @@ for i=1:N
     viscircles([cells(i).x, cells(i).y], 0.5, 'Color',colours{i});
 end
 hold on
-scatter([cells(:).x], [cells(:).y],50)
+% scatter([cells(:).x], [cells(:).y],50)
 title(plot_title);
+
+text([cells(:).x], [cells(:).y],num2cell(0:(N-1)));
 xlim([-16,16])
 ylim([-1,31])
+
 
 wphase = [];
 for i=1:length(cells)

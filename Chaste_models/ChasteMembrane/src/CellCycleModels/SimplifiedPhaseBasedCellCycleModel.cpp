@@ -65,6 +65,27 @@ void SimplifiedPhaseBasedCellCycleModel::Initialise()
     mCurrentCellCyclePhase = W_PHASE;
 }
 
+void SimplifiedPhaseBasedCellCycleModel::Initialise(SimplifiedCellCyclePhase phase)
+{
+    // A brand new cell created in a Test script will need to have it's parent set
+    // The parent will be set properly for cells created in the simulation
+
+    // This version allows the cell cycle phase to be set
+    AbstractCellCycleModel::Initialise();
+    assert(mpCell != NULL);
+    try
+    {
+        unsigned parent = mpCell->GetCellData()->GetItem("parent");
+    } 
+    catch (...)
+    {
+        mpCell->GetCellData()->SetItem("parent", mpCell->GetCellId());
+    }
+    SetPDuration();
+    mCurrentCellCyclePhase = phase;
+}
+
+
 void SimplifiedPhaseBasedCellCycleModel::InitialiseDaughterCell()
 {
     SetPDuration();

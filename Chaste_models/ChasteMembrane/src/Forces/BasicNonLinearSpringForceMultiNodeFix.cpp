@@ -113,6 +113,10 @@ std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> BasicNonLinearSpring
                 lower = parentA < parentB ? parentA: parentB;
                 higer = parentA > parentB ? parentA: parentB;
 
+                assert(lower < higer);
+
+
+
                 std::pair<unsigned, unsigned> parent_pair = std::make_pair(lower, higer);
 
                 std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > pair_to_add; // To be determined
@@ -123,7 +127,6 @@ std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> BasicNonLinearSpring
                     // If the nodes are part of the same cell at this point, then something terrible
                     // has gone wrong
                     assert(parentA != parentB);
-
                     // Assuming there are no errors, we will always solve a cell-cell interaction in this scope
                     // Commenting this out for the moment, and placing it in specific cases that are suspected to work
                     completed_parent_pairs.insert(parent_pair);
@@ -194,6 +197,25 @@ std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> BasicNonLinearSpring
             }
         }
     }
+
+
+    // std::sort (interactions.begin(), interactions.end(), 
+    //     [&](const std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > pairA, const std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > pairB)
+    //     {
+    //         unsigned smallerA = pairA.first->GetIndex() < pairA.second->GetIndex() ? pairA.first->GetIndex() : pairA.second->GetIndex();
+    //         unsigned smallerB = pairB.first->GetIndex() < pairB.second->GetIndex() ? pairB.first->GetIndex() : pairB.second->GetIndex();
+
+    //         if (smallerA == smallerB)
+    //         {   
+    //             unsigned largerA = pairA.first->GetIndex() > pairA.second->GetIndex() ? pairA.first->GetIndex() : pairA.second->GetIndex();
+    //             unsigned largerB = pairB.first->GetIndex() > pairB.second->GetIndex() ? pairB.first->GetIndex() : pairB.second->GetIndex();
+
+    //             return largerA < largerB;
+    //         }
+            
+
+    //         return smallerA < smallerB;
+    //     });
     
     return interactions;
 
@@ -280,15 +302,15 @@ std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > BasicNonLinearSpringForceMultiNod
     
         if (abs(distanceAB - distanceBC) < 1e-5)
         {
-            TRACE("Unicorn found")
-            PRINT_VARIABLE(SimulationTime::Instance()->GetTime())
-            PRINT_2_VARIABLES(distanceAB, distanceBC)
-            printf("%.16f\n", distanceAB);
-            printf("%.16f\n", distanceBC);
-            PRINT_3_VARIABLES(pnodeA->GetIndex(), pnodeB->GetIndex(), pnodeC->GetIndex())
-            PRINT_VARIABLE(pnodeA->rGetLocation()[1])
-            PRINT_VARIABLE(pnodeB->rGetLocation()[1])
-            PRINT_VARIABLE(pnodeC->rGetLocation()[1])
+            // TRACE("Unicorn found")
+            // PRINT_VARIABLE(SimulationTime::Instance()->GetTime())
+            // PRINT_2_VARIABLES(distanceAB, distanceBC)
+            // printf("%.16f\n", distanceAB);
+            // printf("%.16f\n", distanceBC);
+            // PRINT_3_VARIABLES(pnodeA->GetIndex(), pnodeB->GetIndex(), pnodeC->GetIndex())
+            // PRINT_VARIABLE(pnodeA->rGetLocation()[1])
+            // PRINT_VARIABLE(pnodeB->rGetLocation()[1])
+            // PRINT_VARIABLE(pnodeC->rGetLocation()[1])
         }
         if (distanceAB < distanceBC)
         {
@@ -340,7 +362,7 @@ void BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SPACE_DIM>::AddForceContr
         pair.first->AddAppliedForceContribution(force);
         pair.second->AddAppliedForceContribution(negative_force);
 
-        
+        // printf("Force x = %20.15f, Force y = %20.15f\n", force[0], force[1]);
 
     }
     
@@ -412,6 +434,20 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SP
     {
         // Make the spring length grow.
         double lambda = mMeinekeDivisionRestingSpringLength;
+        
+        // Increase the minimum length slightly compared to the division separation
+        // This will cause a slight outwards force after a cell has just divided
+        // Otherwise, the new node will appear at precisely the resting length, and so will have
+        // no outwards force. If there is a squashed cell close to this one, a large
+        // unbalanced force will appear. This may be the cause of "new node pass through"
+        // where nodes will move through each other
+        // minimum_length *= 1.5;
+        
+        // This version uses a rough force balance to make sure the
+        // force from the internal spring roughly balances the force from the external spring
+        // It assumes a compression of 0.75
+        minimum_length = (minimum_length +0.1)/0.7;
+
         rest_length = minimum_length + (lambda - minimum_length) * ageA/duration;
 
         double overlap = distance_between_nodes - rest_length;

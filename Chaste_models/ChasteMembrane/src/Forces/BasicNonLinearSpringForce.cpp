@@ -93,15 +93,15 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForce<ELEMENT_DIM,SPACE_DIM>::Ca
     double parentA = p_cell_A->GetCellData()->GetItem("parent");
     double parentB = p_cell_B->GetCellData()->GetItem("parent");
 
-    double minimum_length = p_tissue->GetMeinekeDivisionSeparation();
+    double minimum_length = 1.5 * p_tissue->GetMeinekeDivisionSeparation();
 
 
     if (ageA < mMeinekeSpringGrowthDuration && ageA == ageB && parentA == parentB)
     {
         // Make the spring length grow.
         double lambda = mMeinekeDivisionRestingSpringLength;
-        // rest_length = minimum_length + (lambda - minimum_length) * ageA/mMeinekeSpringGrowthDuration;
-        rest_length = lambda + (rest_length - lambda) * ageA/mMeinekeSpringGrowthDuration;
+        rest_length = minimum_length + (lambda - minimum_length) * ageA/mMeinekeSpringGrowthDuration;
+        // rest_length = lambda + (rest_length - lambda) * ageA/mMeinekeSpringGrowthDuration;
     }
     // *****************************************************************************************
 

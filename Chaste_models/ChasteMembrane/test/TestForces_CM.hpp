@@ -20,6 +20,7 @@
 
 // Cell Cycle Models
 #include "SimplifiedPhaseBasedCellCycleModel.hpp"
+#include "SimplifiedCellCyclePhases.hpp"
 
 // Modifiers
 #include "VolumeTrackingModifier.hpp"
@@ -405,15 +406,36 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 
 		// This set of positions appeared immediately before two simulations forked
 		// The data is saved in a file in the testing directory for ParameterOptimisation
+
 		unsigned step = 13071;
+        if(CommandLineArguments::Instance()->OptionExists("-step"))
+        {	
+        	step = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-step");
+        	PRINT_VARIABLE(step)
+        }
 
-		std::stringstream nodeA_infile_name;
-		nodeA_infile_name << "/Users/phillipbrown/Chaste/projects/ChasteMembrane/processing/ParameterOptimisation/testing/nodesA_"<< step << ".txt";
-		std::ifstream nodeA_infile(nodeA_infile_name.str());
+        std::string branch = "A";
+        if(CommandLineArguments::Instance()->OptionExists("-A"))
+        {	
+        	branch = "A";
+        }
 
-		std::list< std::pair<unsigned, unsigned> > nodesA;
+        if(CommandLineArguments::Instance()->OptionExists("-B"))
+        {	
+        	branch = "B";
+        }
+		
+        std::string path = "/Users/phillip/Chaste/projects/ChasteMembrane/processing/ParameterOptimisation/testing/";
+        // std::string path = "/Users/phillipbrown/Chaste/projects/ChasteMembrane/processing/ParameterOptimisation/testing/";
+
+		std::stringstream node_infile_name;
+	
+		node_infile_name << path <<"nodes"<< branch <<"_"<< step << ".txt";
+		std::ifstream node_infile(node_infile_name.str());
+
+		std::list< std::pair<unsigned, unsigned> > id_pairs;
 		std::string line;
-		while (std::getline(nodeA_infile, line))
+		while (std::getline(node_infile, line))
 		{
 		    std::istringstream iss(line);
 		    unsigned a, b;
@@ -422,52 +444,40 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 		    {
 		    	break;
 		    }
-		    nodesA.push_back(std::make_pair(a,b));
+		    id_pairs.push_back(std::make_pair(a,b));
 		}
 
-		std::stringstream nodeB_infile_name;
-		nodeB_infile_name << "/Users/phillipbrown/Chaste/projects/ChasteMembrane/processing/ParameterOptimisation/testing/nodesB_"<< step << ".txt";
-		std::ifstream nodeB_infile(nodeB_infile_name.str());
 
-		std::list< std::pair<unsigned, unsigned> > nodesB;
 
-		while (std::getline(nodeB_infile, line))
-		{
-		    std::istringstream iss(line);
-		    unsigned a, b;
-		    char c;
-		    if (!(iss >> a >> c >> b) || !(c==','))
-		    {
-		    	break;
-		    }
-
-		    nodesB.push_back(std::make_pair(a,b));
-		}
-
-		std::stringstream stateA_infile_name;
-		stateA_infile_name << "/Users/phillipbrown/Chaste/projects/ChasteMembrane/processing/ParameterOptimisation/testing/stateA_"<< step << ".txt";
-		std::ifstream stateA_infile(stateA_infile_name.str());
+		std::stringstream state_infile_name;
+		// state_infile_name << "/Users/phillipbrown/Chaste/projects/ChasteMembrane/processing/ParameterOptimisation/testing/state_"<< step << ".txt";
+		state_infile_name << path <<"state"<< branch <<"_"<< step << ".txt";
+		std::ifstream state_infile(state_infile_name.str());
 
 		// First line is cell IDs
-		std::getline( stateA_infile, line );
+		std::getline( state_infile, line );
 		std::vector<unsigned> id = GetCsvLineUnsigned(line);
 
 
   		// Second line is cell x
-		std::getline( stateA_infile, line );
+		std::getline( state_infile, line );
 		std::vector<double> x = GetCsvLineDouble(line);
 
   		// Third line is cell y
-		std::getline( stateA_infile, line );
+		std::getline( state_infile, line );
 		std::vector<double> y = GetCsvLineDouble(line);
 
   		// Forth line is cell age
-		std::getline( stateA_infile, line );
+		std::getline( state_infile, line );
 		std::vector<double> age = GetCsvLineDouble(line);
 
   		// Fifth line is cell parent
-		std::getline( stateA_infile, line );
+		std::getline( state_infile, line );
   		std::vector<unsigned> parent = GetCsvLineUnsigned(line);
+
+  		// Last line is phase
+  		std::getline( state_infile, line );
+  		std::vector<unsigned> phase = GetCsvLineUnsigned(line);
 
 
 
@@ -502,6 +512,8 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 		MAKE_PTR(TransitCellProliferativeType, p_trans_type);
 
 		MAKE_PTR(WildTypeCellMutationState, p_state);
+
+		SimplifiedCellCyclePhase num2phase[3] = {G0_PHASE, P_PHASE, W_PHASE};
 		
 		for (unsigned i = 0; i < nodes.size(); i++)
 		{
@@ -517,11 +529,16 @@ class TestForces_CM : public AbstractCellBasedTestSuite
    			p_cycle_model->SetWntThreshold(0.5);
 
 			p_cycle_model->SetBirthTime(-age[i]);
+			p_cycle_model->SetBasePDuration(10);
+
+			
 
 			CellPtr p_cell(new Cell(p_state, p_cycle_model));
 			p_cell->SetCellProliferativeType(p_trans_type);
 			p_cell->InitialiseCellCycleModel();
 			p_cell->GetCellData()->SetItem("volume", 0.7);
+
+			p_cycle_model->Initialise(num2phase[phase[i]]);
 
 			cells.push_back(p_cell);
 
@@ -530,7 +547,7 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 		
 		NodeBasedCellPopulation<2> cell_population(mesh, cells);
 
-		for (unsigned i = 0; i <39; i++)
+		for (unsigned i = 0; i <nodes.size(); i++)
 		{
 			CellPtr cellA = cell_population.GetCellUsingLocationIndex(i);
 			cellA->GetCellData()->SetItem("parent", parent[i]);
@@ -547,18 +564,53 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 		
         WntConcentration<2>::Instance()->SetType(LINEAR);
         WntConcentration<2>::Instance()->SetCellPopulation(cell_population);
-        WntConcentration<2>::Instance()->SetCryptLength(26);
+        WntConcentration<2>::Instance()->SetCryptLength(26); // This is fixed to the value when testing
 
+        // ********************************************************************************************
+        // Need to make sure the cell phase is correct. Can't do this until WntConcentration is set
+        // ********************************************************************************************
+
+        MeshBasedCellPopulation<2,2>* p_tissue = static_cast<MeshBasedCellPopulation<2,2>*>(&simulator.rGetCellPopulation());
+		std::list<CellPtr> oldcells =  p_tissue->rGetCells();
+		oldcells.sort(
+		[&](const CellPtr cellA, const CellPtr cellB)
+			{
+				return cellA->GetCellId() < cellB->GetCellId();
+			});
+
+		unsigned q = 0;
+
+		for (std::list<CellPtr>::iterator it = oldcells.begin(); it != oldcells.end(); ++it)
+		{
+			SimplifiedPhaseBasedCellCycleModel* pccm = static_cast<SimplifiedPhaseBasedCellCycleModel*>((*it)->GetCellCycleModel());
+			pccm->Initialise(num2phase[phase[q]]);
+			// PRINT_3_VARIABLES( (*it)->GetCellId(), (*it)->GetAge(), pccm->GetCurrentCellCyclePhase() )
+			q++;
+		}
+
+
+		// ********************************************************************************************
+		// ********************************************************************************************
         simulator.Solve();
+        // ********************************************************************************************
+        // ********************************************************************************************
+
 
         // ********************************************************************************************
         // Verify the simulation still has the correct input data
         // ********************************************************************************************
 
-        MeshBasedCellPopulation<2,2>* p_tissue = static_cast<MeshBasedCellPopulation<2,2>*>(&simulator.rGetCellPopulation());
+        p_tissue = static_cast<MeshBasedCellPopulation<2,2>*>(&simulator.rGetCellPopulation());
 		std::list<CellPtr> newcells =  p_tissue->rGetCells();
 
 		PRINT_VARIABLE(newcells.size())
+		PRINT_VARIABLE(id.size())
+
+		// newcells.sort(
+		// [&](const CellPtr cellA, const CellPtr cellB)
+		// 	{
+		// 		return cellA->GetCellId() < cellB->GetCellId();
+		// 	});
 
 		for (std::list<CellPtr>::iterator it = newcells.begin(); it != newcells.end(); ++it)
 		{
@@ -582,7 +634,7 @@ class TestForces_CM : public AbstractCellBasedTestSuite
         MAKE_PTR(BasicNonLinearSpringForceMultiNodeFix<2>, p_force);
 
         std::vector< std::pair<Node<2>*, Node<2>* >>& node_pairs_population = cell_population.rGetNodePairs();     
-
+        PRINT_VARIABLE(node_pairs_population.size())
 		// ********************************************************************************************
 
 
@@ -592,9 +644,9 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 		// Make the vector of node pairs from A
 		// ********************************************************************************************
 
-		std::vector< std::pair<Node<2>*, Node<2>* >> node_pairs_A;
+		std::vector< std::pair<Node<2>*, Node<2>* >> node_pairs;
 		
-		for (std::list< std::pair<unsigned, unsigned> >::iterator it = nodesA.begin(); it != nodesA.end(); ++it)
+		for (std::list< std::pair<unsigned, unsigned> >::iterator it = id_pairs.begin(); it != id_pairs.end(); ++it)
 		{
 			// Find the matching cells in newcells
 			// create a node pair
@@ -617,91 +669,39 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 			Node<2>* node1 = p_tissue->GetNodeCorrespondingToCell( (*cell_it1) );
 			Node<2>* node2 = p_tissue->GetNodeCorrespondingToCell( (*cell_it2) );
 
-			node_pairs_A.push_back(std::make_pair(node1, node2));
+			node_pairs.push_back(std::make_pair(node1, node2));
 
 		}
 		// ********************************************************************************************
-		PRINT_VARIABLE(node_pairs_A.size());
-		// ********************************************************************************************
-
-
-
-
-		// ********************************************************************************************
-		// Make the vector of node pairs from B
-		// ********************************************************************************************
-
-		std::vector< std::pair<Node<2>*, Node<2>* >> node_pairs_B;
-		
-		for (std::list< std::pair<unsigned, unsigned> >::iterator it = nodesB.begin(); it != nodesB.end(); ++it)
-		{
-			// Find the matching cells in newcells
-			// create a node pair
-			// put into a vector of node pairs
-			std::pair<unsigned, unsigned> single_pair = (*it);
-			unsigned cell1ID = single_pair.first;
-			unsigned cell2ID = single_pair.second;
-			std::list<CellPtr>::iterator cell_it1 = std::find_if(newcells.begin(), newcells.end(),
-				[&](const CellPtr test)
-				{
-					return test->GetCellId() == cell1ID;
-				});
-
-			std::list<CellPtr>::iterator cell_it2 = std::find_if(newcells.begin(), newcells.end(),
-				[&](const CellPtr test)
-				{
-					return test->GetCellId() == cell2ID;
-				});
-
-			Node<2>* node1 = p_tissue->GetNodeCorrespondingToCell( (*cell_it1) );
-			Node<2>* node2 = p_tissue->GetNodeCorrespondingToCell( (*cell_it2) );
-
-			node_pairs_B.push_back(std::make_pair(node1, node2));
-
-		}
-		// ********************************************************************************************
-		PRINT_VARIABLE(node_pairs_B.size());
+		PRINT_VARIABLE(node_pairs.size());
 		// ********************************************************************************************
 
 
 		// ********************************************************************************************
-		// Get the Node interactions from singel interaction algorithm
+		// Get the Node interactions from single interaction algorithm
 		// ********************************************************************************************
 
-        std::vector<std::pair<Node<2>*, Node<2>* > > out_node_pairs_A = p_force->FindOneInteractionBetweenCellPairs(cell_population, node_pairs_A);
+        std::vector<std::pair<Node<2>*, Node<2>* > > out_node_pairs = p_force->FindOneInteractionBetweenCellPairs(cell_population, node_pairs);
 
-        std::vector<std::pair<Node<2>*, Node<2>* > > out_node_pairs_B = p_force->FindOneInteractionBetweenCellPairs(cell_population, node_pairs_B);
+        PRINT_VARIABLE(out_node_pairs.size());
 
-        PRINT_VARIABLE(out_node_pairs_A.size());
-        PRINT_VARIABLE(out_node_pairs_B.size());
-
-
+        p_force->AddForceContribution(cell_population);
 
         // ********************************************************************************************
-        // Sort both output vectors
+        // Sort output vector for comparison
         // ********************************************************************************************
 
-        // Sort A
-        std::sort (out_node_pairs_A.begin(), out_node_pairs_A.end(), 
-        [&](const std::pair< Node<2>*, Node<2>* > pairA, const std::pair< Node<2>*, Node<2>* > pairB)
+        // Sort the pair order
+        for (unsigned i = 0; i < out_node_pairs.size(); i++)
         {
-            unsigned smallerA = pairA.first->GetIndex() < pairA.second->GetIndex() ? pairA.first->GetIndex() : pairA.second->GetIndex();
-            unsigned smallerB = pairB.first->GetIndex() < pairB.second->GetIndex() ? pairB.first->GetIndex() : pairB.second->GetIndex();
+        	if (out_node_pairs[i].first->GetIndex() > out_node_pairs[i].second->GetIndex())
+        	{
+        		out_node_pairs[i] = std::make_pair(out_node_pairs[i].second,out_node_pairs[i].first);
+        	}
+        }
 
-            if (smallerA == smallerB)
-            {   
-                unsigned largerA = pairA.first->GetIndex() > pairA.second->GetIndex() ? pairA.first->GetIndex() : pairA.second->GetIndex();
-                unsigned largerB = pairB.first->GetIndex() > pairB.second->GetIndex() ? pairB.first->GetIndex() : pairB.second->GetIndex();
-
-                return largerA < largerB;
-            }
-            
-
-            return smallerA < smallerB;
-        });
-
-        // Sort B
-        std::sort (out_node_pairs_B.begin(), out_node_pairs_B.end(), 
+        // Sort the pairs
+        std::sort (out_node_pairs.begin(), out_node_pairs.end(), 
         [&](const std::pair< Node<2>*, Node<2>* > pairA, const std::pair< Node<2>*, Node<2>* > pairB)
         {
             unsigned smallerA = pairA.first->GetIndex() < pairA.second->GetIndex() ? pairA.first->GetIndex() : pairA.second->GetIndex();
@@ -722,13 +722,10 @@ class TestForces_CM : public AbstractCellBasedTestSuite
         // ********************************************************************************************
         // Compare both vectors
         // ********************************************************************************************
-
-        for (unsigned i = 0; i < out_node_pairs_A.size(); i++)
+        TRACE("START")
+        for (unsigned i = 0; i < out_node_pairs.size(); i++)
         {
-        	PRINT_VARIABLE(i)
-        	PRINT_2_VARIABLES(out_node_pairs_A[i].first->GetIndex(), out_node_pairs_A[i].second->GetIndex())
-        	PRINT_2_VARIABLES(out_node_pairs_B[i].first->GetIndex(), out_node_pairs_B[i].second->GetIndex())
-        	TRACE(" ")
+        	printf("%2d, %2d\n", out_node_pairs[i].first->GetIndex(), out_node_pairs[i].second->GetIndex());
         }
     	WntConcentration<2>::Instance()->Destroy();
 	};

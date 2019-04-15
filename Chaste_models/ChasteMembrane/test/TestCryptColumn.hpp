@@ -25,6 +25,7 @@
 
 //Cell cycle models
 #include "NoCellCycleModel.hpp"
+#include "NoCellCycleModelPhase.hpp"
 #include "SimplifiedPhaseBasedCellCycleModel.hpp"
 
 // Mutation State
@@ -297,7 +298,7 @@ public:
 
 		// Give the boundary node its cell and cycle
 		{
-			NoCellCycleModel* p_cycle_model = new NoCellCycleModel();
+			NoCellCycleModelPhase* p_cycle_model = new NoCellCycleModelPhase();
 
 			CellPtr p_cell(new Cell(p_state, p_cycle_model));
 			p_cell->SetCellProliferativeType(p_diff_type);

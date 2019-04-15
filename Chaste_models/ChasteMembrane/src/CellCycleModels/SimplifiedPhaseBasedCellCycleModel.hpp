@@ -115,6 +115,8 @@ public:
 
     void Initialise();
 
+    void Initialise(SimplifiedCellCyclePhase phase);
+
     void InitialiseDaughterCell();
     
     /** See AbstractCellCycleModel::ResetForDivision() */
