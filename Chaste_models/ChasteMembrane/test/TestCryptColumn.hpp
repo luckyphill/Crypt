@@ -524,7 +524,7 @@ public:
 		// will be roughly the same as the actual divisions missed after the end.
 		// The modifier division count will be the "correct" division count for the model
 		unsigned simulation_births = simulator.GetNumBirths() - transient_births;
- 
+ 		simulation_births *= 1; // Literally just to keep the compiler on phoenix happy
 
 		// ********************************************************************************************
 		// Simulation characteristic data output
