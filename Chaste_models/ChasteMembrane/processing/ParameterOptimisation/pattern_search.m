@@ -11,7 +11,7 @@ function values = pattern_search(chaste_test, obj, input_flags, values, limits, 
 
 	iterations = 0;
 	it_limit = 20;
-	repetitions = 10;
+	repetitions = 2;
 
 	first_step = true; % When we start searching in a new variable/dimension
 					   % we need to look both directions before we start stepping

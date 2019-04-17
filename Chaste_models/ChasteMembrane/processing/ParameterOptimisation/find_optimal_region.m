@@ -43,6 +43,8 @@ function find_optimal_region(chaste_test, obj, input_flags, prange, limits, min_
 
 	fprintf('\n\nPattern search completed, best parameters are %s\n\n\n', generate_input_string(input_flags, minimum_point));
 
+	% [parameter_space, ranges] = fine_sweep(chaste_test, obj, input_flags, minimum_point, fixed_parameters, ignore_existing)
+
 
 
 end

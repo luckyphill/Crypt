@@ -56,6 +56,7 @@ void SimplifiedPhaseBasedCellCycleModel::Initialise()
     try
     {
         unsigned parent = mpCell->GetCellData()->GetItem("parent");
+        parent = 1; // Literally just to keep the compiler happy to stop the unused variable warning
     } 
     catch (...)
     {

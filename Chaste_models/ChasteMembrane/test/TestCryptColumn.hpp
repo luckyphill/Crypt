@@ -529,7 +529,7 @@ public:
 		// ********************************************************************************************
 		// Simulation characteristic data output
 		// ********************************************************************************************
-		unsigned 	anoikis 			= double(p_anoikis_killer_2->GetCellKillCount())/simulation_length;
+		double 		anoikis 			= double(p_anoikis_killer_2->GetCellKillCount())/simulation_length;
 		double 		averageCellCount 	= p_mod->GetAverageCount() - 1;
 		double 		birthRate 			= double(p_mod->GetBirthCount())/simulation_length;
 		unsigned 	maxBirthPosition 	= p_mod->GetMaxBirthPosition();
