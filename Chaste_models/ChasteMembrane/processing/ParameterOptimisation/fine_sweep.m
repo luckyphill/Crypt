@@ -1,10 +1,10 @@
-function parameter_space = fine_sweep(p)
+function parameter_collection = fine_sweep(p, optimal)
 	% This function takes an optimal point (or the nearest that is calculated) and
 	% performs a fine grained parameter sweep within a small region around that point
 	% with the hope of finding the boundary of optimality
 
 	% It sweeps a different number of points for each parameter about the optimal point found
-	% n is limited to 2 either way				total = 5
+	% n is limited to 1 either way				total = 3
 	% np - 1 either way							total = 3
 	% ees - 3 either way in steps of 5			total = 7
 	% ms - 3 either way in steps of 5			total = 7
@@ -16,7 +16,7 @@ function parameter_space = fine_sweep(p)
 	for i=1:length(p.input_flags)
 		if strcmp(p.input_flags{i}, 'n')
 			n = optimal(i);
-			prange{i} = (n-2):(n+2);
+			prange{i} = (n-1):(n+1);
 		end
 		if strcmp(p.input_flags{i}, 'np')
 			np = optimal(i);
@@ -40,58 +40,48 @@ function parameter_space = fine_sweep(p)
 		end
 	end
 
-	n_sets = uint8(1); % the number of parameter sets
-	counts = nan(1,n); % used for it2indices - essentially it is a set of conversion rates
+	N = length(prange);
+	n_sets = 1; % the number of parameter sets
+	counts = nan(1,N); % used for it2indices - essentially it is a set of conversion rates
 
-	for i = n:-1:1
+	for i = N:-1:1
 	    counts(i) = n_sets;
-	    n_sets = n_sets * uint8(length(prange{i}));
+	    n_sets = n_sets * length(prange{i});
 	end
 
 	% indices is a completely enumerated list of all possible parameter index combinations
-	indices = nan(n_sets,n);
+	indices = nan(n_sets,N);
 
 	for i = 1:n_sets
 	   
 	   % it2indices uses a pretty nifty algorithm to convert the iterator i into a set
 	   % indices refencing the position in prange that gives the parameter we want
 	   % it avoids trying to code a set of nested for loops to an unknown depth
-	   indices(i,:) = it2indices(i, n, counts);
+	   indices(i,:) = it2indices(i, N, counts);
 	    
 	end
 
 	% For each parameter set in indices, create a file, create a batch file, run multiple jobs on phoenix
 
-	best_result = 10000;
-	best_input_values = [];
+	parameter_collection = [];
 
 	iters = 0;
-	while best_result > target_penalty && iters < n_sets
-		% Randomly sample the parameter sets until we get one with objective function
-		% less than some limit
-		
-		% get the indices
-		[a,b] = size(indices);
-		set_index = randi(a);
-		index_collection = indices(set_index,:);
-		
-		% delete the indices
-		indices(set_index,:) = [];
+	for i = 1:n_sets
+		index_collection = indices(i,:);
 
 		input_values = [];
-		for i = 1:n
-			input_values = [input_values; prange{i}(index_collection(i))];
+		for j = 1:N
+			input_values = [input_values, prange{j}(index_collection(j))];
 		end
 
-		result = run_simulation(p, input_values);
-
-		if result < best_result
-			best_input_values = input_values;
-			best_result = result;
-			fprintf('New best result: %d\n', best_result);
-			fprintf('Using parameters: %s\n', generate_input_string(p, input_values));
-		end
-
-		iters = iters + 1;
+		parameter_collection = [parameter_collection; input_values];
 
 	end
+
+
+	sweep_file = [base_path, 'Research/Crypt/Chaste_models/ChasteMembrane/phoenix/ParameterOptimistation/', p.chaste_test, '/', func2str(p.obj), '/sweep.txt'];
+	csvwrite(sweep_file, parameter_collection);
+
+	% Run the parameter sweep
+
+	

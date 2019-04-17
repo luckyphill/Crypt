@@ -14,7 +14,7 @@ function indices = it2indices(i, n, counts)
     indices = nan(1,n);
         
     for j = 1:n
-       indices(j) = idivide(i, counts(j),'ceil');
+       indices(j) = idivide(uint16(i), uint16(counts(j)),'ceil');
        i = i - counts(j) * (indices(j)-1);  % -1 necessary because matlab indexes from 1 -\(o-o)/-
     end
     
