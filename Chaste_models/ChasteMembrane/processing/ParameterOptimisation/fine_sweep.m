@@ -1,44 +1,43 @@
-function parameter_space = fine_sweep(chaste_test, obj, input_flags, optimal, fixed_parameters, ignore_existing)
+function parameter_space = fine_sweep(p)
 	% This function takes an optimal point (or the nearest that is calculated) and
 	% performs a fine grained parameter sweep within a small region around that point
 	% with the hope of finding the boundary of optimality
 
 	% It sweeps a different number of points for each parameter about the optimal point found
 	% n is limited to 2 either way				total = 5
-	% np - 2 either way							total = 5
-	% ees - 5 either way in steps of 5			total = 11
-	% ms - 5 either way in steps of 5			total = 11
+	% np - 1 either way							total = 3
+	% ees - 3 either way in steps of 5			total = 7
+	% ms - 3 either way in steps of 5			total = 7
 	% cct - 1 either way						total = 3
 	% vf - 3 either way in steps of 0.02		total = 7
 
 	% create the parameter vectors
 
-	for i=1:length(input_flags)
-		if strcmp(input_flags{i}, 'n')
+	for i=1:length(p.input_flags)
+		if strcmp(p.input_flags{i}, 'n')
 			n = optimal(i);
 			prange{i} = (n-2):(n+2);
 		end
-		if strcmp(input_flags{i}, 'np')
+		if strcmp(p.input_flags{i}, 'np')
 			np = optimal(i);
-			prange{i} = (np-2):(np+2);
+			prange{i} = (np-1):(np+1);
 		end
-		if strcmp(input_flags{i}, 'ees')
+		if strcmp(p.input_flags{i}, 'ees')
 			ees = optimal(i);
-			prange{i} = (ees-25):5:(ees+25);
+			prange{i} = (ees-15):5:(ees+15);
 		end
-		if strcmp(input_flags{i}, 'ms')
+		if strcmp(p.input_flags{i}, 'ms')
 			ms = optimal(i);
-			prange{i} = (ms-25):5:(ms+25);
+			prange{i} = (ms-15):5:(ms+15);
 		end
-		if strcmp(input_flags{i}, 'cct')
+		if strcmp(p.input_flags{i}, 'cct')
 			cct = optimal(i);
 			prange{i} = (cct-1):(cct+1);
 		end
-		if strcmp(input_flags{i}, 'vf')
+		if strcmp(p.input_flags{i}, 'vf')
 			vf = optimal(i);
 			prange{i} = (vf-0.06):0.02:(vf+0.06);
 		end
-
 	end
 
 	n_sets = uint8(1); % the number of parameter sets
@@ -61,6 +60,8 @@ function parameter_space = fine_sweep(chaste_test, obj, input_flags, optimal, fi
 	    
 	end
 
+	% For each parameter set in indices, create a file, create a batch file, run multiple jobs on phoenix
+
 	best_result = 10000;
 	best_input_values = [];
 
@@ -82,13 +83,13 @@ function parameter_space = fine_sweep(chaste_test, obj, input_flags, optimal, fi
 			input_values = [input_values; prange{i}(index_collection(i))];
 		end
 
-		result = run_simulation(chaste_test, obj, input_flags, input_values, fixed_parameters, ignore_existing);
+		result = run_simulation(p, input_values);
 
 		if result < best_result
 			best_input_values = input_values;
 			best_result = result;
 			fprintf('New best result: %d\n', best_result);
-			fprintf('Using parameters: %s\n', generate_input_string(input_flags, input_values, fixed_parameters));
+			fprintf('Using parameters: %s\n', generate_input_string(p, input_values));
 		end
 
 		iters = iters + 1;
