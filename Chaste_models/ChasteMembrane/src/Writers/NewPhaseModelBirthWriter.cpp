@@ -56,7 +56,7 @@ void NewPhaseModelBirthWriter<ELEMENT_DIM, SPACE_DIM>::VisitCell(CellPtr pCell, 
             double ageB = p_neighbour_cell->GetAge();
             double parentB = p_neighbour_cell->GetCellData()->GetItem("parent");
 
-            if ( ageA == ageB)// && parentA == parentB )
+            if ( ageA == ageB && parentA == parentB )
             {
                 double location = pCellPopulation->GetLocationOfCellCentre(pCell)[1];
                 double location_neighbour = pCellPopulation->GetLocationOfCellCentre(p_neighbour_cell)[1];
@@ -64,7 +64,6 @@ void NewPhaseModelBirthWriter<ELEMENT_DIM, SPACE_DIM>::VisitCell(CellPtr pCell, 
                 // Take the average of the two
                 y = (location + location_neighbour) / 2;
 
-                unsigned location_index = pCellPopulation->GetLocationIndexUsingCell(pCell);
                 *this->mpOutStream << ", " << y;
                 mBirthCount++;
 
