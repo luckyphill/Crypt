@@ -79,7 +79,19 @@ function parameter_collection = fine_sweep(p, optimal)
 	end
 
 
-	sweep_file = [base_path, 'Research/Crypt/Chaste_models/ChasteMembrane/phoenix/ParameterOptimistation/', p.chaste_test, '/', func2str(p.obj), '/sweep.txt'];
+	sweep_path = [p.base_path, 'Research/Crypt/Chaste_models/ChasteMembrane/phoenix/ParameterOptimistation/', p.chaste_test, '/', func2str(p.obj), '/'];
+
+	if exist(sweep_path,'dir')~=7
+		% Make the full path
+		if exist([p.base_path, 'Research/Crypt/Chaste_models/ChasteMembrane/phoenix/ParameterOptimistation/', p.chaste_test, '/'],'dir')~=7
+			mkdir([p.base_path, 'Research/Crypt/Chaste_models/ChasteMembrane/phoenix/ParameterOptimistation/', p.chaste_test, '/']);
+		end
+
+		mkdir(sweep_path);
+
+	end
+
+	sweep_file = [sweep_path, 'sweep.txt'];
 	csvwrite(sweep_file, parameter_collection);
 
 	% Run the parameter sweep
