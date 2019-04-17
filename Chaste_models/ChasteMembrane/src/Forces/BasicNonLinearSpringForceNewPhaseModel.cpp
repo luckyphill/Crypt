@@ -93,13 +93,12 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForceNewPhaseModel<ELEMENT_DIM,S
 
     double duration = this->mMeinekeSpringGrowthDuration;
 
-    if (ageA < duration && parentA == parentB)
+    if (ageA < duration && ageB < duration && parentA == parentB)
     {
         // Make the spring length grow.
         double lambda = this->mMeinekeDivisionRestingSpringLength;
         rest_length = minimum_length + (lambda - minimum_length) * ageA/duration;
 
-        double overlap = distance_between_nodes - rest_length;
     }
     // *****************************************************************************************
 
