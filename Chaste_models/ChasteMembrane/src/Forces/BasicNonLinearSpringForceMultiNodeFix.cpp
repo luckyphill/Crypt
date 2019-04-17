@@ -279,8 +279,6 @@ std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > BasicNonLinearSpringForceMultiNod
     // By default, the shortest pair is the one given unless proved otherwise
     std::pair< Node<SPACE_DIM>*, Node<SPACE_DIM>* > shortest_pair = node_pair_AB;
 
-    std::vector<unsigned>& neighbours = pnodeB->rGetNeighbours();
-
 
     Node<SPACE_DIM>* pnodeC = FindTwinNode(rCellPopulation, pnodeA);
 
@@ -429,7 +427,7 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SP
 
     double duration = mMeinekeSpringGrowthDuration;
 
-    if (ageA < duration && parentA == parentB)
+    if (ageA < duration && ageB < duration && parentA == parentB)
     {
         // Make the spring length grow.
         double lambda = mMeinekeDivisionRestingSpringLength;
@@ -449,7 +447,6 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SP
 
         rest_length = minimum_length + (lambda - minimum_length) * ageA/duration;
 
-        double overlap = distance_between_nodes - rest_length;
     }
     // *****************************************************************************************
 
