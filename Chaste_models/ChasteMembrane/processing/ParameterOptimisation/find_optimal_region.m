@@ -52,7 +52,7 @@ function find_optimal_region(p)
 
 	p.minimum_point = pattern_search(p, best_input_values);
 
-	fprintf('\n\nPattern search completed, best parameters are %s\n\n\n', generate_input_string(p, minimum_point));
+	fprintf('\n\nPattern search completed, best parameters are %s\n\n\n', generate_input_string(p, p.minimum_point));
 
 	% [parameter_space, ranges] = fine_sweep(p)
 

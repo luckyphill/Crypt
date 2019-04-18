@@ -1,13 +1,12 @@
-function obj = MouseColonDesc(data)
+function obj = MouseColonTrans(data)
 
-    % Objective function for the Mouse Descending Colon
-    % Values taken from Tsubouchi 1981
-    % Crypt height: 32.9 cells
-    % Max division height: 21 cells (from figure)
+    % Objective function for the Mouse Transverse Colon
     % Values taken from Sunter et al 1979
-    % Birth rate: 0.93 cells/column/hour
-    % Cycle time: 15 hours (average from position groups)
-
+    % Crypt height: 34.7 cells
+    % Max division height: 29 cells (from figure)
+    % Birth rate: 0.44 cells/column/hour
+    % Cycle time: 21 hours (average from position groups)
+    
 	% This order must match the order in the corresponding test
 	% in this case it is TestCryptColumn
 	anoikis_rate = data(1);
@@ -15,7 +14,7 @@ function obj = MouseColonDesc(data)
 	birth_rate = data(3);
 	max_division_position = data(4);
 	
-    obj =  penalty(100*anoikis_rate,0,4,1) + penalty(average_cell_count,31,35,1) + penalty(max_division_position,18,21,1) + penalty(100*birth_rate,91,95,1);
+    obj =  penalty(100*anoikis_rate,0,4,1) + penalty(average_cell_count,33,37,1) + penalty(max_division_position,26,29,1) + penalty(100*birth_rate,42,46,1);
 
 
 end

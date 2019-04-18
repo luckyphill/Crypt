@@ -7,7 +7,7 @@ function penalty = run_simulation(p, input_values)
 
 	simulation_command = [p.base_path, 'chaste_build/projects/ChasteMembrane/test/', p.chaste_test];
 
-	data_file = generate_file_name(p, input_values)
+	data_file = generate_file_name(p, input_values);
 
 	input_string = generate_input_string(p, input_values);
 

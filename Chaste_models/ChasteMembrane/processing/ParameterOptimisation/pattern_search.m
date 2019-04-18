@@ -10,7 +10,7 @@ function values = pattern_search(p, starting_point)
 	% it target.
 
 	iterations = 0;
-	it_limit = 20;
+	it_limit = 30;
 
 	first_step = true; % When we start searching in a new variable/dimension
 					   % we need to look both directions before we start stepping
@@ -113,12 +113,12 @@ function penalty = run_multiple(p, values)
 	for i = 1:p.repetitions
 		% Set the run number here
 		run_index = find(ismember(p.input_flags, 'run'));
-		test_values(run_index) = i;
+		values(run_index) = i;
 		penalties(i) = run_simulation(p, values);
 		penalty = mean(penalties);
 	end
 
 	penalty = mean(penalties);
-	fprintf('Penalty for this parameter set: %g\n\n', penalty);
+	fprintf('Mean penalty for this parameter set: %g\n\n', penalty);
 
 end
