@@ -6,6 +6,7 @@ function obj = RatColonTrans(data)
     % Max division height: 33 cells (from figure)
     % Birth rate: 0.51 cells/column/hour
     % Cycle time: 42 hours (average from position groups)
+    % G1 time: 30.7 hours
     
 	% This order must match the order in the corresponding test
 	% in this case it is TestCryptColumn

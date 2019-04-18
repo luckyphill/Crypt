@@ -6,6 +6,7 @@ function obj = RatColonDesc(data)
     % Max division height: 34 cells (from figure)
     % Birth rate: 0.42 cells/column/hour
     % Cycle time: 58 hours
+    % G1 time: 46.6 hours
     
 	% This order must match the order in the corresponding test
 	% in this case it is TestCryptColumn

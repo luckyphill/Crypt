@@ -1,25 +1,24 @@
-% This script runs the optimisation process for the MouseColonDesc
-% Objective function for the Mouse Descending Colon
-% Values taken from Tsubouchi 1981
-% Crypt height: 32.9 cells
-% Max division height: 21 cells (from figure)
+% This script runs the optimisation process for the MouseColonTrans
+% Objective function for the Mouse Transverse Colon
 % Values taken from Sunter et al 1979
-% Birth rate: 0.93 cells/column/hour
-% Cycle time: 15 hours (average from position groups)
-% G1 time: 7 hours
+% Crypt height: 34.7 cells
+% Max division height: 29 cells (from figure)
+% Birth rate: 0.44 cells/column/hour
+% Cycle time: 21 hours (average from position groups)
+% G1 time: 10.3 hours
 
 p.input_flags= {'n','np','ees','ms','vf','run'};
-p.prange = {[26, 30], [8, 12], [50, 100], [150, 200], [0.7],[1]};
-p.limits = {[24, 32], [6, 14], [10, 200], [50,  400], [0.6, 0.95],[1,1000]};
+p.prange = {[28, 33], [16, 24], [50, 100], [150, 200], [0.7],[1]};
+p.limits = {[24, 35], [12, 30], [10, 200], [50,  400], [0.6, 0.95],[1,1000]};
 p.min_step_size = [1,1,1,1,0.005,1];
 
-p.fixed_parameters = ' -t 400 -cct 15 -wt 8';
+p.fixed_parameters = ' -t 400 -cct 21 -wt 11';
 
 p.chaste_test = 'TestCryptColumn';
 
 %----------------------------------------------------------------------------
 %----------------------------------------------------------------------------
-p.obj = @MouseColonDesc;
+p.obj = @MouseColonTrans;
 %----------------------------------------------------------------------------
 %----------------------------------------------------------------------------
 

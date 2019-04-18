@@ -6,6 +6,7 @@ function obj = MouseColonCaecum(data)
     % Max division height: 17 cells (from figure)
     % Birth rate: 0.43 cells/column/hour
     % Cycle time: 15.5 hours (average from position groups)
+    % G1 time: 6.7 hours
     
 	% This order must match the order in the corresponding test
 	% in this case it is TestCryptColumn

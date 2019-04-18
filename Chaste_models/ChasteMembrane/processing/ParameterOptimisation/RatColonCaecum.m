@@ -6,6 +6,7 @@ function obj = RatColonCaecum(data)
     % Max division height: 20 cells (from figure)
     % Birth rate: 0.43 cells/column/hour
     % Cycle time: 25.4 hours (average from position groups)
+    % G1 time: 15.2 hours
     
 	% This order must match the order in the corresponding test
 	% in this case it is TestCryptColumn

@@ -1,22 +1,22 @@
-function obj = MouseColonDesc(data)
+function obj = HumanColon(data)
 
-    % Objective function for the Mouse Descending Colon
-    % Values taken from Tsubouchi 1981
-    % Crypt height: 32.9 cells
-    % Max division height: 21 cells (from figure)
-    % Values taken from Sunter et al 1979
-    % Birth rate: 0.93 cells/column/hour
-    % Cycle time: 15 hours (average from position groups)
-    % G1 time: 7 hours
-
+    % Objective function for the Human Colon
+    % Values taken from Potten et al 1992
+    % Crypt height: 82.2 cells
+    % Max division height: 65 cells (from figure)
+    % Birth rate: NOT GIVEN guess of 0.75 cells/column/hour
+    % Cycle time: 30 hours
+    
 	% This order must match the order in the corresponding test
 	% in this case it is TestCryptColumn
 	anoikis_rate = data(1);
 	average_cell_count = data(2);
 	birth_rate = data(3);
 	max_division_position = data(4);
+
+    % Anoikis rate should make up about 4% of cell production
 	
-    obj =  penalty(100*anoikis_rate,0,4,1) + penalty(average_cell_count,31,35,1) + penalty(max_division_position,18,21,1) + penalty(100*birth_rate,91,95,1);
+    obj =  penalty(100*anoikis_rate,0,4,1) + penalty(average_cell_count,80,84,1) + penalty(max_division_position,62,66,1) + penalty(100*birth_rate,70,80,1);
 
 
 end

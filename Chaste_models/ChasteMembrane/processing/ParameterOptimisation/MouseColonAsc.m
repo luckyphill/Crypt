@@ -6,6 +6,7 @@ function obj = MouseColonAsc(data)
     % Max division height: 15 cells (from figure)
     % Birth rate: 0.36 cells/column/hour
     % Cycle time: 19 hours (average from position groups)
+    % G1 time: 9 hours
     
 	% This order must match the order in the corresponding test
 	% in this case it is TestCryptColumn
