@@ -673,6 +673,7 @@ class TestForces_CM : public AbstractCellBasedTestSuite
         PRINT_VARIABLE(out_node_pairs.size());
 
         p_force->SetMeinekeSpringGrowthDuration(10);
+        p_force->SetMeinekeDivisionRestingSpringLength(1);
 
         p_force->AddForceContribution(cell_population);
 
