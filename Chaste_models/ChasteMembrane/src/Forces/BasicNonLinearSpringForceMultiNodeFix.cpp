@@ -446,13 +446,15 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SP
         minimum_length = (minimum_length + 0.1)/0.7;
 
         rest_length = minimum_length + (lambda - minimum_length) * ageA/duration;
+        TRACE("Growing cell")
 
     }
     // *****************************************************************************************
 
     double overlap = distance_between_nodes - rest_length;
     bool is_closer_than_rest_length = (overlap <= 0);
-
+    PRINT_VARIABLE(distance_between_nodes)
+    PRINT_VARIABLE(rest_length)
     PRINT_VARIABLE(overlap)
 
     if (is_closer_than_rest_length) //overlap is negative
