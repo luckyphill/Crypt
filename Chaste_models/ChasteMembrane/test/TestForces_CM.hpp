@@ -391,28 +391,13 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 
         std::vector<std::pair<Node<2>*, Node<2>* > > node_pairs = p_force->FindOneInteractionBetweenCellPairs(cell_population, all_node_pairs);
 
-        p_force->AddForceContribution(cell_population);
-
-        MeshBasedCellPopulation<2,2>* p_tissue = static_cast<MeshBasedCellPopulation<2,2>*>(&simulator.rGetCellPopulation());
-		std::list<CellPtr> oldcells =  p_tissue->rGetCells();
-		oldcells.sort(
-		[&](const CellPtr cellA, const CellPtr cellB)
-			{
-				return cellA->GetCellId() < cellB->GetCellId();
-			});
-
-		for (std::list<CellPtr>::iterator it = oldcells.begin(); it != oldcells.end(); ++it)
-		{
-			Node<2>* node1 = p_tissue->GetNodeCorrespondingToCell(*it);
-			PRINT_2_VARIABLES(node1->rGetAppliedForce()[0], node1->rGetAppliedForce()[1])
-		}
 
     	assert(all_node_pairs.size() == 117); // Will fail if the simulation is changed at all
     	assert(node_pairs.size() == 38); // Will fail if simulation changes or force calculator changes
     	WntConcentration<2>::Instance()->Destroy();
 	};
 
-	void xTestMultiNodeFixBeforeSplit() throw(Exception)
+	void TestMultiNodeFixBeforeSplit() throw(Exception)
 	{
 		// This tests the function FindPairsToRemove in BasicNonLinearSpringForceMultiNodeFix
 		// The algorithm in the function finds interactions between two cells, and makes sure
@@ -455,50 +440,50 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 		state_infile_name << path <<"state"<< branch <<"_"<< step << ".txt";
 		std::ifstream state_infile(state_infile_name.str());
 
-		// First line is cell IDs
-		std::getline( state_infile, line );
-		std::vector<unsigned> id = GetCsvLineUnsigned(line);
+		// // First line is cell IDs
+		// std::getline( state_infile, line );
+		// std::vector<unsigned> id = GetCsvLineUnsigned(line);
 
 
-  		// Second line is cell x
-		std::getline( state_infile, line );
-		std::vector<double> x = GetCsvLineDouble(line);
+  // 		// Second line is cell x
+		// std::getline( state_infile, line );
+		// std::vector<double> x = GetCsvLineDouble(line);
 
-  		// Third line is cell y
-		std::getline( state_infile, line );
-		std::vector<double> y = GetCsvLineDouble(line);
+  // 		// Third line is cell y
+		// std::getline( state_infile, line );
+		// std::vector<double> y = GetCsvLineDouble(line);
 
-  		// Forth line is cell age
-		std::getline( state_infile, line );
-		std::vector<double> age = GetCsvLineDouble(line);
+  // 		// Forth line is cell age
+		// std::getline( state_infile, line );
+		// std::vector<double> age = GetCsvLineDouble(line);
 
-  		// Fifth line is cell parent
-		std::getline( state_infile, line );
-  		std::vector<unsigned> parent = GetCsvLineUnsigned(line);
+  // 		// Fifth line is cell parent
+		// std::getline( state_infile, line );
+  // 		std::vector<unsigned> parent = GetCsvLineUnsigned(line);
 
-  		// Last line is phase
-  		std::getline( state_infile, line );
-  		std::vector<unsigned> phase = GetCsvLineUnsigned(line);
+  // 		// Last line is phase
+  // 		std::getline( state_infile, line );
+  // 		std::vector<unsigned> phase = GetCsvLineUnsigned(line);
 
 
 
 		std::vector<Node<2>*> nodes;
 
-		// double x[39] = {0.6, 0.600000000272702, 0.599999995122016, 0.600000064171990, 0.599999999128723, 0.600000000000175, 0.6, 0.6, 0.6, 0.6, 0.599999999898938, 0.6, 0.599999999999988, 0.599999974629623, 0.600000001764502, 0.600000010596402, 0.6, 0.6, 0.6, 0.600000321699527, 0.600000000828741, 0.600000000024627, 0.6, 0.6, 0.599999999997798, 0.599999999944892, 0.600000013186203, 0.600000000000001, 0.599999999409445, 0.6, 0.599999971865908, 0.599999866357506, 0.6, 0.599999974629623, 0.600000000828741, 0.600000000024627, 0.600000000272702, 0.599999999128723, 0.600000321699527};
-		// double y[39] = {0, 1.40383294393280, 3.41117552845353, 6.95341038328207, 9.00170365944317, 13.1030846630868, 16.4603878684981, 19.9999497807384, 22.7865999321540, 24.7131882365403, 10.6247851217727, 21.8443593851380, 13.9263761519447, 4.88807393359707, 2.74299596908329, 8.30999698190507, 17.3274883753523, 23.7427480431537, 25.6982636517558, 5.60388475277227, 9.84183256071220, 11.4136311136017, 19.0969529954643, 20.9156157195651, 12.2897101781060, 0.717565947613127, 4.07976585246533, 14.7601113518611, 2.07454595918953, 18.2062453589394, 7.62957845139079, 6.27977432847745, 15.6046818764670, 4.76179408876294, 9.76088631597615, 11.4855685445588, 1.39341922526955, 9.02211187427056, 5.57449777258031};
+		double x[39] = {0.6, 0.600000000272702, 0.599999995122016, 0.600000064171990, 0.599999999128723, 0.600000000000175, 0.6, 0.6, 0.6, 0.6, 0.599999999898938, 0.6, 0.599999999999988, 0.599999974629623, 0.600000001764502, 0.600000010596402, 0.6, 0.6, 0.6, 0.600000321699527, 0.600000000828741, 0.600000000024627, 0.6, 0.6, 0.599999999997798, 0.599999999944892, 0.600000013186203, 0.600000000000001, 0.599999999409445, 0.6, 0.599999971865908, 0.599999866357506, 0.6, 0.599999974629623, 0.600000000828741, 0.600000000024627, 0.600000000272702, 0.599999999128723, 0.600000321699527};
+		double y[39] = {0, 1.40383294393280, 3.41117552845353, 6.95341038328207, 9.00170365944317, 13.1030846630868, 16.4603878684981, 19.9999497807384, 22.7865999321540, 24.7131882365403, 10.6247851217727, 21.8443593851380, 13.9263761519447, 4.88807393359707, 2.74299596908329, 8.30999698190507, 17.3274883753523, 23.7427480431537, 25.6982636517558, 5.60388475277227, 9.84183256071220, 11.4136311136017, 19.0969529954643, 20.9156157195651, 12.2897101781060, 0.717565947613127, 4.07976585246533, 14.7601113518611, 2.07454595918953, 18.2062453589394, 7.62957845139079, 6.27977432847745, 15.6046818764670, 4.76179408876294, 9.76088631597615, 11.4855685445588, 1.39341922526955, 9.02211187427056, 5.57449777258031};
 		
 		// Save the parents here. This is what they were from the simulation, but they needed to be adjusted to match the new cell IDs
 		// unsigned parents[39] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 35, 43, 44, 1, 4, 42};
 		
-		// unsigned ids[39] = 		{0, 1, 2, 3, 4, 5, 6, 7, 8, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61};
-		// unsigned parents[39] = 	{0, 1, 2, 3, 4, 5, 6, 7, 8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 13, 20, 21, 1, 4, 19};
+		unsigned id[39] = 		{0, 1, 2, 3, 4, 5, 6, 7, 8, 31, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61};
+		unsigned parent[39] = 	{0, 1, 2, 3, 4, 5, 6, 7, 8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 13, 20, 21, 1, 4, 19};
 		
-		// unsigned phases[39] = {0, 2, 1, 1, 2, 0, 0, 0, 0, 0, 1, 0, 0, 2, 1, 1, 0, 0, 0, 2, 2, 2, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 2, 2, 2, 2, 2, 2};
-		// double ages[39] = {36.46, 0.592, 14.12, 10.922, 0.288, 15.024, 10.678, 15.56, 22.790, 19.964, 15.744, 15.354, 13.944, 2.976, 12.932, 10.990, 12.106, 22.790, 19.964, 0.082, 1.950, 1.702, 15.560, 15.354, 15.024, 14.838, 14.120, 13.944, 12.932, 12.106, 10.990, 10.922, 10.678, 2.976, 1.950, 1.702, 0.592, 0.288, 0.082};
+		unsigned phase[39] = {0, 2, 1, 1, 2, 0, 0, 0, 0, 0, 1, 0, 0, 2, 1, 1, 0, 0, 0, 2, 2, 2, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 2, 2, 2, 2, 2, 2};
+		double age[39] = {36.46, 0.592, 14.12, 10.922, 0.288, 15.024, 10.678, 15.56, 22.790, 19.964, 15.744, 15.354, 13.944, 2.976, 12.932, 10.990, 12.106, 22.790, 19.964, 0.082, 1.950, 1.702, 15.560, 15.354, 15.024, 14.838, 14.120, 13.944, 12.932, 12.106, 10.990, 10.922, 10.678, 2.976, 1.950, 1.702, 0.592, 0.288, 0.082};
 		
 		unsigned node_counter = 0;
 		
-		for (unsigned i = 0; i < id.size(); i++)
+		for (unsigned i = 0; i < 39; i++)
 		{
 			nodes.push_back(new Node<2>(node_counter,  false,  x[i], y[i]));
 			node_counter++;
@@ -604,8 +589,8 @@ class TestForces_CM : public AbstractCellBasedTestSuite
         p_tissue = static_cast<MeshBasedCellPopulation<2,2>*>(&simulator.rGetCellPopulation());
 		std::list<CellPtr> newcells =  p_tissue->rGetCells();
 
-		PRINT_VARIABLE(newcells.size())
-		PRINT_VARIABLE(id.size())
+		// PRINT_VARIABLE(newcells.size())
+		// PRINT_VARIABLE(id.size())
 
 		// newcells.sort(
 		// [&](const CellPtr cellA, const CellPtr cellB)
@@ -687,6 +672,21 @@ class TestForces_CM : public AbstractCellBasedTestSuite
         PRINT_VARIABLE(out_node_pairs.size());
 
         p_force->AddForceContribution(cell_population);
+
+        p_tissue = static_cast<MeshBasedCellPopulation<2,2>*>(&simulator.rGetCellPopulation());
+		oldcells =  p_tissue->rGetCells();
+		oldcells.sort(
+		[&](const CellPtr cellA, const CellPtr cellB)
+			{
+				return cellA->GetCellId() < cellB->GetCellId();
+			});
+
+		for (std::list<CellPtr>::iterator it = oldcells.begin(); it != oldcells.end(); ++it)
+		{
+			Node<2>* node1 = p_tissue->GetNodeCorrespondingToCell(*it);
+			PRINT_VARIABLE(node1->rGetAppliedForce()[0])
+			PRINT_VARIABLE(node1->rGetAppliedForce()[1])
+		}
 
         // ********************************************************************************************
         // Sort output vector for comparison
