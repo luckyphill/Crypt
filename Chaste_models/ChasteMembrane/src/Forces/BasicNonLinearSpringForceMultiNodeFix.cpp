@@ -298,18 +298,6 @@ std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > BasicNonLinearSpringForceMultiNod
         // Put the longer one in the removed_interactions vector
         // Put the shorter one in the interactions vector
     
-        if (abs(distanceAB - distanceBC) < 1e-5)
-        {
-            // TRACE("Unicorn found")
-            // PRINT_VARIABLE(SimulationTime::Instance()->GetTime())
-            // PRINT_2_VARIABLES(distanceAB, distanceBC)
-            // printf("%.16f\n", distanceAB);
-            // printf("%.16f\n", distanceBC);
-            // PRINT_3_VARIABLES(pnodeA->GetIndex(), pnodeB->GetIndex(), pnodeC->GetIndex())
-            // PRINT_VARIABLE(pnodeA->rGetLocation()[1])
-            // PRINT_VARIABLE(pnodeB->rGetLocation()[1])
-            // PRINT_VARIABLE(pnodeC->rGetLocation()[1])
-        }
         if (distanceAB < distanceBC)
         {
             shortest_pair =  node_pair_AB;
@@ -427,17 +415,11 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SP
 
     double duration = mMeinekeSpringGrowthDuration;
 
-    PRINT_VARIABLE(duration)
-    PRINT_VARIABLE(ageA)
-    PRINT_VARIABLE(ageB)
-    PRINT_VARIABLE(parentA)
-    PRINT_VARIABLE(parentB)
 
     if (ageA < duration && ageB < duration && parentA == parentB)
     {
         // Make the spring length grow.
         double lambda = mMeinekeDivisionRestingSpringLength;
-        PRINT_VARIABLE(lambda)
         
         // Increase the minimum length slightly compared to the division separation
         // This will cause a slight outwards force after a cell has just divided
@@ -451,20 +433,14 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SP
         // force from the internal spring roughly balances the force from the external spring
         // It assumes a compression of 0.75
         minimum_length = (minimum_length + 0.1)/0.7;
-        PRINT_VARIABLE(minimum_length)
 
         rest_length = minimum_length + (lambda - minimum_length) * ageA/duration;
-        TRACE("Growing cell")
-
 
     }
     // *****************************************************************************************
 
     double overlap = distance_between_nodes - rest_length;
     bool is_closer_than_rest_length = (overlap <= 0);
-    PRINT_VARIABLE(distance_between_nodes)
-    PRINT_VARIABLE(rest_length)
-    PRINT_VARIABLE(overlap)
 
     if (is_closer_than_rest_length) //overlap is negative
     {
