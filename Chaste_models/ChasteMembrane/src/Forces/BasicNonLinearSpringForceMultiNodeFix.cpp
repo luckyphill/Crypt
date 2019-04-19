@@ -427,10 +427,17 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SP
 
     double duration = mMeinekeSpringGrowthDuration;
 
+    PRINT_VARIABLE(duration)
+    PRINT_VARIABLE(ageA)
+    PRINT_VARIABLE(ageB)
+    PRINT_VARIABLE(parentA)
+    PRINT_VARIABLE(parentB)
+
     if (ageA < duration && ageB < duration && parentA == parentB)
     {
         // Make the spring length grow.
         double lambda = mMeinekeDivisionRestingSpringLength;
+        PRINT_VARIABLE(lambda)
         
         // Increase the minimum length slightly compared to the division separation
         // This will cause a slight outwards force after a cell has just divided
@@ -444,9 +451,11 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SP
         // force from the internal spring roughly balances the force from the external spring
         // It assumes a compression of 0.75
         minimum_length = (minimum_length + 0.1)/0.7;
+        PRINT_VARIABLE(minimum_length)
 
         rest_length = minimum_length + (lambda - minimum_length) * ageA/duration;
         TRACE("Growing cell")
+
 
     }
     // *****************************************************************************************
