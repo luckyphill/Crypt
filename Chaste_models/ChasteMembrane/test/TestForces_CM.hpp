@@ -391,14 +391,28 @@ class TestForces_CM : public AbstractCellBasedTestSuite
 
         std::vector<std::pair<Node<2>*, Node<2>* > > node_pairs = p_force->FindOneInteractionBetweenCellPairs(cell_population, all_node_pairs);
 
-        
+        p_force->AddForceContribution(cell_population);
+
+        MeshBasedCellPopulation<2,2>* p_tissue = static_cast<MeshBasedCellPopulation<2,2>*>(&simulator.rGetCellPopulation());
+		std::list<CellPtr> oldcells =  p_tissue->rGetCells();
+		oldcells.sort(
+		[&](const CellPtr cellA, const CellPtr cellB)
+			{
+				return cellA->GetCellId() < cellB->GetCellId();
+			});
+
+		for (std::list<CellPtr>::iterator it = oldcells.begin(); it != oldcells.end(); ++it)
+		{
+			Node<2>* node1 = p_tissue->GetNodeCorrespondingToCell(*it);
+			PRINT_2_VARIABLES(node1->rGetAppliedForce()[0], node1->rGetAppliedForce()[1])
+		}
 
     	assert(all_node_pairs.size() == 117); // Will fail if the simulation is changed at all
     	assert(node_pairs.size() == 38); // Will fail if simulation changes or force calculator changes
     	WntConcentration<2>::Instance()->Destroy();
 	};
 
-	void TestMultiNodeFixBeforeSplit() throw(Exception)
+	void xTestMultiNodeFixBeforeSplit() throw(Exception)
 	{
 		// This tests the function FindPairsToRemove in BasicNonLinearSpringForceMultiNodeFix
 		// The algorithm in the function finds interactions between two cells, and makes sure
