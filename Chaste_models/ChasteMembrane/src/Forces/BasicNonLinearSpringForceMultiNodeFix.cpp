@@ -453,6 +453,8 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SP
     double overlap = distance_between_nodes - rest_length;
     bool is_closer_than_rest_length = (overlap <= 0);
 
+    PRINT_VARIABLE(overlap)
+
     if (is_closer_than_rest_length) //overlap is negative
     {
         // log(x+1) is undefined for x<=-1
