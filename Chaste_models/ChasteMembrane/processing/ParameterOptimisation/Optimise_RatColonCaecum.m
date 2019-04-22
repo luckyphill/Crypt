@@ -7,7 +7,7 @@
 % Cycle time: 25.4 hours (average from position groups)
 % G1 time: 15.2 hours
 
-fprintf("Optimising Rate Caecum parameters\n");
+fprintf('Optimising Rate Caecum parameters\n');
 
 p.input_flags= {'n','np','ees','ms','vf','run'};
 p.prange = {[24, 28], [12, 16], [50, 100], [150, 200], [0.7],[1]};

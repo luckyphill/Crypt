@@ -7,7 +7,7 @@
 % Cycle time: 21 hours (average from position groups)
 % G1 time: 10.3 hours
 
-fprintf("Optimising Mouse Transverse Colon parameters\n");
+fprintf('Optimising Mouse Transverse Colon parameters\n');
 
 p.input_flags= {'n','np','ees','ms','vf','run'};
 p.prange = {[28, 33], [16, 24], [50, 100], [150, 200], [0.7],[1]};

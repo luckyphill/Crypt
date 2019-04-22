@@ -7,7 +7,7 @@
 % Cycle time: 30 hours
 % G1 time: NOT GIVEN
 
-fprintf("Optimising Human Colon parameters\n");
+fprintf('Optimising Human Colon parameters\n');
 
 p.input_flags= {'n','np','ees','ms','vf','run'};
 p.prange = {[60, 83], [40, 50], [50, 100], [150, 200], [0.7],[1]};

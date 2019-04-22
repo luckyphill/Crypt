@@ -7,7 +7,7 @@
 % Cycle time: 35 hours
 % G1 time: 24.6 hours
 
-fprintf("Optimising Rat Ascending Colon parameters\n");
+fprintf('Optimising Rat Ascending Colon parameters\n');
 
 p.input_flags= {'n','np','ees','ms','vf','run'};
 p.prange = {[26, 32], [20, 28], [50, 100], [150, 200], [0.7],[1]};

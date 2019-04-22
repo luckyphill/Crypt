@@ -7,7 +7,7 @@
 % Cycle time: 42 hours (average from position groups)
 % G1 time: 30.7 hours
 
-fprintf("Optimising Rat Transverse Colon parameters\n");
+fprintf('Optimising Rat Transverse Colon parameters\n');
 
 p.input_flags= {'n','np','ees','ms','vf','run'};
 p.prange = {[36, 40], [20, 28], [50, 100], [150, 200], [0.7],[1]};
