@@ -7,6 +7,8 @@
 % Cycle time: 15.5 hours (average from position groups)
 % G1 time: 6.7 hours
 
+fprintf("Optimising Mouse Caecum parameters\n");
+
 p.input_flags= {'n','np','ees','ms','vf','run'};
 p.prange = {[18, 24], [8, 14], [50, 100], [150, 200], [0.7],[1]};
 p.limits = {[14, 25], [6, 18], [10, 200], [50,  400], [0.6, 0.95],[1,1000]};

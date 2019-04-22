@@ -87,9 +87,6 @@ void AnoikisCellKillerNewPhaseModel::PopulateAnoikisList()
     		
     		if (HasCellPoppedUp(node_index) && !IsPoppedUpCellInVector(p_cell))
     		{
-    			TRACE("Cell popped up")
-    			PRINT_VARIABLE((*cell_iter)->GetAge())
-    			PRINT_VARIABLE(p_cell->GetCellId())
     			MAKE_PTR(AnoikisCellTagged,p_tagged);
     			p_cell->AddCellProperty(p_tagged);
     			std::pair<CellPtr, double> cell_data;
@@ -134,16 +131,12 @@ std::vector<CellPtr> AnoikisCellKillerNewPhaseModel::GetCellsReadyToDie()
 
 		if (!it->first->GetMutationState()->IsType<TransitCellAnoikisResistantMutationState>() && SimulationTime::Instance()->GetTime() - it->second > mPoppedUpLifeExpectancy)
 		{
-			TRACE("Normal cell ready to die")
-			PRINT_VARIABLE(it->second)
 			cellsReadyToDie.push_back(it->first);
 			it = mCellsForDelayedAnoikis.erase(it);
 		} else
 		{
 			if (it->first->GetMutationState()->IsType<TransitCellAnoikisResistantMutationState>() && SimulationTime::Instance()->GetTime() - it->second > mResistantPoppedUpLifeExpectancy)
 			{
-				TRACE("Mutant cell ready to die")
-				PRINT_VARIABLE(it->second)
 				cellsReadyToDie.push_back(it->first);
 				it = mCellsForDelayedAnoikis.erase(it);
 			} else {
@@ -176,9 +169,6 @@ void AnoikisCellKillerNewPhaseModel::CheckAndLabelCellsForApoptosisOrDeath()
 
 		for(std::vector<CellPtr>::iterator cell_iter = cells_to_remove.begin(); cell_iter != cells_to_remove.end(); ++cell_iter)
 		{
-			TRACE("About to kill")
-			PRINT_VARIABLE((*cell_iter)->GetCellId())
-			
 			unsigned node_index = p_tissue->GetNodeCorrespondingToCell(*cell_iter)->GetIndex();
     		CellPtr p_cell = p_tissue->GetCellUsingLocationIndex(node_index);
 			if (mSlowDeath)

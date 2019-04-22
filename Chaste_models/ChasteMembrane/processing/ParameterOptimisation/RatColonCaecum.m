@@ -17,7 +17,7 @@ function obj = RatColonCaecum(data)
 
     % Anoikis rate should make up about 4% of cell production
 	
-    obj =  penalty(100*anoikis_rate,0,4,1) + penalty(average_cell_count,31,35,1) + penalty(max_division_position,17,20,1) + penalty(100*birth_rate,41,45,1);
+    obj =  penalty(100*anoikis_rate,0,4,1) + penalty(average_cell_count,31,35,1) + penalty(max_division_position,18,20,1) + penalty(100*birth_rate,41,45,1);
 
 
 end

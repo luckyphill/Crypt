@@ -15,7 +15,7 @@ function obj = MouseColonTrans(data)
 	birth_rate = data(3);
 	max_division_position = data(4);
 	
-    obj =  penalty(100*anoikis_rate,0,4,1) + penalty(average_cell_count,33,37,1) + penalty(max_division_position,26,29,1) + penalty(100*birth_rate,42,46,1);
+    obj =  penalty(100*anoikis_rate,0,4,1) + penalty(average_cell_count,33,37,1) + penalty(max_division_position,27,29,1) + penalty(100*birth_rate,42,46,1);
 
 
 end

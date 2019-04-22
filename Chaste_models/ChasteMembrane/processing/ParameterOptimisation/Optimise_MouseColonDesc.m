@@ -8,6 +8,8 @@
 % Cycle time: 15 hours (average from position groups)
 % G1 time: 7 hours
 
+fprintf("Optimising Mouse Descending Colon parameters\n");
+
 p.input_flags= {'n','np','ees','ms','vf','run'};
 p.prange = {[26, 30], [8, 12], [50, 100], [150, 200], [0.7],[1]};
 p.limits = {[24, 32], [6, 14], [10, 200], [50,  400], [0.6, 0.95],[1,1000]};
