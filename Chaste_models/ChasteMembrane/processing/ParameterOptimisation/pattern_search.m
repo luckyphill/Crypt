@@ -1,4 +1,4 @@
-function values = pattern_search(p, starting_point)
+function values = pattern_search(p)
 	% This script uses the pattern search optimisation algorithm to find the
 	% point in parameter space that gives the best column crypt behaviour.
 	% See https://en.wikipedia.org/wiki/Pattern_search_(optimization)
@@ -9,14 +9,16 @@ function values = pattern_search(p, starting_point)
 	% repeats the process. This continues until the p.objective function reaches
 	% it target.
 
+	% This function must have p.input_values defined, which will be used as the starting point
+
 	iterations = 0;
 	it_limit = 30;
 
 	first_step = true; % When we start searching in a new variable/dimension
 					   % we need to look both directions before we start stepping
 	fprintf('Pre-loop re-test\n');
-	fprintf('Testing parameters %s\n', generate_input_string(p, starting_point));
-	penalty = run_multiple(p, starting_point);
+	fprintf('Testing parameters %s\n', generate_input_string(p));
+	penalty = run_multiple(p);
 	fprintf('Done\n\n');
 
 	step_size = set_initial_step_size(p.min_step_size, p.limits, p.input_flags); % Make this start off at 0.1 of the limit range
@@ -24,7 +26,7 @@ function values = pattern_search(p, starting_point)
 
 	direction = 1; % use this to choose increasing or decreasing
 
-	values = starting_point;
+	values = p.input_values;
 
 	fprintf('Starting loop\n');
 	% Start the optimisation procedure
@@ -45,9 +47,12 @@ function values = pattern_search(p, starting_point)
 	    	continue;
 	    end
 	    
+	    p.input_values = test_values;
 	    fprintf('Stepping in direction of %s\n', p.input_flags{axis_index});
-	    fprintf('Testing parameters %s\n', generate_input_string(p, test_values));
-	    new_penalty = run_multiple(p, test_values);
+	    fprintf('Testing parameters %s\n', generate_input_string(p));
+	    
+	    new_penalty = run_multiple(p);
+	    
 	    fprintf('Done\n\n');
 	    
 	    if first_step && new_penalty > penalty
@@ -63,10 +68,14 @@ function values = pattern_search(p, starting_point)
 		    	axis_index = next_index(axis_index, p.input_flags);
 		    	first_step = true;
 	    	else
-	        
+	        	
+	        	p.input_values = test_values;
+
 		        fprintf('Simulating opposite direction\n');
-		        fprintf('Testing parameters %s\n', generate_input_string(p, test_values));
-		        new_penalty_2 = run_multiple(p, test_values);
+		        fprintf('Testing parameters %s\n', generate_input_string(p));
+		        
+		        new_penalty_2 = run_multiple(p);
+		        
 		        fprintf('Done\n\n');
 		        
 		        if new_penalty_2 < new_penalty
@@ -105,16 +114,15 @@ function values = pattern_search(p, starting_point)
 end
 
 
-function penalty = run_multiple(p, values)
+function penalty = run_multiple(p)
 	% Runs multiple tests for each parameter set and returns the average penalty
 
 	penalties = nan(p.repetitions,1);
 
 	for i = 1:p.repetitions
 		% Set the run number here
-		run_index = find(ismember(p.input_flags, 'run'));
-		values(run_index) = i;
-		penalties(i) = run_simulation(p, values);
+		p.run_number = i;
+		penalties(i) = run_simulation(p);
 		penalty = mean(penalties);
 	end
 

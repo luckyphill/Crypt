@@ -46,13 +46,13 @@ function find_optimal_region(p)
 	% Stage 3: With an optimal solution (assuming penalty of 0) branch out in multiple directions to
 	%		   find the boundaries of the zero region
 
-	best_input_values = coarse_sweep(p);
+	p.input_values = coarse_sweep(p);
 
 	fprintf('\n\nCoarse sweep completed, starting pattern search\n\n\n');
 
-	p.minimum_point = pattern_search(p, best_input_values);
+	p.input_values = pattern_search(p);
 
-	fprintf('\n\nPattern search completed, best parameters are %s\n\n\n', generate_input_string(p, p.minimum_point));
+	fprintf('\n\nPattern search completed, best parameters are %s\n\n\n', generate_input_string(p));
 
 	% [parameter_space, ranges] = fine_sweep(p)
 

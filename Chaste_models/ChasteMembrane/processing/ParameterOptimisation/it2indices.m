@@ -1,4 +1,4 @@
-function indices = it2indices(i, n, counts)
+function indices = it2indices(i, counts)
     
     % This function takes a base 10 number 
     % and converts it to a non uniform base
@@ -11,7 +11,8 @@ function indices = it2indices(i, n, counts)
     % i.e. if we are talking time conversion then
     % counts = (86400, 3600, 60, 1)
 
-    indices = nan(1,n);
+    indices = nan(size(counts));
+    n = length(counts);
         
     for j = 1:n
        indices(j) = idivide(uint16(i), uint16(counts(j)),'ceil');

@@ -9,6 +9,9 @@ function best_input_values = coarse_sweep(p);
 	% When it stops, it returns the parameter set that is the best/first below 10,
 	% so that can be fed into the fine grain root finding algorithm
 
+	% Only run each simulation once with a single seed
+	p.run_number = 1;
+
 	target_penalty = 10;
 
 	n = length(p.prange);
@@ -29,7 +32,7 @@ function best_input_values = coarse_sweep(p);
 	   % it2indices uses a pretty nifty algorithm to convert the iterator i into a set
 	   % indices refencing the position in p.prange that gives the parameter we want
 	   % it avoids trying to code a set of nested for loops to an unknown depth
-	   indices(i,:) = it2indices(i, n, counts);
+	   indices(i,:) = it2indices(i, counts);
 	    
 	end
 
@@ -54,13 +57,16 @@ function best_input_values = coarse_sweep(p);
 			input_values = [input_values; p.prange{i}(index_collection(i))];
 		end
 
-		result = run_simulation(p, input_values);
+		p.input_values = input_values;
+		result = run_simulation(p);
 
 		if result < best_result
 			best_input_values = input_values;
 			best_result = result;
-			fprintf('New best result: %d\n', best_result);
-			fprintf('Using parameters: %s\n', generate_input_string(p, best_input_values));
+			fprintf('\n==============================================================\n');
+			fprintf('New best result: %.2f\n', best_result);
+			fprintf('Using parameters: %s\n', generate_input_string(p));
+			fprintf('==============================================================\n');
 		end
 
 		iters = iters + 1;

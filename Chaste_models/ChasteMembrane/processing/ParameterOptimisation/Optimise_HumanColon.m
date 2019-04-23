@@ -9,12 +9,16 @@
 
 fprintf('Optimising Human Colon parameters\n');
 
-p.input_flags= {'n','np','ees','ms','vf','run'};
-p.prange = {[60, 83], [40, 50], [50, 100], [150, 200], [0.7],[1]};
-p.limits = {[55, 90], [40, 65], [10, 200], [50,  400], [0.6, 0.95],[1,1000]};
-p.min_step_size = [1,1,1,1,0.005,1];
+p.input_flags= {'n','np','ees','ms','vf'};
+p.prange = {[60, 83], [40, 50], [50, 100], [150, 200], [0.7]};
+p.limits = {[55, 90], [40, 65], [10, 200], [50,  400], [0.6, 0.95]};
+p.min_step_size = [1,1,1,1,0.01];
 
-p.fixed_parameters = ' -t 400 -cct 30 -wt 10';
+p.static_flags = {'t','cct','wt'};
+p.static_params= [400, 30,   10];
+
+p.run_flag = 'run';
+p.run_number = 1;
 
 p.chaste_test = 'TestCryptColumn';
 
@@ -26,7 +30,8 @@ p.obj = @HumanColon;
 
 p.ignore_existing = false;
 
-p.base_path = '/home/a1738927/fastdir/';
+p.base_path = '/Users/phillipbrown/';
+% p.base_path = '/home/a1738927/fastdir/';
 
 p.repetitions = 2;
 

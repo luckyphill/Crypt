@@ -1,4 +1,4 @@
-function data_file = generate_file_name(p, input_values)
+function data_file = generate_file_name(p)
 
 	% This function takes in the flags and values for this particular simulation,
 	% and produces the file name. There are numerous variables that can be provided
@@ -8,9 +8,13 @@ function data_file = generate_file_name(p, input_values)
 	% outside find_optimal_region
 
 	n = length(p.input_flags);
-	m = length(input_values);
+	m = length(p.input_values);
+
+	r = length(p.static_flags);
+	q = length(p.static_params);
 
 	assert(n==m);
+	assert(r==q);
 
 	file_dir = [p.base_path, 'Research/Crypt/Data/Chaste/ParameterOptimisation/', p.chaste_test, '/', func2str(p.obj), '/'];
 	if exist(file_dir,'dir')~=7
@@ -25,9 +29,15 @@ function data_file = generate_file_name(p, input_values)
 
 	file_name = 'parameter_search';
 
-	for i = 1:n
-		file_name = [file_name, sprintf('_%s_%g',p.input_flags{i}, input_values(i))];
+	for i = 1:q
+		file_name = [file_name, sprintf('_%s_%g',p.static_flags{i}, p.static_params(i))];
 	end
+
+	for i = 1:n
+		file_name = [file_name, sprintf('_%s_%g',p.input_flags{i}, p.input_values(i))];
+	end
+
+	file_name = [file_name, sprintf('_%s_%g',p.run_flag, p.run_number)];
 
 	file_name = [file_name, '.txt'];
 

@@ -1,4 +1,4 @@
-function penalty = run_simulation(p, input_values)
+function penalty = run_simulation(p)
 	% This function takes the parameter input and the chaste test
 	% It first checks that data doesn't already exist (can provide an option to ignore this step)
 	% If data does exist, it returns that data
@@ -7,15 +7,19 @@ function penalty = run_simulation(p, input_values)
 
 	simulation_command = [p.base_path, 'chaste_build/projects/ChasteMembrane/test/', p.chaste_test];
 
-	data_file = generate_file_name(p, input_values);
+	data_file = generate_file_name(p);
 
-	input_string = generate_input_string(p, input_values);
+	input_string = generate_input_string(p);
 
 	if exist(data_file, 'file') == 2 && ~p.ignore_existing
 		fprintf('Found existing data\n');
 		data = get_data_from_file(data_file);
 	else
-		fprintf('Data does not exist. Simulating with input: %s\n', input_string);
+		if p.ignore_existing
+			fprintf('Existing data ignored. Simulating with input: %s\n', input_string);
+		else
+			fprintf('Data does not exist. Simulating with input: %s\n', input_string);
+		end
 		[status,cmdout] = system([simulation_command, input_string],'-echo');
 		data = get_data_from_output(cmdout, data_file);
 	end
