@@ -152,7 +152,6 @@ double SimplifiedPhaseBasedCellCycleModel::GetMinimumPDuration()
     return mMinimumPDuration;
 }
 
-
 void SimplifiedPhaseBasedCellCycleModel::UpdateCellCyclePhase()
 {
 

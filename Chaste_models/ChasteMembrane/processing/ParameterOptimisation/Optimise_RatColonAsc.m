@@ -11,7 +11,7 @@ fprintf('Optimising Rat Ascending Colon parameters\n');
 
 p.input_flags= {'n','np','ees','ms','vf','run'};
 p.prange = {[26, 32], [20, 28], [50, 100], [150, 200], [0.7],[1]};
-p.limits = {[24, 33], [16, 29], [10, 200], [50,  400], [0.6, 0.95],[1,1000]};
+p.limits = {[24, 38], [16, 32], [10, 200], [50,  400], [0.6, 0.95],[1,1000]};
 p.min_step_size = [1,1,1,1,0.005,1];
 
 p.fixed_parameters = ' -t 400 -cct 35 -wt 11';
