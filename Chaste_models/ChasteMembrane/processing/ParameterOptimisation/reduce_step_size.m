@@ -10,7 +10,7 @@ function step_size = reduce_step_size(step_size, min_step_size, input_flag)
 		
 
 	% These input parameters must be integers
-	if strcmp(input_flag, 'n') || strcmp(input_flag, 'run') || strcmp(input_flag, 'np')
+	if strcmp(input_flag, 'n') || strcmp(input_flag, 'np')
 		step_size = floor(step_size);
 	end
 	fprintf(' to %g\n', step_size);

@@ -9,12 +9,16 @@
 
 fprintf('Optimising Rat Transverse Colon parameters\n');
 
-p.input_flags= {'n','np','ees','ms','vf','run'};
-p.prange = {[36, 40], [20, 28], [50, 100], [150, 200], [0.7],[1]};
-p.limits = {[24, 49], [16, 36], [10, 200], [50,  400], [0.6, 0.95],[1,1000]};
+p.input_flags= {'n','np','ees','ms','vf'};
+p.prange = {[36, 40], [20, 28], [50, 100], [150, 200], [0.7]};
+p.limits = {[24, 49], [16, 36], [10, 200], [50,  400], [0.6, 0.95]};
 p.min_step_size = [1,1,1,1,0.005,1];
 
-p.fixed_parameters = ' -t 400 -cct 42 -wt 12';
+p.static_flags = {'t','cct','wt'};
+p.static_params= [400, 42,   12];
+
+p.run_flag = 'run';
+p.run_number = 1;
 
 p.chaste_test = 'TestCryptColumn';
 
@@ -26,7 +30,7 @@ p.obj = @RatColonTrans;
 
 p.ignore_existing = false;
 
-p.base_path = '/home/a1738927/fastdir/';
+p.base_path = [getenv('HOME'), '/'];
 
 p.repetitions = 2;
 

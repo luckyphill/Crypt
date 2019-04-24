@@ -9,20 +9,22 @@ function best_result = genetic_algorithm(p)
 
 
 	% Choose some random starting genes
-	lpl = length(p.limits)
+	lpl = length(p.limits);
 	combinations = 1;
 
 	for i = 1:lpl
-		spread = p.limits{i}[2] - p.limits{i}[1];
-		counts(i) = uint16(spread / p.min_step_size(i));
+		lims = p.limits{i};
+		spread = lims(2) - lims(1);
+		counts(i) = uint32(spread / p.min_step_size(i));
 		combinations = combinations * counts(i);
 	end
-
+	combinations
 	% Initial seeding of the population
 	for i = 1:N
 		random_input = randi(combinations);
-		indices = it2indices(random_input, counts);
-		genes{i} = make_gene(p, indices);
+		it2indices(random_input, counts)
+		genes{i} = it2indices(random_input, counts);
+		p.input_values = genes{i};
 		fitness{i} = run_simulation(p);
 	end
 
@@ -52,6 +54,7 @@ function best_result = genetic_algorithm(p)
 		animals = animals(1:N);
 
 		best_fitness = animals(1).fitness;
+		best_result = animals(1).gene;
 
 		generation = generation + 1;
 	end
@@ -67,8 +70,8 @@ function animals = add_new_animals(animals, p, N)
 
 	for i = 1:n_new
 		[q, r] = pick_pair(animals);
-		animals(N + i).gene = cross_over(q, r);
-		p.input_values  = gene2input(animals(N + i).gene);
+		animals(N + i).gene = cross_over(animals, p, q, r);
+		p.input_values  = animals(N + i).gene;
 		animals(N + i).fitness = run_simulation(p);
 	end
 
@@ -78,6 +81,47 @@ end
 function [q, r] = pick_pair(animals, N)
 	% Randomly picks two animals based on their fitness
 
+	% Calculates the sum of the reciprocals
+	for i = 1:N
+		recip = recip + 1/animals(i).fitness;
+	end
+
+	% Makes each animals probability
+	probs = [0, (1./[animals(:).fitness])/recip];
+
+	rand_q = rand;
+	rand_r = rand;
+
+	for i = 1:N
+		if rand_q < probs(i) && rand_q < probs(i+1)
+			q = i;
+		end
+		if rand_r < probs(i) && rand_r < probs(i+1)
+			r = i;
+		end
+	end
+
+end
 
 
+function gene = cross_over(animals, p, q, r)
+
+	gene_q = animals(q).gene;
+	gene_r = animals(r).gene;
+
+	for i = 1:length(gene_q)
+		die = rand;
+		if die < 0.4
+			gene(i) = gene_q(i);
+		end
+		if die > 0.6
+			gene(i) = gene_r(i);
+		end
+		if die > 0.4 && die < 0.6
+			top = max(gene_q(i),gene_r(i));
+			bot = min(gene_q(i),gene_r(i));
+			options = bot:p.min_step_size(i):top;
+			gene(i) = options(randi(length(options)));
+		end
+	end
 end
