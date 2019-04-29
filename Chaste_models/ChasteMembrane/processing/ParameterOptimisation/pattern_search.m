@@ -90,10 +90,12 @@ function values = pattern_search(p)
 	    
 	    % if the result is better...
 	    if new_penalty < penalty
+	    	fprintf('\n==============================================================\n');
 	        fprintf('Step produced improvement\n');
 	        penalty = new_penalty;
 	        values(axis_index) = values(axis_index) + direction * step_size(axis_index);
-	        fprintf('penalty = %g, with input %s\n\n', penalty, generate_input_string(p, values));
+	        fprintf('penalty = %g, with input %s\n\n', penalty, generate_input_string(p));
+	        fprintf('==============================================================\n');
 	    else
 	        % if it is not better, halve the step size, move to the next
 	        % axis, reset the stepping direction and reset the first step tracker
@@ -117,13 +119,16 @@ end
 function penalty = run_multiple(p)
 	% Runs multiple tests for each parameter set and returns the average penalty
 
-	penalties = nan(p.repetitions,1);
-
-	for i = 1:p.repetitions
+	penalties = 0;
+	penalty = 0;
+	i = 1;
+	% If the penalty 
+	while penalty < 5 && i <= p.repetitions
 		% Set the run number here
 		p.run_number = i;
 		penalties(i) = run_simulation(p);
 		penalty = mean(penalties);
+		i = i + 1;
 	end
 
 	penalty = mean(penalties);

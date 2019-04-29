@@ -32,7 +32,6 @@ void DividingPopUpBoundaryCondition::ImposeBoundaryCondition(const std::map<Node
                 std::vector<unsigned>& neighbours = p_node->rGetNeighbours();
                 std::vector<unsigned>::iterator neighbour;
 
-                typename std::map<Node<2>*, c_vector<double, 2> >::const_iterator it = rOldLocations.find(p_node);
                 c_vector<double, 2> location = this->mpCellPopulation->GetLocationOfCellCentre(*cell_iter);
 
                 Node<2>* p_node_neighbour;

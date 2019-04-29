@@ -10,7 +10,7 @@
 fprintf('Optimising Mouse Asecnding Colon parameters\n');
 
 p.input_flags= {'n','np','ees','ms','vf'};
-p.prange = {[15, 18], [8, 12], [50, 100], [150, 200], [0.7]};
+p.prange = {[19], [8], [50], [200], [0.7]};
 p.limits = {[12, 26], [6, 15], [10, 200], [50,  400], [0.6, 0.95]};
 p.min_step_size = [1,1,1,1,0.01];
 
@@ -35,5 +35,5 @@ p.base_path = [getenv('HOME'), '/'];
 p.repetitions = 2;
 
 
-best_result = genetic_algorithm(p);
-% find_optimal_region(p);
+% best_result = genetic_algorithm(p);
+find_optimal_region(p);

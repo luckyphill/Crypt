@@ -10,3 +10,4 @@ TestCryptNewPhaseModel.hpp
 TestResistanceWithNewPhaseModel.hpp
 TestCryptColumn.hpp
 TestCryptColumnMutation.hpp
+TestBoundaryCondition.hpp

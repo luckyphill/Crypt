@@ -10,8 +10,8 @@
 fprintf('Optimising Rate Caecum parameters\n');
 
 p.input_flags= {'n','np','ees','ms','vf'};
-p.prange = {[24, 28], [12, 16], [50, 100], [150, 200], [0.7]};
-p.limits = {[20, 37], [8,  23], [10, 200], [50,  400], [0.6, 0.95]};
+p.prange = {[30], [12], [58], [392], [0.75]};
+p.limits = {[20, 37], [8,  23], [10, 200], [50,  500], [0.6, 0.95]};
 p.min_step_size = [1,1,1,1,0.005,1];
 
 p.static_flags = {'t','cct','wt'};
