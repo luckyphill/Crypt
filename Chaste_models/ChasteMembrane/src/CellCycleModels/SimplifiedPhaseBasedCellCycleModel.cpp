@@ -246,7 +246,7 @@ bool SimplifiedPhaseBasedCellCycleModel::IsAgeLessThan(double comparison)
     double eps = SimulationTime::Instance()->GetTimeStep() / 10;
     double age = GetAge();
 
-    return ( age < comparison && abs(comparison - GetAge()) > eps );
+    return ( age < comparison && std::abs(comparison - GetAge()) > eps );
 
 }
 
@@ -256,7 +256,7 @@ bool SimplifiedPhaseBasedCellCycleModel::IsAgeGreaterThan(double comparison)
     double eps = SimulationTime::Instance()->GetTimeStep() / 10;
     double age = GetAge();
 
-    return ( age > comparison && abs(comparison - GetAge()) > eps );
+    return ( age > comparison && std::abs(comparison - GetAge()) > eps );
 
 }
 

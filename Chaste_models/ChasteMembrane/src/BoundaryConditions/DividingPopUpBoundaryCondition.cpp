@@ -56,7 +56,7 @@ void DividingPopUpBoundaryCondition::ImposeBoundaryCondition(const std::map<Node
 
                         // Move to 3/4 position
 
-                        double difference = abs(location[0] - location_neighbour[0]);
+                        double difference = std::abs(location[0] - location_neighbour[0]);
 
                         double frd = 0.05;
                         double fru = 1 - frd;
