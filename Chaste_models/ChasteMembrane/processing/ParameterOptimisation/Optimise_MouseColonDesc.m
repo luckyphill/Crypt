@@ -10,13 +10,13 @@
 
 fprintf('Optimising Mouse Descending Colon parameters\n');
 
-p.input_flags= {'n','np','ees','ms','vf'};
-p.prange = {[29], [12], [58], [200], [0.7]};
-p.limits = {[24, 38], [6, 21], [10, 200], [50,  400], [0.6, 0.95]};
-p.min_step_size = [1,1,1,1,0.01,1];
+p.input_flags= {'n','np','ees','ms','vf','cct','wt'};
+p.prange = {[29], [12], [58], [200], [0.7], [15], [8]};
+p.limits = {[24, 38], [6, 21], [10, 200], [50,  400], [0.6, 0.95], [12, 18], [6, 10]};
+p.min_step_size = [1,1,1,1,0.01,1,0.5,0.5];
 
-p.static_flags = {'t','cct','wt'};
-p.static_params= [400, 15,   8];
+p.static_flags = {'t'};
+p.static_params= [400];
 
 p.run_flag = 'run';
 p.run_number = 1;
@@ -33,7 +33,7 @@ p.ignore_existing = false;
 
 p.base_path = [getenv('HOME'), '/'];
 
-p.repetitions = 2;
+p.repetitions = 5;
 
 
 find_optimal_region(p);

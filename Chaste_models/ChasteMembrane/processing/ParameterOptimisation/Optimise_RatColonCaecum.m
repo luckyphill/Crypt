@@ -9,13 +9,13 @@
 
 fprintf('Optimising Rate Caecum parameters\n');
 
-p.input_flags= {'n','np','ees','ms','vf'};
-p.prange = {[30], [12], [58], [392], [0.75]};
-p.limits = {[20, 37], [8,  23], [10, 200], [50,  500], [0.6, 0.95]};
-p.min_step_size = [1,1,1,1,0.005,1];
+p.input_flags= {'n','np','ees','ms','vf','cct','wt'};
+p.prange = {[30], [12], [58], [392], [0.75], [25], [10]};
+p.limits = {[20, 37], [8,  23], [10, 200], [50,  500], [0.6, 0.95], [22, 28], [8, 12]};
+p.min_step_size = [1,1,1,1,0.01,1,0.5,0.5];
 
-p.static_flags = {'t','cct','wt'};
-p.static_params= [400, 25,   10];
+p.static_flags = {'t'};
+p.static_params= [400];
 
 p.run_flag = 'run';
 p.run_number = 1;
@@ -32,7 +32,7 @@ p.ignore_existing = false;
 
 p.base_path = [getenv('HOME'), '/'];
 
-p.repetitions = 2;
+p.repetitions = 5;
 
 
 find_optimal_region(p);

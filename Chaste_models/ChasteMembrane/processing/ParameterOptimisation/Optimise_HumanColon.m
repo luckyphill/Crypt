@@ -9,13 +9,13 @@
 
 fprintf('Optimising Human Colon parameters\n');
 
-p.input_flags= {'n','np','ees','ms','vf'};
-p.prange = {[60, 83], [40, 50], [50, 100], [150, 200], [0.7]};
-p.limits = {[55, 90], [40, 65], [10, 200], [50,  400], [0.6, 0.95]};
-p.min_step_size = [1,1,1,1,0.01];
+p.input_flags= {'n','np','ees','ms','vf','cct','wt'};
+p.prange = {[60, 83], [40, 50], [50, 100], [150, 200], [0.7 , 0.8], [30], [10]};
+p.limits = {[55, 90], [30, 65], [10, 200], [50,  400], [0.6, 0.95], [25, 35], [7, 13]};
+p.min_step_size = [1,1,1,1,0.01,0.5,0.5];
 
-p.static_flags = {'t','cct','wt'};
-p.static_params= [400, 30,   10];
+p.static_flags = {'t'};
+p.static_params= [400];
 
 p.run_flag = 'run';
 p.run_number = 1;
@@ -32,7 +32,7 @@ p.ignore_existing = false;
 
 p.base_path = [getenv('HOME'), '/'];
 
-p.repetitions = 2;
+p.repetitions = 5;
 
 
 find_optimal_region(p);

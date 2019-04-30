@@ -9,13 +9,13 @@
 
 fprintf('Optimising Rat Transverse Colon parameters\n');
 
-p.input_flags= {'n','np','ees','ms','vf'};
-p.prange = {[36, 40], [20, 28], [50], [200], [0.7, 0.8]};
-p.limits = {[24, 49], [16, 36], [10, 200], [50,  400], [0.6, 0.95]};
-p.min_step_size = [1,1,1,1,0.005,1];
+p.input_flags= {'n','np','ees','ms','vf','cct','wt'};
+p.prange = {[36, 40], [20, 28], [50], [200], [0.7, 0.8], [42], [12]};
+p.limits = {[24, 49], [16, 36], [10, 200], [50,  400], [0.6, 0.95], [38, 47], [9, 15]};
+p.min_step_size = [1,1,1,1,0.01,1,0.5,0.5];
 
-p.static_flags = {'t','cct','wt'};
-p.static_params= [400, 42,   12];
+p.static_flags = {'t'};
+p.static_params= [400];
 
 p.run_flag = 'run';
 p.run_number = 1;
@@ -32,7 +32,7 @@ p.ignore_existing = false;
 
 p.base_path = [getenv('HOME'), '/'];
 
-p.repetitions = 2;
+p.repetitions = 5;
 
 
 find_optimal_region(p);

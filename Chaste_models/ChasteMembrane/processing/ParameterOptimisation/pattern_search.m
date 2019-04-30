@@ -123,7 +123,7 @@ function penalty = run_multiple(p)
 	penalty = 0;
 	i = 1;
 	% If the penalty 
-	while penalty < 5 && i <= p.repetitions
+	while penalty < 10 && i <= p.repetitions
 		% Set the run number here
 		p.run_number = i;
 		penalties(i) = run_simulation(p);

@@ -36,5 +36,5 @@ if [ $found = 1 ]; then
 	/home/a1738927/fastdir/chaste_build/projects/ChasteMembrane/test/TestCryptColumn -n ${n} -np ${np} -ees ${ees} -ms ${ms} -cct ${cct} -vf ${vf} -run 1
 
 else 
-  echo "grid_search_1.txt does not have enough parameters for $SLURM_ARRAY_TASK_ID index" 
+  echo "$1 does not have enough parameters for $SLURM_ARRAY_TASK_ID index" 
 fi
