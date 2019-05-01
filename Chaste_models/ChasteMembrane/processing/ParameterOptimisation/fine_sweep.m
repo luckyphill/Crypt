@@ -9,6 +9,7 @@ function parameter_collection = fine_sweep(p, optimal)
 	% ees - 3 either way in steps of 5			total = 7
 	% ms - 3 either way in steps of 5			total = 7
 	% cct - 1 either way						total = 3
+	% wt - 1 either way							total = 3
 	% vf - 3 either way in steps of 0.02		total = 7
 
 	% create the parameter vectors
@@ -33,6 +34,10 @@ function parameter_collection = fine_sweep(p, optimal)
 		if strcmp(p.input_flags{i}, 'cct')
 			cct = optimal(i);
 			prange{i} = (cct-1):(cct+1);
+		end
+		if strcmp(p.input_flags{i}, 'wt')
+			wt = optimal(i);
+			prange{i} = (wt-1):(wt+1);
 		end
 		if strcmp(p.input_flags{i}, 'vf')
 			vf = optimal(i);
