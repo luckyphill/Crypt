@@ -103,7 +103,7 @@ function parameter_collection = fine_sweep(p, optimal)
 
 	% ONLY TO BE RUN ON PHOENIX
 	sbatch_file = [p.base_path, 'Research/Crypt/Chaste_models/ChasteMembrane/phoenix/ParameterOptimistation/generic_', p.chaste_test, '_sweep.sh'];
-	[status,cmdout] = system(['sbatch ', sbatch_file, ' ', sweep_path],'-echo');
+	[status,cmdout] = system(['sbatch ', sbatch_file, ' ', sweep_file],'-echo');
 
 
 end
