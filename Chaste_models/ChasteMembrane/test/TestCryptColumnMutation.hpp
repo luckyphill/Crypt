@@ -251,14 +251,60 @@ public:
 
         // ********************************************************************************************
         // Adhesion weakening
-        double adhesionWeakeningFraction = 1.0; // Default is no weakening
-        if(CommandLineArguments::Instance()->OptionExists("-awf"))
+        double msModifier = 1.0; // Default is no weakening
+        if(CommandLineArguments::Instance()->OptionExists("-msM"))
         {
-        	adhesionWeakeningFraction = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-awf");
-        	PRINT_VARIABLE(adhesionWeakeningFraction)
+        	msModifier = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-msM");
+        	PRINT_VARIABLE(msModifier)
         }
         // ********************************************************************************************
 
+
+        // ********************************************************************************************
+        // Cell-cell interaction modifier
+        double eesModifier = 1.0; // Default is no weakening
+        if(CommandLineArguments::Instance()->OptionExists("-eesM"))
+        {
+            eesModifier = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-eesM");
+            PRINT_VARIABLE(eesModifier)
+        }
+
+        // ********************************************************************************************
+
+
+        // ********************************************************************************************
+        // Cell cycle modifier
+        double cctModifier = 1.0;
+        if(CommandLineArguments::Instance()->OptionExists("-cctM"))
+        {
+            cctModifier = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-cctM");
+            PRINT_VARIABLE(cctModifier)
+        }
+
+        // ********************************************************************************************
+
+        // ********************************************************************************************
+        // Mutant Contact inhibition fraction
+        double mutantQuiescentVolumeFraction = quiescentVolumeFraction;
+        if(CommandLineArguments::Instance()->OptionExists("-Mvf"))
+        {   
+            mutantQuiescentVolumeFraction = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-Mvf");
+            PRINT_VARIABLE(mutantQuiescentVolumeFraction)
+
+        }
+        // ********************************************************************************************     
+
+
+        // ******************************************************************************************** 
+        // Differentiation position 
+        unsigned mutantProliferativeCompartment = np; // Number of proliferative cells, counting up from the bottom
+        if(CommandLineArguments::Instance()->OptionExists("-Mnp"))
+        {   
+            mutantProliferativeCompartment = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-Mnp");
+            PRINT_VARIABLE(mutantProliferativeCompartment)
+
+        }
+        // ********************************************************************************************   
 
 
 
@@ -459,7 +505,7 @@ public:
         }
         mutdir << "_rcct_" << resistantCellCycleTime;
 
-        mutdir << "_awf_" << adhesionWeakeningFraction;
+        mutdir << "_awf_" << msModifier;
         
         std::string output_directory = "TestCryptColumnMutation/" +  simdir.str() + "/" + mutdir.str();
 
@@ -494,7 +540,7 @@ public:
 
 		MAKE_PTR(NormalAdhesionForceNewPhaseModel<2>, p_adhesion);
         p_adhesion->SetMembraneSpringStiffness(membraneStiffness);
-        p_adhesion->SetWeakeningFraction(adhesionWeakeningFraction);
+        p_adhesion->SetWeakeningFraction(msModifier);
 
         // ********************************************************************************************
 
