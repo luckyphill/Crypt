@@ -62,7 +62,7 @@ function parameter_collection = fine_sweep(p, optimal)
 	   % it2indices uses a pretty nifty algorithm to convert the iterator i into a set
 	   % indices refencing the position in prange that gives the parameter we want
 	   % it avoids trying to code a set of nested for loops to an unknown depth
-	   indices(i,:) = it2indices(i, N, counts);
+	   indices(i,:) = it2indices(i, counts);
 	    
 	end
 
