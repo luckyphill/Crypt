@@ -20,7 +20,7 @@ mkdir -p output
 echo "array_job_index: $SLURM_ARRAY_TASK_ID" 
 i=1 
 found=0
-while IFS=, read n np ees ms vf cct cct wt
+while IFS=, read n np ees ms vf cct wt
 do 
     if [ $i = $SLURM_ARRAY_TASK_ID ]; then 
         echo "Parameter optimisation with: -n ${n} -np ${np} -ees ${ees} -ms ${ms} -vf ${vf} -cct ${cct} -wt ${wt}"
