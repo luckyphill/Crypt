@@ -20,10 +20,10 @@ mkdir -p output
 echo "array_job_index: $SLURM_ARRAY_TASK_ID" 
 i=1 
 found=0
-while IFS=, read n np ees ms cct vf cct wt
+while IFS=, read n np ees ms vf cct cct wt
 do 
     if [ $i = $SLURM_ARRAY_TASK_ID ]; then 
-        echo "Parameter optimisation with: -n ${n} -np ${np} -ees ${ees} -ms ${ms} -cct ${cct} -vf ${vf} -cct ${cct} -wt ${wt}"
+        echo "Parameter optimisation with: -n ${n} -np ${np} -ees ${ees} -ms ${ms} -vf ${vf} -cct ${cct} -wt ${wt}"
         found=1 
         break 
     fi 
@@ -32,8 +32,8 @@ done < $1
 
 if [ $found = 1 ]; then
 
-	echo "/home/a1738927/fastdir/chaste_build/projects/ChasteMembrane/test/TestCryptCrossSection -n ${n} -np ${np} -ees ${ees} -ms ${ms} -cct ${cct} -vf ${vf} -cct ${cct} -wt ${wt} -run 1";
-	/home/a1738927/fastdir/chaste_build/projects/ChasteMembrane/test/TestCryptColumn -n ${n} -np ${np} -ees ${ees} -ms ${ms} -cct ${cct} -vf ${vf} -cct ${cct} -wt ${wt} -run 1
+	echo "/home/a1738927/fastdir/chaste_build/projects/ChasteMembrane/test/TestCryptCrossSection -n ${n} -np ${np} -ees ${ees} -ms ${ms} -vf ${vf} -cct ${cct} -wt ${wt} -run 1";
+	/home/a1738927/fastdir/chaste_build/projects/ChasteMembrane/test/TestCryptColumn -n ${n} -np ${np} -ees ${ees} -ms ${ms} -cct ${cct} -vf ${vf} -wt ${wt} -run 1
 
 else 
   echo "$1 does not have enough parameters for $SLURM_ARRAY_TASK_ID index" 
