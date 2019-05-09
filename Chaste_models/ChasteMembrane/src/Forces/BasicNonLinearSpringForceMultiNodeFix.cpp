@@ -11,6 +11,8 @@ Initial structure borrows heavily from EpithelialLayerBasementMembraneForce by A
 #include "TransitCellProliferativeType.hpp"
 #include "StemCellProliferativeType.hpp"
 
+#include "WeakenedCellCellAdhesion.hpp"
+
 #include "Debug.hpp"
 
 #include "BasicNonLinearSpringForceMultiNodeFix.hpp"
@@ -453,6 +455,11 @@ c_vector<double, SPACE_DIM> BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SP
     {
         double alpha = mAttractionParameter;
         c_vector<double, 2> temp = spring_constant * unitForceDirection * overlap * exp(-alpha * overlap/rest_length);
+
+        if (p_cell_A->HasCellProperty<WeakenedCellCellAdhesion>() || p_cell_B->HasCellProperty<WeakenedCellCellAdhesion>())
+        {
+            temp *=  mModifierFraction;
+        }
         
         // Multi-node cells have a stronger internal attraction
         // Using a linear spring instead
@@ -490,6 +497,13 @@ void BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SPACE_DIM>::SetAttraction
 {
     mAttractionParameter = attractionParameter;
 }
+
+template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
+void BasicNonLinearSpringForceMultiNodeFix<ELEMENT_DIM,SPACE_DIM>::SetModifierFraction(double modifierFraction)
+{
+    mModifierFraction = modifierFraction;
+}
+
 
 // For growing spring length
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>

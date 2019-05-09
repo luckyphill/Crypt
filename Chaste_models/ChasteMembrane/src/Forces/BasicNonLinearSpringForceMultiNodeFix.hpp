@@ -60,6 +60,8 @@ protected:
 
     double mMeinekeSpringGrowthDuration;
 
+    double mModifierFraction = 1.0;
+
 public:
 
     /**
@@ -111,6 +113,8 @@ public:
     void SetMeinekeDivisionRestingSpringLength(double divisionRestingSpringLength);
 
     void SetMeinekeSpringGrowthDuration(double springGrowthDuration);
+
+    void SetModifierFraction(double modifierFraction);
     
     virtual void OutputForceParameters(out_stream& rParamsFile);
 };

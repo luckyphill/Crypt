@@ -32,6 +32,7 @@
 #include "WildTypeCellMutationState.hpp"
 #include "TransitCellAnoikisResistantMutationState.hpp"
 #include "WeakenedMembraneAdhesion.hpp"
+#include "WeakenedCellCellAdhesion.hpp"
 
 // Boundary conditions
 #include "BoundaryCellProperty.hpp"
@@ -281,6 +282,13 @@ public:
             PRINT_VARIABLE(cctModifier)
         }
 
+        double wtModifier = 1.0;
+        if(CommandLineArguments::Instance()->OptionExists("-wtM"))
+        {
+            wtModifier = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-wtM");
+            PRINT_VARIABLE(wtModifier)
+        }
+
         // ********************************************************************************************
 
         // ********************************************************************************************
@@ -297,7 +305,7 @@ public:
 
         // ******************************************************************************************** 
         // Differentiation position 
-        unsigned mutantProliferativeCompartment = np; // Number of proliferative cells, counting up from the bottom
+        unsigned mutantProliferativeCompartment = n_prolif; // Number of proliferative cells, counting up from the bottom
         if(CommandLineArguments::Instance()->OptionExists("-Mnp"))
         {   
             mutantProliferativeCompartment = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-Mnp");
@@ -538,6 +546,8 @@ public:
 		p_force->SetMeinekeSpringStiffness(meinekeStiffness);
 		p_force->SetMeinekeSpringGrowthDuration(wPhaseLength);
 
+        p_force->SetModifierFraction(eesModifier);
+
 		MAKE_PTR(NormalAdhesionForceNewPhaseModel<2>, p_adhesion);
         p_adhesion->SetMembraneSpringStiffness(membraneStiffness);
         p_adhesion->SetWeakeningFraction(msModifier);
@@ -694,14 +704,22 @@ public:
 		assert(it != pos_cells.end());
 
 		MAKE_PTR(TransitCellAnoikisResistantMutationState, p_resistant);
-		MAKE_PTR(WeakenedMembraneAdhesion, p_weakened);
+		MAKE_PTR(WeakenedMembraneAdhesion, p_Mweakened);
+        MAKE_PTR(WeakenedCellCellAdhesion, p_Eweakened);
 
 		(*it)->SetMutationState(p_resistant);
-		(*it)->AddCellProperty(p_weakened);
+		(*it)->AddCellProperty(p_Mweakened);
+        (*it)->AddCellProperty(p_Eweakened);
 
 		// Find twin and set mutation state
 		SimplifiedPhaseBasedCellCycleModel* p_ccm = static_cast<SimplifiedPhaseBasedCellCycleModel*>((*it)->GetCellCycleModel());
         SimplifiedCellCyclePhase phase = p_ccm->GetCurrentCellCyclePhase();
+        
+        p_ccm->SetWDuration( cctModifier * wPhaseLength);
+        p_ccm->SetBasePDuration(cellCycleTime - cctModifier * wPhaseLength);
+        p_ccm->SetQuiescentVolumeFraction(mutantQuiescentVolumeFraction);
+        p_ccm->SetWntThreshold(1 - (double)mutantProliferativeCompartment/n);
+
 
         CellPtr cell_twin;
         if (phase == W_PHASE)
@@ -713,7 +731,14 @@ public:
 	    	{
 	    		cell_twin = simulator.rGetCellPopulation().GetCellUsingLocationIndex(p_twin->GetIndex());
 	    		cell_twin->SetMutationState(p_resistant);
-				cell_twin->AddCellProperty(p_weakened);
+				cell_twin->AddCellProperty(p_Mweakened);
+                cell_twin->AddCellProperty(p_Eweakened);
+
+                SimplifiedPhaseBasedCellCycleModel* p_ccm_twin = static_cast<SimplifiedPhaseBasedCellCycleModel*>(cell_twin->GetCellCycleModel());
+                p_ccm_twin->SetWDuration( cctModifier * wPhaseLength);
+                p_ccm_twin->SetBasePDuration(cellCycleTime - cctModifier * wPhaseLength);
+                p_ccm_twin->SetQuiescentVolumeFraction(mutantQuiescentVolumeFraction);
+                p_ccm_twin->SetWntThreshold(1 - (double)mutantProliferativeCompartment/n);
 	    	}
 	    }
 
