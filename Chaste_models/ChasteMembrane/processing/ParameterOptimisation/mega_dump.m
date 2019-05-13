@@ -11,7 +11,7 @@ function parameter_collection = mega_dump(p, optimal)
 	% vf - 3 either way in steps of 0.02		total = 3
 
 	% create the parameter vectors
-
+	prange = {};
 	for i=1:length(p.input_flags)
 		if strcmp(p.input_flags{i}, 'n')
 			n = optimal(i);
