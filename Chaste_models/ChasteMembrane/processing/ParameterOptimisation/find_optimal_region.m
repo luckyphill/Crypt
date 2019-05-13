@@ -54,7 +54,7 @@ function find_optimal_region(p)
 
 	fprintf('\n\nPattern search completed, best parameters are %s\n\n\n', generate_input_string(p));
 
-	parameter_space = fine_sweep(p, p.input_values)
+	parameter_space = mega_dump(p, p.input_values);
 
 
 

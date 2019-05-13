@@ -1,4 +1,4 @@
-function parameter_collection = fine_sweep(p, optimal)
+function parameter_collection = mega_dump(p, optimal)
 	% This function takes an optimal point (or the nearest that is calculated) and
 	% performs a fine grained parameter sweep within a small region around that point
 	% with the hope of finding the boundary of optimality
@@ -6,8 +6,6 @@ function parameter_collection = fine_sweep(p, optimal)
 	% It sweeps a different number of points for each parameter about the optimal point found
 	% n is limited to 1 either way				total = 3
 	% np - 1 either way							total = 3
-	% ees - 3 either way in steps of 5			total = 7
-	% ms - 3 either way in steps of 5			total = 7
 	% cct - 1 either way						total = 3
 	% wt - 1 either way							total = 3
 	% vf - 3 either way in steps of 0.02		total = 3
@@ -17,31 +15,23 @@ function parameter_collection = fine_sweep(p, optimal)
 	for i=1:length(p.input_flags)
 		if strcmp(p.input_flags{i}, 'n')
 			n = optimal(i);
-			prange{i} = (n-1):(n+1);
+			prange{end + 1} = (n-1):(n+1);
 		end
 		if strcmp(p.input_flags{i}, 'np')
 			np = optimal(i);
-			prange{i} = (np-1):(np+1);
-		end
-		if strcmp(p.input_flags{i}, 'ees')
-			ees = optimal(i);
-			prange{i} = (ees-15):5:(ees+15);
-		end
-		if strcmp(p.input_flags{i}, 'ms')
-			ms = optimal(i);
-			prange{i} = (ms-15):5:(ms+15);
+			prange{end + 1} = (np-1):(np+1);
 		end
 		if strcmp(p.input_flags{i}, 'cct')
 			cct = optimal(i);
-			prange{i} = (cct-1):(cct+1);
+			prange{end + 1} = (cct-1):(cct+1);
 		end
 		if strcmp(p.input_flags{i}, 'wt')
 			wt = optimal(i);
-			prange{i} = (wt-1):(wt+1);
+			prange{end + 1} = (wt-1):(wt+1);
 		end
 		if strcmp(p.input_flags{i}, 'vf')
 			vf = optimal(i);
-			prange{i} = (vf-0.02):0.02:(vf+0.02);
+			prange{end + 1} = (vf-0.02):0.02:(vf+0.02);
 		end
 	end
 
@@ -102,8 +92,8 @@ function parameter_collection = fine_sweep(p, optimal)
 	% Run the parameter sweep
 
 	% ONLY TO BE RUN ON PHOENIX
-	sbatch_file = [p.base_path, 'Research/Crypt/Chaste_models/ChasteMembrane/phoenix/ParameterOptimistation/generic_', p.chaste_test, '_sweep.sh'];
-	[status,cmdout] = system(['sbatch ', sbatch_file, ' ', sweep_file],'-echo');
+	sbatch_file = [p.base_path, 'Research/Crypt/Chaste_models/ChasteMembrane/phoenix/ParameterOptimistation/generic_grid_', p.chaste_test, '_sweep.sh'];
+	[status,cmdout] = system(['sbatch ', sbatch_file, ' ', sweep_file, ' ', num2str(optimal(3)), ' ', num2str(optimal(4)) , ' ', func2str(p.obj)],'-echo');
 
 
 end
