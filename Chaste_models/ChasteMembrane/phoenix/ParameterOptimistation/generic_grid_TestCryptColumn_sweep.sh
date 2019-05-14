@@ -35,7 +35,7 @@ do
 done < $1
 
 if [ $found = 1 ]; then
-	matlab -nodisplay -nodesktop -r "loop_simulation($OBJ, 400, $n, $np, $EES, $MS, $vf, $cct, $wt); quit()"
+	matlab -nodisplay -nodesktop -r "loop_simulation(@$OBJ, 400, $n, $np, $EES, $MS, $vf, $cct, $wt); quit()"
 else 
   echo "$1 does not have enough parameters for $SLURM_ARRAY_TASK_ID index" 
 fi
