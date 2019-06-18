@@ -17,7 +17,7 @@
 #include "NodesOnlyMesh.hpp"
 
 // Cell Population
-#include "NodeBasedCellPopulation.hpp"
+#include "MonolayerNodeBasedCellPopulation.hpp"
 
 // Proliferative types
 #include "DifferentiatedCellProliferativeType.hpp"
@@ -66,13 +66,13 @@
 #include "FakePetscSetup.hpp"
 #include "Debug.hpp"
 
-class TestCryptColumnMutation : public AbstractCellBasedTestSuite
+class TestDamping : public AbstractCellBasedTestSuite
 {
 	
 public:
 
 
-	void TestCryptMutation() throw(Exception)
+	void TestDampingMutation() throw(Exception)
 	{
 		// This test simulates a column of cells that move in 2 dimensions
 		// Growing cells are represented as two nodes throughout the duration of W phase
@@ -316,6 +316,16 @@ public:
 
 
 
+        // ******************************************************************************************** 
+        // The damping constant
+        double dampingConstant = 1;
+        if(CommandLineArguments::Instance()->OptionExists("-D"))
+        {
+            dampingConstant = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-D");
+            PRINT_VARIABLE(dampingConstant)
+        }
+        // ******************************************************************************************** 
+
         // ********************************************************************************************
         // Output control
         // ********************************************************************************************
@@ -469,7 +479,8 @@ public:
 
 		// ********************************************************************************************
 		// Make the cell population
-		NodeBasedCellPopulation<2> cell_population(mesh, cells, location_indices);
+		MonolayerNodeBasedCellPopulation<2> cell_population(mesh, cells, location_indices);
+        cell_population.SetDampingConstantPoppedUp(dampingConstant);
 		// ********************************************************************************************
 
 		// ********************************************************************************************
@@ -515,7 +526,7 @@ public:
 
         mutdir << "_awf_" << msModifier;
         
-        std::string output_directory = "TestCryptColumnMutation/" +  simdir.str() + "/" + mutdir.str();
+        std::string output_directory = "TestDamping/" +  simdir.str() + "/" + mutdir.str();
 
 		simulator.SetOutputDirectory(output_directory);
 		// ********************************************************************************************

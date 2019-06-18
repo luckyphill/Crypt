@@ -12,16 +12,32 @@ for i = 1:length(ees)
 		p.input_values(3) = ees(i);
 		p.input_values(4) = ms(j);
 
-		penalty(i,j) = run_simulation(p);
+		penalty(i,j) = get_simulation_output(p);
 	end
 end
 
 
+h = figure('visible', 'off');
 
-imagesc(ms, ees, penalty);
+imagesc(ms, ees, penalty, 'AlphaData',~isnan(penalty), [0, 20]);
+set(gca,'YDir','normal')
 colorbar
 
+image_file = generate_image_file_name(p);
 
+set(h,'Units','Inches');
+pos = get(h,'Position');
+set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)]);
+
+xlabel('Adhesion stiffness', 'Interpreter', 'latex');
+ylabel('Epithelial stiffness', 'Interpreter', 'latex');
+
+
+plot_title{1} = [func2str(p.obj), ' with'];
+plot_title{2} = sprintf('n=%d, np= %d, vf=%g, cct=%g, wt=%g', p.input_values(1), p.input_values(2), p.input_values(5), p.input_values(6), p.input_values(7));
+title(plot_title, 'Interpreter','latex','FontSize',14);
+
+print(image_file,'-dpdf');
 
 
 end

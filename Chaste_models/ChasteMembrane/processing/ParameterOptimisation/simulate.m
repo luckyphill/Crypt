@@ -22,6 +22,6 @@ function simulate(obj, time, n, np, ees, ms, vf, cct, wt)
 
 	p.base_path = [getenv('HOME'), '/'];
 
-	penalty = run_simulation(p);
+	penalty = run_simulation(p)
 
 end

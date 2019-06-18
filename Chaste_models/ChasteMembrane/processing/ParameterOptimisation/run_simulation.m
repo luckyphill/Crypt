@@ -13,12 +13,19 @@ function penalty = run_simulation(p)
 
 	if exist(data_file, 'file') == 2 && ~p.ignore_existing
 		fprintf('Found existing data\n');
-		data = get_data_from_file(data_file);
+		try
+			data = get_data_from_file(data_file);
+		catch
+			fprintf('Problem retrieving data\n');
+			penalty = nan;
+			return
+		end
 	else
 		if p.ignore_existing
 			fprintf('Existing data ignored. Simulating with input: %s\n', input_string);
 		else
 			fprintf('Data does not exist. Simulating with input: %s\n', input_string);
+			fprintf('%s\n', data_file);
 		end
 		[status,cmdout] = system([simulation_command, input_string],'-echo');
 		data = get_data_from_output(cmdout, data_file);
