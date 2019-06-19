@@ -8,7 +8,7 @@ function parameter_collection = mega_dump(p, optimal)
 	% np - 1 either way							total = 3
 	% cct - 1 either way						total = 3
 	% wt - 1 either way							total = 3
-	% vf - 3 either way in steps of 0.02		total = 3
+	% vf - 1 either way in steps of 0.02		total = 3
 
 	% create the parameter vectors
 	prange = {};
