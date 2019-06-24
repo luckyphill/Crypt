@@ -6,7 +6,7 @@
 #include "CommandLineArguments.hpp"
 
 // Simulators
-#include "OffLatticeSimulationTooManyCells.hpp"
+#include "OffLatticeSimulationMutationWashOut.hpp"
 
 // Forces
 #include "BasicNonLinearSpringForceNewPhaseModel.hpp"
@@ -17,7 +17,7 @@
 #include "NodesOnlyMesh.hpp"
 
 // Cell Population
-#include "NodeBasedCellPopulation.hpp"
+#include "MonolayerNodeBasedCellPopulation.hpp"
 
 // Proliferative types
 #include "DifferentiatedCellProliferativeType.hpp"
@@ -315,6 +315,25 @@ public:
         // ********************************************************************************************   
 
 
+        // ********************************************************************************************
+        // Damping constant for popped up cells
+        // ********************************************************************************************
+
+
+        // ******************************************************************************************** 
+        // The damping constant
+        // This has been qualitatively chosen to be 0.2, so that popped up cell experience 20% of the 
+        // damping (drag) force of cells on the basement membrane. While this is fixed as default,
+        // it is still not clear (21/06/2019) what an appropriate value is, so the ability to modify it
+        // is being retained.
+        double dampingConstant = 0.2;
+        if(CommandLineArguments::Instance()->OptionExists("-D"))
+        {
+            dampingConstant = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-D");
+            PRINT_VARIABLE(dampingConstant)
+        }
+        // ********************************************************************************************
+
 
         // ********************************************************************************************
         // Output control
@@ -469,7 +488,8 @@ public:
 
 		// ********************************************************************************************
 		// Make the cell population
-		NodeBasedCellPopulation<2> cell_population(mesh, cells, location_indices);
+		MonolayerNodeBasedCellPopulation<2> cell_population(mesh, cells, location_indices);
+        cell_population.SetDampingConstantPoppedUp(dampingConstant);
 		// ********************************************************************************************
 
 		// ********************************************************************************************
@@ -486,7 +506,7 @@ public:
 
 		// ********************************************************************************************
 		// Make the simulation
-		OffLatticeSimulationTooManyCells simulator(cell_population);
+		OffLatticeSimulationMutationWashOut simulator(cell_population);
 		simulator.SetDt(dt);
 		simulator.SetSamplingTimestepMultiple(sampling_multiple);
 		simulator.SetCellLimit(cell_limit);
@@ -671,9 +691,9 @@ public:
 		pos_cells.sort(
 			[p_tissue](CellPtr A, CellPtr B)
 		{
-				Node<2>* node_A = p_tissue->GetNodeCorrespondingToCell(A);
-				Node<2>* node_B = p_tissue->GetNodeCorrespondingToCell(B);
-				return (node_A->rGetLocation()[1] < node_B->rGetLocation()[1]);
+			Node<2>* node_A = p_tissue->GetNodeCorrespondingToCell(A);
+			Node<2>* node_B = p_tissue->GetNodeCorrespondingToCell(B);
+			return (node_A->rGetLocation()[1] < node_B->rGetLocation()[1]);
 		});
 
 		std::list<CellPtr>::iterator it = pos_cells.begin();
@@ -749,47 +769,16 @@ public:
 		// ********************************************************************************************
 		// Run the simulation to be observed
 		TRACE("Starting simulation proper")
+        TRACE("START")
+        simulator.WashOutSwitch();
 		simulator.Solve();
+        TRACE("END")
 		// ********************************************************************************************
-
 
 
 		// ********************************************************************************************
 		// Post simulation tasks
 		WntConcentration<2>::Instance()->Destroy();
-		// ********************************************************************************************
-
-		// ********************************************************************************************
-		// Collate simulation data
-		// This number will not match the cell births from CryptStateTrackingModifier
-		// The Chaste Division event is connected to the actual division event, so there will
-		// always be a 1-1 ratio, however, some Chaste divisions happen just before the burn in
-		// time finishes, while their paired actual divisions happen after, thus the Chaste divisions
-		// won't be counted, but the actual divisions will.
-		// The reverse happens when the simulation stops, some Chaste divisions will be counted, but
-		// the paired actual divisions won't have happened before the simulation ends
-		// The numbers will actually be close because those Chaste divisions missed before the start
-		// will be roughly the same as the actual divisions missed after the end.
-		// The modifier division count will be the "correct" division count for the model
-		unsigned simulation_births = simulator.GetNumBirths() - transient_births;
- 		simulation_births *= 1; // Literally just to keep the compiler on phoenix happy
-
-		// ********************************************************************************************
-		// Simulation characteristic data output
-		// ********************************************************************************************
-		double 		anoikis 			= double(p_anoikis_killer_2->GetCellKillCount())/simulation_length;
-		double 		averageCellCount 	= p_mod->GetAverageCount() - 1;
-		double 		birthRate 			= double(p_mod->GetBirthCount())/simulation_length;
-		unsigned 	maxBirthPosition 	= p_mod->GetMaxBirthPosition();
-
-        // ********************************************************************************************
-        // Output data to the command line
-		TRACE("START")
-		PRINT_VARIABLE(anoikis)   				// Anoikis rate
-		PRINT_VARIABLE(averageCellCount) 		// Expected total number of cells in the crypt
-		PRINT_VARIABLE(birthRate)				// Birth rate
-		PRINT_VARIABLE(maxBirthPosition)		// Highest cell position where cell division happens
-		TRACE("END")
 		// ********************************************************************************************
 
 	};
