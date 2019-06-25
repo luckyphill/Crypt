@@ -50,7 +50,6 @@ void IsolatedCellKiller<ELEMENT_DIM,SPACE_DIM>::CheckAndLabelCellsForApoptosisOr
 
         if( neighbours.empty() && (*cell_iter)->template HasCellProperty<AnoikisCellTagged>() )
         {
-            TRACE("Killing isolated cell")
             cell_iter->Kill();
             mCellKillCount++;
         }
