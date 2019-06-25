@@ -4,7 +4,7 @@
 #SBATCH -n 1 
 #SBATCH --time=72:00:00 
 #SBATCH --mem=1GB 
-#SBATCH --array=0-4000
+#SBATCH --array=0-182
 # NOTIFICATIONS
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=phillip.j.brown@adelaide.edu.au
@@ -31,7 +31,7 @@ do
 done < mutation_sweep.txt 
 
 if [ $found = 1 ]; then
-    matlab -nodisplay -nodesktop -r "ClonalRate_MouseColonDesc('${param}', ${value}, 100); quit()"
+    matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); ClonalRate_MouseColonDesc('${param}', ${value}, 100); quit()"
 else 
   echo "mutation_sweep.txt does not have enough parameters for $SLURM_ARRAY_TASK_ID index" 
 fi
