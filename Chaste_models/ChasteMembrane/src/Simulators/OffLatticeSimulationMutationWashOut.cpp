@@ -44,6 +44,7 @@ bool OffLatticeSimulationMutationWashOut::StoppingEventHasOccurred()
 
 		if (monolayerMutantCellCount == 0)
 		{
+			// For the sake of the output processing format. 0 means washout, 1 mean clonal conversion
 			TRACE("Washout = 0")
 			return true;
 		}
