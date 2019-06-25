@@ -522,18 +522,28 @@ public:
         std::stringstream mutdir;
         mutdir << "mpos_" << mutationPosition;
 
-        mutdir << "_rdiv_" << setPopUpDivision << "_rple_";
-        if (resistantPoppedUpLifeExpectancy == DBL_MAX)
+        if (setPopUpDivision)
         {
-        	mutdir << "MAX";
-        }
-        else
-        {
-        	mutdir << resistantPoppedUpLifeExpectancy;
-        }
-        mutdir << "_rcct_" << resistantCellCycleTime;
+        	mutdir << "_rdiv_" << setPopUpDivision << "_rple_";
+        	
+	        if (resistantPoppedUpLifeExpectancy == DBL_MAX)
+	        {
+	        	mutdir << "MAX";
+	        }
+	        else
+	        {
+	        	mutdir << resistantPoppedUpLifeExpectancy;
+	        }
 
-        mutdir << "_awf_" << msModifier;
+	        mutdir << "_rcct_" << resistantCellCycleTime;	
+        }
+
+        mutdir << "_msM_" << msModifier;
+        mutdir << "_eesM_" << eesModifier;
+        mutdir << "_cctM_" << cctModifier;
+        mutdir << "_wtM_" << wtModifier;
+        mutdir << "_Mvf_" << mutantQuiescentVolumeFraction;
+        mutdir << "_Mnp_" << mutantProliferativeCompartment;
         
         std::string output_directory = "TestCryptColumnMutation/" +  simdir.str() + "/" + mutdir.str();
 
