@@ -10,7 +10,12 @@ function data = get_data_from_output(cmdout, data_file)
 	data = [];
 	for i = 2:length(temp2)-1
 		temp3 = strsplit(temp2{i}, ' = ');
-		data = [data; str2num(temp3{2})];
+		try
+			data = [data; str2num(temp3{2})];
+		catch
+			temp3
+			error('Somethings wrong')
+		end
 	end
 
 	csvwrite(data_file, data);
