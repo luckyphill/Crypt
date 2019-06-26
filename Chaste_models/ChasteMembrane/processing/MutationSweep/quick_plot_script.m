@@ -8,13 +8,13 @@ function plot_fraction(flag, p_range, xlab, tit, vert)
 
 p.input_flags = {flag};
 
-p.static_flags = {'t','n','np','ees','ms','vf','cct','wt','dt'};
-p.static_params= [400, 29, 12, 58, 216, 0.675, 15, 9, 0.001];
+p.static_flags = {'t','n','np','ees','ms','vf','cct','wt'};
+p.static_params= [400, 29, 12, 58, 216, 0.675, 15, 9];
 
 p.run_flag = 'run';
 p.run_number = 1;
 
-p.chaste_test = 'TestCryptColumnMutation';
+p.chaste_test = 'TestCryptColumnClonal';
 
 %----------------------------------------------------------------------------
 %----------------------------------------------------------------------------
@@ -67,7 +67,7 @@ set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(
 hold on
 plot(vert * ones(size(0:0.02:1.1)), 0:0.02:1.1, '.k')
 
-print([flag,'_dt001'],'-dpdf');
+print([flag,'_dt002'],'-dpdf');
 
 end
     

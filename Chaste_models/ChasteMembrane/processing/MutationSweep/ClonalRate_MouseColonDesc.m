@@ -28,7 +28,7 @@ p.static_params= [400, 29, 12, 58, 216, 0.675, 15, 9, 0.001];
 p.run_flag = 'run';
 p.run_number = 1;
 
-p.chaste_test = 'TestCryptColumnMutation';
+p.chaste_test = 'TestCryptColumnClonal';
 
 %----------------------------------------------------------------------------
 %----------------------------------------------------------------------------

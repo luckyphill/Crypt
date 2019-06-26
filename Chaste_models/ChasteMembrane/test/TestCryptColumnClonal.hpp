@@ -6,7 +6,7 @@
 #include "CommandLineArguments.hpp"
 
 // Simulators
-#include "OffLatticeSimulationTooManyCells.hpp"
+#include "OffLatticeSimulationMutationWashOut.hpp"
 
 // Forces
 #include "BasicNonLinearSpringForceNewPhaseModel.hpp"
@@ -66,13 +66,13 @@
 #include "FakePetscSetup.hpp"
 #include "Debug.hpp"
 
-class TestCryptColumnMutation : public AbstractCellBasedTestSuite
+class TestCryptColumnClonal : public AbstractCellBasedTestSuite
 {
 	
 public:
 
 
-	void TestCryptMutation() throw(Exception)
+	void TestClonalConversion() throw(Exception)
 	{
 		// This test simulates a column of cells that move in 2 dimensions
 		// Growing cells are represented as two nodes throughout the duration of W phase
@@ -84,7 +84,10 @@ public:
 		// happen parallel to the membrane, that also, somewhat unnaturally, forces the cells
 		// into specific height above the membrane, to prevent "half-cell death"
 
-		// In addition to this, the test also allows mutations to be specified
+
+        // This specific version of the mutation model stops when the mutation washes out
+        // or when clonal conversion occurs, specifically using the simulator OffLatticeSimulationMutationWashOut
+        // For running the muation model without a stopping event, use TestCryptColumnMutation
 
 
 
@@ -506,7 +509,7 @@ public:
 
 		// ********************************************************************************************
 		// Make the simulation
-		OffLatticeSimulationTooManyCells simulator(cell_population);
+		OffLatticeSimulationMutationWashOut simulator(cell_population);
 		simulator.SetDt(dt);
 		simulator.SetSamplingTimestepMultiple(sampling_multiple);
 		simulator.SetCellLimit(cell_limit);
@@ -760,8 +763,8 @@ public:
                 cell_twin->AddCellProperty(p_Eweakened);
 
                 SimplifiedPhaseBasedCellCycleModel* p_ccm_twin = static_cast<SimplifiedPhaseBasedCellCycleModel*>(cell_twin->GetCellCycleModel());
-                p_ccm_twin->SetWDuration( wtModifier * wPhaseLength);
-                p_ccm_twin->SetBasePDuration(cctModifier * cellCycleTime - wtModifier * wPhaseLength);
+                p_ccm_twin->SetWDuration( cctModifier * wPhaseLength);
+                p_ccm_twin->SetBasePDuration(cellCycleTime - cctModifier * wPhaseLength);
                 p_ccm_twin->SetQuiescentVolumeFraction(mutantQuiescentVolumeFraction);
                 p_ccm_twin->SetWntThreshold(1 - (double)mutantProliferativeCompartment/n);
 	    	}
@@ -774,10 +777,9 @@ public:
 		// ********************************************************************************************
 		// Run the simulation to be observed
 		TRACE("Starting simulation proper")
-		simulator.Solve();
-
         TRACE("START")
-		// Here be statistics
+        simulator.WashOutSwitch();
+		simulator.Solve();
         TRACE("END")
 		// ********************************************************************************************
 

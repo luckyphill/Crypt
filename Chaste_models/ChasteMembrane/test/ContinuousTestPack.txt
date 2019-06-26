@@ -10,5 +10,6 @@ TestCryptNewPhaseModel.hpp
 TestResistanceWithNewPhaseModel.hpp
 TestCryptColumn.hpp
 TestCryptColumnMutation.hpp
+TestCryptColumnClonal.hpp
 TestBoundaryCondition.hpp
 TestDamping.hpp
