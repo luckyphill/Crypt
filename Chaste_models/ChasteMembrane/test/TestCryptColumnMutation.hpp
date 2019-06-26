@@ -740,8 +740,8 @@ public:
 		SimplifiedPhaseBasedCellCycleModel* p_ccm = static_cast<SimplifiedPhaseBasedCellCycleModel*>((*it)->GetCellCycleModel());
         SimplifiedCellCyclePhase phase = p_ccm->GetCurrentCellCyclePhase();
         
-        p_ccm->SetWDuration( cctModifier * wPhaseLength);
-        p_ccm->SetBasePDuration(cellCycleTime - cctModifier * wPhaseLength);
+        p_ccm->SetWDuration( wtModifier * wPhaseLength);
+        p_ccm->SetBasePDuration(cctModifier * cellCycleTime - wtModifier * wPhaseLength);
         p_ccm->SetQuiescentVolumeFraction(mutantQuiescentVolumeFraction);
         p_ccm->SetWntThreshold(1 - (double)mutantProliferativeCompartment/n);
 

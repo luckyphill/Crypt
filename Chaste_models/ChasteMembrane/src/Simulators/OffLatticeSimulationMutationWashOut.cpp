@@ -49,7 +49,7 @@ bool OffLatticeSimulationMutationWashOut::StoppingEventHasOccurred()
 			return true;
 		}
 
-		if (  mutantCellCount > unsigned( 0.6 * double(cell_count) ) )
+		if (  mutantCellCount > unsigned( 0.8 * double(cell_count) ) )
 		{
 			TRACE("Clonal = 1")
 			return true;
