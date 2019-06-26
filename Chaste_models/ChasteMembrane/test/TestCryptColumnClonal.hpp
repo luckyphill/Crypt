@@ -763,8 +763,8 @@ public:
                 cell_twin->AddCellProperty(p_Eweakened);
 
                 SimplifiedPhaseBasedCellCycleModel* p_ccm_twin = static_cast<SimplifiedPhaseBasedCellCycleModel*>(cell_twin->GetCellCycleModel());
-                p_ccm_twin->SetWDuration( cctModifier * wPhaseLength);
-                p_ccm_twin->SetBasePDuration(cellCycleTime - cctModifier * wPhaseLength);
+                p_ccm_twin->SetWDuration( wtModifier * wPhaseLength);
+                p_ccm_twin->SetBasePDuration(cctModifier * cellCycleTime - wtModifier * wPhaseLength);
                 p_ccm_twin->SetQuiescentVolumeFraction(mutantQuiescentVolumeFraction);
                 p_ccm_twin->SetWntThreshold(1 - (double)mutantProliferativeCompartment/n);
 	    	}
