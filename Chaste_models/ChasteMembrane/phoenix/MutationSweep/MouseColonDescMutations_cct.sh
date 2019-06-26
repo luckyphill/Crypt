@@ -23,7 +23,7 @@ found=0
 while IFS=, read frac
 do 
     if [ $i = $SLURM_ARRAY_TASK_ID ]; then 
-        echo "Running mutation flag ${param} with value ${value}"
+        echo "Running mutation flags cctM and wtM with value ${frac}"
         found=1 
         break 
     fi 
@@ -31,7 +31,8 @@ do
 done < mutation_sweep_cct.txt 
 
 if [ $found = 1 ]; then
-    matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); ClonalRate_MouseColonDesc({'cctM', 'wtM'}, [${value}, ${value}], 100); quit()"
+	echo "-nodisplay -nodesktop -r cd ../../; addpath(genpath(pwd)); ClonalRate_MouseColonDesc({'cctM', 'wtM'}, [${frac}, ${frac}], 100); quit()"
+    matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); ClonalRate_MouseColonDesc({'cctM', 'wtM'}, [${frac}, ${frac}], 100); quit()"
 else 
   echo "mutation_sweep.txt does not have enough parameters for $SLURM_ARRAY_TASK_ID index" 
 fi
