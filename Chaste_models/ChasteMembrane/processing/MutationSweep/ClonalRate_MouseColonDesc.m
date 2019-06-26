@@ -22,8 +22,8 @@ horzcat(p.input_flags, param);
 p.input_values = [value];
 
 
-p.static_flags = {'t','n','np','ees','ms','vf','cct','wt'};
-p.static_params= [400, 29, 12, 58, 216, 0.675, 15, 9];
+p.static_flags = {'t','n','np','ees','ms','vf','cct','wt','dt'};
+p.static_params= [400, 29, 12, 58, 216, 0.675, 15, 9, 0.001];
 
 p.run_flag = 'run';
 p.run_number = 1;
