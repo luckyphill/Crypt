@@ -17,7 +17,8 @@ function fraction = ClonalRate_MouseColonDesc(param, value, N)
 
 fprintf('Mutation sweep for Mouse Descending Colon\n');
 
-p.input_flags = {param};
+p.input_flags = {};
+horzcat(p.input_flags, param);
 p.input_values = [value];
 
 
