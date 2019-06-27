@@ -1,5 +1,5 @@
 
-function fraction = ClonalRate_MouseColonDesc(param, value, N)
+function fraction = ClonalRate_MouseColonDesc(param, values, N)
 % This function simulates the chosen mutation parameter
 % and returns the fraction of simulations where
 % clonal conversion to the mutant cell type occurs
@@ -19,7 +19,7 @@ fprintf('Mutation sweep for Mouse Descending Colon\n');
 
 p.input_flags = {};
 p.input_flags = horzcat(p.input_flags, param);
-p.input_values = [value];
+p.input_values = values;
 
 
 p.static_flags = {'t','n','np','ees','ms','vf','cct','wt','dt'};
