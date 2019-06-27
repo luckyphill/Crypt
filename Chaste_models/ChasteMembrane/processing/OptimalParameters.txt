@@ -1,0 +1,22 @@
+Rat Caecum
+-t 400 -n 33 -np 12 -ees 58 -ms 392 -vf 0.8 -cct 25 -wt 8 -run 1
+Rat Transverse Colon
+-t 400 -n 36 -np 20 -ees 50 -ms 208 -vf 0.6 -cct 42 -wt 9 -run 1
+Rat Descending Colon
+-t 400 -n 42 -np 28 -ees 100 -ms 134 -vf 0.7 -cct 57 -wt 8 -run 1
+Rat Ascending Colon
+-t 400 -n 32 -np 16 -ees 68 -ms 200 -vf 0.65 -cct 39 -wt 13 -run 1
+
+
+Mouse Caecum
+-t 400 -n 24 -np 8 -ees 100 -ms 200 -vf 0.6125 -cct 15.5 -wt 7.5 -run 1
+Mouse Transverse
+-t 400 -n 37 -np 12 -ees 100 -ms 200 -vf 0.9 -cct 21 -wt 11 -run 1
+Mouse Descending Colon
+-t 400 -n 29 -np 12 -ees 58 -ms 216 -vf 0.675 -cct 15 -wt 9 -run 1
+Mouse Asecnding Colon
+-t 400 -n 19 -np 8 -ees 50 -ms 200 -vf 0.85 -cct 19 -wt 8 -run 1
+
+
+Human Colon (penalty = 14.227)
+-t 400 -n 60 -np 56 -ees 50 -ms 150 -vf 0.8 -cct 26 -wt 7.5 -run 1
