@@ -3,7 +3,7 @@ close all
 plot_fraction({'eesM'}, 0.5:0.02:2, 'modifier', 'cell stiffness',1);
 % plot_fraction({'Mvf'}, 0.5:0.01:0.75, 'mutant value', 'CI fraction', 0.675);
 % plot_fraction({'Mnp'}, 8:16, 'mutant value', 'proliferative zone', 12);
-% plot_fraction({'cctM', 'wtM'}, 0.5:0.02:2, 'modifier', 'cell cycle time (fully scaled)', 1);
+plot_fraction({'cctM', 'wtM'}, 0.5:0.02:2, 'modifier', 'cell cycle time (fully scaled)', 1);
 
 function plot_fraction(flag, p_range, xlab, tit, vert)
 

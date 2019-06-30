@@ -34,5 +34,5 @@ if [ $found = 1 ]; then
 	echo "-nodisplay -nodesktop -r cd ../../; addpath(genpath(pwd)); ClonalRate_MouseColonDesc({'cctM', 'wtM'}, [${frac}, ${frac}], 100); quit()"
     matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); ClonalRate_MouseColonDesc({'cctM', 'wtM'}, [${frac}, ${frac}], 100); quit()"
 else 
-  echo "mutation_sweep.txt does not have enough parameters for $SLURM_ARRAY_TASK_ID index" 
+  echo "mutation_sweep_cct.txt does not have enough parameters for $SLURM_ARRAY_TASK_ID index" 
 fi
