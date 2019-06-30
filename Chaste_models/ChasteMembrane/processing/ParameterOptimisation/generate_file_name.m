@@ -28,9 +28,9 @@ function data_file = generate_file_name(p)
 	end
 
 	file_name = p.output_file_prefix;
-	if ~strcmp(file_name(end), '_')
-		file_name(end+1) = '_';
-	end
+	% if ~strcmp(file_name(end), '_')
+	% 	file_name(end+1) = '_';
+	% end
 
 	for i = 1:q
 		file_name = [file_name, sprintf('_%s_%g',p.static_flags{i}, p.static_params(i))];

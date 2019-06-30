@@ -28,6 +28,8 @@ p.ignore_existing = false;
 
 p.base_path = [getenv('HOME'), '/'];
 
+p.process = 'ParameterOptimisation';
+p.output_file_prefix = 'parameter_search';
 
 
 frac = [];
