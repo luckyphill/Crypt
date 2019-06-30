@@ -5,6 +5,10 @@ function penalty = run_simulation(p)
 	% If not, then it runs the simulation to generate that data, then applies the p.objective function
 	% to produce a penalty. The penalty is returned
 
+	% THE PURPOSE OF THIS FUNCTION IS TO ENSURE THAT EXISITING DATA IS NOT REGENERATED UNECESSARILY
+	% THIS SHOULD ONLY BE USED WHEN THE OUTPUT MUST ALWAYS BE THE RESULT OF A COMPLETED SIMULATION
+	% IF ONLY READING EXISTING DATA, THEN USE A READ DATA FUNCTION 
+
 	simulation_command = [p.base_path, 'chaste_build/projects/ChasteMembrane/test/', p.chaste_test];
 
 	data_file = generate_file_name(p);
@@ -16,9 +20,9 @@ function penalty = run_simulation(p)
 		try
 			data = get_data_from_file(data_file);
 		catch
-			fprintf('Problem retrieving data\n');
-			penalty = nan;
-			return
+			fprintf('Problem retrieving data, attempting to regenerate\n');
+			[status,cmdout] = system([simulation_command, input_string],'-echo');
+			data = get_data_from_output(cmdout, data_file);
 		end
 	else
 		if p.ignore_existing

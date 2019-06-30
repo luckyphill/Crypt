@@ -14,7 +14,7 @@ function data = get_data_from_output(cmdout, data_file)
 			data = [data; str2num(temp3{2})];
 		catch
 			temp3
-			error('Somethings wrong')
+			error(['Problem reading output intended for ' data_file])
 		end
 	end
 
