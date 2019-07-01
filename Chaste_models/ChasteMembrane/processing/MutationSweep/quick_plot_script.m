@@ -28,6 +28,8 @@ p.ignore_existing = false;
 
 p.base_path = [getenv('HOME'), '/'];
 
+p.process = 'ParameterOptimisation';
+p.output_file_prefix = 'parameter_search';
 
 
 frac = [];
@@ -37,22 +39,21 @@ runn = [];
 for fr = p_range
     
     p.input_values = fr * ones(size(p.input_flags));
+    total = 0;
     count = 0;
     for run_number = 1:101
         
         p.run_number = run_number;
         file_name = generate_file_name(p);
         try
-            count = count + csvread(file_name);
+            total = total + csvread(file_name);
+            count = count + 1;
         catch
-            fraction = count/(run_number - 1);
-            if run_number < 101
-                fprintf('Stopped %g at run %g\n', fr, run_number);
-            end
-            break;
+            fprintf('Skipped %g at run %g\n', fr, run_number);
         end
         
     end
+    fraction = total / count;
     runn = [runn, run_number];
     coun = [coun, count];
     frac = [frac, fraction];
@@ -75,7 +76,7 @@ plot(vert * ones(size(0:0.02:1.1)), 0:0.02:1.1, '.k')
 print([flag{1},'_dt001'],'-dpdf');
 
 figure
-plot(p_range, runn, '.');
+plot(p_range, coun, '.');
 
 end
     

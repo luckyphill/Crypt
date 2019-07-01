@@ -5,7 +5,7 @@ function data_file = generate_file_name(p)
 	% and they all ought to be represented in the file name if they are specified
 	% At the same time we want to keep them all in a regular order. This function
 	% won't do that. If a special order is needed, that should be controlled 
-	% outside find_optimal_region
+	% when building the structure p
 
 	n = length(p.input_flags);
 	m = length(p.input_values);
@@ -16,18 +16,21 @@ function data_file = generate_file_name(p)
 	assert(n==m);
 	assert(r==q);
 
-	file_dir = [p.base_path, 'Research/Crypt/Data/Chaste/ParameterOptimisation/', p.chaste_test, '/', func2str(p.obj), '/'];
+	file_dir = [p.base_path, 'Research/Crypt/Data/Chaste/', p.process, '/', p.chaste_test, '/', func2str(p.obj), '/'];
 	if exist(file_dir,'dir')~=7
 		% Make the full path
-		if exist([p.base_path, 'Research/Crypt/Data/Chaste/ParameterOptimisation/', p.chaste_test, '/'],'dir')~=7
-			mkdir([p.base_path, 'Research/Crypt/Data/Chaste/ParameterOptimisation/', p.chaste_test, '/']);
+		if exist([p.base_path, 'Research/Crypt/Data/Chaste/', p.process, '/', p.chaste_test, '/'],'dir')~=7
+			mkdir([p.base_path, 'Research/Crypt/Data/Chaste/', p.process, '/', p.chaste_test, '/']);
 		end
 
 		mkdir(file_dir);
 
 	end
 
-	file_name = 'parameter_search';
+	file_name = p.output_file_prefix;
+	% if ~strcmp(file_name(end), '_')
+	% 	file_name(end+1) = '_';
+	% end
 
 	for i = 1:q
 		file_name = [file_name, sprintf('_%s_%g',p.static_flags{i}, p.static_params(i))];
