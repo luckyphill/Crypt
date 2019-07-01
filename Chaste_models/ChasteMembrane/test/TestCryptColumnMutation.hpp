@@ -59,6 +59,7 @@
 // Writers
 #include "NodePairWriter.hpp"
 #include "EpithelialCellForceWriter.hpp"
+#include "EpithelialCellPositionWriter.hpp"
 #include "NewPhaseModelBirthPositionWriter.hpp"
 #include "NewPhaseCountWriter.hpp"
 
@@ -219,6 +220,18 @@ public:
         // ********************************************************************************************
 
 
+        // ******************************************************************************************** 
+        // Differentiation position 
+        unsigned mutantProliferativeCompartment = n_prolif; // Number of proliferative cells, counting up from the bottom
+        if(CommandLineArguments::Instance()->OptionExists("-Mnp"))
+        {   
+            mutantProliferativeCompartment = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-Mnp");
+            PRINT_VARIABLE(mutantProliferativeCompartment)
+
+        }
+        // ******************************************************************************************** 
+
+
         // ********************************************************************************************
         // Anoikis resistance
         double resistantPoppedUpLifeExpectancy = DBL_MAX;
@@ -301,18 +314,7 @@ public:
 
         }
         // ********************************************************************************************     
-
-
-        // ******************************************************************************************** 
-        // Differentiation position 
-        unsigned mutantProliferativeCompartment = n_prolif; // Number of proliferative cells, counting up from the bottom
-        if(CommandLineArguments::Instance()->OptionExists("-Mnp"))
-        {   
-            mutantProliferativeCompartment = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-Mnp");
-            PRINT_VARIABLE(mutantProliferativeCompartment)
-
-        }
-        // ********************************************************************************************   
+  
 
 
         // ********************************************************************************************
@@ -342,12 +344,12 @@ public:
 
 
         // ********************************************************************************************
-		bool java_visualiser = false;
+		bool file_output = false;
         double sampling_multiple = 100000;
         if(CommandLineArguments::Instance()->OptionExists("-sm"))
         {   
             sampling_multiple = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-sm");
-            java_visualiser = true;
+            file_output = true;
             TRACE("File output occuring")
 
         }
@@ -544,12 +546,13 @@ public:
 	        mutdir << "_rcct_" << resistantCellCycleTime;	
         }
 
-        mutdir << "_msM_" << msModifier;
+        mutdir << "_Mnp_" << mutantProliferativeCompartment;
         mutdir << "_eesM_" << eesModifier;
+        mutdir << "_msM_" << msModifier;
         mutdir << "_cctM_" << cctModifier;
         mutdir << "_wtM_" << wtModifier;
         mutdir << "_Mvf_" << mutantQuiescentVolumeFraction;
-        mutdir << "_Mnp_" << mutantProliferativeCompartment;
+        
         
         std::string output_directory = "TestCryptColumnMutation/" +  simdir.str() + "/" + mutdir.str();
 
@@ -568,7 +571,7 @@ public:
         // File outputs
         // Files are only output if the command line argument -sm exists and a sampling multiple is set
         simulator.SetSamplingTimestepMultiple(sampling_multiple);
-        cell_population.SetOutputResultsForChasteVisualizer(java_visualiser);
+        cell_population.SetOutputResultsForChasteVisualizer(file_output);
         // ********************************************************************************************
 
 		// ********************************************************************************************
@@ -774,6 +777,16 @@ public:
 	    }
 
 		// ********************************************************************************************
+
+
+
+        // ********************************************************************************************
+        // Add cell population writers if they are requested
+        if (file_output)
+        {
+            p_tissue->AddCellWriter<EpithelialCellPositionWriter>();
+        }
+        // ********************************************************************************************
 
 
 

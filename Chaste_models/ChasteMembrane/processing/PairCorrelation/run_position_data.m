@@ -9,7 +9,7 @@
 function data = run_position_data(p)
 
     % The data file were are expecting
-    file = generate_file_name(p);
+    file = generate_file_name(p)
     data_path = generate_temp_output_path(p);
     data_file = [data_path, 'cell_positions.dat'];
     input_string = generate_input_string(p);
@@ -19,7 +19,7 @@ function data = run_position_data(p)
     try
         % See if the data already exists
         data = csvread(file);
-        if data(end,1) < 99
+        if length(data) < 99
             error('Not enough existing data, need to run simulation\n');
         end
         fprintf('Found sufficient existing data for simulation %s\n', input_string);
@@ -40,7 +40,7 @@ function data = run_position_data(p)
             
             fprintf('Data does not exist. Simulating with input: %s\n', input_string);
             [status,cmdout] = system([simulation_command, input_string],'-echo');
-            [status,cmdout] = system(['mv ' data_file ' ' file]);
+            [status,cmdout] = system(['mv ' data_file ' ' file],'-echo');
             data = csvread(file);
         end
     end

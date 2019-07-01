@@ -24,10 +24,10 @@ function output_path = generate_temp_output_path(p);
 	use_resist = false;
 
 	Mnp = 10;
-	eesM = 20;
-	msM = 50;
-	cctM = 15;
-	wtM = 10;
+	eesM = 1;
+	msM = 1;
+	cctM = 1;
+	wtM = 1;
 	Mvf = 0.75;
 
 	for i = 1:length(p.static_flags)
@@ -42,17 +42,13 @@ function output_path = generate_temp_output_path(p);
 		 		Mnp = np;
 		 	case 'ees'
 		 		ees = p.static_params(i);
-		 		eesM = ees;
 		 	case 'ms'
 		 		ms = p.static_params(i);
-		 		msM = ms;
 		 	case 'cct'
 		 		cct = p.static_params(i);
-		 		cctM = cct;
 		 		rcct = cct;
 		 	case 'wt'
 		 		wt = p.static_params(i);
-		 		wtM = wt;
 		 	case 'vf'
 		 		vf = p.static_params(i);
 		 		Mvf = vf;
@@ -60,9 +56,10 @@ function output_path = generate_temp_output_path(p);
 		 		bt = p.static_params(i);
 		 	case 't'
 		 		t = p.static_params(i);
-
 		 	case 'dt'
 		 		dt = p.static_params(i);
+		 	case 'sm'
+		 		a = 1;
 		 	otherwise
 		 		error('Unknown flag')
 		end
@@ -100,14 +97,14 @@ function output_path = generate_temp_output_path(p);
 
 	path_start = '/tmp/phillipbrown/testoutput/';
 
-	path_normal = sprintf('n_%d_EES_%g_MS_%g_CCT_%g_WT_%g_VF_%g_run_%d/', n , ees, ms, cct, wt, vf, p.run_number);
+	path_normal = sprintf('n_%d_np_%d_EES_%g_MS_%g_CCT_%g_WT_%g_VF_%g_run_%d/', n, np , ees, ms, cct, wt, vf, p.run_number);
 
-	path_mpos = sprintf('mpos_%d_rdiv_%d', mpos, rdiv);
+	path_mpos = sprintf('mpos_%d_', mpos);
 
-	output_path = [path_start, p.chaste_test, path_normal, path_mpos];
+	output_path = [path_start, p.chaste_test, '/', path_normal, path_mpos];
 
 	if use_resist
-		path_resist = sprintf()
+		path_resist = sprintf('rdiv_%d_rple_%g_rcct_%g_', rdiv, rple, rcct);
 		output_path  = [output_path, path_resist];
 	end
 
