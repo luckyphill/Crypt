@@ -518,8 +518,13 @@ public:
 		// ********************************************************************************************
 		// Building the directory name
 		std::stringstream simdir;
-        simdir << "n_" << n << "_np_" << n_prolif;
-        simdir << "_EES_"<< epithelialStiffness << "_MS_" << membraneStiffness << "_CCT_" << int(cellCycleTime) << "_VF_" << quiescentVolumeFraction;
+        simdir << "n_" << n;
+        simdir << "_np_" << n_prolif;
+        simdir << "_EES_"<< epithelialStiffness;
+        simdir << "_MS_" << membraneStiffness;
+        simdir << "_CCT_" << cellCycleTime;
+        simdir << "_WT_" << wPhaseLength;
+        simdir << "_VF_" << quiescentVolumeFraction;
         simdir << "_run_" << run_number;
 
         std::stringstream mutdir;
