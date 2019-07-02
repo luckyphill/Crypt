@@ -33,7 +33,7 @@ data = data(:,4:3:end);
 
 
 
-dr = 0.5;
+dr = 1;
 rmax = 29;
 
 figure()
@@ -45,7 +45,8 @@ for i = 2:length(data(:,1))
     data1 = data(i,:);
     [pcf, edges] = simple_pcf(data1, dr, rmax);
     l.YData = pcf;
-    ylim([0 40]);
+    ylim([0 1]);
+    xlim([0 rmax]);
     drawnow;
     pause(1)
 end
