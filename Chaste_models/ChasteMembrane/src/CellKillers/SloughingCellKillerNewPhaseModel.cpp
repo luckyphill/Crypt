@@ -42,38 +42,7 @@ void SloughingCellKillerNewPhaseModel<ELEMENT_DIM,SPACE_DIM>::SetCryptTop(double
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
 void SloughingCellKillerNewPhaseModel<ELEMENT_DIM,SPACE_DIM>::CheckAndLabelCellsForApoptosisOrDeath()
 {
-	if (dynamic_cast<MeshBasedCellPopulation<SPACE_DIM>*>(this->mpCellPopulation))
-	{
-		MeshBasedCellPopulation<SPACE_DIM>* p_tissue = static_cast<MeshBasedCellPopulation<SPACE_DIM>*> (this->mpCellPopulation);
-
-		for (typename AbstractCellPopulation<SPACE_DIM>::Iterator cell_iter = p_tissue->Begin();
-    			cell_iter != p_tissue->End();
-    			++cell_iter)
-    	{
-    		unsigned node_index = this->mpCellPopulation->GetLocationIndexUsingCell(*cell_iter);
-    		if (!cell_iter->GetCellProliferativeType()->template IsType<MembraneCellProliferativeType>())
-    		{
-    			Node<SPACE_DIM>* p_node = this->mpCellPopulation->GetNode(node_index);
-            	double y = p_node->rGetLocation()[1];
-            	if (y > mCryptTop && !cell_iter->IsDead())
-            	{
-                    SimplifiedPhaseBasedCellCycleModel* p_ccm = static_cast<SimplifiedPhaseBasedCellCycleModel*>(cell_iter->GetCellCycleModel());
-                    SimplifiedCellCyclePhase p_phase = p_ccm->GetCurrentCellCyclePhase();
-                    cell_iter->Kill();
-
-                    if (p_phase == W_PHASE)
-                    {
-                        mCellKillCount += 0.5;
-                    }
-                    else
-                    {
-                        mCellKillCount += 1.0;//Increment the cell kill count by one for each cell killed
-                    }
-            	}
-    		}
-    	}
-	}
-	else if (dynamic_cast<NodeBasedCellPopulation<SPACE_DIM>*>(this->mpCellPopulation))
+    if (dynamic_cast<NodeBasedCellPopulation<SPACE_DIM>*>(this->mpCellPopulation))
 	{
 		NodeBasedCellPopulation<SPACE_DIM>* p_tissue = static_cast<NodeBasedCellPopulation<SPACE_DIM>*> (this->mpCellPopulation);
 
@@ -85,6 +54,7 @@ void SloughingCellKillerNewPhaseModel<ELEMENT_DIM,SPACE_DIM>::CheckAndLabelCells
     		if (!cell_iter->GetCellProliferativeType()->template IsType<MembraneCellProliferativeType>())
     		{
     			Node<SPACE_DIM>* p_node = this->mpCellPopulation->GetNode(node_index);
+                double x = p_node->rGetLocation()[0];
             	double y = p_node->rGetLocation()[1];
             	if (y > mCryptTop && !cell_iter->IsDead())
             	{
@@ -101,6 +71,20 @@ void SloughingCellKillerNewPhaseModel<ELEMENT_DIM,SPACE_DIM>::CheckAndLabelCells
                         mCellKillCount += 1.0;//Increment the cell kill count by one for each cell killed
                     }
             	}
+                if (y > mCryptTop - 1.0 && x > 1.1 && !cell_iter->IsDead()) 
+                {
+                    SimplifiedPhaseBasedCellCycleModel* p_ccm = static_cast<SimplifiedPhaseBasedCellCycleModel*>(cell_iter->GetCellCycleModel());
+                    SimplifiedCellCyclePhase p_phase = p_ccm->GetCurrentCellCyclePhase();
+                    cell_iter->Kill();
+                    if (p_phase == W_PHASE)
+                    {
+                        mCellKillCount += 0.5;
+                    }
+                    else
+                    {
+                        mCellKillCount += 1.0;//Increment the cell kill count by one for each cell killed
+                    }
+                }
     		}
     	}
     }

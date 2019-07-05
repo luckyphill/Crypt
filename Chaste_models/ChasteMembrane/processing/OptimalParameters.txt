@@ -14,7 +14,7 @@ Mouse Transverse
 -t 400 -n 37 -np 12 -ees 100 -ms 200 -vf 0.9 -cct 21 -wt 11 -run 1
 Mouse Descending Colon
 -t 400 -n 29 -np 12 -ees 58 -ms 216 -vf 0.675 -cct 15 -wt 9 -run 1
-Mouse Asecnding Colon
+Mouse Asecnding Colon (doesn't work with mutations)
 -t 400 -n 19 -np 8 -ees 50 -ms 200 -vf 0.85 -cct 19 -wt 8 -run 1
 
 

@@ -95,7 +95,9 @@ function output_path = generate_temp_output_path(p);
 	end
 
 
-	path_start = '/tmp/phillipbrown/testoutput/';
+% 	path_start = '/tmp/phillipbrown/testoutput/';
+    
+    path_start = '/tmp/phillip/testoutput/';
 
 	path_normal = sprintf('n_%d_np_%d_EES_%g_MS_%g_CCT_%g_WT_%g_VF_%g_run_%d/', n, np , ees, ms, cct, wt, vf, p.run_number);
 

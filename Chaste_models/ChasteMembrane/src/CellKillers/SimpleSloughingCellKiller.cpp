@@ -10,6 +10,7 @@
 #include "NodeBasedCellPopulation.hpp"
 #include "PanethCellMutationState.hpp"
 //#include "TransitCellSloughingResistantMutationState.hpp"
+#include "AnoikisCellTagged.hpp"
 #include "MembraneCellProliferativeType.hpp"
 
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
@@ -44,28 +45,7 @@ void SimpleSloughingCellKiller<ELEMENT_DIM,SPACE_DIM>::SetCryptTop(double cryptT
 template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
 void SimpleSloughingCellKiller<ELEMENT_DIM,SPACE_DIM>::CheckAndLabelCellsForApoptosisOrDeath()
 {
-	if (dynamic_cast<MeshBasedCellPopulation<SPACE_DIM>*>(this->mpCellPopulation))
-	{
-		MeshBasedCellPopulation<SPACE_DIM>* p_tissue = static_cast<MeshBasedCellPopulation<SPACE_DIM>*> (this->mpCellPopulation);
-
-		for (typename AbstractCellPopulation<SPACE_DIM>::Iterator cell_iter = p_tissue->Begin();
-    			cell_iter != p_tissue->End();
-    			++cell_iter)
-    	{
-    		unsigned node_index = this->mpCellPopulation->GetLocationIndexUsingCell(*cell_iter);
-    		if (!cell_iter->GetCellProliferativeType()->template IsType<MembraneCellProliferativeType>())
-    		{
-    			Node<SPACE_DIM>* p_node = this->mpCellPopulation->GetNode(node_index);
-            	double y = p_node->rGetLocation()[1];
-            	if (y > mCryptTop && !cell_iter->IsDead())
-            	{
-            		cell_iter->Kill();
-                    mCellKillCount += 1;//Increment the cell kill count by one for each cell killed
-            	}
-    		}
-    	}
-	}
-	else if (dynamic_cast<NodeBasedCellPopulation<SPACE_DIM>*>(this->mpCellPopulation))
+	if (dynamic_cast<NodeBasedCellPopulation<SPACE_DIM>*>(this->mpCellPopulation))
 	{
 		NodeBasedCellPopulation<SPACE_DIM>* p_tissue = static_cast<NodeBasedCellPopulation<SPACE_DIM>*> (this->mpCellPopulation);
 
@@ -77,12 +57,19 @@ void SimpleSloughingCellKiller<ELEMENT_DIM,SPACE_DIM>::CheckAndLabelCellsForApop
     		if (!cell_iter->GetCellProliferativeType()->template IsType<MembraneCellProliferativeType>())
     		{
     			Node<SPACE_DIM>* p_node = this->mpCellPopulation->GetNode(node_index);
+                double x = p_node->rGetLocation()[0];
             	double y = p_node->rGetLocation()[1];
             	if (y > mCryptTop && !cell_iter->IsDead())
             	{
             		cell_iter->Kill();
                     mCellKillCount += 1;//Increment the cell kill count by one for each cell killed
             	}
+                // Should replace 1.1 with a variable extracted from the anoikis cell killer class, but I've nevver changed it
+                if (y > mCryptTop - 1.0 && x > 1.1 && !cell_iter->IsDead()) 
+                {
+                    cell_iter->Kill();
+                    mCellKillCount += 1;//Increment the cell kill count by one for each cell killed
+                }
     		}
     	}
     }
