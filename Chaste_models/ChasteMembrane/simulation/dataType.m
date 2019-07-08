@@ -5,7 +5,9 @@ classdef (Abstract) dataType
 	% these are processed and stored as raw data to be analysed in an
 	% 'analysis' class
 
-	properties (Abstract)
+	properties (Abstract, Constant = true)
+		% The name for the datatype, this must be implemented within a concrete class
+		% For the sake of convention, this should be the same as the m file name
 		name
 	end
 
@@ -13,15 +15,18 @@ classdef (Abstract) dataType
 		% These methods must be implemented in sublclasses, but cannot be used
 		% externally
 
-		% An internal method that attempts to retreive the data from file
-		% If this method method will only run if the file exists,
-		% but it may fail if the file format doesn't match what is expected
-
+		% These methods deal with the specific details of the data format
+		% how it is extracted from the raw simulation data, and how it is
+		% saved in the specified format
 		data = retrieveData
 		processOutput
+
 	end
 
 	methods
+		% These methods are how the user, or the simulation point interacts with the data
+		% They have error catching built in to catch and handle common file reading errors
+
 		function data = loadData(obj, sp)
 			% This is the way that data is loaded
 			% It enforces an existance check, then loads the data
@@ -32,20 +37,44 @@ classdef (Abstract) dataType
 			% in their implementation of the abstract methods
 
 			if ~(exist(sp.dataFile, 'file') == 2)
-				error('File does not exist')
+				error('dt:FileDNE', 'File does not exist.')
 			end
 
 			try
 				data = obj.retrieveData(sp);
 			catch
-				error('Data was not found in the expected format');
+				error('dt:RetreivalFail','Data retreival failed. Check file can be read.');
+			end
+
+			if ~obj.verifyData(data)
+				error('dt:VerificationFail','Data verification failed. Check data format.');
 			end
 		end
 
 		function status = saveData(obj, sp)
-			% This saves data in the required format
-			% 
+			% This saves data in the required format by using the user created
+			% implementation of processOutput
+			% It expeccts the user to not implement any error handling
 
+			try
+				obj.processOutput(sp);
+			catch
+				error('dt:ProcessingFail','Issue processing data. Check the processOutput method in %s', obj.name)
+			end
+
+			status = 1;
+
+		end
+
+		% This method can be overwritten, but it can be ignored
+		function correct = verifyData(obj, data)
+			% An extra method that checks the data is the correct format
+			% Useful if the data retrieval method can succeed even though
+			% the format is incorrect.
+
+			% It can be overwritten in subclasses, but it is not necessary,
+			% hence the base class always returns true
+			correct = true;
 		end
 	end
 

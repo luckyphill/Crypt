@@ -1,4 +1,4 @@
-classdef analysis
+classdef analysis < Abstract
 	% This is a class that controls all the details of a
 	% particular analysis. It handles the generation and gathering
 	% of data using the simpoint class, and collates it into useful

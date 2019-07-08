@@ -1,4 +1,4 @@
-classdef positionData < dataType
+classdef dummyDataType < dataType
 	% This is an abstract class that defines the functions required for
 	% saving and loading specific data types
 	% An example of a dataType is behavioural properties, cell positions
@@ -6,34 +6,37 @@ classdef positionData < dataType
 	% 'analysis' class
 
 	properties (Constant = true)
-		name = 'position_data';
+		name = 'dummy';
 	end
 
 
 	methods (Access = protected)
-		function data = retrieveData(pd, sp)
+		function data = retrieveData(obj, sp)
 			% Loads the data from the file and puts it in the expected format
 
 			data = csvread(sp.dataFile);
 
 		end
 
-		function processOutput(pd, sp)
+		function processOutput(obj, sp)
 			% Implements the abstract method to process the simpoint output
 			% and put it in the expected location, in the expected format
 
-			outputFile = [sp.simOutputLocation, 'cell_positions.dat'];
-
-			[status,cmdout] = system(['mv ', outputFile,  sp.dataFile],'-echo');
+			
+			csvwrite(sp.saveFile, sp.data);
 
 		end
 
 	end
 	methods
 
-		function correct = verifyData(pd, data)
-			% 
-			correct = true;
+		function correct = verifyData(obj, data)
+			
+			if length(data) > 2
+				correct = false;
+			else
+				correct = true;
+			end
 		end
 
 
