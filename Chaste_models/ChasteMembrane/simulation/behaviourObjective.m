@@ -20,7 +20,7 @@ classdef behaviourObjective < matlab.mixin.SetGet
 			seedParams = containers.Map({'run'}, {run_number});
 
 			chastePath = [getenv('HOME'), '/'];
-			chasteTestOutputLocation = ['/tmp/', getenv('USER'),'/';
+			chasteTestOutputLocation = ['/tmp/', getenv('USER'),'/'];
 
 			obj.objectiveFunction = objectiveFunction;
 

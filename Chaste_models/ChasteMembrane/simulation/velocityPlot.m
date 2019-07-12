@@ -24,7 +24,7 @@ classdef velocityPlot < matlab.mixin.SetGet
 			seedParams = containers.Map({'run'}, {run_number});
 
 			chastePath = [getenv('HOME'), '/'];
-			chasteTestOutputLocation = '/tmp/phillip/';
+			chasteTestOutputLocation = ['/tmp/', getenv('USER'),'/'];
 
 
 			obj.simul = simulateCryptColumn(simParams, solverParams, seedParams, outputType, chastePath, chasteTestOutputLocation);
