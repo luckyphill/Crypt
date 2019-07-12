@@ -17,7 +17,7 @@ classdef simpoint
 		% solverParams: These define numerical conditions, like run time, time step
 		% seedParams: These define the intial conditions of the crypt (in this case, a random number seed)
 		% They are stored in maps where key = the flag/variable name, value = numerical value of the variable
-		% These are set when the simpoint is initialised and won't change
+		% These are set when the simulation is initialised and won't change
 		simParams containers.Map
 
 		solverParams containers.Map
@@ -28,15 +28,30 @@ classdef simpoint
 		% This is used when building the simulation command
 		chasteTest
 
-		% This is an object that handles reading and writing of output
+		% The path to the function that runs the simulation
+		% May not be needed for the most general form of this class,
+		% but is definitely needed for using Chaste
+		pathToFunction
+
+		% Where the simulation output is stored in general
+		% This will have a deeper folder structure, and is used as the base
+		pathToSimOutput
+
+		% This is where the data is saved to.
+		% There will be a deeper folder structure for the 
+		pathToDatabase
+
+		% This is an object that manages reading and writing of output
 		outputType
+
+		% A flag to tell the data generating method if existing data is to be overwritten
 		overWrite = false;
 	end
 
 	properties (SetAccess = protected)
 		% These properties are determined from the input values, and are set 
 		% in the constructor only (hence immutable)
-		% The input values never change for a given simpoint, so these will never change
+		% The input values never change for a given simulation, so these will never change
 
 		simOutputLocation % Where Chaste stores its own output
 		dataSaveLocation % Where the data for the given analysis will be stored
@@ -56,7 +71,7 @@ classdef simpoint
 		% These properties are determined from simulations and can be modified
 		% within the class at any time, but cannot be modified from outside
 
-		% The concole output from the simulation
+		% The console output from the simulation
 		cmdout
 
 		% The loaded simulation data in the format defined in 'outputType'
@@ -67,15 +82,18 @@ classdef simpoint
 
 
 	methods
+		
 		function obj = set.outputType( obj, v )
 			% This is to validate the object given to outputType in the constructor
             validateattributes(v, {'dataType'}, {});
             obj.outputType = v;
         end
+
+
 		% These methods are available externally and are how the data gathering is handled
 
-		function sp = simpoint(p)
-			% Initialise the simpoint and generate all the fixed file names
+		function sp = simulation(p)
+			% Initialise the simulation and generate all the fixed file names
 			% p is an input structure, containing all the details needed for a simulation
 			% they are then dispersed appropriately
 
@@ -85,28 +103,42 @@ classdef simpoint
 
 			sp.seedParams = p.seedParams;
 
-
+			% This controls the data saving
 			sp.outputType = p.outputType;
 
-
+			% The name of the specific Chaste test used
 			sp.chasteTest = p.chasteTest;
 
-
+			% An optional argument to trigger overwriting of existing data
+			% Useful when a dataType is changed, or the Chaste test is modified
 			if isfield(p, 'overWrite')
 				sp.overWrite = p.overWrite;
 			end
 
+			% Fixed paths to different input/output/command locations
+			sp.pathToFunction = p.pathToFunction;
 
+			sp.pathToSimOutput = p.pathToSimOutput;
 
-			sp.simOutputLocation = '/tmp/phillip/'; % Where Chaste stores its own output
-			sp.dataSaveLocation = 'Research/Crypt/Data/'; % Where the data for the given analysis will be stored
+			sp.pathToDatabase = p.pathToDatabase;
 
+			% Full path to locations with parameter dependent paths
+			sp.simOutputLocation = sp.generateSimOutputLocation();
+			
+			sp.dataSaveLocation = sp.generateDataSaveLocation();
+
+			% The filename of the actual file
+			sp.fileName = sp.generateFileName();
+
+			% Data and error output files
 			sp.dataFile = [sp.dataSaveLocation, sp.fileName, '.txt'];
 			sp.errorFile = [sp.dataSaveLocation, sp.fileName, '.err'];
 
-			sp.simulationCommand = 'tmp';
+			% The string that provides the parameter input
+			sp.inputString = sp.generateInputString();
 
-			sp.inputString = 'tmp';
+			% The actual command that runs the whole shebang
+			sp.simulationCommand = sp.generateSimulationCommand();
 
 		end
 
@@ -188,7 +220,7 @@ classdef simpoint
 				% However, this does not mean the data will necessarily be in the correct
 				% format. Error checking needs to happen in the data processing
 				% Data should be able to be processed correctly
-				sp.outputType.saveOutput(sp);
+				sp.outputType.saveData(sp);
 			end
 
 		end
@@ -212,99 +244,236 @@ classdef simpoint
 	methods (Access = protected)
 		% These methods are purely for managing the class 
 
-		function generateSimOutputLocation(sp)
+		function fileName = generateFileName(sp)
+			% This function generates the filename based on the input variables
+			% sometime the input variables might be held in the folder structure
+			% so this might just be a seed number
+
+			fileName = [sp.outputType.name];
+
+			k = sp.seedParams.keys;
+			v = sp.seedParams.values;
+			for i = 1:sp.seedParams.Count
+				fileName = [fileName, sprintf('_%s_%g',k{i}, v{i})];
+			end
+
+		end
+		
+
+		function simOutputLocation =  generateSimOutputLocation(sp)
 			% This generates the simulation output path for the given parameters
 			% in the given Chaste test. This will depend on how the
 			% Chaste function 'simulator.SetOutputDirectory()' is implemented, so this method
 			% will be test-specific. The default values of some parameters will need to be know here
 
-			path_start = '/tmp/phillip/testoutput/';
+			n = 20;
+			np = 10;
+			ees = 20;
+			ms = 50;
+			cct = 15;
+			wt = 10;
+			vf = 0.75;
+
+			bt = 40;
+			t = 100;
+			dt = 0.001;
+			sm = 10;
+
+			mpos = 1;
+			
+			rdiv = 0;
+			rple = 'MAX';
+			rcct = 15;
+			use_resist = false;
+
+			Mnp = 10;
+			eesM = 1;
+			msM = 1;
+			cctM = 1;
+			wtM = 1;
+			Mvf = 0.75;
+
+			k = sp.simParams.keys;
+			v = sp.simParams.values;
+
+			for i = 1:sp.simParams.Count
+
+				flag = k{i};
+
+				switch flag
+				 	case 'n'
+				 		n = v{i};
+				 	case 'np'
+				 		np = v{i};
+				 		Mnp = np;
+				 	case 'ees'
+				 		ees = v{i};
+				 	case 'ms'
+				 		ms = v{i};
+				 	case 'cct'
+				 		cct = v{i};
+				 		rcct = cct;
+				 	case 'wt'
+				 		wt = v{i};
+				 	case 'vf'
+				 		vf = v{i};
+				 		Mvf = vf;
+					case 'Mnp'
+				 		Mnp = v{i};
+				 	case 'eesM'
+				 		eesM = v{i};
+				 	case 'msM'
+				 		msM = v{i};
+				 	case 'cctM'
+				 		cctM = v{i};
+				 	case 'wtM'
+				 		wtM = v{i};
+				 	case 'Mvf'
+				 		Mvf = v{i};
+				 	case 'rdiv'
+				 		rdiv = v{i};
+				 		use_resist = true;
+				 	case 'rple'
+				 		rple = v{i};
+				 	case 'rcct'
+				 		rcct = v{i};
+				 	otherwise
+				 		error('Unknown flag %s', flag)  		
+				end
+			end
+
+			k = sp.solverParams.keys;
+			v = sp.solverParams.values;
+
+			for i = 1:sp.solverParams.Count
+
+				flag = k{i};
+
+				switch flag
+					case 'bt'
+				 		bt = v{i};
+				 	case 't'
+				 		t = v{i};
+				 	case 'dt'
+				 		dt = v{i};
+				 	case 'sm'
+				 		sm = v{i};
+				 	otherwise
+				 		error('Unknown flag %s', flag) 		
+				end
+			end
+
+			run_number = sp.seedParams('run');
+
+			simOutputLocation = sp.pathToSimOutput;
 
 			path_normal = sprintf('n_%d_np_%d_EES_%g_MS_%g_CCT_%g_WT_%g_VF_%g_run_%d/', n, np, ees, ms, cct, wt, vf, run_number);
 
-			path_mpos = sprintf('mpos_%d_', mpos);
+			simOutputLocation = [simOutputLocation, sp.chasteTest, '/', path_normal];
 
-			output_path = [path_start, p.chaste_test, '/', path_normal, path_mpos];
+			% path_mpos = sprintf('mpos_%d_', mpos);
 
-			if use_resist
-				path_resist = sprintf('rdiv_%d_rple_%g_rcct_%g_', rdiv, rple, rcct);
-				output_path  = [output_path, path_resist];
-			end
+			% simOutputLocation = [simOutputLocation, path_mpos];
 
-			path_mutant = sprintf('Mnp_%d_eesM_%g_msM_%g_cctM_%g_wtM_%g_Mvf_%g/', Mnp, eesM, msM, cctM, wtM, Mvf);
+			% if use_resist
+			% 	path_resist = sprintf('rdiv_%d_rple_%g_rcct_%g_', rdiv, rple, rcct);
+			% 	simOutputLocation  = [simOutputLocation, path_resist];
+			% end
+
+			% path_mutant = sprintf('Mnp_%d_eesM_%g_msM_%g_cctM_%g_wtM_%g_Mvf_%g/', Mnp, eesM, msM, cctM, wtM, Mvf);
+
+			% simOutputLocation =  [simOutputLocation, path_mutant];
 
 			path_results = sprintf('results_from_time_%d/',bt);
 
-			output_path =  [output_path, path_mutant, path_results];
+			simOutputLocation =  [simOutputLocation, path_results];
 
 		end
 
 
-		function generateDataSaveLocation(sp)
+		function saveDataLocation =generateDataSaveLocation(sp)
+			% This generates the full path to the specific data file for the simulation
+			% If the path doesn't exist it creates the missing folder structure
+
+			saveDataLocation = [sp.pathToDatabase, sp.chasteTest, '/',  sp.outputType.name, '/'];
+
+			% Build the folder structure with the parameter names
+			% This uses the order that the map puts it in
+			% and it doesn't account for the default value of parameters when they
+			% aren't in the simParams keys
+
+			k = sp.simParams.keys;
+			v = sp.simParams.values;
+			saveDataLocation = [saveDataLocation, 'params'];
+			for i = 1:sp.simParams.Count
+				saveDataLocation = [saveDataLocation, sprintf('_%s_%g',k{i}, v{i})];
+			end
+
+			saveDataLocation = [saveDataLocation, '/numerics'];
+
+			k = sp.solverParams.keys;
+			v = sp.solverParams.values;
+			for i = 1:sp.solverParams.Count
+				saveDataLocation = [saveDataLocation, sprintf('_%s_%g',k{i}, v{i})];
+			end
+
+			saveDataLocation = [saveDataLocation, '/'];
+
+			if exist(saveDataLocation,'dir')~=7
+				mkdir(saveDataLocation);
+			end
+
+		end
+
+		function simulationCommand = generateSimulationCommand(sp)
+			% This takes the path the call the simulation
+			% and adds it to the input string to create the full simulation
+			% command for the specific parameter set, numerical conditions, and seed
 
 
+			simulationCommand = [sp.pathToFunction, sp.chasteTest, sp.inputString];
 
-			n = length(p.input_flags);
-			m = length(p.input_values);
+		end
 
-			r = length(p.static_flags);
-			q = length(p.static_params);
+		function inputString = generateInputString(sp)
+			% Generates the input string needed to run the specific parameter set
+			% This will be test-specific, and will be determined by the parameters
+			% defined in the Chaste test used
 
-			assert(n==m);
-			assert(r==q);
+			% This does not specify an order for the parameters, they will be written in
+			% alphabetical order, as this is they are stored in the map by default
 
-			file_dir = [p.base_path, 'Research/Crypt/Data/Chaste/', p.process, '/', p.chaste_test, '/', func2str(p.obj), '/'];
-			if exist(file_dir,'dir')~=7
-				% Make the full path
-				if exist([p.base_path, 'Research/Crypt/Data/Chaste/', p.process, '/', p.chaste_test, '/'],'dir')~=7
-					mkdir([p.base_path, 'Research/Crypt/Data/Chaste/', p.process, '/', p.chaste_test, '/']);
+			inputString = [];
+
+			k = sp.simParams.keys;
+			v = sp.simParams.values;
+			for i = 1:sp.simParams.Count
+				inputString = [inputString, sprintf(' -%s %g',k{i}, v{i})];
+			end
+
+			k = sp.solverParams.keys;
+			v = sp.solverParams.values;
+			for i = 1:sp.solverParams.Count
+				inputString = [inputString, sprintf(' -%s %g',k{i}, v{i})];
+			end
+
+			k = sp.seedParams.keys;
+			v = sp.seedParams.values;
+			for i = 1:sp.seedParams.Count
+				inputString = [inputString, sprintf(' -%s %g',k{i}, v{i})];
+			end
+
+			% A given dataType may need specific flags/imput parameters in order
+			% generate the correct data files
+
+			if sp.outputType.typeParams.Count > 0
+				k = sp.outputType.typeParams.keys;
+				v = sp.outputType.typeParams.values;
+				for i = 1:sp.outputType.typeParams.Count
+					inputString = [inputString, sprintf(' -%s %g',k{i}, v{i})];
 				end
-
-				mkdir(file_dir);
-
 			end
 
-			file_name = p.output_file_prefix;
-			% if ~strcmp(file_name(end), '_')
-			% 	file_name(end+1) = '_';
-			% end
-
-			for i = 1:q
-				file_name = [file_name, sprintf('_%s_%g',p.static_flags{i}, p.static_params(i))];
-			end
-
-			for i = 1:n
-				file_name = [file_name, sprintf('_%s_%g',p.input_flags{i}, p.input_values(i))];
-			end
-
-			file_name = [file_name, sprintf('_%s_%g',p.run_flag, p.run_number)];
-
-			file_name = [file_name, '.txt'];
-
-			data_file = [file_dir, file_name];
-
-		end
-
-		function generateSimulationCommand(sp)
-
-
-		end
-
-		
-
-		function generateInputString(sp)
-
-			input_string = [];
-
-			for i = 1:q
-				input_string = [input_string, sprintf(' -%s %g',p.static_flags{i}, p.static_params(i))];
-			end
-
-			for i = 1:n
-				input_string = [input_string, sprintf(' -%s %g',p.input_flags{i}, p.input_values(i))];
-			end
-
-			input_string = [input_string, sprintf(' -%s %g',p.run_flag, p.run_number)];
 		end
 
 	end

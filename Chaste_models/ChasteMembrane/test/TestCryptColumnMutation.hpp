@@ -791,16 +791,6 @@ public:
 
 
 
-        // ********************************************************************************************
-        // Add cell population writers if they are requested
-        if (file_output)
-        {
-            p_tissue->AddCellWriter<EpithelialCellPositionWriter>();
-        }
-        // ********************************************************************************************
-
-
-
 		// ********************************************************************************************
 		// Run the simulation to be observed
 		TRACE("Starting simulation proper")

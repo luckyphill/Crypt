@@ -11,6 +11,13 @@ classdef (Abstract) dataType
 		name
 	end
 
+	properties
+		% This is an optional property in case there is a specific flag needed to
+		% trigger the specific data type in the chaste test
+		typeParams containers.Map
+
+	end
+
 	methods (Abstract, Access = protected)
 		% These methods must be implemented in sublclasses, but cannot be used
 		% externally
@@ -32,7 +39,7 @@ classdef (Abstract) dataType
 			% It enforces an existance check, then loads the data
 			% as required for the data type in the concrete class
 
-			% This method can throw an error, handling must be done externally by simpoint
+			% This method can throw an error, handling must be done externally by simulation
 			% It is designed, however, to make sure the user doesn't need to handle errors
 			% in their implementation of the abstract methods
 
@@ -46,9 +53,10 @@ classdef (Abstract) dataType
 				error('dt:RetreivalFail','Data retreival failed. Check file can be read.');
 			end
 
-			if ~obj.verifyData(data)
-				error('dt:VerificationFail','Data verification failed. Check data format.');
+			if ~obj.verifyData(data, sp)
+				error('dt:VerificationFail','Data verification failed. Check that the data meets the requirements in %s.verifyData.', obj.name);
 			end
+
 		end
 
 		function status = saveData(obj, sp)
@@ -58,7 +66,8 @@ classdef (Abstract) dataType
 
 			try
 				obj.processOutput(sp);
-			catch
+			catch err
+				fprintf('%s\n',err.message);
 				error('dt:ProcessingFail','Issue processing data. Check the processOutput method in %s', obj.name)
 			end
 
@@ -67,7 +76,7 @@ classdef (Abstract) dataType
 		end
 
 		% This method can be overwritten, but it can be ignored
-		function correct = verifyData(obj, data)
+		function correct = verifyData(obj, data, sp)
 			% An extra method that checks the data is the correct format
 			% Useful if the data retrieval method can succeed even though
 			% the format is incorrect.
@@ -75,6 +84,7 @@ classdef (Abstract) dataType
 			% It can be overwritten in subclasses, but it is not necessary,
 			% hence the base class always returns true
 			correct = true;
+
 		end
 	end
 
