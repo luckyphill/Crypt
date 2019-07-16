@@ -22,7 +22,7 @@ classdef chasteSimulation < simulation
 		% They are broken up by types that will be typically used
 		% They don't have to be used, and it is probably more convenient
 		% in most instances just to explicitly write the parameters out
-		% as properties in subclasses. They are left here just in case...x
+		% as properties in subclasses. They are left here just in case
 
 		% The parameters of the simulation describing the cell behaviour
 		simParams containers.Map
@@ -44,6 +44,9 @@ classdef chasteSimulation < simulation
 		% The absolute path to the chaste simulation output directory
 		simOutputLocation char
 
+		% The folder where the processed output will be saved
+		saveLocation char
+
 		% The complete simulation command for the particular simulation
 		% This will be passed to the matlab 'system' function
 		simulationCommand char
@@ -55,6 +58,18 @@ classdef chasteSimulation < simulation
 		% The console output from the 'system' function. This is usually only needed when
 		% the command fails, but can sometimes be a place where the data of interest appears
 		cmdout
+
+	end
+
+	methods (Abstract, Access = protected)
+		% These must be implemented in a concrete subclass
+
+		% This sets the absolute filename/path to dataFile and errorFile
+		generateFileNames
+
+		% Sets the folder where Chaste saves output
+		generateSimOutputLocation 
+
 
 	end
 

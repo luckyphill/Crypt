@@ -63,18 +63,17 @@ classdef simulateCryptColumn < chasteSimulation
 			obj.assignParameters(); % A helper method to clear up the constructor from clutter
 
 			
-			obj.inputString = obj.generateInputString();
+			obj.generateInputString();
 
-			obj.simulationCommand = [chastePath, obj.generateSimulationCommand()];
+			obj.generateSimulationCommand(chastePath);
 
 
-			saveLocation = obj.generateDataSaveLocation(chastePath);
-			fileName = obj.generateFileName();
+			obj.generateDataSaveLocation(chastePath);
+			obj.generateFileNames();
 			
-			obj.dataFile = [saveLocation, fileName, '.txt'];
-			obj.errorFile = [saveLocation, fileName, '.err'];
+			
 
-			obj.simOutputLocation = [chasteTestOutputLocation, obj.generateSimOutputLocation()];
+			obj.generateSimOutputLocation(chasteTestOutputLocation);
 
 		end
 
@@ -106,16 +105,20 @@ classdef simulateCryptColumn < chasteSimulation
 
 		end
 
-		function fileName = generateFileName(obj)
+		function generateFileNames(obj)
 			% This function generates the filename based on the input variables
 			% sometime the input variables might be held in the folder structure
 			% so this might just be a seed number
 
 			fileName = [obj.outputType.name, sprintf('_run_%g', obj.run_number)];
 
+			obj.dataFile = [obj.saveLocation, fileName, '.txt'];
+			obj.errorFile = [obj.saveLocation, fileName, '.err'];
+
+
 		end	
 
-		function simOutputLocation = generateSimOutputLocation(obj)
+		function generateSimOutputLocation(obj, chasteTestOutputLocation)
 			% This generates the simulation output path for the given parameters
 			% in the given Chaste test. This will depend on how the
 			% Chaste function 'simulator.SetOutputDirectory()' is implemented, so this method
@@ -125,15 +128,15 @@ classdef simulateCryptColumn < chasteSimulation
 			% to that used in the Chaste Test, and doing that using maps takes a lot of effort
 
 
-			simOutputLocation = sprintf('testoutput/%s/n_%d_np_%d_EES_%g_MS_%g_CCT_%g_WT_%g_VF_%g_run_%d/results_from_time_%d/', obj.chasteTest, obj.n, obj.np, obj.ees, obj.ms, obj.cct, obj.wt, obj.vf, obj.run_number, obj.bt);
+			obj.simOutputLocation = sprintf('%stestoutput/%s/n_%d_np_%d_EES_%g_MS_%g_CCT_%g_WT_%g_VF_%g_run_%d/results_from_time_%d/', chasteTestOutputLocation, obj.chasteTest, obj.n, obj.np, obj.ees, obj.ms, obj.cct, obj.wt, obj.vf, obj.run_number, obj.bt);
 
 		end
 
-		function saveDataLocation = generateDataSaveLocation(obj, chastePath)
+		function generateDataSaveLocation(obj, chastePath)
 			% This generates the full path to the specific data file for the simulation
 			% If the path doesn't exist it creates the missing folder structure
 
-			saveDataLocation = [chastePath, 'Research/Crypt/Data/Chaste/', obj.chasteTest, '/',  obj.outputType.name, '/'];
+			obj.saveLocation = [chastePath, 'Research/Crypt/Data/Chaste/', obj.chasteTest, '/',  obj.outputType.name, '/'];
 
 			% Build the folder structure with the parameter names
 			% This uses the order that the map puts it in
@@ -142,38 +145,38 @@ classdef simulateCryptColumn < chasteSimulation
 
 			k = obj.simParams.keys;
 			v = obj.simParams.values;
-			saveDataLocation = [saveDataLocation, 'params'];
+			obj.saveLocation = [obj.saveLocation, 'params'];
 			for i = 1:obj.simParams.Count
-				saveDataLocation = [saveDataLocation, sprintf('_%s_%g',k{i}, v{i})];
+				obj.saveLocation = [obj.saveLocation, sprintf('_%s_%g',k{i}, v{i})];
 			end
 
-			saveDataLocation = [saveDataLocation, '/numerics'];
+			obj.saveLocation = [obj.saveLocation, '/numerics'];
 
 			k = obj.solverParams.keys;
 			v = obj.solverParams.values;
 			for i = 1:obj.solverParams.Count
-				saveDataLocation = [saveDataLocation, sprintf('_%s_%g',k{i}, v{i})];
+				obj.saveLocation = [obj.saveLocation, sprintf('_%s_%g',k{i}, v{i})];
 			end
 
-			saveDataLocation = [saveDataLocation, '/'];
+			obj.saveLocation = [obj.saveLocation, '/'];
 
-			if exist(saveDataLocation,'dir')~=7
-				mkdir(saveDataLocation);
+			if exist(obj.saveLocation,'dir')~=7
+				mkdir(obj.saveLocation);
 			end
 
 		end
 
-		function simulationCommand = generateSimulationCommand(obj)
+		function generateSimulationCommand(obj,chastePath)
 			% This takes the path the call the simulation
 			% and adds it to the input string to create the full simulation
 			% command for the specific parameter set, numerical conditions, and seed
 
 
-			simulationCommand = ['chaste_build/projects/ChasteMembrane/test/', obj.chasteTest, obj.inputString];
+			obj.simulationCommand = [chastePath, 'chaste_build/projects/ChasteMembrane/test/', obj.chasteTest, obj.inputString];
 
 		end
 
-		function inputString = generateInputString(obj)
+		function generateInputString(obj)
 			% Generates the input string needed to run the specific parameter set
 			% This will be test-specific, and will be determined by the parameters
 			% defined in the Chaste test used
@@ -181,24 +184,24 @@ classdef simulateCryptColumn < chasteSimulation
 			% This does not specify an order for the parameters, they will be written in
 			% alphabetical order, as this is they are stored in the map by default
 
-			inputString = [];
+			obj.inputString = [];
 
 			k = obj.simParams.keys;
 			v = obj.simParams.values;
 			for i = 1:obj.simParams.Count
-				inputString = [inputString, sprintf(' -%s %g',k{i}, v{i})];
+				obj.inputString = [obj.inputString, sprintf(' -%s %g',k{i}, v{i})];
 			end
 
 			k = obj.solverParams.keys;
 			v = obj.solverParams.values;
 			for i = 1:obj.solverParams.Count
-				inputString = [inputString, sprintf(' -%s %g',k{i}, v{i})];
+				obj.inputString = [obj.inputString, sprintf(' -%s %g',k{i}, v{i})];
 			end
 
 			k = obj.seedParams.keys;
 			v = obj.seedParams.values;
 			for i = 1:obj.seedParams.Count
-				inputString = [inputString, sprintf(' -%s %g',k{i}, v{i})];
+				obj.inputString = [obj.inputString, sprintf(' -%s %g',k{i}, v{i})];
 			end
 
 			% A given dataType may need specific flags/input parameters in order
@@ -209,7 +212,7 @@ classdef simulateCryptColumn < chasteSimulation
 				k = obj.outputType.typeParams.keys;
 				v = obj.outputType.typeParams.values;
 				for i = 1:obj.outputType.typeParams.Count
-					inputString = [inputString, sprintf(' -%s %g',k{i}, v{i})];
+					obj.inputString = [obj.inputString, sprintf(' -%s %g',k{i}, v{i})];
 				end
 
 			end

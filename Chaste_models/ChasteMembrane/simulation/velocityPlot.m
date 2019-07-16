@@ -4,6 +4,9 @@ classdef velocityPlot < matlab.mixin.SetGet
 
 	properties
 		
+		chastePath
+		chasteTestOutputLocation
+
 		imageFile
 		imageLocation
 
@@ -23,11 +26,11 @@ classdef velocityPlot < matlab.mixin.SetGet
 			solverParams = containers.Map({'t', 'bt', 'dt'}, {t, bt, dt});
 			seedParams = containers.Map({'run'}, {run_number});
 
-			chastePath = [getenv('HOME'), '/'];
-			chasteTestOutputLocation = ['/tmp/', getenv('USER'),'/'];
+			obj.chastePath = [getenv('HOME'), '/'];
+			obj.chasteTestOutputLocation = ['/tmp/', getenv('USER'),'/'];
 
 
-			obj.simul = simulateCryptColumn(simParams, solverParams, seedParams, outputType, chastePath, chasteTestOutputLocation);
+			obj.simul = simulateCryptColumn(simParams, solverParams, seedParams, outputType, obj.chastePath, obj.chasteTestOutputLocation);
 			
 			if obj.simul.generateSimulationData()
 				obj.processData();
@@ -37,7 +40,7 @@ classdef velocityPlot < matlab.mixin.SetGet
 
 		end
 
-		function h = showPlot(obj)
+		function showPlot(obj)
 			% Displays a plot of the velocity data
 			[upper, average, lower] = obj.get_quantiles();
 
@@ -57,6 +60,14 @@ classdef velocityPlot < matlab.mixin.SetGet
     		set(h,'Units','Inches');
 		    pos = get(h,'Position');
 		    set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
+
+		end
+
+		function visualiseCrypt(obj)
+			% Runs the java visualiser
+			pathToAnim = [obj.chastePath, 'Chaste/anim/'];
+			fprintf('Running Chase java visualiser\n');
+			[failed, cmdout] = system(['cd ', pathToAnim, '; java Visualize2dCentreCells ', obj.simul.simOutputLocation]);
 
 		end
 

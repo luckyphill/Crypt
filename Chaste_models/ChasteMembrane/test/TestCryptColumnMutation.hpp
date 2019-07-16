@@ -6,7 +6,7 @@
 #include "CommandLineArguments.hpp"
 
 // Simulators
-#include "OffLatticeSimulationTooManyCells.hpp"
+#include "OffLatticeSimulationWithMutation.hpp"
 
 // Forces
 #include "BasicNonLinearSpringForceNewPhaseModel.hpp"
@@ -317,6 +317,33 @@ public:
         // ********************************************************************************************     
   
 
+        // ********************************************************************************************
+        // Stopping criteria for mutation - there's no point in continuing when the mutation has gone
+        // ********************************************************************************************
+        
+
+        // ********************************************************************************************
+        // Stop when the monolayer has no mutant cells
+        // This is useful for expediting the detection of mutation wash out, since the mutation will
+        // not remain in the crypt when it has popped up, it's just a matter of time
+        bool stopOnEmptyMonolayer = false;
+        if(CommandLineArguments::Instance()->OptionExists("-Sml"))
+        {   
+            stopOnEmptyMonolayer = true;
+        }
+        // ********************************************************************************************
+
+        // ********************************************************************************************
+        // Stop when clonal conversion is reached
+        // This is only going to be used when observing clonal conversion likelihood
+        bool stopOnClonalConversion = false;
+        if(CommandLineArguments::Instance()->OptionExists("-Scc"))
+        {   
+            stopOnClonalConversion = true;
+        }
+        // ********************************************************************************************
+
+
 
         // ********************************************************************************************
         // Damping constant for popped up cells
@@ -509,10 +536,21 @@ public:
 
 		// ********************************************************************************************
 		// Make the simulation
-		OffLatticeSimulationTooManyCells simulator(cell_population);
+		OffLatticeSimulationWithMutation simulator(cell_population);
 		simulator.SetDt(dt);
 		simulator.SetSamplingTimestepMultiple(sampling_multiple);
 		simulator.SetCellLimit(cell_limit);
+
+        // Set stopping criteria
+        if (stopOnEmptyMonolayer)
+        {
+            simulator.StopOnEmptyMonolayer();
+        }
+
+        if (stopOnClonalConversion)
+        {
+            simulator.StopOnClonalConversion();
+        }
 		// ********************************************************************************************
 
 		// ********************************************************************************************
@@ -790,13 +828,20 @@ public:
         // ********************************************************************************************
 
 
+        // ********************************************************************************************
+        // The final step, turn on wash out watching - now that the mutation has been added, we want
+        // to stop the simulation when it has vanished from the crypt
+        simulator.WashOutSwitch();
+        // ******************************************************************************************** 
+
 
 		// ********************************************************************************************
 		// Run the simulation to be observed
 		TRACE("Starting simulation proper")
+        TRACE("START")
 		simulator.Solve();
 
-        TRACE("START")
+        
 		// Here be statistics
         TRACE("END")
 		// ********************************************************************************************
