@@ -20,7 +20,7 @@ mkdir -p output
 echo "array_job_index: $SLURM_ARRAY_TASK_ID" 
 i=1 
 found=0 
-while IFS=, mnp eesM msM cctM wtM mvf
+while IFS=, read mnp eesM msM cctM wtM mvf
 do 
     if [ $i = $SLURM_ARRAY_TASK_ID ]; then 
         echo "Running mutation, mnp $mnp, eesM $eesM, msM $msM, cctM $cctM, wtM $wtM, mvf $mvf"
