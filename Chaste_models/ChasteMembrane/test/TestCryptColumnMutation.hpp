@@ -408,7 +408,7 @@ public:
         
         double wall_top = n; // The point where sloughing occurs
 
-		unsigned cell_limit = 6 * n; // The most cells allowed in a simulation. If the cell count exceeds this, the simulation terminates
+		unsigned cell_limit = 10 * n; // The most cells allowed in a simulation. If the cell count exceeds this, the simulation terminates
 		// ********************************************************************************************		
 
 

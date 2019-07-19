@@ -207,6 +207,14 @@ public:
             TRACE("File output occuring")
 
         }
+
+        bool java_visualiser = false;
+        if(CommandLineArguments::Instance()->OptionExists("-vis"))
+        {   
+            java_visualiser = true;
+            TRACE("Java visulaiser ON")
+
+        }
         // ********************************************************************************************
 
 
@@ -391,7 +399,8 @@ public:
         // File outputs
         // Files are only output if the command line argument -sm exists and a sampling multiple is set
         simulator.SetSamplingTimestepMultiple(sampling_multiple);
-        cell_population.SetOutputResultsForChasteVisualizer(file_output);
+        // The java visuliser is set separately
+        cell_population.SetOutputResultsForChasteVisualizer(java_visualiser);
         // ********************************************************************************************
 
 		// ********************************************************************************************
@@ -445,7 +454,7 @@ public:
 		p_anoikis_killer->SetPopUpDistance(popUpDistance);
 		simulator.AddCellKiller(p_anoikis_killer);
 
-		MAKE_PTR_ARGS(IsolatedCellKiller<2>, p_isolated_killer, (&cell_population));
+		MAKE_PTR_ARGS(IsolatedCellKiller, p_isolated_killer, (&cell_population));
 		simulator.AddCellKiller(p_isolated_killer);
 		// ********************************************************************************************
 
