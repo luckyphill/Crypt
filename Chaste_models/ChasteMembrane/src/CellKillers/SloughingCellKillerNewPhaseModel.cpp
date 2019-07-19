@@ -10,9 +10,11 @@
 #include "MembraneCellProliferativeType.hpp"
 #include "SimplifiedPhaseBasedCellCycleModel.hpp"
 #include "SimplifiedCellCyclePhases.hpp"
-template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-SloughingCellKillerNewPhaseModel<ELEMENT_DIM,SPACE_DIM>::SloughingCellKillerNewPhaseModel(AbstractCellPopulation<SPACE_DIM>* pCellPopulation)
-    : AbstractCellKiller<SPACE_DIM>(pCellPopulation),
+#include "AnoikisCellTagged.hpp"
+
+
+SloughingCellKillerNewPhaseModel::SloughingCellKillerNewPhaseModel(AbstractCellPopulation<2>* pCellPopulation)
+    : AbstractCellKiller<2>(pCellPopulation),
     mCryptTop(10.0)
 {
     // Sets up output file
@@ -20,15 +22,13 @@ SloughingCellKillerNewPhaseModel<ELEMENT_DIM,SPACE_DIM>::SloughingCellKillerNewP
 //	mSloughingOutputFile = output_file_handler.OpenOutputFile("results.anoikis");
 }
 
-template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-SloughingCellKillerNewPhaseModel<ELEMENT_DIM,SPACE_DIM>::~SloughingCellKillerNewPhaseModel()
+SloughingCellKillerNewPhaseModel::~SloughingCellKillerNewPhaseModel()
 {
 //    mSloughingOutputFile->close();
 }
 
 
-template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-void SloughingCellKillerNewPhaseModel<ELEMENT_DIM,SPACE_DIM>::SetCryptTop(double cryptTop)
+void SloughingCellKillerNewPhaseModel::SetCryptTop(double cryptTop)
 {
 	mCryptTop = cryptTop;
 }
@@ -39,21 +39,20 @@ void SloughingCellKillerNewPhaseModel<ELEMENT_DIM,SPACE_DIM>::SetCryptTop(double
  *
  * Also will remove differentiated cells at the orifice if mSloughOrifice is true
  */
-template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-void SloughingCellKillerNewPhaseModel<ELEMENT_DIM,SPACE_DIM>::CheckAndLabelCellsForApoptosisOrDeath()
+void SloughingCellKillerNewPhaseModel::CheckAndLabelCellsForApoptosisOrDeath()
 {
-    if (dynamic_cast<NodeBasedCellPopulation<SPACE_DIM>*>(this->mpCellPopulation))
+    if (dynamic_cast<NodeBasedCellPopulation<2>*>(this->mpCellPopulation))
 	{
-		NodeBasedCellPopulation<SPACE_DIM>* p_tissue = static_cast<NodeBasedCellPopulation<SPACE_DIM>*> (this->mpCellPopulation);
+		NodeBasedCellPopulation<2>* p_tissue = static_cast<NodeBasedCellPopulation<2>*> (this->mpCellPopulation);
 
-		for (typename AbstractCellPopulation<SPACE_DIM>::Iterator cell_iter = p_tissue->Begin();
+		for (typename AbstractCellPopulation<2>::Iterator cell_iter = p_tissue->Begin();
     			cell_iter != p_tissue->End();
     			++cell_iter)
     	{
     		unsigned node_index = this->mpCellPopulation->GetLocationIndexUsingCell(*cell_iter);
     		if (!cell_iter->GetCellProliferativeType()->template IsType<MembraneCellProliferativeType>())
     		{
-    			Node<SPACE_DIM>* p_node = this->mpCellPopulation->GetNode(node_index);
+    			Node<2>* p_node = this->mpCellPopulation->GetNode(node_index);
                 double x = p_node->rGetLocation()[0];
             	double y = p_node->rGetLocation()[1];
             	if (y > mCryptTop && !cell_iter->IsDead())
@@ -71,7 +70,17 @@ void SloughingCellKillerNewPhaseModel<ELEMENT_DIM,SPACE_DIM>::CheckAndLabelCells
                         mCellKillCount += 1.0;//Increment the cell kill count by one for each cell killed
                     }
             	}
-                if (y > mCryptTop - 1.0 && x > 1.1 && !cell_iter->IsDead()) 
+                // An attempt to stop a row of cells hanging around at the top of the crypt
+                // x-0.6 depends on the free height of the monolayer cells. Any change to that will break this
+
+                // This draws a line at an angle of 60 degrees down from the top cell on the monolayer
+                // any cell above the line is considered to be sloughed off
+                // This solves the issue with cells lingering at the top of the crypt when they should
+                // have been killed. It introduces a "model limitation", though, since the cells
+                // at the top of the crypt can be killed even at fairly low heights if the popped up layer is
+                // particularly tall. The interesting part of the mutation lumps should be the middle to lower parts
+                // since the top is not exactly physically accurate to begin with.
+                if (y > mCryptTop - (x - 0.6) / sqrt(3) && (*cell_iter)->template HasCellProperty<AnoikisCellTagged>() && !cell_iter->IsDead()) 
                 {
                     SimplifiedPhaseBasedCellCycleModel* p_ccm = static_cast<SimplifiedPhaseBasedCellCycleModel*>(cell_iter->GetCellCycleModel());
                     SimplifiedCellCyclePhase p_phase = p_ccm->GetCurrentCellCyclePhase();
@@ -90,27 +99,18 @@ void SloughingCellKillerNewPhaseModel<ELEMENT_DIM,SPACE_DIM>::CheckAndLabelCells
     }
 }
 
-template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-unsigned SloughingCellKillerNewPhaseModel<ELEMENT_DIM,SPACE_DIM>::GetCellKillCount()
+unsigned SloughingCellKillerNewPhaseModel::GetCellKillCount()
 {
     return unsigned(mCellKillCount);
 }
 
-template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-void SloughingCellKillerNewPhaseModel<ELEMENT_DIM,SPACE_DIM>::OutputCellKillerParameters(out_stream& rParamsFile)
+void SloughingCellKillerNewPhaseModel::OutputCellKillerParameters(out_stream& rParamsFile)
 {
     *rParamsFile << "\t\t\t<CellsRemovedBySloughing>" << 1 << "</CellsRemovedBySloughing> \n";
 
     // Call direct parent class
-    AbstractCellKiller<SPACE_DIM>::OutputCellKillerParameters(rParamsFile);
+    AbstractCellKiller<2>::OutputCellKillerParameters(rParamsFile);
 }
-
-template class SloughingCellKillerNewPhaseModel<1,1>;
-template class SloughingCellKillerNewPhaseModel<1,2>;
-template class SloughingCellKillerNewPhaseModel<2,2>;
-template class SloughingCellKillerNewPhaseModel<1,3>;
-template class SloughingCellKillerNewPhaseModel<2,3>;
-template class SloughingCellKillerNewPhaseModel<3,3>;
 
 
 

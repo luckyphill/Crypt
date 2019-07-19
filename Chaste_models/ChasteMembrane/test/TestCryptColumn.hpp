@@ -371,7 +371,10 @@ public:
         simdir << "_VF_" << quiescentVolumeFraction;
         simdir << "_run_" << run_number;
         
-        std::string output_directory = "TestCryptColumn/" +  simdir.str();
+        std::stringstream rundir;
+        rundir << "run_" << run_number;
+        
+        std::string output_directory = "TestCryptColumn/" +  simdir.str() + "/"  + rundir.str();
 
 		simulator.SetOutputDirectory(output_directory);
 		// ********************************************************************************************
@@ -482,7 +485,7 @@ public:
 		// ********************************************************************************************
 		// Reset the cell killers
 		simulator.RemoveAllCellKillers();
-		MAKE_PTR_ARGS(SloughingCellKillerNewPhaseModel<2>, p_sloughing_killer_2, (&cell_population));
+		MAKE_PTR_ARGS(SloughingCellKillerNewPhaseModel, p_sloughing_killer_2, (&cell_population));
 		p_sloughing_killer_2->SetCryptTop(wall_top);
 		simulator.AddCellKiller(p_sloughing_killer_2);
 

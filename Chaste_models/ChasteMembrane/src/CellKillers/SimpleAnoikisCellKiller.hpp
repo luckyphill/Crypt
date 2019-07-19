@@ -21,14 +21,7 @@ class SimpleAnoikisCellKiller : public AbstractCellKiller<2>
 {
 private:
 
-	// Number of cells removed by Anoikis
-	unsigned mCellsRemovedByAnoikis;
-
-    std::vector<c_vector<double,3> > mLocationsOfAnoikisCells;
-
     std::vector<std::pair<CellPtr, double>> mCellsForDelayedAnoikis;
-
-    std::vector<double> mAgesAtDeath;
 
     bool mSlowDeath;
 
@@ -36,7 +29,7 @@ private:
 
     double mResistantPoppedUpLifeExpectancy;
 
-    double mPopUpDistance = 1.5; // The distance above the membrane when a cell is considered to have popped up
+    double mPopUpDistance = 1.1; // The distance above the membrane when a cell is considered to have popped up
 
     unsigned mCellKillCount = 0; // Tracks the number of cells killed by anoikis
 
@@ -51,13 +44,13 @@ private:
     void serialize(Archive & archive, const unsigned int version)
     {
         archive & boost::serialization::base_object<AbstractCellKiller<2> >(*this);
-        archive & mCellsRemovedByAnoikis;
-        archive & mOutputDirectory;
+        archive & mSlowDeath;
+        archive & mPoppedUpLifeExpectancy;
+        archive & mResistantPoppedUpLifeExpectancy;
+        archive & mPopUpDistance;
+        archive & mCellKillCount;
     }
 
-    //Property for tagging cells
-    //AnoikisCellTagged* mp_anoikis_tagged = new AnoikisCellTagged;
-    // Decides if the cell is removed immediately after being marked for death, or undergoes a slower apoptotis death
     
 
 public:
@@ -72,10 +65,6 @@ public:
 
 	// Destructor
 	~SimpleAnoikisCellKiller();
-
-    void SetOutputDirectory(std::string outputDirectory);
-
-    std::string GetOutputDirectory();
 
     /*
      * @return mCutOffRadius
@@ -110,7 +99,6 @@ public:
     void SetPoppedUpLifeExpectancy(double poppedUpLifeExpectancy);
     void SetResistantPoppedUpLifeExpectancy(double resistantPoppedUpLifeExpectancy);
 
-    std::vector<double> GetAgesAtDeath();
     unsigned GetCellKillCount();
     void ResetCellKillCount();
 

@@ -25,6 +25,8 @@ private:
     void serialize(Archive & archive, const unsigned int version)
     {
         archive & boost::serialization::base_object<AbstractCellKiller<SPACE_DIM> >(*this);
+        archive & mCellKillCount;
+        archive & mCryptTop;
     }
 
     unsigned mCellKillCount = 0; // Tracks the number of cells killed by anoikis

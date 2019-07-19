@@ -17,14 +17,10 @@
 
 SimpleAnoikisCellKiller::SimpleAnoikisCellKiller(AbstractCellPopulation<2>* pCellPopulation)
     : AbstractCellKiller<2>(pCellPopulation),
-    mCellsRemovedByAnoikis(0),
     mSlowDeath(false),
     mPoppedUpLifeExpectancy(0.0),
     mResistantPoppedUpLifeExpectancy(0.0)
 {
-    // Sets up output file
-//	OutputFileHandler output_file_handler(mOutputDirectory + "AnoikisData/", false);
-//	mAnoikisOutputFile = output_file_handler.OpenOutputFile("results.anoikis");
 }
 
 SimpleAnoikisCellKiller::~SimpleAnoikisCellKiller()
@@ -179,7 +175,6 @@ void SimpleAnoikisCellKiller::CheckAndLabelCellsForApoptosisOrDeath()
 			}
 			else
 			{
-				mAgesAtDeath.push_back(p_cell->GetAge());
 				p_cell->Kill();
 				mCellKillCount++;//Increment the cell kill count by one for each cell killed
 			}
@@ -201,11 +196,6 @@ unsigned SimpleAnoikisCellKiller::GetCellKillCount()
 void SimpleAnoikisCellKiller::ResetCellKillCount()
 {
 	mCellKillCount = 0;
-}
-
-std::vector<double> SimpleAnoikisCellKiller::GetAgesAtDeath()
-{
-	return mAgesAtDeath;
 }
 
 void SimpleAnoikisCellKiller::OutputCellKillerParameters(out_stream& rParamsFile)

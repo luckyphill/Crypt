@@ -9,7 +9,6 @@
 #include "OffLatticeSimulationWithMutation.hpp"
 
 // Forces
-#include "BasicNonLinearSpringForceNewPhaseModel.hpp"
 #include "NormalAdhesionForceNewPhaseModel.hpp"
 #include "BasicNonLinearSpringForceMultiNodeFix.hpp"
 
@@ -563,7 +562,6 @@ public:
         simdir << "_CCT_" << cellCycleTime;
         simdir << "_WT_" << wPhaseLength;
         simdir << "_VF_" << quiescentVolumeFraction;
-        simdir << "_run_" << run_number;
 
         std::stringstream mutdir;
         mutdir << "mpos_" << mutationPosition;
@@ -591,9 +589,11 @@ public:
         mutdir << "_cctM_" << cctModifier;
         mutdir << "_wtM_" << wtModifier;
         mutdir << "_Mvf_" << mutantQuiescentVolumeFraction;
+
+        std::stringstream rundir;
+        rundir << "run_" << run_number;
         
-        
-        std::string output_directory = "TestCryptColumnMutation/" +  simdir.str() + "/" + mutdir.str();
+        std::string output_directory = "TestCryptColumnMutation/" +  simdir.str() + "/" + mutdir.str() + "/" + rundir.str();
 
 		simulator.SetOutputDirectory(output_directory);
 		// ********************************************************************************************
@@ -666,9 +666,6 @@ public:
 		MAKE_PTR_ARGS(SimpleAnoikisCellKiller, p_anoikis_killer, (&cell_population));
 		p_anoikis_killer->SetPopUpDistance(popUpDistance);
 		simulator.AddCellKiller(p_anoikis_killer);
-
-		MAKE_PTR_ARGS(IsolatedCellKiller<2>, p_isolated_killer, (&cell_population));
-		simulator.AddCellKiller(p_isolated_killer);
 		// ********************************************************************************************
 
 		// ********************************************************************************************
@@ -702,7 +699,7 @@ public:
 		// ********************************************************************************************
 		// Reset the cell killers
 		simulator.RemoveAllCellKillers();
-		MAKE_PTR_ARGS(SloughingCellKillerNewPhaseModel<2>, p_sloughing_killer_2, (&cell_population));
+		MAKE_PTR_ARGS(SloughingCellKillerNewPhaseModel, p_sloughing_killer_2, (&cell_population));
 		p_sloughing_killer_2->SetCryptTop(wall_top);
 		simulator.AddCellKiller(p_sloughing_killer_2);
 
@@ -711,7 +708,8 @@ public:
 		p_anoikis_killer_2->SetResistantPoppedUpLifeExpectancy(resistantPoppedUpLifeExpectancy);
 		simulator.AddCellKiller(p_anoikis_killer_2);
 
-		simulator.AddCellKiller(p_isolated_killer);
+        MAKE_PTR_ARGS(IsolatedCellKiller, p_isolated_killer, (&cell_population));
+        simulator.AddCellKiller(p_isolated_killer);
 		// ********************************************************************************************
 
 		// ********************************************************************************************

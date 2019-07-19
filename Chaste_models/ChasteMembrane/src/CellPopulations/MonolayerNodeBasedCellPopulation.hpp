@@ -26,6 +26,14 @@ private:
 
 	double mDampingConstantPoppedUp;
 
+    template<class Archive>
+    void serialize(Archive & archive, const unsigned int version)
+    {
+        archive & boost::serialization::base_object<NodeBasedCellPopulation<DIM> >(*this);
+        archive & mDampingConstantPoppedUp;
+
+    }
+
 public:
 
 	/**

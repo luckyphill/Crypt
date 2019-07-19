@@ -40,6 +40,15 @@ private:
     {
         archive & boost::serialization::base_object<AbstractForce<ELEMENT_DIM, SPACE_DIM> >(*this);
         archive & mSpringStiffness; // Epithelial covers stem and transit
+        archive & mRestLength;
+        archive & mCutOffLength;
+        archive & mAttractionParameter;
+
+        archive & mMeinekeSpringStiffness;
+        archive & mMeinekeDivisionRestingSpringLength;
+        archive & mMeinekeSpringGrowthDuration;
+
+        archive & mModifierFraction;
     }
 
 protected:

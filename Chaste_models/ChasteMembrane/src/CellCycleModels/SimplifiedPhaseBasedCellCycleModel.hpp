@@ -35,10 +35,16 @@ private:
     void serialize(Archive & archive, const unsigned int version)
     {
         archive & boost::serialization::base_object<AbstractCellCycleModel>(*this);
-        archive & mCurrentCellCyclePhase;
+        archive & mBasePDuration;
         archive & mPDuration;
         archive & mMinimumPDuration;
         archive & mWDuration;
+        archive & mQuiescentVolumeFraction;
+        archive & mEquilibriumVolume;
+        archive & mCurrentQuiescentOnsetTime;
+        archive & mCurrentQuiescentDuration;
+        archive & mWntThreshold;
+        archive & mPopUpDivision;
     }
 
 protected:

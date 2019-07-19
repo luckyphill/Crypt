@@ -16,8 +16,7 @@
  * In terms of the simulation, a cell is killed when it is isolated AND it is considered popped-up
  */
 
-template<unsigned  ELEMENT_DIM, unsigned SPACE_DIM=ELEMENT_DIM>
-class IsolatedCellKiller : public AbstractCellKiller<SPACE_DIM>
+class IsolatedCellKiller : public AbstractCellKiller<2>
 {
 private:
 
@@ -25,7 +24,9 @@ private:
     template<class Archive>
     void serialize(Archive & archive, const unsigned int version)
     {
-        archive & boost::serialization::base_object<AbstractCellKiller<SPACE_DIM> >(*this);
+        archive & boost::serialization::base_object<AbstractCellKiller<2> >(*this);
+        archive & mCellKillCount;
+        archive & mCryptTop;
     }
 
     unsigned mCellKillCount = 0; // Tracks the number of cells killed by anoikis
@@ -39,7 +40,7 @@ public:
      * @param pCellPopulation pointer to a tissue
      * @param sloughOrifice whether to slough compressed cells at crypt orifice
      */
-	IsolatedCellKiller(AbstractCellPopulation<SPACE_DIM>* pCellPopulation);
+	IsolatedCellKiller(AbstractCellPopulation<2>* pCellPopulation);
 
 	// Destructor
 	~IsolatedCellKiller();
@@ -63,11 +64,38 @@ public:
      */
     void OutputCellKillerParameters(out_stream& rParamsFile);
 
+    std::vector<std::set<unsigned>> FindLooseClusters();
+
+    void RecursiveFindClusters(NodeBasedCellPopulation<2>* p_tissue, std::set<unsigned> neighbours, std::set<unsigned>* thisRegion, std::set<unsigned>* visited, bool* isLoose);
+
 };
 
 #include "SerializationExportWrapper.hpp"
-EXPORT_TEMPLATE_CLASS_SAME_DIMS(IsolatedCellKiller)
+CHASTE_CLASS_EXPORT(IsolatedCellKiller)
+namespace boost
+{
+    namespace serialization
+    {
+        template<class Archive>
+        inline void save_construct_data(
+            Archive & ar, const IsolatedCellKiller * t, const unsigned int file_version)
+        {
+            const AbstractCellPopulation<2>* const p_cell_population = t->GetCellPopulation();
+            ar << p_cell_population;
+        }
 
+        template<class Archive>
+        inline void load_construct_data(
+            Archive & ar, IsolatedCellKiller * t, const unsigned int file_version)
+        {
+            AbstractCellPopulation<2>* p_cell_population;
+            ar >> p_cell_population;
+
+            // Invoke inplace constructor to initialise instance
+            ::new(t)IsolatedCellKiller(p_cell_population);
+        }
+    }
+}
 
 
 #endif /* IsolatedCellKiller_HPP_ */

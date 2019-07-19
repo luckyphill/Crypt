@@ -72,10 +72,13 @@ bool OffLatticeSimulationWithMutation::StoppingEventHasOccurred()
 		}
 
 		// The entire crypt is made up of mutant cells
-		if ( stopOnClonalConversion &&  mutantCellCount > unsigned( 0.8 * double(cell_count) ) )
+		if ( mutantCellCount > unsigned( 0.8 * double(cell_count) ) )
 		{
 			TRACE("Clonal conversion")
-			return true;
+			if (stopOnClonalConversion )
+			{
+				return true;
+			}
 		}
 		
 	}

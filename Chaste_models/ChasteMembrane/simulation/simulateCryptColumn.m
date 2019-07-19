@@ -115,7 +115,6 @@ classdef simulateCryptColumn < chasteSimulation
 			obj.dataFile = [obj.saveLocation, fileName, '.txt'];
 			obj.errorFile = [obj.saveLocation, fileName, '.err'];
 
-
 		end	
 
 		function generateSimOutputLocation(obj, chasteTestOutputLocation)
@@ -128,7 +127,7 @@ classdef simulateCryptColumn < chasteSimulation
 			% to that used in the Chaste Test, and doing that using maps takes a lot of effort
 
 
-			obj.simOutputLocation = sprintf('%stestoutput/%s/n_%d_np_%d_EES_%g_MS_%g_CCT_%g_WT_%g_VF_%g_run_%d/results_from_time_%d/', chasteTestOutputLocation, obj.chasteTest, obj.n, obj.np, obj.ees, obj.ms, obj.cct, obj.wt, obj.vf, obj.run_number, obj.bt);
+			obj.simOutputLocation = sprintf('%stestoutput/%s/n_%d_np_%d_EES_%g_MS_%g_CCT_%g_WT_%g_VF_%g/run_%d/results_from_time_%d/', chasteTestOutputLocation, obj.chasteTest, obj.n, obj.np, obj.ees, obj.ms, obj.cct, obj.wt, obj.vf, obj.run_number, obj.bt);
 
 		end
 

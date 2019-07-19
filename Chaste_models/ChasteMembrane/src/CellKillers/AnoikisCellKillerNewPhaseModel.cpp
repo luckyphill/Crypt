@@ -19,14 +19,11 @@
 
 AnoikisCellKillerNewPhaseModel::AnoikisCellKillerNewPhaseModel(AbstractCellPopulation<2>* pCellPopulation)
     : AbstractCellKiller<2>(pCellPopulation),
-    mCellsRemovedByAnoikis(0),
     mSlowDeath(false),
     mPoppedUpLifeExpectancy(0.0),
     mResistantPoppedUpLifeExpectancy(0.0)
 {
-    // Sets up output file
-//	OutputFileHandler output_file_handler(mOutputDirectory + "AnoikisData/", false);
-//	mAnoikisOutputFile = output_file_handler.OpenOutputFile("results.anoikis");
+
 }
 
 AnoikisCellKillerNewPhaseModel::~AnoikisCellKillerNewPhaseModel()
@@ -182,7 +179,6 @@ void AnoikisCellKillerNewPhaseModel::CheckAndLabelCellsForApoptosisOrDeath()
 			{
 				SimplifiedPhaseBasedCellCycleModel* p_ccm = static_cast<SimplifiedPhaseBasedCellCycleModel*>(p_cell->GetCellCycleModel());
 				SimplifiedCellCyclePhase p_phase = p_ccm->GetCurrentCellCyclePhase();
-				mAgesAtDeath.push_back(p_cell->GetAge());
 				p_cell->Kill();
 
 				if (p_phase == W_PHASE)
@@ -214,10 +210,6 @@ void AnoikisCellKillerNewPhaseModel::ResetCellKillCount()
 	mCellKillCount = 0;
 }
 
-std::vector<double> AnoikisCellKillerNewPhaseModel::GetAgesAtDeath()
-{
-	return mAgesAtDeath;
-}
 
 void AnoikisCellKillerNewPhaseModel::OutputCellKillerParameters(out_stream& rParamsFile)
 {

@@ -36,6 +36,10 @@ private:
     {
         archive & boost::serialization::base_object<AbstractForce<ELEMENT_DIM, SPACE_DIM> >(*this);
         archive & mMembraneEpithelialSpringStiffness;
+        archive & mMembranePreferredRadius;
+        archive & mEpithelialPreferredRadius; 
+        archive & mAdhesionForceLawParameter; 
+        archive & mWeakeningFraction;
     }
 
 protected:

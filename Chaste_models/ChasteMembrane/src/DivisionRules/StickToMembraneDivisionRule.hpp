@@ -37,6 +37,9 @@ private:
     void serialize(Archive & archive, const unsigned int version)
     {
         archive & boost::serialization::base_object<AbstractCentreBasedDivisionRule<2u> >(*this);
+        archive & mMembraneAxis;
+        archive & mWiggle;
+        archive & mMaxAngle;
     }
 
     c_vector<double, SPACE_DIM> mMembraneAxis;

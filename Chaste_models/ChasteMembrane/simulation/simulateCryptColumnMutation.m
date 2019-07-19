@@ -40,7 +40,7 @@ classdef simulateCryptColumnMutation < chasteSimulation
 		msM 		double {mustBeNonnegative, mustBeLessThanOrEqual(msM,1)}
 		cctM 		double {mustBeNonnegative, mustBeLessThanOrEqual(cctM,1)}
 		wtM 		double {mustBeNonnegative, mustBeLessThanOrEqual(wtM,1)}
-		Mvf 		double {mustBeNonnegative, mustBeLessThanOrEqual(vf,1)}
+		Mvf 		double {mustBeNonnegative, mustBeLessThanOrEqual(Mvf,1)}
 
 
 
@@ -107,13 +107,13 @@ classdef simulateCryptColumnMutation < chasteSimulation
 			obj.wt			= obj.simParams('wt');
 			obj.vf			= obj.simParams('vf');
 
-			obj.mpos 		= obj.simParams('mpos');
-			obj.Mnp			= obj.simParams('Mnp');
-			obj.eesM		= obj.simParams('eesM');
-			obj.msM			= obj.simParams('msM');
-			obj.cctM		= obj.simParams('cctM');
-			obj.wtM			= obj.simParams('wtM');
-			obj.Mvf			= obj.simParams('Mvf');
+			obj.mpos 		= obj.mutantParams('mpos');
+			obj.Mnp			= obj.mutantParams('Mnp');
+			obj.eesM		= obj.mutantParams('eesM');
+			obj.msM			= obj.mutantParams('msM');
+			obj.cctM		= obj.mutantParams('cctM');
+			obj.wtM			= obj.mutantParams('wtM');
+			obj.Mvf			= obj.mutantParams('Mvf');
 
 			obj.t			= obj.solverParams('t');
 			obj.bt			= obj.solverParams('bt');
@@ -148,8 +148,8 @@ classdef simulateCryptColumnMutation < chasteSimulation
 			% to that used in the Chaste Test, and doing that using maps takes a lot of effort
 
 
-			obj.simOutputLocation = sprintf('testoutput/%s/n_%d_np_%d_EES_%g_MS_%g_CCT_%g_WT_%g_VF_%g_run_%d/', obj.chasteTest, obj.n, obj.np, obj.ees, obj.ms, obj.cct, obj.wt, obj.vf, obj.run_number,)
-			obj.simOutputLocation = [obj.simOutputLocation, sprintf('mpos_%g_Mnp_%g_eesM_%g_msM_%g_cctM_%g_wtM_%g_Mvf_%g/results_from_time_%d/', obj.mpos, obj.Mnp, obj.eesM, obj.msM, obj.cctM, obj.wtM, obj.Mvf, obj.bt)];
+			obj.simOutputLocation = sprintf('testoutput/%s/n_%d_np_%d_EES_%g_MS_%g_CCT_%g_WT_%g_VF_%g/', obj.chasteTest, obj.n, obj.np, obj.ees, obj.ms, obj.cct, obj.wt, obj.vf)
+			obj.simOutputLocation = [obj.simOutputLocation, sprintf('mpos_%g_Mnp_%g_eesM_%g_msM_%g_cctM_%g_wtM_%g_Mvf_%g/_run_%d/results_from_time_%d/', obj.mpos, obj.Mnp, obj.eesM, obj.msM, obj.cctM, obj.wtM, obj.Mvf, obj.run_number, obj.bt)];
 
 		end
 
@@ -224,7 +224,7 @@ classdef simulateCryptColumnMutation < chasteSimulation
 			k = obj.mutantParams.keys;
 			v = obj.mutantParams.values;
 			for i = 1:obj.mutantParams.Count
-				inputString = [inputString, sprintf(' -%s %g',k{i}, v{i})];
+				obj.inputString = [obj.inputString, sprintf(' -%s %g',k{i}, v{i})];
 			end
 
 			k = obj.solverParams.keys;
