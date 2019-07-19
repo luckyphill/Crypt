@@ -20,10 +20,10 @@ mkdir -p output
 echo "array_job_index: $SLURM_ARRAY_TASK_ID" 
 i=1 
 found=0 
-while IFS=, Mnp eesM msM cctM wtM Mvf
+while IFS=, mnp eesM msM cctM wtM mvf
 do 
     if [ $i = $SLURM_ARRAY_TASK_ID ]; then 
-        echo "Running mutation, Mnp $Mnp, eesM $eesM, msM $msM, cctM $cctM, wtM $wtM, Mvf $Mvf"
+        echo "Running mutation, mnp $mnp, eesM $eesM, msM $msM, cctM $cctM, wtM $wtM, mvf $mvf"
         found=1 
         break 
     fi 
@@ -31,8 +31,8 @@ do
 done < mut_params.txt 
 
 if [ $found = 1 ]; then
-	echo "-nodisplay -nodesktop -r cd ../../; addpath(genpath(pwd)); runVisualiserAnalysis($Mnp,$eesM,$msM,$cctM,$wtM,$Mvf); quit()"
-    matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); runVisualiserAnalysis($Mnp,$eesM,$msM,$cctM,$wtM,$Mvf); quit()"
+	echo "-nodisplay -nodesktop -r cd ../../; addpath(genpath(pwd)); runVisualiserAnalysis($mnp,$eesM,$msM,$cctM,$wtM,$mvf); quit()"
+    matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); runVisualiserAnalysis($mnp,$eesM,$msM,$cctM,$wtM,$mvf); quit()"
 else 
   echo "mut_params.txt  does not have enough parameters for $SLURM_ARRAY_TASK_ID index" 
 fi
