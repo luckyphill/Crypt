@@ -72,9 +72,10 @@ bool OffLatticeSimulationWithMutation::StoppingEventHasOccurred()
 		}
 
 		// The entire crypt is made up of mutant cells
-		if ( mutantCellCount > unsigned( 0.8 * double(cell_count) ) )
+		if ( !monolayerFull && mutantCellCount > unsigned( 0.8 * double(cell_count) ) )
 		{
 			TRACE("Clonal conversion")
+			monolayerFull = true;
 			if (stopOnClonalConversion )
 			{
 				return true;

@@ -31,6 +31,7 @@ private:
 
     bool stopOnEmptyMonolayer = false;
     bool monolayerEmpty = false; // A flag to make sure notified only once of empty monolayer
+    bool monolayerFull = false; // A flag to make sure notified only once of clonal conversion
 
     bool stopOnClonalConversion = false;
 
