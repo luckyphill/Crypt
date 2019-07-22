@@ -36,10 +36,10 @@ classdef simulateCryptColumnMutation < chasteSimulation
 		% These parameters are for the mutant cell
 		mpos		uint16 {mustBeNonnegative}
 		Mnp 		uint16 {mustBeNonnegative}
-		eesM 		double {mustBeNonnegative, mustBeLessThanOrEqual(eesM,1)}
-		msM 		double {mustBeNonnegative, mustBeLessThanOrEqual(msM,1)}
-		cctM 		double {mustBeNonnegative, mustBeLessThanOrEqual(cctM,1)}
-		wtM 		double {mustBeNonnegative, mustBeLessThanOrEqual(wtM,1)}
+		eesM 		double {mustBeNonnegative}
+		msM 		double {mustBeNonnegative}
+		cctM 		double {mustBeNonnegative}
+		wtM 		double {mustBeNonnegative}
 		Mvf 		double {mustBeNonnegative, mustBeLessThanOrEqual(Mvf,1)}
 
 
@@ -148,7 +148,7 @@ classdef simulateCryptColumnMutation < chasteSimulation
 			% to that used in the Chaste Test, and doing that using maps takes a lot of effort
 
 
-			obj.simOutputLocation = sprintf('%s/%s/n_%d_np_%d_EES_%g_MS_%g_CCT_%g_WT_%g_VF_%g/', chasteTestOutputLocation,obj.chasteTest, obj.n, obj.np, obj.ees, obj.ms, obj.cct, obj.wt, obj.vf)
+			obj.simOutputLocation = sprintf('%s%s/n_%d_np_%d_EES_%g_MS_%g_CCT_%g_WT_%g_VF_%g/', chasteTestOutputLocation,obj.chasteTest, obj.n, obj.np, obj.ees, obj.ms, obj.cct, obj.wt, obj.vf)
 			obj.simOutputLocation = [obj.simOutputLocation, sprintf('mpos_%g_Mnp_%g_eesM_%g_msM_%g_cctM_%g_wtM_%g_Mvf_%g/run_%d/results_from_time_%d/', obj.mpos, obj.Mnp, obj.eesM, obj.msM, obj.cctM, obj.wtM, obj.Mvf, obj.run_number, obj.bt)];
 
 		end
