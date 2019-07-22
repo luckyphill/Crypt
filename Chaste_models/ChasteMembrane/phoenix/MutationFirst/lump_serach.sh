@@ -14,6 +14,8 @@ module load netCDF-Fortran
 module unload OpenMPI
 module unload HDF5
 
+module load matlab/2019a
+
 mkdir -p output
 
 
@@ -31,7 +33,7 @@ do
 done < mut_params.txt 
 
 if [ $found = 1 ]; then
-	echo "-nodisplay -nodesktop -r cd ../../; addpath(genpath(pwd)); runVisualiserAnalysis($mnp,$eesM,$msM,$cctM,$wtM,$mvf); quit()"
+	echo "matlab -nodisplay -nodesktop -r cd ../../; addpath(genpath(pwd)); runVisualiserAnalysis($mnp,$eesM,$msM,$cctM,$wtM,$mvf); quit()"
     matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); runVisualiserAnalysis($mnp,$eesM,$msM,$cctM,$wtM,$mvf); quit()"
 else 
   echo "mut_params.txt  does not have enough parameters for $SLURM_ARRAY_TASK_ID index" 
