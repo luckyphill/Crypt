@@ -24,7 +24,17 @@ classdef visualiserAnalysis < matlab.mixin.SetGet
 			seedParams = containers.Map({'run'}, {run_number});
 
 			obj.chastePath = [getenv('HOME'), '/'];
-			obj.chasteTestOutputLocation = ['/tmp/', getenv('USER'),'/'];
+
+			outputLocation = getenv('CHASTE_TEST_OUTPUT');
+
+			if isempty(outputLocation)
+				obj.chasteTestOutputLocation = ['/tmp/', getenv('USER'),'/testoutput/'];
+			else
+				if ~strcmp(outputLocation(end),'/')
+					outputLocation(end+1) = '/';
+				end
+				obj.chasteTestOutputLocation = outputLocation;
+			end
 
 
 			obj.simul = simulateCryptColumnMutation(simParams, mutationParams, solverParams, seedParams, outputType, obj.chastePath, obj.chasteTestOutputLocation);

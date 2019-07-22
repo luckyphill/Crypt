@@ -148,8 +148,8 @@ classdef simulateCryptColumnMutation < chasteSimulation
 			% to that used in the Chaste Test, and doing that using maps takes a lot of effort
 
 
-			obj.simOutputLocation = sprintf('%stestoutput/%s/n_%d_np_%d_EES_%g_MS_%g_CCT_%g_WT_%g_VF_%g/', chasteTestOutputLocation,obj.chasteTest, obj.n, obj.np, obj.ees, obj.ms, obj.cct, obj.wt, obj.vf)
-			obj.simOutputLocation = [obj.simOutputLocation, sprintf('mpos_%g_Mnp_%g_eesM_%g_msM_%g_cctM_%g_wtM_%g_Mvf_%g/_run_%d/results_from_time_%d/', obj.mpos, obj.Mnp, obj.eesM, obj.msM, obj.cctM, obj.wtM, obj.Mvf, obj.run_number, obj.bt)];
+			obj.simOutputLocation = sprintf('%s/%s/n_%d_np_%d_EES_%g_MS_%g_CCT_%g_WT_%g_VF_%g/', chasteTestOutputLocation,obj.chasteTest, obj.n, obj.np, obj.ees, obj.ms, obj.cct, obj.wt, obj.vf)
+			obj.simOutputLocation = [obj.simOutputLocation, sprintf('mpos_%g_Mnp_%g_eesM_%g_msM_%g_cctM_%g_wtM_%g_Mvf_%g/run_%d/results_from_time_%d/', obj.mpos, obj.Mnp, obj.eesM, obj.msM, obj.cctM, obj.wtM, obj.Mvf, obj.run_number, obj.bt)];
 
 		end
 
