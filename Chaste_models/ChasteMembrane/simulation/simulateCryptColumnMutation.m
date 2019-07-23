@@ -44,12 +44,12 @@ classdef simulateCryptColumnMutation < chasteSimulation
 
 
 
-		% These are default solver parameters
+		% These are solver parameters
 		t 			double {mustBeNonnegative}
 		bt 			double {mustBeNonnegative}
 		dt 			double {mustBeNonnegative}
 
-		% This is the default seed parameter
+		% This is the RNG seed parameter
 		run_number 	double {mustBeNumeric} 	  
 
 	end
@@ -69,7 +69,7 @@ classdef simulateCryptColumnMutation < chasteSimulation
 			obj.solverParams = solverParams;
 			obj.seedParams = seedParams;
 
-			obj.outputType = outputType;
+			obj.outputTypes = outputTypes;
 
 
 			obj.assignParameters(); % A helper method to clear up the constructor from clutter
@@ -80,10 +80,7 @@ classdef simulateCryptColumnMutation < chasteSimulation
 			obj.generateSimulationCommand(chastePath);
 
 
-			obj.generateDataSaveLocation(chastePath);
-			obj.generateFileNames();
-			
-			
+			obj.generateDataSaveLocation(chastePath);			
 
 			obj.generateSimOutputLocation(chasteTestOutputLocation);
 
@@ -125,19 +122,6 @@ classdef simulateCryptColumnMutation < chasteSimulation
 
 		end
 
-		function generateFileNames(obj)
-			% This function generates the filename based on the input variables
-			% sometime the input variables might be held in the folder structure
-			% so this might just be a seed number
-
-			fileName = [obj.outputType.name, sprintf('_run_%g', obj.run_number)];
-
-			obj.dataFile = [obj.saveLocation, fileName, '.txt'];
-			obj.errorFile = [obj.saveLocation, fileName, '.err'];
-
-
-		end	
-
 		function generateSimOutputLocation(obj, chasteTestOutputLocation)
 			% This generates the simulation output path for the given parameters
 			% in the given Chaste test. This will depend on how the
@@ -164,11 +148,19 @@ classdef simulateCryptColumnMutation < chasteSimulation
 			% and it doesn't account for the default value of parameters when they
 			% aren't in the simParams keys
 
-			k = obj.simParams.keys;
-			v = obj.simParams.values;
-			obj.saveLocation = [obj.saveLocation, 'params'];
-			for i = 1:obj.simParams.Count
-				obj.saveLocation = [obj.saveLocation, sprintf('_%s_%g',k{i}, v{i})];
+			if isKey(obj.simParams,'name');
+				% Allows for the possibility of naming a particular parameter set
+				% useful if they need to be distinguished easily, but could lead to 
+				% duplication of data and simulation time
+				obj.saveLocation = [obj.saveLocation, name];
+			else
+				k = obj.simParams.keys;
+				v = obj.simParams.values;
+
+				obj.saveLocation = [obj.saveLocation, 'params'];
+				for i = 1:obj.simParams.Count
+					obj.saveLocation = [obj.saveLocation, sprintf('_%s_%g',k{i}, v{i})];
+				end
 			end
 
 			obj.saveLocation = [obj.saveLocation, '/mutant'];
@@ -242,15 +234,16 @@ classdef simulateCryptColumnMutation < chasteSimulation
 			% A given dataType may need specific flags/input parameters in order
 			% generate the correct data files
 
-			if obj.outputType.typeParams.Count > 0
-				
-				k = obj.outputType.typeParams.keys;
-				v = obj.outputType.typeParams.values;
-				for i = 1:obj.outputType.typeParams.Count
-					obj.inputString = [obj.inputString, sprintf(' -%s %g',k{i}, v{i})];
-				end
+			for j = 1:length(obj.outputTypesToRun)
+				if obj.outputTypesToRun{j}.typeParams.Count > 0
+					
+					k = obj.outputTypesToRun{j}.typeParams.keys;
+					v = obj.outputTypesToRun{j}.typeParams.values;
+					for i = 1:obj.outputTypesToRun{j}.typeParams.Count
+						obj.inputString = [obj.inputString, sprintf(' -%s %g',k{i}, v{i})];
+					end
 
-			end
+				end
 
 		end
 

@@ -16,6 +16,12 @@ classdef (Abstract) dataType
 		% trigger the specific data type in the chaste test
 		typeParams containers.Map
 
+		% This lists the names of the output file(s) that this dataType creates
+		% since the name is dependent on the dataType, not the simulation, the
+		% folder structure must have all the simulation details in order to ensure
+		% data isn't unintentionally overwritten
+		fileNames
+
 	end
 
 	methods (Abstract, Access = protected)

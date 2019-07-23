@@ -12,10 +12,14 @@ classdef (Abstract) simulation < matlab.mixin.SetGet
 		% A flag to tell the data generating method if existing data is to be overwritten
 		overWrite = false;
 
-		% A class that handles the reading and writing of data
-		outputType
+		% A cell array of classes that handle the reading and writing of data
+		outputTypes
+		numOutputTypes = 0;
 
-		data = nan
+		% A list of outputtypes that have not been generated yet
+		outputTypesToRun = {};
+
+		data = nan;
 
 	end
 
@@ -31,10 +35,26 @@ classdef (Abstract) simulation < matlab.mixin.SetGet
 
 	methods
 
-		function set.outputType( obj, v )
+		function set.outputTypes( obj, v )
 			% This is to validate the object given to outputType in the constructor
-            validateattributes(v, {'dataType'}, {});
-            obj.outputType = v;
+			if isa(v, 'dataType')
+            	validateattributes(v, {'dataType'}, {});
+            	obj.outputTypes = {v};
+            	numOutputTypes = 1;
+            end
+
+            if isa(v, 'cell')
+            	numOutputTypes = length(v);
+            	for i = 1:numOutputTypes
+            		validateattributes(v{i}, {'dataType'}, {});
+            	end
+            	obj.outputTypes = v;
+            end
+
+            if ~isa(v, 'cell') && ~isa(v, 'dataType')
+            	% Invalid input
+            	error('sim:dataType', 'outputTypes must either be a class of type dataType, or a cell array of dataType classes');
+            end
         end
 
 		% These methods are available externally and are how the data gathering is handled
@@ -53,47 +73,52 @@ classdef (Abstract) simulation < matlab.mixin.SetGet
 
 			successCode = 0;
 
+			if numOutputTypes == 0
+				error('sim:NoOutputTypes', 'At least one outputType must be specified before running the simulation');
+			end
+
 			if ~obj.overWrite
 				% We are going to take whatever data exists and if it doesn't exist
 				% we will generate it
-				try
-					obj.data = obj.outputType.loadData(obj);
+				for i = 1:numOutputTypes
+					if ~obj.outputTypes{i}.exists(obj)
+						obj.outputTypesToRun = {obj.outputTypes{i}  ,obj.outputTypesToRun};
+					end
+				end
+
+				if isempty(obj.outputTypesToRun)
+					% All data exists already, no need to run simulation
+					fprintf('Data already exists\n');
 					successCode = 2;
-				catch err
-					fprintf('%s\n',err.message);
-					fprintf('Problem retrieving data, attempting to regenerate\n');
-					
-					% The data couldn't be read in for some reason, so attempt to regenerate
+				else
+					% We need to run the simulation to generate the data that is missing
 					if obj.runSimulation();
-						try
-							obj.loadSimulationData();
-							fprintf('Data generation successful\n');
-							successCode = 1;
-						catch err
-							fprintf('%s\n',err.message);
-							fprintf('Regeneration failed\n');
+						successCode = 1;
+						for i=1:length(obj.outputTypesToRun)
+							if obj.outputTypesToRun{i}.exists(obj)
+								fprintf('Data generation successful for %\n', obj.outputTypesToRun{i}.name);
+							else
+								fprintf('Data generation failed for %\n', obj.outputTypesToRun{i}.name);
+								successCode = 0;
+							end
+						end
+					end
+				end
+			else
+				obj.outputTypesToRun = obj.outputTypes;
+				if obj.runSimulation();
+					successCode = 1;
+					for i=1:length(obj.outputTypesToRun)
+						if obj.outputTypesToRun{i}.exists(obj)
+							fprintf('Data generation successful for %\n', obj.outputTypesToRun{i}.name);
+						else
+							fprintf('Data generation failed for %\n', obj.outputTypesToRun{i}.name);
 							successCode = 0;
 						end
 					end
 				end
-
-			else
-				% We are going to run the simulation and make new data, regardless
-				% of what already exists
-				if obj.runSimulation();
-					try
-						obj.data = obj.outputType.loadData(obj);
-						fprintf('Data generation successful\n');
-						successCode = 1;
-					catch err
-						fprintf('%s\n',err.message);
-						fprintf('Data generation failed\n');
-						successCode = 0;
-					end
-				end
-
 			end
-
+			
 		end
 
 		function loadSimulationData(obj)

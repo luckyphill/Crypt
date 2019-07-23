@@ -98,315 +98,315 @@ public:
 		// ********************************************************************************************
 		// Crypt size parameters
 		unsigned n = 20;
-        if(CommandLineArguments::Instance()->OptionExists("-n"))
-        {	
-        	n = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-n");
-        	PRINT_VARIABLE(n)
+		if(CommandLineArguments::Instance()->OptionExists("-n"))
+		{	
+			n = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-n");
+			PRINT_VARIABLE(n)
 
-        }
+		}
 
-        unsigned n_prolif = n - 10; // Number of proliferative cells, counting up from the bottom
-        if(CommandLineArguments::Instance()->OptionExists("-np"))
-        {	
-        	n_prolif = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-np");
-        	PRINT_VARIABLE(n_prolif)
+		unsigned n_prolif = n - 10; // Number of proliferative cells, counting up from the bottom
+		if(CommandLineArguments::Instance()->OptionExists("-np"))
+		{	
+			n_prolif = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-np");
+			PRINT_VARIABLE(n_prolif)
 
-        }
-        // ********************************************************************************************
+		}
+		// ********************************************************************************************
 
-        // ********************************************************************************************
-        // Force parameters
-        double epithelialStiffness = 20;
-        if(CommandLineArguments::Instance()->OptionExists("-ees"))
-        {
-        	epithelialStiffness = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-ees");
-        	PRINT_VARIABLE(epithelialStiffness)
-        }
+		// ********************************************************************************************
+		// Force parameters
+		double epithelialStiffness = 20;
+		if(CommandLineArguments::Instance()->OptionExists("-ees"))
+		{
+			epithelialStiffness = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-ees");
+			PRINT_VARIABLE(epithelialStiffness)
+		}
 
-        double membraneStiffness = 50;
-        if(CommandLineArguments::Instance()->OptionExists("-ms"))
-        {
-        	membraneStiffness = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-ms");
-        	PRINT_VARIABLE(membraneStiffness)
-        }
+		double membraneStiffness = 50;
+		if(CommandLineArguments::Instance()->OptionExists("-ms"))
+		{
+			membraneStiffness = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-ms");
+			PRINT_VARIABLE(membraneStiffness)
+		}
 
-        double meinekeStiffness = epithelialStiffness; // Newly divided spring stiffness
-        if(CommandLineArguments::Instance()->OptionExists("-nds"))
-        {
-        	meinekeStiffness = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-nds");
-        	PRINT_VARIABLE(meinekeStiffness)
-        }
-        // ********************************************************************************************
+		double meinekeStiffness = epithelialStiffness; // Newly divided spring stiffness
+		if(CommandLineArguments::Instance()->OptionExists("-nds"))
+		{
+			meinekeStiffness = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-nds");
+			PRINT_VARIABLE(meinekeStiffness)
+		}
+		// ********************************************************************************************
 
-        // ********************************************************************************************
-        // Cell cycle parameters
-        double cellCycleTime = 15.0;
-        if(CommandLineArguments::Instance()->OptionExists("-cct"))
-        {
-        	cellCycleTime = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-cct");
-        	PRINT_VARIABLE(cellCycleTime)
-        }
+		// ********************************************************************************************
+		// Cell cycle parameters
+		double cellCycleTime = 15.0;
+		if(CommandLineArguments::Instance()->OptionExists("-cct"))
+		{
+			cellCycleTime = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-cct");
+			PRINT_VARIABLE(cellCycleTime)
+		}
 
-        double wPhaseLength = 10.0;
-        if(CommandLineArguments::Instance()->OptionExists("-wt"))
-        {
-        	wPhaseLength =CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-wt");
-        	PRINT_VARIABLE(wPhaseLength)
-        }
+		double wPhaseLength = 10.0;
+		if(CommandLineArguments::Instance()->OptionExists("-wt"))
+		{
+			wPhaseLength =CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-wt");
+			PRINT_VARIABLE(wPhaseLength)
+		}
 
-        // Should be implemented better, but a quick check to make sure the cell cycle phases
-        // aren't set too extreme.
-        assert(cellCycleTime - wPhaseLength > 1);
+		// Should be implemented better, but a quick check to make sure the cell cycle phases
+		// aren't set too extreme.
+		assert(cellCycleTime - wPhaseLength > 1);
 
-        double quiescentVolumeFraction = 0.75;
-        if(CommandLineArguments::Instance()->OptionExists("-vf"))
-        {	
-        	quiescentVolumeFraction = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-vf");
-        	PRINT_VARIABLE(quiescentVolumeFraction)
+		double quiescentVolumeFraction = 0.75;
+		if(CommandLineArguments::Instance()->OptionExists("-vf"))
+		{	
+			quiescentVolumeFraction = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-vf");
+			PRINT_VARIABLE(quiescentVolumeFraction)
 
-        }
-        // ********************************************************************************************
+		}
+		// ********************************************************************************************
 
-        // ********************************************************************************************
-        // Simulation parameters
-        double dt = 0.002; // The minimum to get covergant simulations for a specific parameter set
+		// ********************************************************************************************
+		// Simulation parameters
+		double dt = 0.002; // The minimum to get covergant simulations for a specific parameter set
 		if(CommandLineArguments::Instance()->OptionExists("-dt"))
-        {
-        	dt = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-dt");
-        	PRINT_VARIABLE(dt)
-        }
-        
-        double burn_in_time = 40; // The time needed to clear the transient behaviour from the initial set up
-        if(CommandLineArguments::Instance()->OptionExists("-bt"))
-        {	
-        	burn_in_time = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-bt");
-        	PRINT_VARIABLE(burn_in_time)
+		{
+			dt = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-dt");
+			PRINT_VARIABLE(dt)
+		}
+		
+		double burn_in_time = 40; // The time needed to clear the transient behaviour from the initial set up
+		if(CommandLineArguments::Instance()->OptionExists("-bt"))
+		{	
+			burn_in_time = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-bt");
+			PRINT_VARIABLE(burn_in_time)
 
-        }
+		}
 
-        double simulation_length = 100;
-        if(CommandLineArguments::Instance()->OptionExists("-t"))
-        {	
-        	simulation_length = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-t");
-        	PRINT_VARIABLE(simulation_length)
+		double simulation_length = 100;
+		if(CommandLineArguments::Instance()->OptionExists("-t"))
+		{	
+			simulation_length = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-t");
+			PRINT_VARIABLE(simulation_length)
 
-        }
+		}
 
-        double run_number = 1; // For the parameter sweep, must keep track of the run number for saving the output file
-        if(CommandLineArguments::Instance()->OptionExists("-run"))
-        {	
-        	run_number = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-run");
-        	PRINT_VARIABLE(run_number)
+		double run_number = 1; // For the parameter sweep, must keep track of the run number for saving the output file
+		if(CommandLineArguments::Instance()->OptionExists("-run"))
+		{	
+			run_number = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-run");
+			PRINT_VARIABLE(run_number)
 
-        }
-        // ********************************************************************************************
-
-
-
-        // ********************************************************************************************
-        // Mutation input parameters
-        // ********************************************************************************************
-        TRACE("Mutation paramters")
+		}
+		// ********************************************************************************************
 
 
-        // ********************************************************************************************
-        // Mutant cell position
-        unsigned mutationPosition = 1;
-        if(CommandLineArguments::Instance()->OptionExists("-mpos"))
-        {	
-        	mutationPosition = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-mpos");
-        }
-        PRINT_VARIABLE(mutationPosition)
-        // ********************************************************************************************
+
+		// ********************************************************************************************
+		// Mutation input parameters
+		// ********************************************************************************************
+		TRACE("Mutation paramters")
 
 
-        // ******************************************************************************************** 
-        // Differentiation position 
-        unsigned mutantProliferativeCompartment = n_prolif; // Number of proliferative cells, counting up from the bottom
-        if(CommandLineArguments::Instance()->OptionExists("-Mnp"))
-        {   
-            mutantProliferativeCompartment = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-Mnp");
-            PRINT_VARIABLE(mutantProliferativeCompartment)
-
-        }
-        // ******************************************************************************************** 
-
-
-        // ********************************************************************************************
-        // Anoikis resistance
-        double resistantPoppedUpLifeExpectancy = DBL_MAX;
-        if(CommandLineArguments::Instance()->OptionExists("-rple"))
-        {
-        	resistantPoppedUpLifeExpectancy = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-rple");
-        	PRINT_VARIABLE(resistantPoppedUpLifeExpectancy)
-        }
-
-        // Poppped up cells continue cycle (on/off)
-        bool setPopUpDivision = false;
-        if(CommandLineArguments::Instance()->OptionExists("-rdiv"))
-        {	
-        	setPopUpDivision = true;
-        }
-        PRINT_VARIABLE(setPopUpDivision)
+		// ********************************************************************************************
+		// Mutant cell position
+		unsigned mutationPosition = 1;
+		if(CommandLineArguments::Instance()->OptionExists("-mpos"))
+		{	
+			mutationPosition = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-mpos");
+		}
+		PRINT_VARIABLE(mutationPosition)
+		// ********************************************************************************************
 
 
-        double resistantCellCycleTime = cellCycleTime;
-        if(setPopUpDivision && CommandLineArguments::Instance()->OptionExists("-rcct"))
-        {
-        	resistantCellCycleTime = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-rcct");
-        	PRINT_VARIABLE(resistantCellCycleTime)
-        }
-        if(!setPopUpDivision && CommandLineArguments::Instance()->OptionExists("-rcct"))
-        {
-        	TRACE("Popped up cell cycle time not set")
-        }
-        // ********************************************************************************************
+		// ******************************************************************************************** 
+		// Differentiation position 
+		unsigned mutantProliferativeCompartment = n_prolif; // Number of proliferative cells, counting up from the bottom
+		if(CommandLineArguments::Instance()->OptionExists("-Mnp"))
+		{   
+			mutantProliferativeCompartment = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-Mnp");
+			PRINT_VARIABLE(mutantProliferativeCompartment)
+
+		}
+		// ******************************************************************************************** 
 
 
-        // ********************************************************************************************
-        // Adhesion weakening
-        double msModifier = 1.0; // Default is no weakening
-        if(CommandLineArguments::Instance()->OptionExists("-msM"))
-        {
-        	msModifier = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-msM");
-        	PRINT_VARIABLE(msModifier)
-        }
-        // ********************************************************************************************
+		// ********************************************************************************************
+		// Anoikis resistance
+		double resistantPoppedUpLifeExpectancy = DBL_MAX;
+		if(CommandLineArguments::Instance()->OptionExists("-rple"))
+		{
+			resistantPoppedUpLifeExpectancy = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-rple");
+			PRINT_VARIABLE(resistantPoppedUpLifeExpectancy)
+		}
+
+		// Poppped up cells continue cycle (on/off)
+		bool setPopUpDivision = false;
+		if(CommandLineArguments::Instance()->OptionExists("-rdiv"))
+		{	
+			setPopUpDivision = true;
+		}
+		PRINT_VARIABLE(setPopUpDivision)
 
 
-        // ********************************************************************************************
-        // Cell-cell interaction modifier
-        double eesModifier = 1.0; // Default is no weakening
-        if(CommandLineArguments::Instance()->OptionExists("-eesM"))
-        {
-            eesModifier = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-eesM");
-            PRINT_VARIABLE(eesModifier)
-        }
+		double resistantCellCycleTime = cellCycleTime;
+		if(setPopUpDivision && CommandLineArguments::Instance()->OptionExists("-rcct"))
+		{
+			resistantCellCycleTime = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-rcct");
+			PRINT_VARIABLE(resistantCellCycleTime)
+		}
+		if(!setPopUpDivision && CommandLineArguments::Instance()->OptionExists("-rcct"))
+		{
+			TRACE("Popped up cell cycle time not set")
+		}
+		// ********************************************************************************************
 
-        // ********************************************************************************************
+
+		// ********************************************************************************************
+		// Adhesion weakening
+		double msModifier = 1.0; // Default is no weakening
+		if(CommandLineArguments::Instance()->OptionExists("-msM"))
+		{
+			msModifier = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-msM");
+			PRINT_VARIABLE(msModifier)
+		}
+		// ********************************************************************************************
 
 
-        // ********************************************************************************************
-        // Cell cycle modifier
-        double cctModifier = 1.0;
-        if(CommandLineArguments::Instance()->OptionExists("-cctM"))
-        {
-            cctModifier = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-cctM");
-            PRINT_VARIABLE(cctModifier)
-        }
+		// ********************************************************************************************
+		// Cell-cell interaction modifier
+		double eesModifier = 1.0; // Default is no weakening
+		if(CommandLineArguments::Instance()->OptionExists("-eesM"))
+		{
+			eesModifier = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-eesM");
+			PRINT_VARIABLE(eesModifier)
+		}
 
-        double wtModifier = 1.0;
-        if(CommandLineArguments::Instance()->OptionExists("-wtM"))
-        {
-            wtModifier = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-wtM");
-            PRINT_VARIABLE(wtModifier)
-        }
+		// ********************************************************************************************
 
-        // ********************************************************************************************
 
-        // ********************************************************************************************
-        // Mutant Contact inhibition fraction
-        double mutantQuiescentVolumeFraction = quiescentVolumeFraction;
-        if(CommandLineArguments::Instance()->OptionExists("-Mvf"))
-        {   
-            mutantQuiescentVolumeFraction = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-Mvf");
-            PRINT_VARIABLE(mutantQuiescentVolumeFraction)
+		// ********************************************************************************************
+		// Cell cycle modifier
+		double cctModifier = 1.0;
+		if(CommandLineArguments::Instance()->OptionExists("-cctM"))
+		{
+			cctModifier = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-cctM");
+			PRINT_VARIABLE(cctModifier)
+		}
 
-        }
-        // ********************************************************************************************     
+		double wtModifier = 1.0;
+		if(CommandLineArguments::Instance()->OptionExists("-wtM"))
+		{
+			wtModifier = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-wtM");
+			PRINT_VARIABLE(wtModifier)
+		}
+
+		// ********************************************************************************************
+
+		// ********************************************************************************************
+		// Mutant Contact inhibition fraction
+		double mutantQuiescentVolumeFraction = quiescentVolumeFraction;
+		if(CommandLineArguments::Instance()->OptionExists("-Mvf"))
+		{   
+			mutantQuiescentVolumeFraction = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-Mvf");
+			PRINT_VARIABLE(mutantQuiescentVolumeFraction)
+
+		}
+		// ********************************************************************************************     
   
 
-        // ********************************************************************************************
-        // Stopping criteria for mutation - there's no point in continuing when the mutation has gone
-        // ********************************************************************************************
-        
+		// ********************************************************************************************
+		// Stopping criteria for mutation - there's no point in continuing when the mutation has gone
+		// ********************************************************************************************
+		
 
-        // ********************************************************************************************
-        // Stop when the monolayer has no mutant cells
-        // This is useful for expediting the detection of mutation wash out, since the mutation will
-        // not remain in the crypt when it has popped up, it's just a matter of time
-        bool stopOnEmptyMonolayer = false;
-        if(CommandLineArguments::Instance()->OptionExists("-Sml"))
-        {   
-            stopOnEmptyMonolayer = true;
-        }
-        // ********************************************************************************************
+		// ********************************************************************************************
+		// Stop when the monolayer has no mutant cells
+		// This is useful for expediting the detection of mutation wash out, since the mutation will
+		// not remain in the crypt when it has popped up, it's just a matter of time
+		bool stopOnEmptyMonolayer = false;
+		if(CommandLineArguments::Instance()->OptionExists("-Sml"))
+		{   
+			stopOnEmptyMonolayer = true;
+		}
+		// ********************************************************************************************
 
-        // ********************************************************************************************
-        // Stop when clonal conversion is reached
-        // This is only going to be used when observing clonal conversion likelihood
-        bool stopOnClonalConversion = false;
-        if(CommandLineArguments::Instance()->OptionExists("-Scc"))
-        {   
-            stopOnClonalConversion = true;
-        }
-        // ********************************************************************************************
-
-
-
-        // ********************************************************************************************
-        // Damping constant for popped up cells
-        // ********************************************************************************************
-
-
-        // ******************************************************************************************** 
-        // The damping constant
-        // This has been qualitatively chosen to be 0.2, so that popped up cell experience 20% of the 
-        // damping (drag) force of cells on the basement membrane. While this is fixed as default,
-        // it is still not clear (21/06/2019) what an appropriate value is, so the ability to modify it
-        // is being retained.
-        double dampingConstant = 0.2;
-        if(CommandLineArguments::Instance()->OptionExists("-D"))
-        {
-            dampingConstant = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-D");
-            PRINT_VARIABLE(dampingConstant)
-        }
-        // ********************************************************************************************
-
-
-        // ********************************************************************************************
-        // Output control
-        // ********************************************************************************************
+		// ********************************************************************************************
+		// Stop when clonal conversion is reached
+		// This is only going to be used when observing clonal conversion likelihood
+		bool stopOnClonalConversion = false;
+		if(CommandLineArguments::Instance()->OptionExists("-Scc"))
+		{   
+			stopOnClonalConversion = true;
+		}
+		// ********************************************************************************************
 
 
 
-        // ********************************************************************************************
+		// ********************************************************************************************
+		// Damping constant for popped up cells
+		// ********************************************************************************************
+
+
+		// ******************************************************************************************** 
+		// The damping constant
+		// This has been qualitatively chosen to be 0.2, so that popped up cell experience 20% of the 
+		// damping (drag) force of cells on the basement membrane. While this is fixed as default,
+		// it is still not clear (21/06/2019) what an appropriate value is, so the ability to modify it
+		// is being retained.
+		double dampingConstant = 0.2;
+		if(CommandLineArguments::Instance()->OptionExists("-D"))
+		{
+			dampingConstant = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-D");
+			PRINT_VARIABLE(dampingConstant)
+		}
+		// ********************************************************************************************
+
+
+		// ********************************************************************************************
+		// Output control
+		// ********************************************************************************************
+
+
+
+		// ********************************************************************************************
 		bool file_output = false;
-        double sampling_multiple = 100000;
-        if(CommandLineArguments::Instance()->OptionExists("-sm"))
-        {   
-            sampling_multiple = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-sm");
-            file_output = true;
-            TRACE("File output occuring")
+		double sampling_multiple = 100000;
+		if(CommandLineArguments::Instance()->OptionExists("-sm"))
+		{   
+			sampling_multiple = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-sm");
+			file_output = true;
+			TRACE("File output occuring")
 
-        }
-        // ********************************************************************************************
-
-
-
-
-        // ********************************************************************************************
-        // Fixed parameters  
-        // ********************************************************************************************
+		}
+		// ********************************************************************************************
 
 
 
-        // ********************************************************************************************
-        double popUpDistance = 1.1; // The distance from the membrane when cells die
-        
-        double epithelialPreferredRadius = 0.5; // Must have this value due to volume calculation - can't set node radius as SetRadius(epithelialPreferredRadius) doesn't work
 
-        double equilibriumVolume = M_PI * epithelialPreferredRadius * epithelialPreferredRadius;; // Depends on the preferred radius
+		// ********************************************************************************************
+		// Fixed parameters  
+		// ********************************************************************************************
 
-        double maxInteractionRadius = 3 * epithelialPreferredRadius;
-        
-        double growingFinalSpringLength = 1;//(2 * sqrt(2) - 2) * 2 * epithelialPreferredRadius * 1.2; 
+
+
+		// ********************************************************************************************
+		double popUpDistance = 1.1; // The distance from the membrane when cells die
+		
+		double epithelialPreferredRadius = 0.5; // Must have this value due to volume calculation - can't set node radius as SetRadius(epithelialPreferredRadius) doesn't work
+
+		double equilibriumVolume = M_PI * epithelialPreferredRadius * epithelialPreferredRadius;; // Depends on the preferred radius
+
+		double maxInteractionRadius = 3 * epithelialPreferredRadius;
+		
+		double growingFinalSpringLength = 1;//(2 * sqrt(2) - 2) * 2 * epithelialPreferredRadius * 1.2; 
 		// Modify this to control how large a growing cell is at any time.
 		// = 1 means we use the growing line approximation
 		// = 2 * sqrt(2) - 2 means we use the growing circle approximation
 		// = 2 * pow(2, 1/3) - 2 means we use the growing sphere approximation
-        
-        double wall_top = n; // The point where sloughing occurs
+		
+		double wall_top = n; // The point where sloughing occurs
 
 		unsigned cell_limit = 10 * n; // The most cells allowed in a simulation. If the cell count exceeds this, the simulation terminates
 		// ********************************************************************************************		
@@ -419,14 +419,14 @@ public:
 
 
 
-        // ********************************************************************************************
+		// ********************************************************************************************
 		// Seed the RNG in a "deterministic" way
-        RandomNumberGenerator::Instance()->Reseed(run_number * quiescentVolumeFraction * epithelialStiffness);
-        // ********************************************************************************************
+		RandomNumberGenerator::Instance()->Reseed(run_number * quiescentVolumeFraction * epithelialStiffness);
+		// ********************************************************************************************
 
-        // ********************************************************************************************
-        // Make the nodes
-        unsigned node_counter = 0;
+		// ********************************************************************************************
+		// Make the nodes
+		unsigned node_counter = 0;
 
 		std::vector<Node<2>*> nodes;
 		std::vector<unsigned> transit_nodes;
@@ -435,7 +435,7 @@ public:
 
 		// Column building parameters
 		double x_distance = 0.6;
-        double y_distance = 0;
+		double y_distance = 0;
 		double x = x_distance;
 		double y = y_distance;
 
@@ -500,9 +500,9 @@ public:
 			p_cycle_model->SetWDuration(wPhaseLength);
 			p_cycle_model->SetBasePDuration(cellCycleTime - wPhaseLength);
 			p_cycle_model->SetDimension(2);
-   			p_cycle_model->SetEquilibriumVolume(equilibriumVolume);
-   			p_cycle_model->SetQuiescentVolumeFraction(quiescentVolumeFraction);
-   			p_cycle_model->SetWntThreshold(1 - (double)n_prolif/n);
+			p_cycle_model->SetEquilibriumVolume(equilibriumVolume);
+			p_cycle_model->SetQuiescentVolumeFraction(quiescentVolumeFraction);
+			p_cycle_model->SetWntThreshold(1 - (double)n_prolif/n);
 			p_cycle_model->SetBirthTime(-birth_time);
 			p_cycle_model->SetPopUpDivision(setPopUpDivision);
 
@@ -518,7 +518,7 @@ public:
 		// ********************************************************************************************
 		// Make the cell population
 		MonolayerNodeBasedCellPopulation<2> cell_population(mesh, cells, location_indices);
-        cell_population.SetDampingConstantPoppedUp(dampingConstant);
+		cell_population.SetDampingConstantPoppedUp(dampingConstant);
 		// ********************************************************************************************
 
 		// ********************************************************************************************
@@ -540,60 +540,60 @@ public:
 		simulator.SetSamplingTimestepMultiple(sampling_multiple);
 		simulator.SetCellLimit(cell_limit);
 
-        // Set stopping criteria
-        if (stopOnEmptyMonolayer)
-        {
-            simulator.StopOnEmptyMonolayer();
-        }
+		// Set stopping criteria
+		if (stopOnEmptyMonolayer)
+		{
+			simulator.StopOnEmptyMonolayer();
+		}
 
-        if (stopOnClonalConversion)
-        {
-            simulator.StopOnClonalConversion();
-        }
+		if (stopOnClonalConversion)
+		{
+			simulator.StopOnClonalConversion();
+		}
 		// ********************************************************************************************
 
 		// ********************************************************************************************
 		// Building the directory name
 		std::stringstream simdir;
-        simdir << "n_" << n;
-        simdir << "_np_" << n_prolif;
-        simdir << "_EES_"<< epithelialStiffness;
-        simdir << "_MS_" << membraneStiffness;
-        simdir << "_CCT_" << cellCycleTime;
-        simdir << "_WT_" << wPhaseLength;
-        simdir << "_VF_" << quiescentVolumeFraction;
+		simdir << "n_" << n;
+		simdir << "_np_" << n_prolif;
+		simdir << "_EES_"<< epithelialStiffness;
+		simdir << "_MS_" << membraneStiffness;
+		simdir << "_CCT_" << cellCycleTime;
+		simdir << "_WT_" << wPhaseLength;
+		simdir << "_VF_" << quiescentVolumeFraction;
 
-        std::stringstream mutdir;
-        mutdir << "mpos_" << mutationPosition;
+		std::stringstream mutdir;
+		mutdir << "mpos_" << mutationPosition;
 
-        if (setPopUpDivision)
-        {
-        	mutdir << "_rdiv_" << setPopUpDivision;
+		if (setPopUpDivision)
+		{
+			mutdir << "_rdiv_" << setPopUpDivision;
 
-            mutdir << "_rple_";
-	        if (resistantPoppedUpLifeExpectancy == DBL_MAX)
-	        {
-	        	mutdir << "MAX";
-	        }
-	        else
-	        {
-	        	mutdir << resistantPoppedUpLifeExpectancy;
-	        }
+			mutdir << "_rple_";
+			if (resistantPoppedUpLifeExpectancy == DBL_MAX)
+			{
+				mutdir << "MAX";
+			}
+			else
+			{
+				mutdir << resistantPoppedUpLifeExpectancy;
+			}
 
-	        mutdir << "_rcct_" << resistantCellCycleTime;	
-        }
+			mutdir << "_rcct_" << resistantCellCycleTime;	
+		}
 
-        mutdir << "_Mnp_" << mutantProliferativeCompartment;
-        mutdir << "_eesM_" << eesModifier;
-        mutdir << "_msM_" << msModifier;
-        mutdir << "_cctM_" << cctModifier;
-        mutdir << "_wtM_" << wtModifier;
-        mutdir << "_Mvf_" << mutantQuiescentVolumeFraction;
+		mutdir << "_Mnp_" << mutantProliferativeCompartment;
+		mutdir << "_eesM_" << eesModifier;
+		mutdir << "_msM_" << msModifier;
+		mutdir << "_cctM_" << cctModifier;
+		mutdir << "_wtM_" << wtModifier;
+		mutdir << "_Mvf_" << mutantQuiescentVolumeFraction;
 
-        std::stringstream rundir;
-        rundir << "run_" << run_number;
-        
-        std::string output_directory = "TestCryptColumnMutation/" +  simdir.str() + "/" + mutdir.str() + "/" + rundir.str();
+		std::stringstream rundir;
+		rundir << "run_" << run_number;
+		
+		std::string output_directory = "TestCryptColumnMutation/" +  simdir.str() + "/" + mutdir.str() + "/" + rundir.str();
 
 		simulator.SetOutputDirectory(output_directory);
 		// ********************************************************************************************
@@ -601,17 +601,17 @@ public:
 		// ********************************************************************************************
 		// Set Wnt parameters and add in the cell population
 		WntConcentration<2>::Instance()->SetType(LINEAR);
-        WntConcentration<2>::Instance()->SetCellPopulation(cell_population);
-        WntConcentration<2>::Instance()->SetCryptLength(n);
-        // ********************************************************************************************
+		WntConcentration<2>::Instance()->SetCellPopulation(cell_population);
+		WntConcentration<2>::Instance()->SetCryptLength(n);
+		// ********************************************************************************************
 
 
 		// ********************************************************************************************
-        // File outputs
-        // Files are only output if the command line argument -sm exists and a sampling multiple is set
-        simulator.SetSamplingTimestepMultiple(sampling_multiple);
-        cell_population.SetOutputResultsForChasteVisualizer(file_output);
-        // ********************************************************************************************
+		// File outputs
+		// Files are only output if the command line argument -sm exists and a sampling multiple is set
+		simulator.SetSamplingTimestepMultiple(sampling_multiple);
+		cell_population.SetOutputResultsForChasteVisualizer(file_output);
+		// ********************************************************************************************
 
 		// ********************************************************************************************
 		// Add forces
@@ -624,13 +624,13 @@ public:
 		p_force->SetMeinekeSpringStiffness(meinekeStiffness);
 		p_force->SetMeinekeSpringGrowthDuration(wPhaseLength);
 
-        p_force->SetModifierFraction(eesModifier);
+		p_force->SetModifierFraction(eesModifier);
 
 		MAKE_PTR(NormalAdhesionForceNewPhaseModel<2>, p_adhesion);
-        p_adhesion->SetMembraneSpringStiffness(membraneStiffness);
-        p_adhesion->SetWeakeningFraction(msModifier);
+		p_adhesion->SetMembraneSpringStiffness(membraneStiffness);
+		p_adhesion->SetWeakeningFraction(msModifier);
 
-        // ********************************************************************************************
+		// ********************************************************************************************
 
 		
 		// ********************************************************************************************
@@ -640,8 +640,8 @@ public:
 		cell_population.SetMeinekeDivisionSeparation(0.05); // Set how far apart the cells will be upon division
 		// ********************************************************************************************
 
-        // ********************************************************************************************
-        // Once paramters are set, drop in the force laws
+		// ********************************************************************************************
+		// Once paramters are set, drop in the force laws
 		simulator.AddForce(p_force);
 		simulator.AddForce(p_adhesion);
 		// ********************************************************************************************
@@ -708,8 +708,8 @@ public:
 		p_anoikis_killer_2->SetResistantPoppedUpLifeExpectancy(resistantPoppedUpLifeExpectancy);
 		simulator.AddCellKiller(p_anoikis_killer_2);
 
-        MAKE_PTR_ARGS(IsolatedCellKiller, p_isolated_killer, (&cell_population));
-        simulator.AddCellKiller(p_isolated_killer);
+		MAKE_PTR_ARGS(IsolatedCellKiller, p_isolated_killer, (&cell_population));
+		simulator.AddCellKiller(p_isolated_killer);
 		// ********************************************************************************************
 
 		// ********************************************************************************************
@@ -753,18 +753,18 @@ public:
 		while (position < mutationPosition && it != pos_cells.end())
 		{
 			SimplifiedPhaseBasedCellCycleModel* p_ccm = static_cast<SimplifiedPhaseBasedCellCycleModel*>((*it)->GetCellCycleModel());
-        	SimplifiedCellCyclePhase phase = p_ccm->GetCurrentCellCyclePhase();
+			SimplifiedCellCyclePhase phase = p_ccm->GetCurrentCellCyclePhase();
 
-	        if (phase == W_PHASE)
-	        {
-	            position += 0.5;
-	        }
-	        else
-	        {
-	            position += 1.0;
-	        }
+			if (phase == W_PHASE)
+			{
+				position += 0.5;
+			}
+			else
+			{
+				position += 1.0;
+			}
 
-	        std::advance(it, 1);
+			std::advance(it, 1);
 		}
 		// ********************************************************************************************
 		
@@ -776,72 +776,72 @@ public:
 
 		MAKE_PTR(TransitCellAnoikisResistantMutationState, p_resistant);
 		MAKE_PTR(WeakenedMembraneAdhesion, p_Mweakened);
-        MAKE_PTR(WeakenedCellCellAdhesion, p_Eweakened);
+		MAKE_PTR(WeakenedCellCellAdhesion, p_Eweakened);
 
 		(*it)->SetMutationState(p_resistant);
 		(*it)->AddCellProperty(p_Mweakened);
-        (*it)->AddCellProperty(p_Eweakened);
+		(*it)->AddCellProperty(p_Eweakened);
 
 		// Find twin and set mutation state
 		SimplifiedPhaseBasedCellCycleModel* p_ccm = static_cast<SimplifiedPhaseBasedCellCycleModel*>((*it)->GetCellCycleModel());
-        SimplifiedCellCyclePhase phase = p_ccm->GetCurrentCellCyclePhase();
-        
-        p_ccm->SetWDuration( wtModifier * wPhaseLength);
-        p_ccm->SetBasePDuration(cctModifier * cellCycleTime - wtModifier * wPhaseLength);
-        p_ccm->SetQuiescentVolumeFraction(mutantQuiescentVolumeFraction);
-        p_ccm->SetWntThreshold(1 - (double)mutantProliferativeCompartment/n);
+		SimplifiedCellCyclePhase phase = p_ccm->GetCurrentCellCyclePhase();
+		
+		p_ccm->SetWDuration( wtModifier * wPhaseLength);
+		p_ccm->SetBasePDuration(cctModifier * cellCycleTime - wtModifier * wPhaseLength);
+		p_ccm->SetQuiescentVolumeFraction(mutantQuiescentVolumeFraction);
+		p_ccm->SetWntThreshold(1 - (double)mutantProliferativeCompartment/n);
 
 
-        CellPtr cell_twin;
-        if (phase == W_PHASE)
-	    {
-	    	// Find twin
-	    	Node<2>* p_node = p_tissue->GetNodeCorrespondingToCell((*it));
-	    	Node<2>* p_twin = p_force->FindTwinNode(simulator.rGetCellPopulation(), p_node);
-	    	if (p_twin != p_node)
-	    	{
-	    		cell_twin = simulator.rGetCellPopulation().GetCellUsingLocationIndex(p_twin->GetIndex());
-	    		cell_twin->SetMutationState(p_resistant);
+		CellPtr cell_twin;
+		if (phase == W_PHASE)
+		{
+			// Find twin
+			Node<2>* p_node = p_tissue->GetNodeCorrespondingToCell((*it));
+			Node<2>* p_twin = p_force->FindTwinNode(simulator.rGetCellPopulation(), p_node);
+			if (p_twin != p_node)
+			{
+				cell_twin = simulator.rGetCellPopulation().GetCellUsingLocationIndex(p_twin->GetIndex());
+				cell_twin->SetMutationState(p_resistant);
 				cell_twin->AddCellProperty(p_Mweakened);
-                cell_twin->AddCellProperty(p_Eweakened);
+				cell_twin->AddCellProperty(p_Eweakened);
 
-                SimplifiedPhaseBasedCellCycleModel* p_ccm_twin = static_cast<SimplifiedPhaseBasedCellCycleModel*>(cell_twin->GetCellCycleModel());
-                p_ccm_twin->SetWDuration( wtModifier * wPhaseLength);
-                p_ccm_twin->SetBasePDuration(cctModifier * cellCycleTime - wtModifier * wPhaseLength);
-                p_ccm_twin->SetQuiescentVolumeFraction(mutantQuiescentVolumeFraction);
-                p_ccm_twin->SetWntThreshold(1 - (double)mutantProliferativeCompartment/n);
-	    	}
-	    }
+				SimplifiedPhaseBasedCellCycleModel* p_ccm_twin = static_cast<SimplifiedPhaseBasedCellCycleModel*>(cell_twin->GetCellCycleModel());
+				p_ccm_twin->SetWDuration( wtModifier * wPhaseLength);
+				p_ccm_twin->SetBasePDuration(cctModifier * cellCycleTime - wtModifier * wPhaseLength);
+				p_ccm_twin->SetQuiescentVolumeFraction(mutantQuiescentVolumeFraction);
+				p_ccm_twin->SetWntThreshold(1 - (double)mutantProliferativeCompartment/n);
+			}
+		}
 
 		// ********************************************************************************************
 
-        
+		
 
-        // ********************************************************************************************
-        // Add cell population writers if they are requested
-        if (file_output)
-        {
-            p_tissue->AddCellWriter<EpithelialCellPositionWriter>();
-        }
-        // ********************************************************************************************
+		// ********************************************************************************************
+		// Add cell population writers if they are requested
+		if (file_output)
+		{
+			p_tissue->AddCellWriter<EpithelialCellPositionWriter>();
+		}
+		// ********************************************************************************************
 
 
-        // ********************************************************************************************
-        // The final step, turn on wash out watching - now that the mutation has been added, we want
-        // to stop the simulation when it has vanished from the crypt
-        simulator.WashOutSwitch();
-        // ******************************************************************************************** 
+		// ********************************************************************************************
+		// The final step, turn on wash out watching - now that the mutation has been added, we want
+		// to stop the simulation when it has vanished from the crypt
+		simulator.WashOutSwitch();
+		// ******************************************************************************************** 
 
 
 		// ********************************************************************************************
 		// Run the simulation to be observed
 		TRACE("Starting simulation proper")
-        TRACE("START")
+		TRACE("START")
 		simulator.Solve();
 
-        
+		
 		// Here be statistics
-        TRACE("END")
+		TRACE("END")
 		// ********************************************************************************************
 
 

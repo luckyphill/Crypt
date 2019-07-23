@@ -21,10 +21,9 @@ classdef simulateCryptColumn < chasteSimulation
 	properties (SetAccess = private)
 		% These are the input variables for TestCryptColumn
 		% If the c++ code is ever changed to have new input variables, this may
-		% need to be updated, unnless the new input parameter relates directly to data output
+		% need to be updated, unless the new input parameter relates directly to data output
 		% in which case the flag should be put into the dataType instance
 
-		% These parameters are the optimal parameters determined for the Mouse Descending Colon
 		n 			uint16 {mustBeNonnegative}
 		np 			uint16 {mustBeNonnegative}
 		ees 		double {mustBeNonnegative}
@@ -33,18 +32,18 @@ classdef simulateCryptColumn < chasteSimulation
 		wt 			double {mustBeNonnegative}
 		vf 			double {mustBeNonnegative, mustBeLessThanOrEqual(vf,1)}
 
-		% These are default solver parameters
+		% These are solver parameters
 		t 			double {mustBeNonnegative}
 		bt 			double {mustBeNonnegative}
 		dt 			double {mustBeNonnegative}
 
-		% This is the default seed parameter
+		% This is the RNG seed parameter
 		run_number 	double {mustBeNumeric} 	  
 
 	end
 
 	methods
-		function obj = simulateCryptColumn(simParams, solverParams, seedParams, outputType, chastePath, chasteTestOutputLocation)
+		function obj = simulateCryptColumn(simParams, solverParams, seedParams, outputTypes, chastePath, chasteTestOutputLocation)
 			% The constructor for the simulateCryptColumn object
 			% This expects the variables to be handed in as maps, which helps
 			% make some of the generation functions easier and less cluttered to write
@@ -57,7 +56,7 @@ classdef simulateCryptColumn < chasteSimulation
 			obj.solverParams = solverParams;
 			obj.seedParams = seedParams;
 
-			obj.outputType = outputType;
+			obj.outputTypes = outputTypes;
 
 
 			obj.assignParameters(); % A helper method to clear up the constructor from clutter
@@ -67,11 +66,7 @@ classdef simulateCryptColumn < chasteSimulation
 
 			obj.generateSimulationCommand(chastePath);
 
-
 			obj.generateDataSaveLocation(chastePath);
-			obj.generateFileNames();
-			
-			
 
 			obj.generateSimOutputLocation(chasteTestOutputLocation);
 
@@ -104,18 +99,6 @@ classdef simulateCryptColumn < chasteSimulation
 			assert(obj.wt < obj.cct - 1);
 
 		end
-
-		function generateFileNames(obj)
-			% This function generates the filename based on the input variables
-			% sometime the input variables might be held in the folder structure
-			% so this might just be a seed number
-
-			fileName = [obj.outputType.name, sprintf('_run_%g', obj.run_number)];
-
-			obj.dataFile = [obj.saveLocation, fileName, '.txt'];
-			obj.errorFile = [obj.saveLocation, fileName, '.err'];
-
-		end	
 
 		function generateSimOutputLocation(obj, chasteTestOutputLocation)
 			% This generates the simulation output path for the given parameters

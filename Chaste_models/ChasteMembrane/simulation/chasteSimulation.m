@@ -37,8 +37,7 @@ classdef chasteSimulation < simulation
 		seedParams containers.Map 
 
 
-		% The absolute path to the output files
-		dataFile char
+		% The absolute path to the error file
 		errorFile char
 
 		% The absolute path to the chaste simulation output directory
@@ -64,11 +63,11 @@ classdef chasteSimulation < simulation
 	methods (Abstract, Access = protected)
 		% These must be implemented in a concrete subclass
 
-		% This sets the absolute filename/path to dataFile and errorFile
-		generateFileNames
-
 		% Sets the folder where Chaste saves output
 		generateSimOutputLocation 
+
+		% Sets the folder where processed data will be saved
+		generateSaveLocation
 
 
 	end
@@ -81,7 +80,8 @@ classdef chasteSimulation < simulation
 
 			% The 'system' command will always work in Matlab. It doesn't care what you type
 			% it just reports back what the console said
-
+			obj.errorFile = [saveLocation,'output.err'];
+			
 			fprintf('Running %s with input parameters:\n', obj.chasteTest);
 			fprintf('%s\n', obj.inputString);
 			% Delete the previous error file
