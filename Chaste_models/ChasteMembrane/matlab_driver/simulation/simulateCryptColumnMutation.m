@@ -141,7 +141,7 @@ classdef simulateCryptColumnMutation < chasteSimulation
 			% This generates the full path to the specific data file for the simulation
 			% If the path doesn't exist it creates the missing folder structure
 
-			obj.saveLocation = [chastePath, 'Research/Crypt/Data/Chaste/', obj.chasteTest, '/',  obj.outputType.name, '/'];
+			obj.saveLocation = [chastePath, 'Research/Crypt/Data/Chaste/', obj.chasteTest, '/'];
 
 			% Build the folder structure with the parameter names
 			% This uses the order that the map puts it in
@@ -181,8 +181,11 @@ classdef simulateCryptColumnMutation < chasteSimulation
 
 			obj.saveLocation = [obj.saveLocation, '/'];
 
-			if exist(obj.saveLocation,'dir')~=7
-				mkdir(obj.saveLocation);
+			for i = 1:numOutputTypes
+				outputTypeFolder = [obj.saveLocation, obj.outputTypes{i}.name, '/'];
+				if exist(outputTypeFolder,'dir')~=7
+					mkdir(outputTypeFolder);
+				end
 			end
 
 		end

@@ -125,11 +125,19 @@ classdef simulateCryptColumn < chasteSimulation
 			% and it doesn't account for the default value of parameters when they
 			% aren't in the simParams keys
 
-			k = obj.simParams.keys;
-			v = obj.simParams.values;
-			obj.saveLocation = [obj.saveLocation, 'params'];
-			for i = 1:obj.simParams.Count
-				obj.saveLocation = [obj.saveLocation, sprintf('_%s_%g',k{i}, v{i})];
+			if isKey(obj.simParams,'name');
+				% Allows for the possibility of naming a particular parameter set
+				% useful if they need to be distinguished easily, but could lead to 
+				% duplication of data and simulation time
+				obj.saveLocation = [obj.saveLocation, name];
+			else
+				k = obj.simParams.keys;
+				v = obj.simParams.values;
+
+				obj.saveLocation = [obj.saveLocation, 'params'];
+				for i = 1:obj.simParams.Count
+					obj.saveLocation = [obj.saveLocation, sprintf('_%s_%g',k{i}, v{i})];
+				end
 			end
 
 			obj.saveLocation = [obj.saveLocation, '/numerics'];

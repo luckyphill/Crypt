@@ -8,20 +8,19 @@ classdef (Abstract) dataType
 	properties (Abstract, Constant = true)
 		% The name for the datatype, this must be implemented within a concrete class
 		% For the sake of convention, this should be the same as the m file name
+		% This is used for creating the directory structure
 		name
+
+		% The dataType will control only the name of the file(s), while the simulation
+		% controls the directory structure
+		fileNames
 	end
 
 	properties
 		% This is an optional property in case there is a specific flag needed to
 		% trigger the specific data type in the chaste test
 		typeParams containers.Map
-
-		% This lists the names of the output file(s) that this dataType creates
-		% since the name is dependent on the dataType, not the simulation, the
-		% folder structure must have all the simulation details in order to ensure
-		% data isn't unintentionally overwritten
-		fileNames
-
+		
 	end
 
 	methods (Abstract, Access = protected)
@@ -33,6 +32,7 @@ classdef (Abstract) dataType
 		% saved in the specified format
 		data = retrieveData
 		processOutput
+		exists
 
 	end
 
@@ -49,14 +49,14 @@ classdef (Abstract) dataType
 			% It is designed, however, to make sure the user doesn't need to handle errors
 			% in their implementation of the abstract methods
 
-			if ~(exist(sp.dataFile, 'file') == 2)
-				error('dt:FileDNE', 'File does not exist.')
+			if ~obj.exists(sp)
+				error('dt:FileDNE', 'Could not find file(s).')
 			end
 
 			try
 				data = obj.retrieveData(sp);
 			catch
-				error('dt:RetreivalFail','Data retreival failed. Check file can be read.');
+				error('dt:RetreivalFail','Data retreival failed. Check file(s) can be read.');
 			end
 
 			if ~obj.verifyData(data, sp)
@@ -92,6 +92,7 @@ classdef (Abstract) dataType
 			correct = true;
 
 		end
+
 	end
 
 

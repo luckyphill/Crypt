@@ -7,6 +7,8 @@ classdef positionData < dataType
 
 	properties (Constant = true)
 		name = 'position_data';
+
+		fileNames = {'position_data'};
 	end
 
 	methods
@@ -32,6 +34,7 @@ classdef positionData < dataType
 				correct = false;
 			end
 		end
+
 	end
 
 	methods (Access = protected)
@@ -55,6 +58,14 @@ classdef positionData < dataType
 			end
 
 		end
+
+		function found = exists(obj, sp)
+			% Checks if the file exists
+			found = exist([sp.saveLocation, fileNames], 'file');
+
+		end
+
+
 
 	end
 
