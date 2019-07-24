@@ -55,7 +55,7 @@ classdef simulateCryptColumnMutation < chasteSimulation
 	end
 
 	methods
-		function obj = simulateCryptColumnMutation(simParams, mutantParams, solverParams, seedParams, outputType, chastePath, chasteTestOutputLocation)
+		function obj = simulateCryptColumnMutation(simParams, mutantParams, solverParams, seedParams, outputTypes, chastePath, chasteTestOutputLocation)
 			% The constructor for the simulateCryptColumn object
 			% This expects the variables to be handed in as maps, which helps
 			% make some of the generation functions easier and less cluttered to write
@@ -80,7 +80,7 @@ classdef simulateCryptColumnMutation < chasteSimulation
 			obj.generateSimulationCommand(chastePath);
 
 
-			obj.generateDataSaveLocation(chastePath);			
+			obj.generateSaveLocation(chastePath);			
 
 			obj.generateSimOutputLocation(chasteTestOutputLocation);
 
@@ -137,7 +137,7 @@ classdef simulateCryptColumnMutation < chasteSimulation
 
 		end
 
-		function generateDataSaveLocation(obj, chastePath)
+		function generateSaveLocation(obj, chastePath)
 			% This generates the full path to the specific data file for the simulation
 			% If the path doesn't exist it creates the missing folder structure
 
@@ -181,11 +181,8 @@ classdef simulateCryptColumnMutation < chasteSimulation
 
 			obj.saveLocation = [obj.saveLocation, '/'];
 
-			for i = 1:numOutputTypes
-				outputTypeFolder = [obj.saveLocation, obj.outputTypes{i}.name, '/'];
-				if exist(outputTypeFolder,'dir')~=7
-					mkdir(outputTypeFolder);
-				end
+			if exist(outputTypeFolder,'dir')~=7
+				mkdir(outputTypeFolder);
 			end
 
 		end
@@ -213,7 +210,9 @@ classdef simulateCryptColumnMutation < chasteSimulation
 			k = obj.simParams.keys;
 			v = obj.simParams.values;
 			for i = 1:obj.simParams.Count
-				obj.inputString = [obj.inputString, sprintf(' -%s %g',k{i}, v{i})];
+				if ~strcmp(k{i}, 'name')
+					obj.inputString = [obj.inputString, sprintf(' -%s %g',k{i}, v{i})];
+				end
 			end
 
 			k = obj.mutantParams.keys;
@@ -247,6 +246,7 @@ classdef simulateCryptColumnMutation < chasteSimulation
 					end
 
 				end
+			end
 
 		end
 

@@ -7,12 +7,12 @@ classdef (Abstract) dataType
 
 	properties (Abstract, Constant = true)
 		% The name for the datatype, this must be implemented within a concrete class
-		% For the sake of convention, this should be the same as the m file name
-		% This is used for creating the directory structure
+		% Usually this should be the same as the m file name, but sometime it will be the
+		% name of the file location folder
 		name
 
-		% The dataType will control only the name of the file(s), while the simulation
-		% controls the directory structure
+		% The dataType will control the name of the file(s), and local structure
+		% while the simulation controls the full directory structure
 		fileNames
 	end
 
@@ -24,7 +24,7 @@ classdef (Abstract) dataType
 	end
 
 	methods (Abstract, Access = protected)
-		% These methods must be implemented in sublclasses, but cannot be used
+		% These methods must be implemented in subclasses, but cannot be used
 		% externally
 
 		% These methods deal with the specific details of the data format

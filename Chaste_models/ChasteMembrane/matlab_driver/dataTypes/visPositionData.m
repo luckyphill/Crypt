@@ -1,12 +1,11 @@
 classdef visPositionData < dataType
-	% This is an abstract class that defines the functions required for
-	% saving and loading specific data types
-	% An example of a dataType is behavioural properties, cell positions
-	% these are processed and stored as raw data to be analysed in an
-	% 'analysis' class
+	% This handles only the position data from the visualiser.
+	% This hence should only be used when redaing data, not generating data
 
 	properties (Constant = true)
-		name = 'vis_position_data';
+		name = 'visualiser_data';
+
+		fileNames = 'results.viznodes';
 	end
 
 	methods
@@ -35,10 +34,20 @@ classdef visPositionData < dataType
 	end
 
 	methods (Access = protected)
+
+		function file = getFullFileName(obj,sp)
+			folder = [sp.saveLocation, 'run_', sp.run_number, '/'];
+
+			if exist(folder,'dir')~=7
+				mkdir(folder);
+			end
+
+			file = [folder, obj.fileNames];
+		end
+
 		function data = retrieveData(obj, sp)
 			% Loads the data from the file and puts it in the expected format
-
-			data = csvread(sp.dataFile);
+			data = csvread(obj.getFullFileName(sp));
 
 		end
 
@@ -47,8 +56,7 @@ classdef visPositionData < dataType
 			% and put it in the expected location, in the expected format
 
 			outputFile = [sp.simOutputLocation, 'results.viznodes'];
-
-			[status,cmdout] = system(['mv ', outputFile, ' ',  sp.dataFile],'-echo');
+			[status,cmdout] = system(['mv ', outputFile, ' ', obj.getFullFileName(sp)],'-echo');
 
 			if status
 				error('vPD:MoveError', 'Move failed')

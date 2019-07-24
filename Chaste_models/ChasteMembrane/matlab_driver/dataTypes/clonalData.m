@@ -1,10 +1,10 @@
-classdef behaviourData < dataType
+classdef clonalData < dataType
 	% This grabs the behaviour data for a healthy crypt simulation
 
 	properties (Constant = true)
-		name = 'behaviour_data';
+		name = 'clonal_data';
 
-		fileNames = 'behaviour_stats'
+		fileNames = 'converted'
 	end
 
 	methods
@@ -13,7 +13,7 @@ classdef behaviourData < dataType
 			% All the check we're interested in to make sure the data is correct
 			% Perhaps, check that there are sufficient time steps taken?
 
-			if length(data) == 4
+			if length(data) == 1
 				correct = true;
 			else
 				correct = false;
@@ -40,6 +40,7 @@ classdef behaviourData < dataType
 			file = [folder, obj.fileNames, '_', sp.run_number, '.txt'];
 		end
 
+		
 		function data = retrieveData(obj, sp)
 			% Loads the data from the file and puts it in the expected format
 

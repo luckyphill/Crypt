@@ -69,6 +69,9 @@ classdef chasteSimulation < simulation
 		% Sets the folder where processed data will be saved
 		generateSaveLocation
 
+		% The command that runs the simulation
+		generateSimulationCommand
+
 
 	end
 
@@ -80,7 +83,7 @@ classdef chasteSimulation < simulation
 
 			% The 'system' command will always work in Matlab. It doesn't care what you type
 			% it just reports back what the console said
-			obj.errorFile = [saveLocation,'output.err'];
+			obj.errorFile = [obj.saveLocation,'output.err'];
 			
 			fprintf('Running %s with input parameters:\n', obj.chasteTest);
 			fprintf('%s\n', obj.inputString);

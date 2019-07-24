@@ -61,12 +61,9 @@ classdef simulateCryptColumn < chasteSimulation
 
 			obj.assignParameters(); % A helper method to clear up the constructor from clutter
 
-			
-			obj.generateInputString();
-
 			obj.generateSimulationCommand(chastePath);
 
-			obj.generateDataSaveLocation(chastePath);
+			obj.generateSaveLocation(chastePath);
 
 			obj.generateSimOutputLocation(chasteTestOutputLocation);
 
@@ -114,11 +111,11 @@ classdef simulateCryptColumn < chasteSimulation
 
 		end
 
-		function generateDataSaveLocation(obj, chastePath)
+		function generateSaveLocation(obj, chastePath)
 			% This generates the full path to the specific data file for the simulation
 			% If the path doesn't exist it creates the missing folder structure
 
-			obj.saveLocation = [chastePath, 'Research/Crypt/Data/Chaste/', obj.chasteTest, '/',  obj.outputType.name, '/'];
+			obj.saveLocation = [chastePath, 'Research/Crypt/Data/Chaste/', obj.chasteTest, '/'];
 
 			% Build the folder structure with the parameter names
 			% This uses the order that the map puts it in
@@ -150,8 +147,8 @@ classdef simulateCryptColumn < chasteSimulation
 
 			obj.saveLocation = [obj.saveLocation, '/'];
 
-			if exist(obj.saveLocation,'dir')~=7
-				mkdir(obj.saveLocation);
+			if exist(outputTypeFolder,'dir')~=7
+				mkdir(outputTypeFolder);
 			end
 
 		end
@@ -161,7 +158,7 @@ classdef simulateCryptColumn < chasteSimulation
 			% and adds it to the input string to create the full simulation
 			% command for the specific parameter set, numerical conditions, and seed
 
-
+			obj.generateInputString();
 			obj.simulationCommand = [chastePath, 'chaste_build/projects/ChasteMembrane/test/', obj.chasteTest, obj.inputString];
 
 		end
@@ -179,7 +176,9 @@ classdef simulateCryptColumn < chasteSimulation
 			k = obj.simParams.keys;
 			v = obj.simParams.values;
 			for i = 1:obj.simParams.Count
-				obj.inputString = [obj.inputString, sprintf(' -%s %g',k{i}, v{i})];
+				if ~strcmp(k{i}, 'name')
+					obj.inputString = [obj.inputString, sprintf(' -%s %g',k{i}, v{i})];
+				end
 			end
 
 			k = obj.solverParams.keys;
@@ -197,14 +196,16 @@ classdef simulateCryptColumn < chasteSimulation
 			% A given dataType may need specific flags/input parameters in order
 			% generate the correct data files
 
-			if obj.outputType.typeParams.Count > 0
-				
-				k = obj.outputType.typeParams.keys;
-				v = obj.outputType.typeParams.values;
-				for i = 1:obj.outputType.typeParams.Count
-					obj.inputString = [obj.inputString, sprintf(' -%s %g',k{i}, v{i})];
-				end
+			for j = 1:length(obj.outputTypesToRun)
+				if obj.outputTypesToRun{j}.typeParams.Count > 0
+					
+					k = obj.outputTypesToRun{j}.typeParams.keys;
+					v = obj.outputTypesToRun{j}.typeParams.values;
+					for i = 1:obj.outputTypesToRun{j}.typeParams.Count
+						obj.inputString = [obj.inputString, sprintf(' -%s %g',k{i}, v{i})];
+					end
 
+				end
 			end
 
 		end

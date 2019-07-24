@@ -2,7 +2,10 @@ classdef visualiserData < dataType
 	% This class moves the visualiser data to a fixed location
 
 	properties (Constant = true)
+		% The spot where the data is expected to be
 		name = 'visualiser_data';
+
+		fileNames = {'results.vizboundarynodes','results.vizcelltypes', 'results.viznodes', 'results.vizsetup'};
 	end
 
 	methods
@@ -16,86 +19,62 @@ classdef visualiserData < dataType
 	end
 
 	methods (Access = protected)
-		function data = retrieveData(obj, sp)
-			% Loads the data from the file and puts it in the expected format
 
-			if exist(sp.dataFile)
-				data = 1;
-			else
-				error('vD:LoadError', 'Check file doesnt exist');
+		function folder = getFullFilePath(obj,sp)
+			folder = [sp.saveLocation, 'run_', sp.run_number, '/'];
+
+			if exist(folder,'dir')~=7
+				mkdir(folder);
 			end
 
 		end
 
+		function data = retrieveData(obj, sp)
+			% Loads the data from the file and puts it in the expected format
+
+			existCount = 0;
+
+			for i = 1:length(obj.fileNames)
+				outputFile = [sp.simOutputLocation, obj.fileNames{i}];
+				saveFile = [getFullFilePath(sp), obj.fileNames{i}];
+
+				% Check if the file exists, if it doesn't attempt to move it from outputlocation
+				% if that fails, then the file doesn't exist in a known location
+				if exist(saveFile)
+					existCount = existCount + 1;
+				else
+					[status,cmdout] = system(['mv ', outputFile, ' ',  saveFile],'-echo');
+					if exist(saveFile)
+						existCount = existCount + 1;
+					else
+						fprintf('%s missing', obj.fileNames{i});
+					end
+				end
+			end
+
+			if existCount < 4
+				error('vD:FileMissing', 'One of the visualiser files is missing');
+			end
+
+			data = 'All data exists, but not loaded. To load data use a specialised dataType, like visPositionData';
+
+		end
+
 		function processOutput(obj, sp)
-			% Implements the abstract method to process the output
-			% and put it in the expected location, in the expected format
-
-			%%-----------------------------------------------------------------------
-			%%-----------------------------------------------------------------------
-			%% move vizboundarynodes
-
-			outputFile = [sp.simOutputLocation, 'results.vizboundarynodes'];
-			saveFile = [sp.saveLocation, 'results.vizboundarynodes'];
-
-			[status,cmdout] = system(['mv ', outputFile, ' ',  saveFile],'-echo');
-
-			if status
-				error('vD:MoveError', 'Move failed: results.vizboundarynodes')
-			end
-
-
-			%%-----------------------------------------------------------------------
-			%%-----------------------------------------------------------------------
-			%% move results.vizcelltypes
-			outputFile = [sp.simOutputLocation, 'results.vizcelltypes'];
-			saveFile = [sp.saveLocation, 'results.vizcelltypes'];
-
-			[status,cmdout] = system(['mv ', outputFile, ' ',  saveFile],'-echo');
-
-			if status
-				error('vD:MoveError', 'Move failed: results.vizcelltypes')
-			end
-
-			%%-----------------------------------------------------------------------
-			%%-----------------------------------------------------------------------
-			%% move results.viznodes
-			outputFile = [sp.simOutputLocation, 'results.viznodes'];
-			saveFile = [sp.saveLocation, 'results.viznodes'];
-
-			[status,cmdout] = system(['mv ', outputFile, ' ',  saveFile],'-echo');
-
-			if status
-				error('vD:MoveError', 'Move failed: results.viznodes')
-			end
-
-			%%-----------------------------------------------------------------------
-			%%-----------------------------------------------------------------------
-			% move results.vizsetup
-			outputFile = [sp.simOutputLocation, 'results.vizsetup'];
-			saveFile = [sp.saveLocation, 'results.vizsetup'];
-
-			[status,cmdout] = system(['mv ', outputFile, ' ',  saveFile],'-echo');
-
-			if status
-				error('vD:MoveError', 'Move failed: results.vizsetup')
-			end
-
-
-			%%-----------------------------------------------------------------------
-			%%-----------------------------------------------------------------------
-			% At this point in time, the file name is handled by the simulation
-			% and it doesn't allow multiple files, so need to make a dummy file to 
-			% keep the work flow happy
-
-			[status,cmdout] = system(['touch ',  saveFile],'-echo');
-
-			if status
-				error('vD:TouchError', 'Move failed: failed to create success marker file')
-			end
-
 			
-			
+			% Moves the files from the generic Chaste output directory, to the database
+
+
+			for i = 1:length(obj.fileNames)
+				outputFile = [sp.simOutputLocation, obj.fileNames{i}];
+				saveFile = [getFullFilePath(sp), obj.fileNames{i}];
+
+				[status,cmdout] = system(['mv ', outputFile, ' ',  saveFile],'-echo');
+
+				if status
+					error('vD:MoveError', 'Move failed: %s', obj.fileNames{i});
+				end
+			end
 
 		end
 

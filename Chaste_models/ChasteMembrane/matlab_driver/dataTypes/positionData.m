@@ -37,17 +37,28 @@ classdef positionData < dataType
 
 		function found = exists(obj, sp)
 			% Checks if the file exists
-			found = exist([sp.saveLocation, obj.fileNames], 'file');
+			found = exist(obj.getFullFileName(sp), 'file');
 
 		end
 
 	end
 
 	methods (Access = protected)
+
+		function file = getFullFileName(obj,sp)
+			folder = [sp.saveLocation, 'run_', sp.run_number, '/'];
+
+			if exist(folder,'dir')~=7
+				mkdir(folder);
+			end
+
+			file = [folder, obj.fileNames];
+		end
+
 		function data = retrieveData(obj, sp)
 			% Loads the data from the file and puts it in the expected format
 
-			data = csvread(sp.dataFile);
+			data = csvread(obj.getFullFileName(sp));
 
 		end
 
@@ -57,7 +68,7 @@ classdef positionData < dataType
 
 			outputFile = [sp.simOutputLocation, 'cell_positions.dat'];
 
-			[status,cmdout] = system(['mv ', outputFile, ' ',  sp.dataFile],'-echo');
+			[status,cmdout] = system(['mv ', outputFile, ' ',  obj.getFullFileName(sp)],'-echo');
 
 			if status
 				error('pD:MoveError', 'Move failed')
