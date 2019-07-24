@@ -1,57 +1,62 @@
 classdef TestdataType < matlab.unittest.TestCase
    
-    methods (Test)
-        % This tests the eror catching ability of the dataType class
-        % using a dummy concrete class implementation
-        function testReadingErrors(testCase)
+	methods (Test)
+		% This tests the error catching ability of the dataType class
+		% using a dummy concrete class implementation
+		function testReadingErrors(testCase)
 
-        	% Test that file reading errors throw correctly
-	        testType = dummyDataType;
+			% Test that file reading errors throw correctly
+			testType = dummyDataType;
 
-	        sp.dataFile = 'testing/dummyDNE.txt';
-	        testCase.verifyError(@()testType.loadData(sp), 'dt:FileDNE');
+			file = [getenv('HOME'),'/Research/Crypt/Chaste_models/ChasteMembrane/matlab_driver/testing/dummy.txt'];
+			
+			[~,~] = system(['rm ',file]);
+			sp.dataFile = [getenv('HOME'),'/Research/Crypt/Chaste_models/ChasteMembrane/matlab_driver/testing/dummyDNE.txt'];
+			testCase.verifyError(@()testType.loadData(sp), 'dt:FileDNE');
 
-	        sp.dataFile = 'testing/dummyCantRead.txt';
-	        testCase.verifyError(@()testType.loadData(sp), 'dt:RetreivalFail');
+			[~,~] = system(['touch ',file]);
+			sp.dataFile = [getenv('HOME'),'/Research/Crypt/Chaste_models/ChasteMembrane/matlab_driver/testing/dummyCantRead.txt'];
+			testCase.verifyError(@()testType.loadData(sp), 'dt:RetreivalFail');
 
-	        sp.dataFile = 'testing/dummyInvalidData.txt';
-	        testCase.verifyError(@()testType.loadData(sp), 'dt:VerificationFail');
+			sp.dataFile = [getenv('HOME'),'/Research/Crypt/Chaste_models/ChasteMembrane/matlab_driver/testing/dummyInvalidData.txt'];
+			testCase.verifyError(@()testType.loadData(sp), 'dt:VerificationFail');
 
-	    end
+		end
 
-	    %% testWritingErrors: function description
-	    function testWritingErrors(testCase)
-	   		
-	   		%Test that file writing errors throw correctly
-	   		testType = dummyDataType;
+		%% testWritingErrors: function description
+		function testWritingErrors(testCase)
+			
+			%Test that file writing errors throw correctly
+			testType = dummyDataType;
 
-	        sp.data = {@plus};
-	        sp.saveFile = 'testing/dummySaveFail.txt';
-	        testCase.verifyError(@()testType.saveData(sp), 'dt:ProcessingFail');
-	   	end
+			sp.data = {@plus};
+			sp.saveFile = [getenv('HOME'),'/Research/Crypt/Chaste_models/ChasteMembrane/matlab_driver/testing/dummySaveFail.txt'];
+			testCase.verifyError(@()testType.saveData(sp), 'dt:ProcessingFail');
+		end
 
-	   	function testReading(testCase)
-	   		% Test that reading is successful
-	   		testType = dummyDataType;
+		function testReading(testCase)
+			% Test that reading is successful
+			testType = dummyDataType;
 
-	        sp.dataFile = 'testing/dummy.txt';
-	        data = testType.loadData(sp);
+			sp.dataFile = [getenv('HOME'),'/Research/Crypt/Chaste_models/ChasteMembrane/matlab_driver/testing/dummy.txt'];
+			csvwrite(sp.dataFile, [1,2;3,4]);
+			data = testType.loadData(sp);
 
-	        testCase.verifyEqual(data, [1,2;3,4]);
+			testCase.verifyEqual(data, [1,2;3,4]);
 
-	   	end
-	    
-	    function testWriting(testCase)
-	   		% Test that writing is successful
-	   		testType = dummyDataType;
+		end
+		
+		function testWriting(testCase)
+			% Test that writing is successful
+			testType = dummyDataType;
 
-	   		sp.data = [1,2;3,4];
-	        sp.saveFile = 'testing/dummy.txt';
-	        status = testType.saveData(sp);
+			sp.data = [1,2;3,4];
+			sp.saveFile = [getenv('HOME'),'/Research/Crypt/Chaste_models/ChasteMembrane/matlab_driver/testing/dummy.txt'];
+			status = testType.saveData(sp);
 
-	        testCase.verifyEqual(status, 1);
+			testCase.verifyEqual(status, 1);
 
-	   	end
-        
-    end
+		end
+		
+	end
 end

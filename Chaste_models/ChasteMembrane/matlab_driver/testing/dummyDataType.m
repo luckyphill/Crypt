@@ -1,12 +1,10 @@
 classdef dummyDataType < dataType
-	% This is an abstract class that defines the functions required for
-	% saving and loading specific data types
-	% An example of a dataType is behavioural properties, cell positions
-	% these are processed and stored as raw data to be analysed in an
-	% 'analysis' class
+	% A dummy dataType that has the bare minimum functionality for testing purposes
 
 	properties (Constant = true)
 		name = 'dummy';
+
+		fileNames = [getenv('HOME'),'/Research/Crypt/Chaste_models/ChasteMembrane/matlab_driver/testing/dummy.txt'];
 	end
 
 
@@ -14,15 +12,13 @@ classdef dummyDataType < dataType
 		function data = retrieveData(obj, sp)
 			% Loads the data from the file and puts it in the expected format
 
-			data = csvread(sp.dataFile);
+			data = csvread(obj.fileNames);
 
 		end
 
 		function processOutput(obj, sp)
-			% Implements the abstract method to process the simpoint output
+			% Implements the abstract method to process the simulation output
 			% and put it in the expected location, in the expected format
-
-			
 			csvwrite(sp.saveFile, sp.data);
 
 		end
@@ -30,12 +26,21 @@ classdef dummyDataType < dataType
 	end
 	methods
 
-		function correct = verifyData(obj, data)
+		function correct = verifyData(obj, data, sp)
 			
 			if length(data) > 2
 				correct = false;
 			else
 				correct = true;
+			end
+		end
+
+		function found = exists(obj, sp)
+			% Checks if the file exists
+			result = exist(obj.fileNames, 'file');
+			found = false;
+			if result ~= 0
+				found = true;
 			end
 		end
 

@@ -32,6 +32,11 @@ classdef (Abstract) dataType
 		% saved in the specified format
 		data = retrieveData
 		processOutput
+
+	end
+
+	methods (Abstract)
+		% This method must be implemented, but can also be accessed outside of the class
 		exists
 
 	end

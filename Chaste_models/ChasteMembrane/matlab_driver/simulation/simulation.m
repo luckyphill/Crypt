@@ -16,10 +16,11 @@ classdef (Abstract) simulation < matlab.mixin.SetGet
 		outputTypes
 		numOutputTypes = 0;
 
-		% A list of outputtypes that have not been generated yet
+		% A list of outputTypes that have not been generated yet
 		outputTypesToRun = {};
 
-		data = nan;
+		% Initialise the data struct
+		data = [];
 
 	end
 
@@ -29,7 +30,7 @@ classdef (Abstract) simulation < matlab.mixin.SetGet
 		% A method that does the actual running
 		% It also uses the save data function, so by the end of
 		% the function run time, there will be a data or error file
-		runSimulation
+		status = runSimulation
 
 	end
 
@@ -40,13 +41,21 @@ classdef (Abstract) simulation < matlab.mixin.SetGet
 			if isa(v, 'dataType')
             	validateattributes(v, {'dataType'}, {});
             	obj.outputTypes = {v};
-            	numOutputTypes = 1;
+            	obj.numOutputTypes = 1;
             end
 
             if isa(v, 'cell')
-            	numOutputTypes = length(v);
-            	for i = 1:numOutputTypes
+            	obj.numOutputTypes = length(v);
+            	for i = 1:obj.numOutputTypes
             		validateattributes(v{i}, {'dataType'}, {});
+            	end
+
+            	for i = 1:obj.numOutputTypes
+            		for j = 1:obj.numOutputTypes
+            			if i ~= j && isa(v{i}, class(v{j}))
+            				error('sim:TwoOfTheSameDataType', 'Cant have two of the same dataType object');
+            			end
+            		end
             	end
             	obj.outputTypes = v;
             end
@@ -73,16 +82,16 @@ classdef (Abstract) simulation < matlab.mixin.SetGet
 
 			successCode = 0;
 
-			if numOutputTypes == 0
+			if obj.numOutputTypes == 0
 				error('sim:NoOutputTypes', 'At least one outputType must be specified before running the simulation');
 			end
 
 			if ~obj.overWrite
 				% We are going to take whatever data exists and if it doesn't exist
 				% we will generate it
-				for i = 1:numOutputTypes
+				for i = 1:obj.numOutputTypes
 					if ~obj.outputTypes{i}.exists(obj)
-						obj.outputTypesToRun = {obj.outputTypes{i}  ,obj.outputTypesToRun};
+						obj.outputTypesToRun{end + 1} = obj.outputTypes{i};
 					end
 				end
 
@@ -92,13 +101,14 @@ classdef (Abstract) simulation < matlab.mixin.SetGet
 					successCode = 2;
 				else
 					% We need to run the simulation to generate the data that is missing
+
 					if obj.runSimulation();
 						successCode = 1;
 						for i=1:length(obj.outputTypesToRun)
 							if obj.outputTypesToRun{i}.exists(obj)
-								fprintf('Data generation successful for %\n', obj.outputTypesToRun{i}.name);
+								fprintf('Data generation successful for %s\n', obj.outputTypesToRun{i}.name);
 							else
-								fprintf('Data generation failed for %\n', obj.outputTypesToRun{i}.name);
+								fprintf('Data generation failed for %s\n', obj.outputTypesToRun{i}.name);
 								successCode = 0;
 							end
 						end
@@ -107,12 +117,12 @@ classdef (Abstract) simulation < matlab.mixin.SetGet
 			else
 				obj.outputTypesToRun = obj.outputTypes;
 				if obj.runSimulation();
-					successCode = 1;
+					successCode = 3;
 					for i=1:length(obj.outputTypesToRun)
 						if obj.outputTypesToRun{i}.exists(obj)
-							fprintf('Data generation successful for %\n', obj.outputTypesToRun{i}.name);
+							fprintf('Data generation successful for %s\n', obj.outputTypesToRun{i}.name);
 						else
-							fprintf('Data generation failed for %\n', obj.outputTypesToRun{i}.name);
+							fprintf('Data generation failed for %s\n', obj.outputTypesToRun{i}.name);
 							successCode = 0;
 						end
 					end
@@ -126,10 +136,17 @@ classdef (Abstract) simulation < matlab.mixin.SetGet
 			% There might be a situation when the file exists, but it wasn't written correctly
 			% In this case, loader should throw an error, which will be handled here
 
-			try
-				obj.data = obj.outputType.loadData(obj);
-			catch err
-				fprintf('%s\n',err.message);
+			% Since there can be multiple dataTypes, the data will be loaded into a struct
+			% with data from each dataType held under a variable of the same name
+
+			for i = 1:obj.numOutputTypes
+				try
+					data = obj.outputTypes{i}.loadData(obj);
+				catch err
+					data = nan;
+					fprintf('Problem loading data for %s:\n%s\n', obj.outputTypes{i}.name, err.message);
+				end
+				obj.data = setfield(obj.data,obj.outputTypes{i}.name,data);
 			end
 
 		end
