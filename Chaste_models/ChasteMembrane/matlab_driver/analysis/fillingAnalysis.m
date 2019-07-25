@@ -47,7 +47,7 @@ classdef fillingAnalysis < matlab.mixin.SetGet
 
 			obj.simul = simulateCryptColumnMutation(simParams, mutationParams, solverParams, seedParams, outputType, obj.chastePath, obj.chasteTestOutputLocation);
 			
-			obj.loadSimulationData();
+			obj.simul.loadSimulationData();
 
 		end
 
@@ -55,24 +55,42 @@ classdef fillingAnalysis < matlab.mixin.SetGet
 			% Runs the java visualiser
 			pathToAnim = [obj.chastePath, 'Chaste/anim/'];
 			fprintf('Running Chaste java visualiser\n');
-			[failed, cmdout] = system(['cd ', pathToAnim, '; java Visualize2dCentreCells ', obj.simul.saveLocation]);
+			[failed, cmdout] = system(['cd ', pathToAnim, '; java Visualize2dCentreCells ', obj.simul.outputTypes{1}.getFullFilePath(obj.simul)], '-echo');
 
 		end
 
 		function levelsOverTime(obj)
 			% This will load the data and count the number of cells in each level
 			% over time. There is in theory no limit to the number of levels, but in practice
-			% it will be exceedingly rare to see more than 10 levels, so the data will be
-			% stored in an array of size 10 x (no time steps)
+			% it will be exceedingly rare to see more than 15 levels, so the data will be
+			% stored in an array of size 15 x (no time steps)
 
-			data = obj.data;
+			data = obj.simul.data.visualiser_data;
 
 			times = data(:,1);
 
-			levelRanges = 
+			s = sqrt(3)/2;
+			s2 = s/2;
 
+			levelRanges = zeros(15,1);
+			for i = 1:15
+			    levelRanges(i) = [0.6 - s2 + s*(i-1)];
+			end
 
-			levels = 
+			counts = [];
+			for i=1:length(data)
+			    x = data(i,2:2:end);
+			    counts = [counts; histcounts(x,levelRanges)];
+			end
+
+			close all
+			figure
+			hold on
+			for i = 2:14
+			    if ~all(counts(:,i))
+			        plot(times, counts(:,i))
+			    end
+			end
 
 		end
 

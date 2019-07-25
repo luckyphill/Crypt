@@ -19,24 +19,28 @@ classdef visPositionData < dataType
 		function correct = verifyData(obj, data, sp)
 			% All the check we're interested in to make sure the data is correct
 			% Perhaps, check that there are sufficient time steps taken?
-
 			finalTimeStep = data(end,1);
 
+			dt = sp.solverParams('dt');
 			t = sp.solverParams('t');
 			bt = sp.solverParams('bt');
 
-			if finalTimeStep >= t + bt
+			if finalTimeStep + dt >= t + bt
 				correct = true;
 			else
 				correct = false;
+				fprintf('finalTimeStep = %d\n', finalTimeStep);
 			end
 		end
-	end
 
-	methods (Access = protected)
+		function found = exists(obj, sp)
+			% Checks if the file exists
+			found = exist(obj.getFullFileName(sp), 'file');
+
+		end
 
 		function file = getFullFileName(obj,sp)
-			folder = [sp.saveLocation, 'run_', sp.run_number, '/'];
+			folder = [sp.saveLocation, 'run_', num2str(sp.run_number), '/'];
 
 			if exist(folder,'dir')~=7
 				mkdir(folder);
@@ -45,9 +49,23 @@ classdef visPositionData < dataType
 			file = [folder, obj.fileNames];
 		end
 
+		function folder = getFullFilePath(obj,sp)
+			folder = [sp.saveLocation, 'run_', num2str(sp.run_number), '/'];
+
+			if exist(folder,'dir')~=7
+				mkdir(folder);
+			end
+
+		end
+
+	end
+
+	methods (Access = protected)
+
+
 		function data = retrieveData(obj, sp)
 			% Loads the data from the file and puts it in the expected format
-			data = csvread(obj.getFullFileName(sp));
+			data = dlmread(obj.getFullFileName(sp));
 
 		end
 

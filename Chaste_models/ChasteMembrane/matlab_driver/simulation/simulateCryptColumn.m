@@ -61,9 +61,17 @@ classdef simulateCryptColumn < chasteSimulation
 
 			obj.assignParameters(); % A helper method to clear up the constructor from clutter
 
+			if ~strcmp(chastePath(end),'/')
+				chastePath(end+1) = '/';
+			end
+
 			obj.generateSimulationCommand(chastePath);
 
 			obj.generateSaveLocation(chastePath);
+
+			if ~strcmp(chasteTestOutputLocation(end),'/')
+				chasteTestOutputLocation(end+1) = '/';
+			end
 
 			obj.generateSimOutputLocation(chasteTestOutputLocation);
 
@@ -126,7 +134,7 @@ classdef simulateCryptColumn < chasteSimulation
 				% Allows for the possibility of naming a particular parameter set
 				% useful if they need to be distinguished easily, but could lead to 
 				% duplication of data and simulation time
-				obj.saveLocation = [obj.saveLocation, name];
+				obj.saveLocation = [obj.saveLocation, obj.simParams('name')];
 			else
 				k = obj.simParams.keys;
 				v = obj.simParams.values;
@@ -147,8 +155,8 @@ classdef simulateCryptColumn < chasteSimulation
 
 			obj.saveLocation = [obj.saveLocation, '/'];
 
-			if exist(outputTypeFolder,'dir')~=7
-				mkdir(outputTypeFolder);
+			if exist(obj.saveLocation,'dir')~=7
+				mkdir(obj.saveLocation);
 			end
 
 		end

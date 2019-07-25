@@ -77,10 +77,17 @@ classdef simulateCryptColumnMutation < chasteSimulation
 			
 			obj.generateInputString();
 
+			if ~strcmp(chastePath(end),'/')
+				chastePath(end+1) = '/';
+			end
+
 			obj.generateSimulationCommand(chastePath);
 
+			obj.generateSaveLocation(chastePath);
 
-			obj.generateSaveLocation(chastePath);			
+			if ~strcmp(chasteTestOutputLocation(end),'/')
+				chasteTestOutputLocation(end+1) = '/';
+			end			
 
 			obj.generateSimOutputLocation(chasteTestOutputLocation);
 
@@ -132,7 +139,7 @@ classdef simulateCryptColumnMutation < chasteSimulation
 			% to that used in the Chaste Test, and doing that using maps takes a lot of effort
 
 
-			obj.simOutputLocation = sprintf('%s%s/n_%d_np_%d_EES_%g_MS_%g_CCT_%g_WT_%g_VF_%g/', chasteTestOutputLocation,obj.chasteTest, obj.n, obj.np, obj.ees, obj.ms, obj.cct, obj.wt, obj.vf)
+			obj.simOutputLocation = sprintf('%s%s/n_%d_np_%d_EES_%g_MS_%g_CCT_%g_WT_%g_VF_%g/', chasteTestOutputLocation,obj.chasteTest, obj.n, obj.np, obj.ees, obj.ms, obj.cct, obj.wt, obj.vf);
 			obj.simOutputLocation = [obj.simOutputLocation, sprintf('mpos_%g_Mnp_%g_eesM_%g_msM_%g_cctM_%g_wtM_%g_Mvf_%g/run_%d/results_from_time_%d/', obj.mpos, obj.Mnp, obj.eesM, obj.msM, obj.cctM, obj.wtM, obj.Mvf, obj.run_number, obj.bt)];
 
 		end
@@ -152,7 +159,7 @@ classdef simulateCryptColumnMutation < chasteSimulation
 				% Allows for the possibility of naming a particular parameter set
 				% useful if they need to be distinguished easily, but could lead to 
 				% duplication of data and simulation time
-				obj.saveLocation = [obj.saveLocation, name];
+				obj.saveLocation = [obj.saveLocation, obj.simParams('name')];
 			else
 				k = obj.simParams.keys;
 				v = obj.simParams.values;
@@ -181,8 +188,8 @@ classdef simulateCryptColumnMutation < chasteSimulation
 
 			obj.saveLocation = [obj.saveLocation, '/'];
 
-			if exist(outputTypeFolder,'dir')~=7
-				mkdir(outputTypeFolder);
+			if exist(obj.saveLocation,'dir')~=7
+				mkdir(obj.saveLocation);
 			end
 
 		end

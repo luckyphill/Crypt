@@ -4,7 +4,7 @@ classdef clonalData < dataType
 	properties (Constant = true)
 		name = 'clonal_data';
 
-		fileNames = 'converted'
+		fileNames = 'conversion'
 	end
 
 	methods
@@ -26,9 +26,6 @@ classdef clonalData < dataType
 			found = exist(obj.getFullFileName(sp), 'file');
 
 		end
-	end
-
-	methods (Access = protected)
 
 		function file = getFullFileName(obj,sp)
 			folder = [sp.saveLocation, obj.name, '/'];
@@ -37,10 +34,13 @@ classdef clonalData < dataType
 				mkdir(folder);
 			end
 
-			file = [folder, obj.fileNames, '_', sp.run_number, '.txt'];
+			file = [folder, obj.fileNames, '_', num2str(sp.run_number), '.txt'];
 		end
 
-		
+	end
+
+	methods (Access = protected)
+
 		function data = retrieveData(obj, sp)
 			% Loads the data from the file and puts it in the expected format
 
