@@ -106,7 +106,9 @@ classdef chasteSimulation < simulation
 				% However, this does not mean the data will necessarily be in the correct
 				% format. Error checking needs to happen in the data processing
 				% Data should be able to be processed correctly
-				obj.outputType.saveData(obj);
+				for i = 1:length(obj.outputTypesToRun)
+					obj.outputTypesToRun{i}.saveData(obj);
+				end
 				successCode = 1;
 			end
 
