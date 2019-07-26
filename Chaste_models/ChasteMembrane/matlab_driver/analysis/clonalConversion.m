@@ -11,6 +11,7 @@ classdef clonalConversion < matlab.mixin.SetGet
 
 		chastePath = [getenv('HOME'), '/'];
 		chasteTestOutputLocation = ['/tmp/', getenv('USER'),'/'];
+		s % This simulation
 
 	end
 
@@ -50,8 +51,8 @@ classdef clonalConversion < matlab.mixin.SetGet
 			end
 			for j=1:reps
 				obj.seedParams = containers.Map({'run'}, {j});
-				s = simulateCryptColumnMutation(obj.simParams, obj.mutantParams, obj.solverParams, obj.seedParams, obj.outputTypes, obj.chastePath, obj.chasteTestOutputLocation);
-				s.generateSimulationData();
+				obj.s = simulateCryptColumnMutation(obj.simParams, obj.mutantParams, obj.solverParams, obj.seedParams, obj.outputTypes, obj.chastePath, obj.chasteTestOutputLocation);
+				obj.s.generateSimulationData();
 			end
 
 		end

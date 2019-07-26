@@ -68,18 +68,19 @@ classdef clonalData < dataType
 				error('bD:MissingBracketingFlags','Couldnt find START, END or DEBUG. Ensure the Chaste test console output is formatted correctly.');
 			end
 
+			out = temp2{2}(1:end-1);
 
 			data = nan;
 
-			if strcmp(temp2{2}, 'Monolayer clear') || strcmp(temp2{2}, 'Crypt clear')
+			if strcmp(out, 'Monolayer clear') || strcmp(out, 'Crypt clear')
 				data = 0;
 			end
 
-			if strcmp(temp2{2}, 'Clonal conversion')
+			if strcmp(out, 'Clonal conversion')
 				data = 1;
 			end
 
-			if ~strcmp(temp2{2}, 'Monolayer clear') && ~strcmp(temp2{2}, 'Clonal conversion') && ~strcmp(temp2{2}, 'Crypt clear')
+			if ~strcmp(out, 'Monolayer clear') && ~strcmp(out, 'Clonal conversion') && ~strcmp(out, 'Crypt clear')
 				error('bD:MissingData','Console output format doesnt match expected format.');
 			end
 
