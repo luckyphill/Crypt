@@ -71,19 +71,19 @@ classdef simulateCryptColumnMutation < chasteSimulation
 
 			obj.outputTypes = outputTypes;
 
+			obj.chastePath = chastePath;
+
 
 			obj.assignParameters(); % A helper method to clear up the constructor from clutter
 
-			
-			obj.generateInputString();
 
 			if ~strcmp(chastePath(end),'/')
 				chastePath(end+1) = '/';
 			end
 
-			obj.generateSimulationCommand(chastePath);
+			obj.generateSimulationCommand();
 
-			obj.generateSaveLocation(chastePath);
+			obj.generateSaveLocation();
 
 			if ~strcmp(chasteTestOutputLocation(end),'/')
 				chasteTestOutputLocation(end+1) = '/';
@@ -125,7 +125,13 @@ classdef simulateCryptColumnMutation < chasteSimulation
 			
 			obj.run_number	= obj.seedParams('run');
 
-			assert(obj.wt < obj.cct - 1);
+			if obj.wt > (obj.cct - 1)
+				error('Growing time (wt) is longer than the cell cycle time (cct)');
+			end
+
+			if obj.wt > (obj.cct * obj.cctM - 1)
+				error('Growing time (wt) is longer than the mutated cell cycle time (cct * cctM)');
+			end
 
 		end
 
@@ -144,11 +150,11 @@ classdef simulateCryptColumnMutation < chasteSimulation
 
 		end
 
-		function generateSaveLocation(obj, chastePath)
+		function generateSaveLocation(obj)
 			% This generates the full path to the specific data file for the simulation
 			% If the path doesn't exist it creates the missing folder structure
 
-			obj.saveLocation = [chastePath, 'Research/Crypt/Data/Chaste/', obj.chasteTest, '/'];
+			obj.saveLocation = [obj.chastePath, 'Research/Crypt/Data/Chaste/', obj.chasteTest, '/'];
 
 			% Build the folder structure with the parameter names
 			% This uses the order that the map puts it in
@@ -194,13 +200,13 @@ classdef simulateCryptColumnMutation < chasteSimulation
 
 		end
 
-		function generateSimulationCommand(obj,chastePath)
+		function generateSimulationCommand(obj)
 			% This takes the path the call the simulation
 			% and adds it to the input string to create the full simulation
 			% command for the specific parameter set, numerical conditions, and seed
 
-
-			obj.simulationCommand = [chastePath, 'chaste_build/projects/ChasteMembrane/test/', obj.chasteTest, obj.inputString];
+			obj.generateInputString();
+			obj.simulationCommand = [obj.chastePath, 'chaste_build/projects/ChasteMembrane/test/', obj.chasteTest, obj.inputString];
 
 		end
 
@@ -242,7 +248,6 @@ classdef simulateCryptColumnMutation < chasteSimulation
 
 			% A given dataType may need specific flags/input parameters in order
 			% generate the correct data files
-
 			for j = 1:length(obj.outputTypesToRun)
 				if obj.outputTypesToRun{j}.typeParams.Count > 0
 					

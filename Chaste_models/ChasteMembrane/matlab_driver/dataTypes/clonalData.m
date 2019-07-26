@@ -9,6 +9,12 @@ classdef clonalData < dataType
 
 	methods
 
+		function obj = clonalData(typeParams)
+			% Constructor needs to be given the parameters that the particular chasteTest
+			% needs in order to generate the expected output format
+			obj.typeParams = typeParams;
+		end
+
 		function correct = verifyData(obj, data, sp)
 			% All the check we're interested in to make sure the data is correct
 			% Perhaps, check that there are sufficient time steps taken?
@@ -63,14 +69,18 @@ classdef clonalData < dataType
 			end
 
 
-			data = [];
-			for i = 2:length(temp2)-1
-				temp3 = strsplit(temp2{i}, ' = ');
-				try
-					data = [data; str2num(temp3{2})];
-				catch
-					error('bD:MissingData','Console output format doesnt match expected format.');
-				end
+			data = nan;
+
+			if strcmp(temp2{2}, 'Monolayer clear') || strcmp(temp2{2}, 'Crypt clear')
+				data = 0;
+			end
+
+			if strcmp(temp2{2}, 'Clonal conversion')
+				data = 1;
+			end
+
+			if ~strcmp(temp2{2}, 'Monolayer clear') && ~strcmp(temp2{2}, 'Clonal conversion') && ~strcmp(temp2{2}, 'Crypt clear')
+				error('bD:MissingData','Console output format doesnt match expected format.');
 			end
 
 			try

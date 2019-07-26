@@ -56,10 +56,10 @@ bool OffLatticeSimulationWithMutation::StoppingEventHasOccurred()
 		if (monolayerMutantCellCount == 0 && !monolayerEmpty)
 		{
 			// Notify that the mutation has completely popped out of the monolayer
-			TRACE("Monolayer clear")
 			monolayerEmpty = true;
 			if (stopOnEmptyMonolayer)
 			{
+				TRACE("Monolayer clear")
 				return true;
 			}
 		}

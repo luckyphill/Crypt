@@ -1,0 +1,9 @@
+sbatch clonalRateGeneric.sh MouseColonDesc
+sbatch clonalRateGeneric.sh MouseColonTrans
+sbatch clonalRateGeneric.sh MouseColonAsc
+sbatch clonalRateGeneric.sh MouseColonCaecum
+sbatch clonalRateGeneric.sh RatColonDesc
+sbatch clonalRateGeneric.sh RatColonTrans
+sbatch clonalRateGeneric.sh RatColonAsc
+sbatch clonalRateGeneric.sh RatColonCaecum
+sbatch clonalRateGeneric.sh HumanColon

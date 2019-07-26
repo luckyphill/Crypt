@@ -58,6 +58,9 @@ classdef chasteSimulation < simulation
 		% the command fails, but can sometimes be a place where the data of interest appears
 		cmdout
 
+		% The path to the directory containing the Chaste and chaste_build folders 
+		chastePath
+
 	end
 
 	methods (Abstract, Access = protected)
@@ -84,11 +87,12 @@ classdef chasteSimulation < simulation
 			% The 'system' command will always work in Matlab. It doesn't care what you type
 			% it just reports back what the console said
 			obj.errorFile = [obj.saveLocation,'output.err'];
-			
+			obj.generateSimulationCommand()
 			fprintf('Running %s with input parameters:\n', obj.chasteTest);
 			fprintf('%s\n', obj.inputString);
 			% Delete the previous error file
 			[~,~] = system(['rm ', obj.errorFile]);
+			
 			[failed, obj.cmdout] = system(obj.simulationCommand,'-echo');
 			successCode = 0;
 			if failed

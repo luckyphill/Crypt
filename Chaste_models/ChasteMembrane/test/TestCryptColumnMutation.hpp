@@ -329,6 +329,7 @@ public:
 		if(CommandLineArguments::Instance()->OptionExists("-Sml"))
 		{   
 			stopOnEmptyMonolayer = true;
+			TRACE("Stopping on empty monolayer")
 		}
 		// ********************************************************************************************
 
@@ -339,6 +340,7 @@ public:
 		if(CommandLineArguments::Instance()->OptionExists("-Scc"))
 		{   
 			stopOnClonalConversion = true;
+			TRACE("Stopping on clonal conversion")
 		}
 		// ********************************************************************************************
 

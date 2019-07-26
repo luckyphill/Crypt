@@ -58,6 +58,8 @@ classdef simulateCryptColumn < chasteSimulation
 
 			obj.outputTypes = outputTypes;
 
+			obj.chastePath = chastePath;
+
 
 			obj.assignParameters(); % A helper method to clear up the constructor from clutter
 
@@ -65,9 +67,9 @@ classdef simulateCryptColumn < chasteSimulation
 				chastePath(end+1) = '/';
 			end
 
-			obj.generateSimulationCommand(chastePath);
+			obj.generateSimulationCommand();
 
-			obj.generateSaveLocation(chastePath);
+			obj.generateSaveLocation();
 
 			if ~strcmp(chasteTestOutputLocation(end),'/')
 				chasteTestOutputLocation(end+1) = '/';
@@ -119,11 +121,11 @@ classdef simulateCryptColumn < chasteSimulation
 
 		end
 
-		function generateSaveLocation(obj, chastePath)
+		function generateSaveLocation(obj)
 			% This generates the full path to the specific data file for the simulation
 			% If the path doesn't exist it creates the missing folder structure
 
-			obj.saveLocation = [chastePath, 'Research/Crypt/Data/Chaste/', obj.chasteTest, '/'];
+			obj.saveLocation = [obj.chastePath, 'Research/Crypt/Data/Chaste/', obj.chasteTest, '/'];
 
 			% Build the folder structure with the parameter names
 			% This uses the order that the map puts it in
@@ -161,13 +163,13 @@ classdef simulateCryptColumn < chasteSimulation
 
 		end
 
-		function generateSimulationCommand(obj,chastePath)
+		function generateSimulationCommand(obj)
 			% This takes the path the call the simulation
 			% and adds it to the input string to create the full simulation
 			% command for the specific parameter set, numerical conditions, and seed
 
 			obj.generateInputString();
-			obj.simulationCommand = [chastePath, 'chaste_build/projects/ChasteMembrane/test/', obj.chasteTest, obj.inputString];
+			obj.simulationCommand = [obj.chastePath, 'chaste_build/projects/ChasteMembrane/test/', obj.chasteTest, obj.inputString];
 
 		end
 

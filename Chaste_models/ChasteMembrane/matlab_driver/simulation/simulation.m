@@ -89,6 +89,7 @@ classdef (Abstract) simulation < matlab.mixin.SetGet
 			if ~obj.overWrite
 				% We are going to take whatever data exists and if it doesn't exist
 				% we will generate it
+				
 				for i = 1:obj.numOutputTypes
 					if ~obj.outputTypes{i}.exists(obj)
 						obj.outputTypesToRun{end + 1} = obj.outputTypes{i};
