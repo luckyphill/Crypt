@@ -26,10 +26,9 @@ classdef heightAnalysis < matlab.mixin.SetGet
 
 	methods
 
-		function obj = heightAnalysis(simParams,mpos,Mnp,eesM,msM,cctM,wtM,Mvf,t,dt,bt,sm,run_number)
+		function obj = heightAnalysis(simParams,mutantParams,t,dt,bt,sm,run_number)
 
-			outputType = visPositionData(containers.Map({'sm'},{100}));
-			mutationParams = containers.Map({'mpos', 'Mnp','eesM','msM','cctM','wtM','Mvf'}, {mpos,Mnp,eesM,msM,cctM,wtM,Mvf});
+			outputType = visPositionData(containers.Map({'sm'},{sm}));
 			solverParams = containers.Map({'t', 'bt', 'dt'}, {t, bt, dt});
 			seedParams = containers.Map({'run'}, {run_number});
 
@@ -47,7 +46,7 @@ classdef heightAnalysis < matlab.mixin.SetGet
 			end
 
 
-			obj.simul = simulateCryptColumnMutation(simParams, mutationParams, solverParams, seedParams, outputType, obj.chastePath, obj.chasteTestOutputLocation);
+			obj.simul = simulateCryptColumnMutation(simParams, mutantParams, solverParams, seedParams, outputType, obj.chastePath, obj.chasteTestOutputLocation);
 			
 			obj.simul.loadSimulationData();
 
@@ -116,10 +115,27 @@ classdef heightAnalysis < matlab.mixin.SetGet
 
 			obj.h_max_mean = nanmean(h_max_t);
 			figure;
-			plot(obj.h_max_mean);
+			plot(0:double(obj.simul.n), obj.h_max_mean, 'lineWidth', 4);
+			xlabel('Position from stem cell niche')
+			ylabel('Time average height above BM')
+			title(['Time average stack height for each crypt position for mutation: ' obj.simul.mutantParams('name')]);
+			ylim([0.6 3.6]);
 
 
+			h_crypt_max_t = max(h_max_t');
+			h_crypt_min_t = min(h_max_t');
+			h_crypt_mean_t = nanmean(h_max_t');
 
+
+			figure
+			hold on
+			plot(h_crypt_max_t)
+			plot(h_crypt_min_t)
+			plot(h_crypt_mean_t)
+			legend('max height', 'min height', 'mean height');
+			xlabel('Time')
+			ylabel('Whole crypt maximum height above BM')
+			title(['Maximum stack height over time for the whole crypt: ' obj.simul.mutantParams('name')]);
 
 
 

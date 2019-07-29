@@ -46,3 +46,13 @@ h_max_mean = nanmean(h_max_t);
 figure;
 plot(h_max_mean);
 
+h_crypt_max_t = max(h_max_t');
+h_crypt_min_t = min(h_max_t');
+h_crypt_mean_t = nanmean(h_max_t');
+
+
+figure
+hold on
+plot(h_crypt_max_t)
+plot(h_crypt_min_t)
+plot(h_crypt_mean_t)

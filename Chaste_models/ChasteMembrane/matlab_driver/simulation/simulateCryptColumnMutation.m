@@ -181,7 +181,9 @@ classdef simulateCryptColumnMutation < chasteSimulation
 			k = obj.mutantParams.keys;
 			v = obj.mutantParams.values;
 			for i = 1:obj.mutantParams.Count
-				obj.saveLocation = [obj.saveLocation, sprintf('_%s_%g',k{i}, v{i})];
+				if ~strcmp(k{i},'name')
+					obj.saveLocation = [obj.saveLocation, sprintf('_%s_%g',k{i}, v{i})];
+				end
 			end
 
 			obj.saveLocation = [obj.saveLocation, '/numerics'];
