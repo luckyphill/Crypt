@@ -19,6 +19,7 @@ classdef fillingAnalysis < matlab.mixin.SetGet
 		imageLocation
 
 		simul
+		levelsData
 
 	end
 
@@ -83,6 +84,7 @@ classdef fillingAnalysis < matlab.mixin.SetGet
 			    counts = [counts; histcounts(x,levelRanges)];
 			end
 
+			obj.levelsData = counts;
 			close all
 			figure
 			hold on
