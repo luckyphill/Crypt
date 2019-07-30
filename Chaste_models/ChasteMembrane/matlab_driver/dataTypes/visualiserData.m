@@ -21,7 +21,7 @@ classdef visualiserData < dataType
 			found = true;
 			existCount = 0;
 			for i = 1:length(obj.fileNames)
-				saveFile = [getFullFilePath(sp), obj.fileNames{i}];
+				saveFile = [obj.getFullFilePath(sp), obj.fileNames{i}];
 				if exist(saveFile)
 					existCount = existCount + 1;
 				end
@@ -51,7 +51,7 @@ classdef visualiserData < dataType
 
 			for i = 1:length(obj.fileNames)
 				outputFile = [sp.simOutputLocation, obj.fileNames{i}];
-				saveFile = [getFullFilePath(sp), obj.fileNames{i}];
+				saveFile = [obj.getFullFilePath(sp), obj.fileNames{i}];
 
 				% Check if the file exists, if it doesn't attempt to move it from outputlocation
 				% if that fails, then the file doesn't exist in a known location
