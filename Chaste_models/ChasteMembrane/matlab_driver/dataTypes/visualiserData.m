@@ -16,6 +16,21 @@ classdef visualiserData < dataType
 			obj.typeParams = typeParams;
 		end
 
+		function found = exists(obj, sp)
+			% Checks if the file exists
+			found = true;
+			existCount = 0;
+			for i = 1:length(obj.fileNames)
+				saveFile = [getFullFilePath(sp), obj.fileNames{i}];
+				if exist(saveFile)
+					existCount = existCount + 1;
+				end
+			end
+			if existCount ~= 4
+				found = false;
+			end
+		end
+
 	end
 
 	methods (Access = protected)
