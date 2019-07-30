@@ -1,4 +1,4 @@
-function runVisualiserAnalysis(crypt, Mnp,eesM,msM,cctM,wtM,Mvf)
+function runVisualiserAnalysis(crypt, Mnp,eesM,msM,cctM,wtM,Mvf, run_number)
 
 
 	switch crypt
@@ -25,8 +25,6 @@ function runVisualiserAnalysis(crypt, Mnp,eesM,msM,cctM,wtM,Mvf)
 	end
 
 	%   visualiserAnalysis(simParams,mpos,Mnp,eesM,msM,cctM,wtM,Mvf,t,dt,bt,sm,run_number)
-	v = visualiserAnalysis(simParams,1,Mnp,eesM,msM,cctM,wtM,Mvf,4000,0.0005,100,1000,1);
-	v = visualiserAnalysis(simParams,1,Mnp,eesM,msM,cctM,wtM,Mvf,4000,0.0005,100,1000,2);
-	v = visualiserAnalysis(simParams,1,Mnp,eesM,msM,cctM,wtM,Mvf,4000,0.0005,100,1000,3);
+	v = visualiserAnalysis(simParams,1,Mnp,eesM,msM,cctM,wtM,Mvf,8000,0.0005,100,2000,run_number);
 
 end
