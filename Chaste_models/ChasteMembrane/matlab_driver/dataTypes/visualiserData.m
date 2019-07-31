@@ -82,7 +82,7 @@ classdef visualiserData < dataType
 
 			for i = 1:length(obj.fileNames)
 				outputFile = [sp.simOutputLocation, obj.fileNames{i}];
-				saveFile = [getFullFilePath(sp), obj.fileNames{i}];
+				saveFile = [obj.getFullFilePath(sp), obj.fileNames{i}];
 
 				[status,cmdout] = system(['mv ', outputFile, ' ',  saveFile],'-echo');
 
