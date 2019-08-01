@@ -82,5 +82,5 @@ f = fft(h_max_t(:,1:end-1)');
 fabs = abs(f);
 [~, idx] = sort(fabs,2);
 [ff,idx] = max(fabs);
-ff2 = max(ff(ff~=ff(:,idx));
+ff2 = max(ff(ff~=ff(:,idx)));
 

@@ -17,6 +17,7 @@ module unload HDF5
 module load matlab/2019a
 
 mkdir -p output
+export CHASTE_TEST_OUTPUT="/tmp/a1738927/testoutput/"
 
 
 echo "array_job_index: $SLURM_ARRAY_TASK_ID" 
