@@ -598,6 +598,9 @@ public:
 		std::string output_directory = "TestCryptColumnMutation/" +  simdir.str() + "/" + mutdir.str() + "/" + rundir.str();
 
 		simulator.SetOutputDirectory(output_directory);
+		OutputFileHandler output_file_handler(output_directory+"/", true);
+		std::string directory = output_file_handler.GetOutputDirectoryFullPath();
+		PRINT_VARIABLE(directory)
 		// ********************************************************************************************
 
 		// ********************************************************************************************
@@ -840,6 +843,11 @@ public:
 		TRACE("Starting simulation proper")
 		TRACE("START")
 		simulator.Solve();
+
+		if (SimulationTime::Instance()->GetTime() >= burn_in_time + simulation_length - dt)
+		{
+			TRACE("Timeout")
+		}
 
 		
 		// Here be statistics

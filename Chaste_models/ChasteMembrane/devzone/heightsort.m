@@ -1,5 +1,6 @@
 
-
+close all
+clear all
 
 dataFile = '/Users/phillipbrown/testoutput/TestCryptColumnMutation/n_29_np_12_EES_58_MS_216_CCT_15_WT_9_VF_0.675/mpos_1_Mnp_15_eesM_1_msM_1_cctM_1_wtM_1_Mvf_0.675/run_1/results_from_time_100/results.viznodes';
 
@@ -60,4 +61,26 @@ plot(times,h_crypt_mean_t)
 plot(times,mean(h_crypt_max_t) * ones(size(times)));
 plot(times,mean(h_crypt_min_t) * ones(size(times)));
 plot(times,mean(h_crypt_mean_t) * ones(size(times)));
+
+figure
+l = line(steps(2:end),h_max_t(1,:));
+xlim([0 30])
+ylim([0 8])
+figure
+l2 = line(1:14,fabs(1:14,1)/14);
+xlim([0 15])
+ylim([0 10])
+for i = 20000:length(data)
+    l.YData = h_max_t(i,:);
+    l2.YData = fabs(1:14,i)/14;
+    
+    drawnow
+    pause(0.001)
+end
+
+f = fft(h_max_t(:,1:end-1)');
+fabs = abs(f);
+[~, idx] = sort(fabs,2);
+[ff,idx] = max(fabs);
+ff2 = max(ff(ff~=ff(:,idx));
 

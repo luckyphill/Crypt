@@ -80,7 +80,12 @@ classdef clonalData < dataType
 				data = 1;
 			end
 
-			if ~strcmp(out, 'Monolayer clear') && ~strcmp(out, 'Clonal conversion') && ~strcmp(out, 'Crypt clear')
+			if strcmp(out, 'Timeout')
+				data = -1;
+			end
+			
+
+			if ~strcmp(out, 'Monolayer clear') && ~strcmp(out, 'Clonal conversion') && ~strcmp(out, 'Crypt clear') &&~strcmp(out, 'Timeout')
 				error('bD:MissingData','Console output format doesnt match expected format.');
 			end
 
