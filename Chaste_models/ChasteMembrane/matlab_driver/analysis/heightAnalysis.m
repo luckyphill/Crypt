@@ -82,44 +82,50 @@ classdef heightAnalysis < matlab.mixin.SetGet
 			steps = -0.5:(double(obj.simul.n) + 0.5);
 
 			for i=1:length(data)
-			    clear sortedbypos;
-			    nz = find(data(i,:), 1, 'last');
-			    x = data(i,2:2:nz);
-			    y = data(i,3:2:nz);
-			    sortedbypos{length(steps)-1} = [];
-			    for j = 1:length(x)
-			        for k=2:length(steps)
-			            if steps(k) > y(j) && y(j) > steps(k-1)
-			                sortedbypos{k-1}(end + 1) = x(j);
-			            end
-			        end
-			    end
-			    
-			    for j = 1:length(sortedbypos)
-			        if isempty(sortedbypos{j})
-			            h_min(j) = nan;
-			            h_max(j) = nan;
-			            h_mean(j) = nan;
-			        else
-			            h_min(j) = min(sortedbypos{j});
-			            h_max(j) = max(sortedbypos{j});
-			            h_mean(j) = mean(sortedbypos{j});
-			        end
-			    end
-			    
-			    h_min_t(i,:) = h_min;
-			    h_max_t(i,:) = h_max;
-			    h_mean_t(i,:) = h_mean;
-			                
+				clear sortedbypos;
+				nz = find(data(i,:), 1, 'last');
+				x = data(i,2:2:nz);
+				y = data(i,3:2:nz);
+				sortedbypos{length(steps)-1} = [];
+				for j = 1:length(x)
+					for k=2:length(steps)
+						if steps(k) > y(j) && y(j) > steps(k-1)
+							sortedbypos{k-1}(end + 1) = x(j);
+						end
+					end
+				end
+				
+				for j = 1:length(sortedbypos)
+					if isempty(sortedbypos{j})
+						h_min(j) = nan;
+						h_max(j) = nan;
+						h_mean(j) = nan;
+					else
+						h_min(j) = min(sortedbypos{j});
+						h_max(j) = max(sortedbypos{j});
+						h_mean(j) = mean(sortedbypos{j});
+					end
+				end
+				
+				h_min_t(i,:) = h_min;
+				h_max_t(i,:) = h_max;
+				h_mean_t(i,:) = h_mean;
+							
 			end
 
 			obj.h_max_mean = nanmean(h_max_t);
-			figure;
+			h = figure;
 			plot(0:double(obj.simul.n), obj.h_max_mean, 'lineWidth', 4);
 			xlabel('Position from stem cell niche')
 			ylabel('Time average height above BM')
 			title(['Time average stack height for each crypt position for mutation: ' obj.simul.mutantParams('name')]);
 			ylim([0.6 3.6]);
+
+			set(h,'Units','Inches');
+			pos = get(h,'Position');
+			set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
+
+			print(['/Users/phillipbrown/Research/Crypt/Images/heightanalysis/pos_time_avg ',obj.simul.mutantParams('name')],'-dpdf');
 
 
 			h_crypt_max_t = max(h_max_t');
@@ -127,7 +133,7 @@ classdef heightAnalysis < matlab.mixin.SetGet
 			h_crypt_mean_t = nanmean(h_max_t');
 
 
-			figure
+			h = figure
 			hold on
 			plot(h_crypt_max_t)
 			plot(h_crypt_min_t)
@@ -136,6 +142,19 @@ classdef heightAnalysis < matlab.mixin.SetGet
 			xlabel('Time')
 			ylabel('Whole crypt maximum height above BM')
 			title(['Maximum stack height over time for the whole crypt: ' obj.simul.mutantParams('name')]);
+
+			plot(times,mean(h_crypt_max_t) * ones(size(times)));
+			plot(times,mean(h_crypt_min_t) * ones(size(times)));
+			plot(times,mean(h_crypt_mean_t) * ones(size(times)));
+
+			legend(mean(h_crypt_max_t),mean(h_crypt_min_t),mean(h_crypt_mean_t))
+
+			set(h,'Units','Inches');
+			pos = get(h,'Position');
+			set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
+			
+			print(['/Users/phillipbrown/Research/Crypt/Images/heightanalysis/whole_crypt_max_min_mean  ',obj.simul.mutantParams('name')],'-dpdf');
+
 
 
 
