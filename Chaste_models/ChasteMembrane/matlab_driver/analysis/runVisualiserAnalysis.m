@@ -25,6 +25,6 @@ function runVisualiserAnalysis(crypt, Mnp,eesM,msM,cctM,wtM,Mvf, run_number)
 	end
 
 	%   visualiserAnalysis(simParams,mpos,Mnp,eesM,msM,cctM,wtM,Mvf,t,dt,bt,sm,run_number)
-	v = visualiserAnalysis(simParams,1,Mnp,eesM,msM,cctM,wtM,Mvf,8000,0.0005,100,2000,run_number);
+	v = visualiserAnalysis(simParams,1,Mnp,eesM,msM,cctM,wtM,Mvf,8000,0.001,100,1000,run_number);
 
 end

@@ -39,9 +39,9 @@ classdef visualiserAnalysis < matlab.mixin.SetGet
 
 			obj.simul = simulateCryptColumnMutation(simParams, mutationParams, solverParams, seedParams, outputType, obj.chastePath, obj.chasteTestOutputLocation);
 			
-			if ~obj.simul.generateSimulationData()
-				fprintf('Failed to get the data');
-			end
+			% if ~obj.simul.generateSimulationData()
+			% 	fprintf('Failed to get the data');
+			% end
 
 		end
 

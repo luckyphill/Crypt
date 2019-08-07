@@ -16,11 +16,16 @@ classdef heightAnalysis < matlab.mixin.SetGet
 		chastePath
 		chasteTestOutputLocation
 
-		imageFile
+		imageFiles
 		imageLocation
 
 		simul
+
 		h_max_mean
+
+		h_crypt_max_t
+		h_crypt_min_t
+		h_crypt_mean_t
 
 	end
 
@@ -45,6 +50,10 @@ classdef heightAnalysis < matlab.mixin.SetGet
 				obj.chasteTestOutputLocation = outputLocation;
 			end
 
+			obj.imageLocation = [getenv('HOME'), '/Research/Crypt/Images/heightanalysis/'];
+			if exist(obj.imageLocation, 'dir') ~=7
+				mkdir(obj.imageLocation);
+			end
 
 			obj.simul = simulateCryptColumnMutation(simParams, mutantParams, solverParams, seedParams, outputType, obj.chastePath, obj.chasteTestOutputLocation);
 			
@@ -114,6 +123,7 @@ classdef heightAnalysis < matlab.mixin.SetGet
 			end
 
 			obj.h_max_mean = nanmean(h_max_t);
+
 			h = figure;
 			plot(0:double(obj.simul.n), obj.h_max_mean, 'lineWidth', 4);
 			xlabel('Position from stem cell niche')
@@ -125,35 +135,40 @@ classdef heightAnalysis < matlab.mixin.SetGet
 			pos = get(h,'Position');
 			set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
 
-			print(['/Users/phillipbrown/Research/Crypt/Images/heightanalysis/pos_time_avg ',obj.simul.mutantParams('name')],'-dpdf');
+			print([getenv('HOME'), '/Research/Crypt/Images/heightanalysis/pos_time_avg ',obj.simul.mutantParams('name')],'-dpdf');
 
 
 			h_crypt_max_t = max(h_max_t');
 			h_crypt_min_t = min(h_max_t');
 			h_crypt_mean_t = nanmean(h_max_t');
 
+			obj.h_crypt_max_t = h_crypt_max_t;
+			obj.h_crypt_min_t = h_crypt_min_t;
+			obj.h_crypt_mean_t = h_crypt_mean_t;
 
-			h = figure
+
+			h = figure;
 			hold on
-			plot(h_crypt_max_t)
-			plot(h_crypt_min_t)
-			plot(h_crypt_mean_t)
+			plot(times,h_crypt_max_t)
+			plot(times,h_crypt_min_t)
+			plot(times,h_crypt_mean_t)
 			legend('max height', 'min height', 'mean height');
 			xlabel('Time')
 			ylabel('Whole crypt maximum height above BM')
 			title(['Maximum stack height over time for the whole crypt: ' obj.simul.mutantParams('name')]);
+			ylim([0 8])
 
 			plot(times,mean(h_crypt_max_t) * ones(size(times)));
 			plot(times,mean(h_crypt_min_t) * ones(size(times)));
 			plot(times,mean(h_crypt_mean_t) * ones(size(times)));
 
-			legend(mean(h_crypt_max_t),mean(h_crypt_min_t),mean(h_crypt_mean_t))
+			legend(num2str(mean(h_crypt_max_t)), num2str(mean(h_crypt_min_t)) ,num2str(mean(h_crypt_mean_t)))
 
 			set(h,'Units','Inches');
 			pos = get(h,'Position');
 			set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
 			
-			print(['/Users/phillipbrown/Research/Crypt/Images/heightanalysis/whole_crypt_max_min_mean  ',obj.simul.mutantParams('name')],'-dpdf');
+			print([getenv('HOME'), '/Research/Crypt/Images/heightanalysis/whole_crypt_max_min_mean  ',obj.simul.mutantParams('name')],'-dpdf');
 
 
 

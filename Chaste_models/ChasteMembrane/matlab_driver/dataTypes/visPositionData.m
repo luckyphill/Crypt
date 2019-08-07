@@ -16,22 +16,22 @@ classdef visPositionData < dataType
 			obj.typeParams = typeParams;
 		end
 
-		function correct = verifyData(obj, data, sp)
-			% All the check we're interested in to make sure the data is correct
-			% Perhaps, check that there are sufficient time steps taken?
-			finalTimeStep = data(end,1);
+		% function correct = verifyData(obj, data, sp)
+		% 	% All the check we're interested in to make sure the data is correct
+		% 	% Perhaps, check that there are sufficient time steps taken?
+		% 	finalTimeStep = data(end,1);
 
-			dt = sp.solverParams('dt');
-			t = sp.solverParams('t');
-			bt = sp.solverParams('bt');
+		% 	dt = sp.solverParams('dt');
+		% 	t = sp.solverParams('t');
+		% 	bt = sp.solverParams('bt');
 
-			if finalTimeStep + dt >= t + bt
-				correct = true;
-			else
-				correct = false;
-				fprintf('finalTimeStep = %d\n', finalTimeStep);
-			end
-		end
+		% 	if finalTimeStep + dt >= t + bt
+		% 		correct = true;
+		% 	else
+		% 		correct = false;
+		% 		fprintf('finalTimeStep = %d\n', finalTimeStep);
+		% 	end
+		% end
 
 		function found = exists(obj, sp)
 			% Checks if the file exists
