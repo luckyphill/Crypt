@@ -33,8 +33,8 @@ do
 done < detail_mutations.txt 
 
 if [ $found = 1 ]; then
-	echo "matlab -nodisplay -nodesktop -r cd ../../; addpath(genpath(pwd)); runVisualiserAnalysis($mnp,$eesM,$msM,$cctM,$wtM,$mvf); quit()"
-    matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); runVisualiserAnalysis($mnp,$eesM,$msM,$cctM,$wtM,$mvf); quit()"
+	echo "matlab -nodisplay -nodesktop -r cd ../../; addpath(genpath(pwd)); runVisualiserAnalysis('MouseColonDesc',$mnp,$eesM,$msM,$cctM,$wtM,$mvf,1); quit()"
+    matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); runVisualiserAnalysis('MouseColonDesc',$mnp,$eesM,$msM,$cctM,$wtM,$mvf,1); quit()"
 else 
   echo "detail_mutations.txt  does not have enough parameters for $SLURM_ARRAY_TASK_ID index" 
 fi
