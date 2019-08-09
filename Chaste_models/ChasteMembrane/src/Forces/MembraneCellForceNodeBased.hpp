@@ -28,91 +28,91 @@
 
 class MembraneCellForceNodeBased : public AbstractForce<2>
 {
-    friend class TestCrossSectionModelInteractionForce;
+	friend class TestCrossSectionModelInteractionForce;
 
 private :
 
-    /** Parameter that defines the stiffness of the basement membrane */
-    double mBasementMembraneTorsionalStiffness;
+	/** Parameter that defines the stiffness of the basement membrane */
+	double mBasementMembraneTorsionalStiffness;
 
-    /** Target curvature for the layer of cells */
-    double mTargetCurvatureStemStem;
-    double mTargetCurvatureStemTrans;
-    double mTargetCurvatureTransTrans;
+	/** Target curvature for the layer of cells */
+	double mTargetCurvatureStemStem;
+	double mTargetCurvatureStemTrans;
+	double mTargetCurvatureTransTrans;
 
-    bool mTorsionSelected;
+	bool mTorsionSelected;
 
-    std::vector<std::vector<CellPtr>> mMembraneSections;
+	std::vector<std::vector<CellPtr>> mMembraneSections;
 
-    /** Needed for serialization. */
-    friend class boost::serialization::access;
-    /**
-     * Archive the object and its member variables.
-     *
-     * @param archive the archive
-     * @param version the current version of this class
-     */
-    template<class Archive>
-    void serialize(Archive & archive, const unsigned int version)
-    {
-        // If Archive is an output archive, then '&' resolves to '<<'
-        // If Archive is an input archive, then '&' resolves to '>>'
-        archive & boost::serialization::base_object<AbstractForce<2> >(*this);
-        archive & mBasementMembraneTorsionalStiffness;
-        archive & mTargetCurvatureStemStem;
-        archive & mTargetCurvatureStemTrans;
-        archive & mTargetCurvatureTransTrans;
-        archive & mTorsionSelected;
-    }
+	/** Needed for serialization. */
+	friend class boost::serialization::access;
+	/**
+	 * Archive the object and its member variables.
+	 *
+	 * @param archive the archive
+	 * @param version the current version of this class
+	 */
+	template<class Archive>
+	void serialize(Archive & archive, const unsigned int version)
+	{
+		// If Archive is an output archive, then '&' resolves to '<<'
+		// If Archive is an input archive, then '&' resolves to '>>'
+		archive & boost::serialization::base_object<AbstractForce<2> >(*this);
+		archive & mBasementMembraneTorsionalStiffness;
+		archive & mTargetCurvatureStemStem;
+		archive & mTargetCurvatureStemTrans;
+		archive & mTargetCurvatureTransTrans;
+		archive & mTorsionSelected;
+	}
 
 public :
 
-    /**
-     * Constructor.
-     */
+	/**
+	 * Constructor.
+	 */
 	MembraneCellForceNodeBased();
 
-    /**
-     * Destructor.
-     */
-    ~MembraneCellForceNodeBased();
+	/**
+	 * Destructor.
+	 */
+	~MembraneCellForceNodeBased();
 
-    double GetTargetAngle(AbstractCellPopulation<2>& rCellPopulation, CellPtr centre_cell,
-                                                                        c_vector<double, 2> leftCell,
-                                                                        c_vector<double, 2> centreCell,
-                                                                        c_vector<double, 2> rightCell);
+	double GetTargetAngle(AbstractCellPopulation<2>& rCellPopulation, CellPtr centre_cell,
+																		c_vector<double, 2> leftCell,
+																		c_vector<double, 2> centreCell,
+																		c_vector<double, 2> rightCell);
 
-    /**
-     * Pure virtual, must implement
-     */
-    void AddForceContribution(AbstractCellPopulation<2>& rCellPopulation); // 
+	/**
+	 * Pure virtual, must implement
+	 */
+	void AddForceContribution(AbstractCellPopulation<2>& rCellPopulation); // 
 
-    /**
-     * Pure virtual, must implement
-     */
-    void OutputForceParameters(out_stream& rParamsFile);
+	/**
+	 * Pure virtual, must implement
+	 */
+	void OutputForceParameters(out_stream& rParamsFile);
 
-    /* Set method for Basement Membrane Parameter
-     */
-    void SetBasementMembraneTorsionalStiffness(double basementMembraneTorsionalStiffness);
+	/* Set method for Basement Membrane Parameter
+	 */
+	void SetBasementMembraneTorsionalStiffness(double basementMembraneTorsionalStiffness);
 
-    /* Value of Target Curvature in epithelial layer */
-    void SetTargetCurvatures(double targetCurvatureStemStem, double targetCurvatureStemTrans, double targetCurvatureTransTrans);
+	/* Value of Target Curvature in epithelial layer */
+	void SetTargetCurvatures(double targetCurvatureStemStem, double targetCurvatureStemTrans, double targetCurvatureTransTrans);
 
-    double GetAngleFromTriplet(AbstractCellPopulation<2>& rCellPopulation,
-                                                            c_vector<double, 2> leftNode,
-                                                            c_vector<double, 2> centreNode,
-                                                            c_vector<double, 2> rightNode);
+	double GetAngleFromTriplet(AbstractCellPopulation<2>& rCellPopulation,
+															c_vector<double, 2> leftNode,
+															c_vector<double, 2> centreNode,
+															c_vector<double, 2> rightNode);
 
-    double FindParametricCurvature(AbstractCellPopulation<2>& rCellPopulation,
-    								c_vector<double, 2> leftMidpoint,
+	double FindParametricCurvature(AbstractCellPopulation<2>& rCellPopulation,
+									c_vector<double, 2> leftMidpoint,
 									c_vector<double, 2> centreMidpoint,
 									c_vector<double, 2> rightMidpoint);
-    
+	
 
-    void SetMembraneSections(std::vector<std::vector<CellPtr>> membraneSections);
+	void SetMembraneSections(std::vector<std::vector<CellPtr>> membraneSections);
 
-    void SetCalculationToTorsion(bool OnOff);
+	void SetCalculationToTorsion(bool OnOff);
 };
 
 #include "SerializationExportWrapper.hpp"

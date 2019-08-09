@@ -38,6 +38,6 @@ class PushForceModifier: public AbstractCellBasedSimulationModifier<2,2>
 };
 
 
-// #include "SerializationExportWrapper.hpp"
-// EXPORT_TEMPLATE_CLASS_SAME_DIMS(PushForceModifier)
+#include "SerializationExportWrapper.hpp"
+CHASTE_CLASS_EXPORT(PushForceModifier)
 #endif /*PUSHFORCEMODIFIER_HPP_*/

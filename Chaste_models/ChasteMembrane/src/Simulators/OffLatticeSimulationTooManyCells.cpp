@@ -11,26 +11,35 @@ This will happen for certain parameter sets because there is nothing to stop cel
 
 bool OffLatticeSimulationTooManyCells::StoppingEventHasOccurred()
 {
-  unsigned cell_count = mrCellPopulation.GetNumRealCells();
-  if (cell_count > mCellLimit)
-  {
-    TRACE("Stopped because the number of cells exceeded the limit")
-    return true;
-  }
-  return false;
+	unsigned cell_count = mrCellPopulation.GetNumRealCells();
+	if (cell_count > mCellLimit)
+	{
+		TRACE("Stopped because the number of cells exceeded the limit")
+		return true;
+	}
+	return false;
 }
 
 void OffLatticeSimulationTooManyCells::SetCellLimit(unsigned cell_limit)
 {
-  mCellLimit = cell_limit;
+	mCellLimit = cell_limit;
+}
+unsigned OffLatticeSimulationTooManyCells::GetCellLimit()
+{
+	return mCellLimit;
 }
 
-OffLatticeSimulationTooManyCells::OffLatticeSimulationTooManyCells(
-        AbstractCellPopulation<2>& rCellPopulation)
-    : OffLatticeSimulation<2>(rCellPopulation)
+OffLatticeSimulationTooManyCells::OffLatticeSimulationTooManyCells(AbstractCellPopulation<2>& rCellPopulation)
+	: OffLatticeSimulation<2>(rCellPopulation)
+{
+	mCellLimit = 1000;
+}
+
+OffLatticeSimulationTooManyCells::OffLatticeSimulationTooManyCells(AbstractCellPopulation<2>& rCellPopulation, unsigned cell_limit)
+	: OffLatticeSimulation<2>(rCellPopulation),
+	mCellLimit(cell_limit)
 {
 }
-
 
 
 

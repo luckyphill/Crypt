@@ -13,8 +13,8 @@
 #include "AnoikisCellTagged.hpp"
 #include "MembraneCellProliferativeType.hpp"
 
-template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-SimpleSloughingCellKiller<ELEMENT_DIM,SPACE_DIM>::SimpleSloughingCellKiller(AbstractCellPopulation<SPACE_DIM>* pCellPopulation)
+template<unsigned SPACE_DIM>
+SimpleSloughingCellKiller<SPACE_DIM>::SimpleSloughingCellKiller(AbstractCellPopulation<SPACE_DIM>* pCellPopulation)
     : AbstractCellKiller<SPACE_DIM>(pCellPopulation),
     mCryptTop(10.0)
 {
@@ -23,15 +23,15 @@ SimpleSloughingCellKiller<ELEMENT_DIM,SPACE_DIM>::SimpleSloughingCellKiller(Abst
 //	mSloughingOutputFile = output_file_handler.OpenOutputFile("results.anoikis");
 }
 
-template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-SimpleSloughingCellKiller<ELEMENT_DIM,SPACE_DIM>::~SimpleSloughingCellKiller()
+template<unsigned SPACE_DIM>
+SimpleSloughingCellKiller<SPACE_DIM>::~SimpleSloughingCellKiller()
 {
 //    mSloughingOutputFile->close();
 }
 
 
-template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-void SimpleSloughingCellKiller<ELEMENT_DIM,SPACE_DIM>::SetCryptTop(double cryptTop)
+template<unsigned SPACE_DIM>
+void SimpleSloughingCellKiller<SPACE_DIM>::SetCryptTop(double cryptTop)
 {
 	mCryptTop = cryptTop;
 }
@@ -42,8 +42,8 @@ void SimpleSloughingCellKiller<ELEMENT_DIM,SPACE_DIM>::SetCryptTop(double cryptT
  *
  * Also will remove differentiated cells at the orifice if mSloughOrifice is true
  */
-template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-void SimpleSloughingCellKiller<ELEMENT_DIM,SPACE_DIM>::CheckAndLabelCellsForApoptosisOrDeath()
+template<unsigned SPACE_DIM>
+void SimpleSloughingCellKiller<SPACE_DIM>::CheckAndLabelCellsForApoptosisOrDeath()
 {
 	if (dynamic_cast<NodeBasedCellPopulation<SPACE_DIM>*>(this->mpCellPopulation))
 	{
@@ -75,14 +75,14 @@ void SimpleSloughingCellKiller<ELEMENT_DIM,SPACE_DIM>::CheckAndLabelCellsForApop
     }
 }
 
-template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-unsigned SimpleSloughingCellKiller<ELEMENT_DIM,SPACE_DIM>::GetCellKillCount()
+template<unsigned SPACE_DIM>
+unsigned SimpleSloughingCellKiller<SPACE_DIM>::GetCellKillCount()
 {
     return mCellKillCount;
 }
 
-template<unsigned ELEMENT_DIM, unsigned SPACE_DIM>
-void SimpleSloughingCellKiller<ELEMENT_DIM,SPACE_DIM>::OutputCellKillerParameters(out_stream& rParamsFile)
+template<unsigned SPACE_DIM>
+void SimpleSloughingCellKiller<SPACE_DIM>::OutputCellKillerParameters(out_stream& rParamsFile)
 {
     *rParamsFile << "\t\t\t<CellsRemovedBySloughing>" << 1 << "</CellsRemovedBySloughing> \n";
 
@@ -90,14 +90,11 @@ void SimpleSloughingCellKiller<ELEMENT_DIM,SPACE_DIM>::OutputCellKillerParameter
     AbstractCellKiller<SPACE_DIM>::OutputCellKillerParameters(rParamsFile);
 }
 
-template class SimpleSloughingCellKiller<1,1>;
-template class SimpleSloughingCellKiller<1,2>;
-template class SimpleSloughingCellKiller<2,2>;
-template class SimpleSloughingCellKiller<1,3>;
-template class SimpleSloughingCellKiller<2,3>;
-template class SimpleSloughingCellKiller<3,3>;
+template class SimpleSloughingCellKiller<1>;
+template class SimpleSloughingCellKiller<2>;
+template class SimpleSloughingCellKiller<3>;
 
 
 
-// #include "SerializationExportWrapperForCpp.hpp"
-// EXPORT_TEMPLATE_CLASS_SAME_DIMS(SimpleSloughingCellKiller)
+#include "SerializationExportWrapperForCpp.hpp"
+EXPORT_TEMPLATE_CLASS_SAME_DIMS(SimpleSloughingCellKiller)

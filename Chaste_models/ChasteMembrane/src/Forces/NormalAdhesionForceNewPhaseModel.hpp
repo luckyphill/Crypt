@@ -14,76 +14,77 @@
 
 #include "ChasteSerialization.hpp"
 #include <boost/serialization/base_object.hpp>
+#include "Debug.hpp"
 
 
 template<unsigned  ELEMENT_DIM, unsigned SPACE_DIM=ELEMENT_DIM>
 class NormalAdhesionForceNewPhaseModel : public AbstractForce<ELEMENT_DIM, SPACE_DIM>
 {
-    friend class TestForces;
+	friend class TestForces;
 
 private:
 
-    /** Needed for serialization. */
-    friend class boost::serialization::access;
-    /**
-     * Archive the object and its member variables.
-     *
-     * @param archive the archive
-     * @param version the current version of this class
-     */
-    template<class Archive>
-    void serialize(Archive & archive, const unsigned int version)
-    {
-        archive & boost::serialization::base_object<AbstractForce<ELEMENT_DIM, SPACE_DIM> >(*this);
-        archive & mMembraneEpithelialSpringStiffness;
-        archive & mMembranePreferredRadius;
-        archive & mEpithelialPreferredRadius; 
-        archive & mAdhesionForceLawParameter; 
-        archive & mWeakeningFraction;
-    }
+	/** Needed for serialization. */
+	friend class boost::serialization::access;
+	/**
+	 * Archive the object and its member variables.
+	 *
+	 * @param archive the archive
+	 * @param version the current version of this class
+	 */
+	template<class Archive>
+	void serialize(Archive & archive, const unsigned int version)
+	{
+		archive & boost::serialization::base_object<AbstractForce<ELEMENT_DIM, SPACE_DIM> >(*this);
+		archive & mMembraneEpithelialSpringStiffness;
+		archive & mMembranePreferredRadius;
+		archive & mEpithelialPreferredRadius; 
+		archive & mAdhesionForceLawParameter; 
+		archive & mWeakeningFraction;
+	}
 
 protected:
 
-    double mMembraneEpithelialSpringStiffness;
+	double mMembraneEpithelialSpringStiffness;
 
 
-    double mMembranePreferredRadius;
-    double mEpithelialPreferredRadius; // Epithelial is the differentiated "filler" cells
+	double mMembranePreferredRadius;
+	double mEpithelialPreferredRadius; // Epithelial is the differentiated "filler" cells
 
-    double mAdhesionForceLawParameter; // A parameter to set how quickly the force drops off with distance
+	double mAdhesionForceLawParameter; // A parameter to set how quickly the force drops off with distance
 
-    double mWeakeningFraction; // The fraction of mMembraneEpithelialSpringStiffness seen by a cell with the WeakenedMembraneAdhesion mutation
+	double mWeakeningFraction; // The fraction of mMembraneEpithelialSpringStiffness seen by a cell with the WeakenedMembraneAdhesion mutation
 
 
-    bool mDebugMode = false;
+	bool mDebugMode = false;
 
 public:
 
-    /**
-     * Constructor.
-     */
-    NormalAdhesionForceNewPhaseModel();
+	/**
+	 * Constructor.
+	 */
+	NormalAdhesionForceNewPhaseModel();
 
-    /**
-     * Destructor.
-     */
-    virtual ~NormalAdhesionForceNewPhaseModel();
+	/**
+	 * Destructor.
+	 */
+	virtual ~NormalAdhesionForceNewPhaseModel();
 
-    void AddForceContribution(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation);
+	void AddForceContribution(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation);
 
-    void SetMembraneSpringStiffness(double membraneEpithelialSpringStiffness);
+	void SetMembraneSpringStiffness(double membraneEpithelialSpringStiffness);
 
-    void SetMembranePreferredRadius(double membranePreferredRadius);
-    void SetEpithelialPreferredRadius(double stromalPreferredRadius); // Epithelial is the differentiated "filler" cells
-    void SetAdhesionForceLawParameter(double adhesionForceLawParameter);
-    void SetWeakeningFraction(double weakeningFraction);
+	void SetMembranePreferredRadius(double membranePreferredRadius);
+	void SetEpithelialPreferredRadius(double stromalPreferredRadius); // Epithelial is the differentiated "filler" cells
+	void SetAdhesionForceLawParameter(double adhesionForceLawParameter);
+	void SetWeakeningFraction(double weakeningFraction);
 
    
-    virtual void OutputForceParameters(out_stream& rParamsFile);
+	virtual void OutputForceParameters(out_stream& rParamsFile);
 };
 
 
 #include "SerializationExportWrapper.hpp"
-EXPORT_TEMPLATE_CLASS_SAME_DIMS(NormalAdhesionForceNewPhaseModel)
+EXPORT_TEMPLATE_CLASS_ALL_DIMS(NormalAdhesionForceNewPhaseModel)
 
 #endif /*NormalAdhesionForceNewPhaseModel_HPP_*/

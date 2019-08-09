@@ -551,4 +551,4 @@ template class BasicNonLinearSpringForceMultiNodeFix<3,3>;
 
 // Serialization for Boost >= 1.36
 #include "SerializationExportWrapperForCpp.hpp"
-EXPORT_TEMPLATE_CLASS_SAME_DIMS(BasicNonLinearSpringForceMultiNodeFix)
+EXPORT_TEMPLATE_CLASS_ALL_DIMS(BasicNonLinearSpringForceMultiNodeFix)

@@ -5,6 +5,7 @@
 
 #include <cxxtest/TestSuite.h>
 #include "CheckpointArchiveTypes.hpp"
+#include <boost/serialization/base_object.hpp>
 
 #include "AbstractCellProperty.hpp"
 

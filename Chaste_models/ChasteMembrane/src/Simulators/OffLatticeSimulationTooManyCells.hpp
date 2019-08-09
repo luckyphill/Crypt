@@ -12,13 +12,13 @@ This file is part of Chaste.
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
  * Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
+	 this list of conditions and the following disclaimer.
  * Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
+	 this list of conditions and the following disclaimer in the documentation
+	 and/or other materials provided with the distribution.
  * Neither the name of the University of Oxford nor the names of its
-   contributors may be used to endorse or promote products derived from this
-   software without specific prior written permission.
+	 contributors may be used to endorse or promote products derived from this
+	 software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
@@ -37,6 +37,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define OFFLATTICESIMULATIONTooManyCells_HPP_
 
 #include "OffLatticeSimulation.hpp"
+#include "Debug.hpp"
+#include <boost/serialization/base_object.hpp>
 
 /**
  * Simple subclass of OffLatticeSimulation which just overloads StoppingEventHasOccurred
@@ -46,12 +48,24 @@ class OffLatticeSimulationTooManyCells : public OffLatticeSimulation<2>
 {
 private:
 	/** Define a stopping event which says stop when there are no mutant or no healthy cells. */
-    bool StoppingEventHasOccurred();
-    unsigned mCellLimit = 10000;
+		bool StoppingEventHasOccurred();
+		unsigned mCellLimit;
+
+		 /** Needed for serialization. */
+		friend class boost::serialization::access;
+
+		template<class Archive>
+		void serialize(Archive & archive, const unsigned int version)
+		{
+			archive & boost::serialization::base_object<OffLatticeSimulation<2> >(*this);
+			archive & mCellLimit;
+		}
 
 public:
-    OffLatticeSimulationTooManyCells(AbstractCellPopulation<2>& rCellPopulation);
-    void SetCellLimit(unsigned cell_limit);
+		OffLatticeSimulationTooManyCells(AbstractCellPopulation<2>& rCellPopulation);
+		OffLatticeSimulationTooManyCells(AbstractCellPopulation<2>& rCellPopulation, unsigned cell_limit);
+		void SetCellLimit(unsigned cell_limit);
+		unsigned GetCellLimit();
 
 };
 
@@ -61,35 +75,36 @@ CHASTE_CLASS_EXPORT(OffLatticeSimulationTooManyCells)
 
 namespace boost
 {
-namespace serialization
-{
-/**
- * Serialize information required to construct a OffLatticeSimulationWithMyStoppingEvent.
- */
-template<class Archive>
-inline void save_construct_data(
-    Archive & ar, const OffLatticeSimulationTooManyCells * t, const unsigned int file_version)
-{
-    // Save data required to construct instance
-    const AbstractCellPopulation<2>* p_cell_population = &(t->rGetCellPopulation());
-    ar & p_cell_population;
-}
+	namespace serialization
+	{
+		/**
+		 * Serialize information required to construct a OffLatticeSimulationWithMyStoppingEvent.
+		 */
+		template<class Archive>
+		inline void save_construct_data(Archive & ar, const OffLatticeSimulationTooManyCells * t, const unsigned int file_version)
+		{
+			// Save data required to construct instance
+			const AbstractCellPopulation<2>* p_cell_population = &(t->rGetCellPopulation());
+			TRACE("Archiving the cell population")
+			ar & p_cell_population;
+			TRACE("Completed: Archiving the cell population")
+		}
 
-/**
- * De-serialize constructor parameters and initialise a OffLatticeSimulationWithMyStoppingEvent.
- */
-template<class Archive>
-inline void load_construct_data(
-	Archive & ar, OffLatticeSimulationTooManyCells * t, const unsigned int file_version)
-{
-    // Retrieve data from archive required to construct new instance
-    AbstractCellPopulation<2>* p_cell_population;
-    ar >> p_cell_population;
+		/**
+		 * De-serialize constructor parameters and initialise a OffLatticeSimulationWithMyStoppingEvent.
+		 */
+		template<class Archive>
+		inline void load_construct_data(Archive & ar, OffLatticeSimulationTooManyCells * t, const unsigned int file_version)
+		{
+			// Retrieve data from archive required to construct new instance
+			AbstractCellPopulation<2>* p_cell_population;
+			ar >> p_cell_population;
 
-    // Invoke inplace constructor to initialise instance
-    ::new(t)OffLatticeSimulationTooManyCells(*p_cell_population);
-}
-}
+
+			// Invoke inplace constructor to initialise instance
+			::new(t)OffLatticeSimulationTooManyCells(*p_cell_population);
+		}
+	}
 } // namespace
 
 #endif /*OFFLATTICESIMULATIONTooManyCells_HPP_*/

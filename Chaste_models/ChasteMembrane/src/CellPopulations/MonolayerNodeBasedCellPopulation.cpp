@@ -1,9 +1,3 @@
-
-
-
-
-
-
 #include "MonolayerNodeBasedCellPopulation.hpp"
 #include "MathsCustomFunctions.hpp"
 #include "VtkMeshWriter.hpp"
@@ -79,3 +73,6 @@ void MonolayerNodeBasedCellPopulation<DIM>::SetDampingConstantPoppedUp(double da
 template class MonolayerNodeBasedCellPopulation<1>;
 template class MonolayerNodeBasedCellPopulation<2>;
 template class MonolayerNodeBasedCellPopulation<3>;
+
+#include "SerializationExportWrapperForCpp.hpp"
+EXPORT_TEMPLATE_CLASS_SAME_DIMS(MonolayerNodeBasedCellPopulation)

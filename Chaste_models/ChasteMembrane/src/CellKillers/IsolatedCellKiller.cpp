@@ -197,5 +197,6 @@ void IsolatedCellKiller::OutputCellKillerParameters(out_stream& rParamsFile)
 }
 
 
-// #include "SerializationExportWrapperForCpp.hpp"
-// EXPORT_TEMPLATE_CLASS_SAME_DIMS(IsolatedCellKiller)
+
+#include "SerializationExportWrapperForCpp.hpp"
+CHASTE_CLASS_EXPORT(IsolatedCellKiller)

@@ -9,7 +9,7 @@ function f = viewHeightAnalysis(keys, values)
 		mutantParams(keys{i}) = values{i};
 	end
 
-	f = heightAnalysis(simParams,mutantParams,4000,0.001,100,100,1);
+	f = heightAnalysis(simParams,mutantParams,8000,0.001,100,100,1);
 
 	f.heightOverTime();
 

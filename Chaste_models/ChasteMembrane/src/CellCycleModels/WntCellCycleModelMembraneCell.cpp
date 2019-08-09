@@ -1,5 +1,3 @@
-
-
 #include "WntCellCycleModelMembraneCell.hpp"
 #include "AnoikisCellTagged.hpp"
 #include "Debug.hpp"

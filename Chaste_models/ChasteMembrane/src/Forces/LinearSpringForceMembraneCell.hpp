@@ -32,146 +32,146 @@
 template<unsigned  ELEMENT_DIM, unsigned SPACE_DIM=ELEMENT_DIM>
 class LinearSpringForceMembraneCell : public AbstractTwoBodyInteractionForce<ELEMENT_DIM, SPACE_DIM>
 {
-    friend class TestForces;
+	friend class TestForces;
 
 private:
 
-    /** Needed for serialization. */
-    friend class boost::serialization::access;
-    /**
-     * Archive the object and its member variables.
-     *
-     * @param archive the archive
-     * @param version the current version of this class
-     */
-    template<class Archive>
-    void serialize(Archive & archive, const unsigned int version)
-    {
-        archive & boost::serialization::base_object<AbstractTwoBodyInteractionForce<ELEMENT_DIM, SPACE_DIM> >(*this);
-        archive & mEpithelialSpringStiffness; // Epithelial covers stem and transit
-        archive & mMembraneSpringStiffness;
-        archive & mStromalSpringStiffness; // Stromal is the differentiated "filler" cells
-        archive & mEpithelialMembraneSpringStiffness;
-        archive & mMembraneStromalSpringStiffness;
-        archive & mStromalEpithelialSpringStiffness;
-        archive & mMeinekeDivisionRestingSpringLength;
-        archive & mMeinekeSpringGrowthDuration;
-    }
+	/** Needed for serialization. */
+	friend class boost::serialization::access;
+	/**
+	 * Archive the object and its member variables.
+	 *
+	 * @param archive the archive
+	 * @param version the current version of this class
+	 */
+	template<class Archive>
+	void serialize(Archive & archive, const unsigned int version)
+	{
+		archive & boost::serialization::base_object<AbstractTwoBodyInteractionForce<ELEMENT_DIM, SPACE_DIM> >(*this);
+		archive & mEpithelialSpringStiffness; // Epithelial covers stem and transit
+		archive & mMembraneSpringStiffness;
+		archive & mStromalSpringStiffness; // Stromal is the differentiated "filler" cells
+		archive & mEpithelialMembraneSpringStiffness;
+		archive & mMembraneStromalSpringStiffness;
+		archive & mStromalEpithelialSpringStiffness;
+		archive & mMeinekeDivisionRestingSpringLength;
+		archive & mMeinekeSpringGrowthDuration;
+	}
 
 protected:
 
 
-    double mEpithelialSpringStiffness; // Epithelial covers stem and transit
-    double mMembraneSpringStiffness;
-    double mStromalSpringStiffness; // Stromal is the differentiated "filler" cells
-    double mEpithelialMembraneSpringStiffness;
-    double mMembraneStromalSpringStiffness;
-    double mStromalEpithelialSpringStiffness;
+	double mEpithelialSpringStiffness; // Epithelial covers stem and transit
+	double mMembraneSpringStiffness;
+	double mStromalSpringStiffness; // Stromal is the differentiated "filler" cells
+	double mEpithelialMembraneSpringStiffness;
+	double mMembraneStromalSpringStiffness;
+	double mStromalEpithelialSpringStiffness;
 
-    double mEpithelialRestLength; // Epithelial covers stem and transit
-    double mMembraneRestLength;
-    double mStromalRestLength; // Stromal is the differentiated "filler" cells
-    double mEpithelialMembraneRestLength;
-    double mMembraneStromalRestLength;
-    double mStromalEpithelialRestLength;
+	double mEpithelialRestLength; // Epithelial covers stem and transit
+	double mMembraneRestLength;
+	double mStromalRestLength; // Stromal is the differentiated "filler" cells
+	double mEpithelialMembraneRestLength;
+	double mMembraneStromalRestLength;
+	double mStromalEpithelialRestLength;
 
-    double mEpithelialCutOffLength; // Epithelial covers stem and transit
-    double mMembraneCutOffLength;
-    double mStromalCutOffLength; // Stromal is the differentiated "filler" cells
-    double mEpithelialMembraneCutOffLength;
-    double mMembraneStromalCutOffLength;
-    double mStromalEpithelialCutOffLength;
+	double mEpithelialCutOffLength; // Epithelial covers stem and transit
+	double mMembraneCutOffLength;
+	double mStromalCutOffLength; // Stromal is the differentiated "filler" cells
+	double mEpithelialMembraneCutOffLength;
+	double mMembraneStromalCutOffLength;
+	double mStromalEpithelialCutOffLength;
 
 
-    /**
-     * Initial resting spring length after cell division.
-     * Has units of cell size at equilibrium rest length
-     *
-     * The value of this parameter should be larger than mDivisionSeparation,
-     * because of pressure from neighbouring springs.
-     */
-    double mMeinekeDivisionRestingSpringLength;
+	/**
+	 * Initial resting spring length after cell division.
+	 * Has units of cell size at equilibrium rest length
+	 *
+	 * The value of this parameter should be larger than mDivisionSeparation,
+	 * because of pressure from neighbouring springs.
+	 */
+	double mMeinekeDivisionRestingSpringLength;
 
-    /**
-     * The time it takes for the springs rest length to increase from
-     * mMeinekeDivisionRestingSpringLength to its natural length.
-     *
-     * The value of this parameter is usually the same as the M Phase of the cell cycle and defaults to 1.
-     */
-    double mMeinekeSpringGrowthDuration;
+	/**
+	 * The time it takes for the springs rest length to increase from
+	 * mMeinekeDivisionRestingSpringLength to its natural length.
+	 *
+	 * The value of this parameter is usually the same as the M Phase of the cell cycle and defaults to 1.
+	 */
+	double mMeinekeSpringGrowthDuration;
 
 public:
 
-    /**
-     * Constructor.
-     */
-    LinearSpringForceMembraneCell();
+	/**
+	 * Constructor.
+	 */
+	LinearSpringForceMembraneCell();
 
-    /**
-     * Destructor.
-     */
-    virtual ~LinearSpringForceMembraneCell();
+	/**
+	 * Destructor.
+	 */
+	virtual ~LinearSpringForceMembraneCell();
 
-    /**
-     * Overridden CalculateForceBetweenNodes() method.
-     *
-     * Calculates the force between two nodes.
-     *
-     * Note that this assumes they are connected and is called by AddForceContribution()
-     *
-     * @param nodeAGlobalIndex index of one neighbouring node
-     * @param nodeBGlobalIndex index of the other neighbouring node
-     * @param rCellPopulation the cell population
-     * @return The force exerted on Node A by Node B.
-     */
-    c_vector<double, SPACE_DIM> CalculateForceBetweenNodes(unsigned nodeAGlobalIndex,
-                                                     unsigned nodeBGlobalIndex,
-                                                     AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation);
+	/**
+	 * Overridden CalculateForceBetweenNodes() method.
+	 *
+	 * Calculates the force between two nodes.
+	 *
+	 * Note that this assumes they are connected and is called by AddForceContribution()
+	 *
+	 * @param nodeAGlobalIndex index of one neighbouring node
+	 * @param nodeBGlobalIndex index of the other neighbouring node
+	 * @param rCellPopulation the cell population
+	 * @return The force exerted on Node A by Node B.
+	 */
+	c_vector<double, SPACE_DIM> CalculateForceBetweenNodes(unsigned nodeAGlobalIndex,
+													 unsigned nodeBGlobalIndex,
+													 AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation);
 
-    void SetEpithelialSpringStiffness(double epithelialSpringStiffness); // Epithelial covers stem and transit
-    void SetMembraneSpringStiffness(double membraneSpringStiffness);
-    void SetStromalSpringStiffness(double stromalSpringStiffness); // Stromal is the differentiated "filler" cells
-    void SetEpithelialMembraneSpringStiffness(double epithelialMembraneSpringStiffness);
-    void SetMembraneStromalSpringStiffness(double membraneStromalSpringStiffness);
-    void SetStromalEpithelialSpringStiffness(double stromalEpithelialSpringStiffness);
+	void SetEpithelialSpringStiffness(double epithelialSpringStiffness); // Epithelial covers stem and transit
+	void SetMembraneSpringStiffness(double membraneSpringStiffness);
+	void SetStromalSpringStiffness(double stromalSpringStiffness); // Stromal is the differentiated "filler" cells
+	void SetEpithelialMembraneSpringStiffness(double epithelialMembraneSpringStiffness);
+	void SetMembraneStromalSpringStiffness(double membraneStromalSpringStiffness);
+	void SetStromalEpithelialSpringStiffness(double stromalEpithelialSpringStiffness);
 
-    void SetEpithelialRestLength(double epithelialRestLength); // Epithelial covers stem and transit
-    void SetMembraneRestLength(double membraneRestLength);
-    void SetStromalRestLength(double stromalRestLength); // Stromal is the differentiated "filler" cells
-    void SetEpithelialMembraneRestLength(double epithelialMembraneRestLength);
-    void SetMembraneStromalRestLength(double membraneStromalRestLength);
-    void SetStromalEpithelialRestLength(double stromalEpithelialRestLength);
+	void SetEpithelialRestLength(double epithelialRestLength); // Epithelial covers stem and transit
+	void SetMembraneRestLength(double membraneRestLength);
+	void SetStromalRestLength(double stromalRestLength); // Stromal is the differentiated "filler" cells
+	void SetEpithelialMembraneRestLength(double epithelialMembraneRestLength);
+	void SetMembraneStromalRestLength(double membraneStromalRestLength);
+	void SetStromalEpithelialRestLength(double stromalEpithelialRestLength);
 
-    void SetEpithelialCutOffLength(double epithelialCutOffLength); // Epithelial covers stem and transit
-    void SetMembraneCutOffLength(double membraneCutOffLength);
-    void SetStromalCutOffLength(double stromalCutOffLength); // Stromal is the differentiated "filler" cells
-    void SetEpithelialMembraneCutOffLength(double epithelialMembraneCutOffLength);
-    void SetMembraneStromalCutOffLength(double membraneStromalCutOffLength);
-    void SetStromalEpithelialCutOffLength(double stromalEpithelialCutOffLength);
+	void SetEpithelialCutOffLength(double epithelialCutOffLength); // Epithelial covers stem and transit
+	void SetMembraneCutOffLength(double membraneCutOffLength);
+	void SetStromalCutOffLength(double stromalCutOffLength); // Stromal is the differentiated "filler" cells
+	void SetEpithelialMembraneCutOffLength(double epithelialMembraneCutOffLength);
+	void SetMembraneStromalCutOffLength(double membraneStromalCutOffLength);
+	void SetStromalEpithelialCutOffLength(double stromalEpithelialCutOffLength);
 
-    /**
-     * Set mMeinekeDivisionRestingSpringLength.
-     *
-     * @param divisionRestingSpringLength the new value of mMeinekeDivisionRestingSpringLength
-     */
-    void SetMeinekeDivisionRestingSpringLength(double divisionRestingSpringLength);
+	/**
+	 * Set mMeinekeDivisionRestingSpringLength.
+	 *
+	 * @param divisionRestingSpringLength the new value of mMeinekeDivisionRestingSpringLength
+	 */
+	void SetMeinekeDivisionRestingSpringLength(double divisionRestingSpringLength);
 
-    /**
-     * Set mMeinekeSpringGrowthDuration.
-     *
-     * @param springGrowthDuration the new value of mMeinekeSpringGrowthDuration
-     */
-    void SetMeinekeSpringGrowthDuration(double springGrowthDuration);
+	/**
+	 * Set mMeinekeSpringGrowthDuration.
+	 *
+	 * @param springGrowthDuration the new value of mMeinekeSpringGrowthDuration
+	 */
+	void SetMeinekeSpringGrowthDuration(double springGrowthDuration);
 
-    /**
-     * Overridden OutputForceParameters() method.
-     *
-     * @param rParamsFile the file stream to which the parameters are output
-     */
-    virtual void OutputForceParameters(out_stream& rParamsFile);
+	/**
+	 * Overridden OutputForceParameters() method.
+	 *
+	 * @param rParamsFile the file stream to which the parameters are output
+	 */
+	virtual void OutputForceParameters(out_stream& rParamsFile);
 };
 
 #include "SerializationExportWrapper.hpp"
-EXPORT_TEMPLATE_CLASS_SAME_DIMS(LinearSpringForceMembraneCell)
+EXPORT_TEMPLATE_CLASS_ALL_DIMS(LinearSpringForceMembraneCell)
 
 #endif /*LINEARSPRINGFORCEMEMBRANECELL_HPP_*/

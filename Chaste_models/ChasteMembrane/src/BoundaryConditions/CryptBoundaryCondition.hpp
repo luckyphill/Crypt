@@ -3,6 +3,7 @@
 
 #include <cxxtest/TestSuite.h>
 #include "CheckpointArchiveTypes.hpp"
+#include <boost/serialization/base_object.hpp>
 
 #include "AbstractCellPopulationBoundaryCondition.hpp"
 #include "BoundaryCellProperty.hpp"
@@ -78,5 +79,9 @@ public:
         AbstractCellPopulationBoundaryCondition<2>::OutputCellPopulationBoundaryConditionParameters(rParamsFile);
     }
 };
+
+#include "SerializationExportWrapper.hpp"
+// Declare identifier for the serializer
+CHASTE_CLASS_EXPORT(CryptBoundaryCondition)
 
 #endif

@@ -65,5 +65,5 @@ void PushForceModifier::ApplyForce(AbstractCellPopulation<2>& rCellPopulation)
 	// PRINT_2_VARIABLES(temp_force[0], temp_force[1]);
 }
 
-// #include "SerializationExportWrapperForCpp.hpp"
-// EXPORT_TEMPLATE_CLASS_SAME_DIMS(PushForceModifier)
+#include "SerializationExportWrapperForCpp.hpp"
+CHASTE_CLASS_EXPORT(PushForceModifier)

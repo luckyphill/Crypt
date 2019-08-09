@@ -392,3 +392,8 @@ void SimplifiedPhaseBasedCellCycleModel::OutputCellCycleModelParameters(out_stre
     // Need to output phase parameters etc.
     AbstractCellCycleModel::OutputCellCycleModelParameters(rParamsFile);
 }
+
+
+// Serialization for Boost >= 1.36
+#include "SerializationExportWrapperForCpp.hpp"
+CHASTE_CLASS_EXPORT(SimplifiedPhaseBasedCellCycleModel)

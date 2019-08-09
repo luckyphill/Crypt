@@ -6,6 +6,7 @@
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/base_object.hpp>
 
 #include "AbstractCellKiller.hpp"
 #include "DifferentiatedCellProliferativeType.hpp"
@@ -19,44 +20,44 @@ class TopAndBottomSloughing : public AbstractCellKiller<2>
 {
 private:
 
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & archive, const unsigned int version)
-    {
-        archive & boost::serialization::base_object<AbstractCellKiller<2> >(*this);
-    }
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive & archive, const unsigned int version)
+	{
+		archive & boost::serialization::base_object<AbstractCellKiller<2> >(*this);
+	}
 
 public:
 
-    /**
-     * Default constructor.
-     *
-     * @param pCellPopulation pointer to a tissue
-     * @param sloughOrifice whether to slough compressed cells at crypt orifice
-     */
+	/**
+	 * Default constructor.
+	 *
+	 * @param pCellPopulation pointer to a tissue
+	 * @param sloughOrifice whether to slough compressed cells at crypt orifice
+	 */
 	TopAndBottomSloughing(AbstractCellPopulation<2>* pCellPopulation);
 
 	// Destructor
 	~TopAndBottomSloughing();
 
-    double mCryptTop;
+	double mCryptTop;
 
-    /**
-     *  Loops over and kills cells by anoikis or at the orifice if instructed.
-     */
-    void CheckAndLabelCellsForApoptosisOrDeath();
+	/**
+	 *  Loops over and kills cells by anoikis or at the orifice if instructed.
+	 */
+	void CheckAndLabelCellsForApoptosisOrDeath();
 
-    void SetCryptTop(double cryptTop);
+	void SetCryptTop(double cryptTop);
 
-    /**
-     * Outputs cell killer parameters to file
-     *
-     * As this method is pure virtual, it must be overridden
-     * in subclasses.
-     *
-     * @param rParamsFile the file stream to which the parameters are output
-     */
-    void OutputCellKillerParameters(out_stream& rParamsFile);
+	/**
+	 * Outputs cell killer parameters to file
+	 *
+	 * As this method is pure virtual, it must be overridden
+	 * in subclasses.
+	 *
+	 * @param rParamsFile the file stream to which the parameters are output
+	 */
+	void OutputCellKillerParameters(out_stream& rParamsFile);
 
 };
 
@@ -65,27 +66,27 @@ CHASTE_CLASS_EXPORT(TopAndBottomSloughing)
 
 namespace boost
 {
-    namespace serialization
-    {
-        template<class Archive>
-        inline void save_construct_data(
-            Archive & ar, const TopAndBottomSloughing * t, const unsigned int file_version)
-        {
-            const AbstractCellPopulation<2>* const p_cell_population = t->GetCellPopulation();
-            ar << p_cell_population;
-        }
+	namespace serialization
+	{
+		template<class Archive>
+		inline void save_construct_data(
+			Archive & ar, const TopAndBottomSloughing * t, const unsigned int file_version)
+		{
+			const AbstractCellPopulation<2>* const p_cell_population = t->GetCellPopulation();
+			ar << p_cell_population;
+		}
 
-        template<class Archive>
-        inline void load_construct_data(
-            Archive & ar, TopAndBottomSloughing * t, const unsigned int file_version)
-        {
-            AbstractCellPopulation<2>* p_cell_population;
-            ar >> p_cell_population;
+		template<class Archive>
+		inline void load_construct_data(
+			Archive & ar, TopAndBottomSloughing * t, const unsigned int file_version)
+		{
+			AbstractCellPopulation<2>* p_cell_population;
+			ar >> p_cell_population;
 
-            // Invoke inplace constructor to initialise instance
-            ::new(t)TopAndBottomSloughing(p_cell_population);
-        }
-    }
+			// Invoke inplace constructor to initialise instance
+			::new(t)TopAndBottomSloughing(p_cell_population);
+		}
+	}
 }
 
 #endif /* TopAndBottomSLOUGHING_HPP_ */

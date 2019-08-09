@@ -96,5 +96,5 @@ void DividingPopUpBoundaryCondition::OutputCellPopulationBoundaryConditionParame
 
 
 // // Serialization for Boost >= 1.36
-// #include "SerializationExportWrapperForCpp.hpp"
-// EXPORT_TEMPLATE_CLASS_ALL_DIMS(DividingPopUpBoundaryCondition)
+#include "SerializationExportWrapperForCpp.hpp"
+CHASTE_CLASS_EXPORT(DividingPopUpBoundaryCondition)

@@ -175,3 +175,6 @@ void DividingRotationForce::SetMembraneAxis(c_vector<double, 2> membraneAxis)
     // need to normalise so it is a unit vector
 
 }
+
+#include "SerializationExportWrapperForCpp.hpp"
+CHASTE_CLASS_EXPORT(DividingRotationForce)

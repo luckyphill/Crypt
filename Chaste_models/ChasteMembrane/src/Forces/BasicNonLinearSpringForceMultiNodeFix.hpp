@@ -18,118 +18,119 @@ cell from having fore applied twice
 
 #include "ChasteSerialization.hpp"
 #include <boost/serialization/base_object.hpp>
+#include "Debug.hpp"
 
 
 template<unsigned  ELEMENT_DIM, unsigned SPACE_DIM=ELEMENT_DIM>
 class BasicNonLinearSpringForceMultiNodeFix : public AbstractForce<ELEMENT_DIM, SPACE_DIM>
 {
-    friend class TestForces_CM;
+	friend class TestForces_CM;
 
 private:
 
-    /** Needed for serialization. */
-    friend class boost::serialization::access;
-    /**
-     * Archive the object and its member variables.
-     *
-     * @param archive the archive
-     * @param version the current version of this class
-     */
-    template<class Archive>
-    void serialize(Archive & archive, const unsigned int version)
-    {
-        archive & boost::serialization::base_object<AbstractForce<ELEMENT_DIM, SPACE_DIM> >(*this);
-        archive & mSpringStiffness; // Epithelial covers stem and transit
-        archive & mRestLength;
-        archive & mCutOffLength;
-        archive & mAttractionParameter;
+	/** Needed for serialization. */
+	friend class boost::serialization::access;
+	/**
+	 * Archive the object and its member variables.
+	 *
+	 * @param archive the archive
+	 * @param version the current version of this class
+	 */
+	template<class Archive>
+	void serialize(Archive & archive, const unsigned int version)
+	{
+		archive & boost::serialization::base_object<AbstractForce<ELEMENT_DIM, SPACE_DIM> >(*this);
+		archive & mSpringStiffness; // Epithelial covers stem and transit
+		archive & mRestLength;
+		archive & mCutOffLength;
+		archive & mAttractionParameter;
 
-        archive & mMeinekeSpringStiffness;
-        archive & mMeinekeDivisionRestingSpringLength;
-        archive & mMeinekeSpringGrowthDuration;
+		archive & mMeinekeSpringStiffness;
+		archive & mMeinekeDivisionRestingSpringLength;
+		archive & mMeinekeSpringGrowthDuration;
 
-        archive & mModifierFraction;
-    }
+		archive & mModifierFraction;
+	}
 
 protected:
 
 
-    double mSpringStiffness;
+	double mSpringStiffness;
 
-    double mRestLength;
+	double mRestLength;
 
-    double mCutOffLength;
+	double mCutOffLength;
 
-    double mAttractionParameter;
+	double mAttractionParameter;
 
-    // Spring growth parameters for newly divided cells
-    double mMeinekeSpringStiffness;
+	// Spring growth parameters for newly divided cells
+	double mMeinekeSpringStiffness;
 
-    double mMeinekeDivisionRestingSpringLength;
+	double mMeinekeDivisionRestingSpringLength;
 
-    double mMeinekeSpringGrowthDuration;
+	double mMeinekeSpringGrowthDuration;
 
-    double mModifierFraction = 1.0;
+	double mModifierFraction = 1.0;
 
 public:
 
-    /**
-     * Constructor.
-     */
-    BasicNonLinearSpringForceMultiNodeFix();
+	/**
+	 * Constructor.
+	 */
+	BasicNonLinearSpringForceMultiNodeFix();
 
-    /**
-     * Destructor.
-     */
-    virtual ~BasicNonLinearSpringForceMultiNodeFix();
+	/**
+	 * Destructor.
+	 */
+	virtual ~BasicNonLinearSpringForceMultiNodeFix();
 
-    /**
-     * Overridden CalculateForceBetweenNodes() method.
-     *
-     * Calculates the force between two nodes.
-     *
-     * Note that this assumes they are connected and is called by AddForceContribution()
-     *
-     * @param nodeAGlobalIndex index of one neighbouring node
-     * @param nodeBGlobalIndex index of the other neighbouring node
-     * @param rCellPopulation the cell population
-     * @return The force exerted on Node A by Node B.
-     */
-    c_vector<double, SPACE_DIM> CalculateForceBetweenNodes(unsigned nodeAGlobalIndex,
-                                                     unsigned nodeBGlobalIndex,
-                                                     AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation);
+	/**
+	 * Overridden CalculateForceBetweenNodes() method.
+	 *
+	 * Calculates the force between two nodes.
+	 *
+	 * Note that this assumes they are connected and is called by AddForceContribution()
+	 *
+	 * @param nodeAGlobalIndex index of one neighbouring node
+	 * @param nodeBGlobalIndex index of the other neighbouring node
+	 * @param rCellPopulation the cell population
+	 * @return The force exerted on Node A by Node B.
+	 */
+	c_vector<double, SPACE_DIM> CalculateForceBetweenNodes(unsigned nodeAGlobalIndex,
+													 unsigned nodeBGlobalIndex,
+													 AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation);
 
-    void AddForceContribution(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation);
+	void AddForceContribution(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation);
 
 
-    std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > FindShortestInteraction(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation, Node<SPACE_DIM>* pnodeA, Node<SPACE_DIM>* pnodeB);
+	std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* > FindShortestInteraction(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation, Node<SPACE_DIM>* pnodeA, Node<SPACE_DIM>* pnodeB);
 
-    std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> FindOneInteractionBetweenCellPairs(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation, std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> r_node_pairs);
+	std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> FindOneInteractionBetweenCellPairs(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation, std::vector<std::pair<Node<SPACE_DIM>*, Node<SPACE_DIM>* >> r_node_pairs);
 
-    Node<SPACE_DIM>* FindTwinNode(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation, Node<SPACE_DIM>* pnodeA);
+	Node<SPACE_DIM>* FindTwinNode(AbstractCellPopulation<ELEMENT_DIM,SPACE_DIM>& rCellPopulation, Node<SPACE_DIM>* pnodeA);
 
-    void SetSpringStiffness(double SpringStiffness);
+	void SetSpringStiffness(double SpringStiffness);
 
-    void SetRestLength(double RestLength);
+	void SetRestLength(double RestLength);
 
-    void SetCutOffLength(double CutOffLength);
+	void SetCutOffLength(double CutOffLength);
 
-    void SetAttractionParameter(double attractionParameter);
+	void SetAttractionParameter(double attractionParameter);
 
-    // Spring growth for newly divided cells
-    void SetMeinekeSpringStiffness(double springStiffness);
+	// Spring growth for newly divided cells
+	void SetMeinekeSpringStiffness(double springStiffness);
 
-    void SetMeinekeDivisionRestingSpringLength(double divisionRestingSpringLength);
+	void SetMeinekeDivisionRestingSpringLength(double divisionRestingSpringLength);
 
-    void SetMeinekeSpringGrowthDuration(double springGrowthDuration);
+	void SetMeinekeSpringGrowthDuration(double springGrowthDuration);
 
-    void SetModifierFraction(double modifierFraction);
-    
-    virtual void OutputForceParameters(out_stream& rParamsFile);
+	void SetModifierFraction(double modifierFraction);
+	
+	virtual void OutputForceParameters(out_stream& rParamsFile);
 };
 
 
 #include "SerializationExportWrapper.hpp"
-EXPORT_TEMPLATE_CLASS_SAME_DIMS(BasicNonLinearSpringForceMultiNodeFix)
+EXPORT_TEMPLATE_CLASS_ALL_DIMS(BasicNonLinearSpringForceMultiNodeFix)
 
 #endif /*BasicNonLinearSpringForceMultiNodeFix_HPP_*/

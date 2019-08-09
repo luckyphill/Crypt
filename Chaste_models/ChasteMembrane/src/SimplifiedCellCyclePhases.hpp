@@ -11,9 +11,9 @@
  */
 typedef enum SimplifiedCellCyclePhase_
 {
-    G0_PHASE,
-    P_PHASE,
-    W_PHASE
+	G0_PHASE,
+	P_PHASE,
+	W_PHASE
 } SimplifiedCellCyclePhase;
 
 static const unsigned NUM_SIMPLIFIED_CELL_CYCLE_PHASES=3;

@@ -1,5 +1,3 @@
-
-
 #include "WntUniformCellCycleModel.hpp"
 #include "AnoikisCellTagged.hpp"
 #include "Debug.hpp"

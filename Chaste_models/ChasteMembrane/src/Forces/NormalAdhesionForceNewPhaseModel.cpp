@@ -170,4 +170,4 @@ template class NormalAdhesionForceNewPhaseModel<3,3>;
 
 // Serialization for Boost >= 1.36
 #include "SerializationExportWrapperForCpp.hpp"
-EXPORT_TEMPLATE_CLASS_SAME_DIMS(NormalAdhesionForceNewPhaseModel)
+EXPORT_TEMPLATE_CLASS_ALL_DIMS(NormalAdhesionForceNewPhaseModel)

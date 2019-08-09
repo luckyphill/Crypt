@@ -114,5 +114,5 @@ void SloughingCellKillerNewPhaseModel::OutputCellKillerParameters(out_stream& rP
 
 
 
-// #include "SerializationExportWrapperForCpp.hpp"
-// EXPORT_TEMPLATE_CLASS_SAME_DIMS(SloughingCellKillerNewPhaseModel)
+#include "SerializationExportWrapperForCpp.hpp"
+CHASTE_CLASS_EXPORT(SloughingCellKillerNewPhaseModel)

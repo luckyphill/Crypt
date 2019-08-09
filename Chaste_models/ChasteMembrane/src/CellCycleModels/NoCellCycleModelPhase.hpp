@@ -5,6 +5,8 @@
 #include "NoCellCycleModel.hpp"
 #include "SimplifiedCellCyclePhases.hpp"
 
+#include <boost/serialization/base_object.hpp>
+
 /**
  * A 'dummy' cell-cycle model class that can be used in simulations featuring no
  * cell proliferation.
@@ -27,7 +29,7 @@ private:
     template<class Archive>
     void serialize(Archive & archive, const unsigned int version)
     {
-        archive & boost::serialization::base_object<AbstractCellCycleModel>(*this);
+        archive & boost::serialization::base_object<NoCellCycleModel>(*this);
     }
 
 public:

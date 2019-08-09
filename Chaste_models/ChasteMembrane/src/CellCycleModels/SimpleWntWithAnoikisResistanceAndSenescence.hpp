@@ -2,6 +2,7 @@
 #define SimpleWntWithAnoikisResistanceAndSenescence_HPP_
 
 #include "ContactInhibitionCellCycleModel.hpp"
+#include <boost/serialization/base_object.hpp>
 
 /**
  * Simple  wnt and stress-based cell-cycle model.
