@@ -15,73 +15,57 @@ class CryptBoundaryCondition : public AbstractCellPopulationBoundaryCondition<2>
 {
 private:
 
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & archive, const unsigned int version)
-    {
-        archive & boost::serialization::base_object<AbstractCellPopulationBoundaryCondition<2> >(*this);
-    }
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive & archive, const unsigned int version)
+	{
+		archive & boost::serialization::base_object<AbstractCellPopulationBoundaryCondition<2> >(*this);
+	}
 
 public:
-    CryptBoundaryCondition(AbstractCellPopulation<2>* pCellPopulation)
-        : AbstractCellPopulationBoundaryCondition<2>(pCellPopulation)
-    {
-    }
+	CryptBoundaryCondition(AbstractCellPopulation<2>* pCellPopulation);
 
-    void ImposeBoundaryCondition(const std::map<Node<2>*, c_vector<double, 2> >& rOldLocations)
-    {
-        for (AbstractCellPopulation<2>::Iterator cell_iter = this->mpCellPopulation->Begin();
-             cell_iter != this->mpCellPopulation->End();
-             ++cell_iter)
-        {
-            unsigned node_index = this->mpCellPopulation->GetLocationIndexUsingCell(*cell_iter);
-            Node<2>* p_node = this->mpCellPopulation->GetNode(node_index);
-            //double y_coordinate = p_node->rGetLocation()[1];
-            //double x_coordinate = p_node->rGetLocation()[0];
+	void ImposeBoundaryCondition(const std::map<Node<2>*, c_vector<double, 2> >& rOldLocations);
 
-            if (cell_iter->HasCellProperty<BoundaryCellProperty>())
-            {
-                // PRINT_VARIABLE(rOldLocations[p_node])
-                typename std::map<Node<2>*, c_vector<double, 2> >::const_iterator it = rOldLocations.find(p_node);
-                c_vector<double, 2> previous_location = it->second;
-                p_node->rGetModifiableLocation()[0] = previous_location[0];
-                p_node->rGetModifiableLocation()[1] = previous_location[1]; //5.19; //rOldLocations[p_node][1];
-            }
-        }
-    }
+	bool VerifyBoundaryCondition();
 
-    bool VerifyBoundaryCondition()
-    {
-        bool condition_satisfied = true;
+	void OutputCellPopulationBoundaryConditionParameters(out_stream& rParamsFile);
 
-        // for (AbstractCellPopulation<2>::Iterator cell_iter = this->mpCellPopulation->Begin();
-        //      cell_iter != this->mpCellPopulation->End();
-        //      ++cell_iter)
-        // {
-        //     unsigned node_index = this->mpCellPopulation->GetLocationIndexUsingCell(*cell_iter);
-        //     Node<2>* p_node = this->mpCellPopulation->GetNode(node_index);
-
-        //     double y_coordinate = p_node->rGetLocation()[1];
-        //     double x_coordinate = p_node->rGetLocation()[0];
-        //     typename std::map<Node<2>*, c_vector<double, 2> >::const_iterator it = rOldLocations.find(p_node);
-        //     c_vector<double, 2> previous_location = it->second;
-        //     if (cell_iter->HasCellProperty<BoundaryCellProperty>() && y_coordinate != previous_location[1] || x_coordinate != previous_location[0])
-        //     {
-        //         condition_satisfied = false;
-        //         break;
-        //     }
-        // }
-        return condition_satisfied;
-    }
-
-    void OutputCellPopulationBoundaryConditionParameters(out_stream& rParamsFile)
-    {
-        AbstractCellPopulationBoundaryCondition<2>::OutputCellPopulationBoundaryConditionParameters(rParamsFile);
-    }
 };
 
 #include "SerializationExportWrapper.hpp"
 // Declare identifier for the serializer
 CHASTE_CLASS_EXPORT(CryptBoundaryCondition)
+
+namespace boost
+{
+	namespace serialization
+	{
+		/**
+		 * Serialize information required to construct a PlaneBoundaryCondition.
+		 */
+		template<class Archive>
+		inline void save_construct_data(Archive & ar, const CryptBoundaryCondition* t, const unsigned int file_version)
+		{
+			// Save data required to construct instance
+			const AbstractCellPopulation<2>* const p_cell_population = t->GetCellPopulation();
+			ar << p_cell_population;
+		}
+
+		/**
+		 * De-serialize constructor parameters and initialize a PlaneBoundaryCondition.
+		 */
+		template<class Archive>
+		inline void load_construct_data(Archive & ar, CryptBoundaryCondition* t, const unsigned int file_version)
+		{
+			// Retrieve data from archive required to construct new instance
+			AbstractCellPopulation<2>* p_cell_population;
+			ar >> p_cell_population;
+
+			// Invoke inplace constructor to initialise instance
+			::new(t)CryptBoundaryCondition(p_cell_population);
+		}
+	}
+} // namespace ...
 
 #endif
