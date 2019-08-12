@@ -4,6 +4,7 @@
 #include "ChasteSerialization.hpp"
 #include <boost/serialization/base_object.hpp>
 #include "AbstractCellWriter.hpp"
+#include "Debug.hpp"
 
 /**
  * A class written using the visitor pattern for writing the applied force on each cell

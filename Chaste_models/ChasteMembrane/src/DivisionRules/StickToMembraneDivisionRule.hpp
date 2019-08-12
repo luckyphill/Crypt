@@ -12,6 +12,7 @@ A division rule to keep the cells both on the membrane
 #include <boost/serialization/vector.hpp>
 #include "AbstractCentreBasedDivisionRule.hpp"
 #include "AbstractCentreBasedCellPopulation.hpp"
+#include "Debug.hpp"
 
 // Forward declaration prevents circular include chain
 // template<unsigned ELEMENT_DIM, unsigned SPACE_DIM> class AbstractCentreBasedCellPopulation;
@@ -96,8 +97,7 @@ namespace boost
 		 * Serialize information required to construct a StickToMembraneDivisionRule.
 		 */
 		template<class Archive, unsigned SPACE_DIM>
-		inline void save_construct_data(
-			Archive & ar, const StickToMembraneDivisionRule<SPACE_DIM>* t, const unsigned int file_version)
+		inline void save_construct_data(Archive & ar, const StickToMembraneDivisionRule<SPACE_DIM>* t, const unsigned int file_version)
 		{
 			// Archive c_vector one component at a time
 			c_vector<double, SPACE_DIM> vector = t->rGetDivisionVector();
@@ -111,8 +111,7 @@ namespace boost
 		 * De-serialize constructor parameters and initialize a StickToMembraneDivisionRule.
 		 */
 		template<class Archive, unsigned SPACE_DIM>
-		inline void load_construct_data(
-			Archive & ar, StickToMembraneDivisionRule<SPACE_DIM>* t, const unsigned int file_version)
+		inline void load_construct_data(Archive & ar, StickToMembraneDivisionRule<SPACE_DIM>* t, const unsigned int file_version)
 		{
 			// Archive c_vector one component at a time
 			c_vector<double, SPACE_DIM> vector;

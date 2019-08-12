@@ -6,6 +6,7 @@
 #include "SimplifiedCellCyclePhases.hpp"
 
 #include <boost/serialization/base_object.hpp>
+#include "Debug.hpp"
 
 /**
  * A 'dummy' cell-cycle model class that can be used in simulations featuring no

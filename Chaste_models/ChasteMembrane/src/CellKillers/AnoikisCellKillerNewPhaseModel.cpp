@@ -18,10 +18,10 @@
 #include "Debug.hpp"
 
 AnoikisCellKillerNewPhaseModel::AnoikisCellKillerNewPhaseModel(AbstractCellPopulation<2>* pCellPopulation)
-    : AbstractCellKiller<2>(pCellPopulation),
-    mSlowDeath(false),
-    mPoppedUpLifeExpectancy(0.0),
-    mResistantPoppedUpLifeExpectancy(0.0)
+	: AbstractCellKiller<2>(pCellPopulation),
+	mSlowDeath(false),
+	mPoppedUpLifeExpectancy(0.0),
+	mResistantPoppedUpLifeExpectancy(0.0)
 {
 
 }
@@ -72,26 +72,26 @@ void AnoikisCellKillerNewPhaseModel::PopulateAnoikisList()
 	// Loop through, check if popped up and if so, store the cell pointer and the time
 
 	if (dynamic_cast<NodeBasedCellPopulation<2>*>(this->mpCellPopulation))
-    {
-    	NodeBasedCellPopulation<2>* p_tissue = static_cast<NodeBasedCellPopulation<2>*> (this->mpCellPopulation);
+	{
+		NodeBasedCellPopulation<2>* p_tissue = static_cast<NodeBasedCellPopulation<2>*> (this->mpCellPopulation);
 
-    	for (AbstractCellPopulation<2>::Iterator cell_iter = p_tissue->Begin();
-    			cell_iter != p_tissue->End();
-    			++cell_iter)
-    	{
-    		unsigned node_index = p_tissue->GetNodeCorrespondingToCell(*cell_iter)->GetIndex();
-    		CellPtr p_cell = p_tissue->GetCellUsingLocationIndex(node_index);
-    		
-    		if (HasCellPoppedUp(node_index) && !IsPoppedUpCellInVector(p_cell))
-    		{
-    			MAKE_PTR(AnoikisCellTagged,p_tagged);
-    			p_cell->AddCellProperty(p_tagged);
-    			std::pair<CellPtr, double> cell_data;
-    			cell_data = std::make_pair(p_cell, SimulationTime::Instance()->GetTime());
-    			mCellsForDelayedAnoikis.push_back(cell_data);
-    		}
-    	}
-    }
+		for (AbstractCellPopulation<2>::Iterator cell_iter = p_tissue->Begin();
+				cell_iter != p_tissue->End();
+				++cell_iter)
+		{
+			unsigned node_index = p_tissue->GetNodeCorrespondingToCell(*cell_iter)->GetIndex();
+			CellPtr p_cell = p_tissue->GetCellUsingLocationIndex(node_index);
+			
+			if (HasCellPoppedUp(node_index) && !IsPoppedUpCellInVector(p_cell))
+			{
+				MAKE_PTR(AnoikisCellTagged,p_tagged);
+				p_cell->AddCellProperty(p_tagged);
+				std::pair<CellPtr, double> cell_data;
+				cell_data = std::make_pair(p_cell, SimulationTime::Instance()->GetTime());
+				mCellsForDelayedAnoikis.push_back(cell_data);
+			}
+		}
+	}
 
 }
 
@@ -167,7 +167,7 @@ void AnoikisCellKillerNewPhaseModel::CheckAndLabelCellsForApoptosisOrDeath()
 		for(std::vector<CellPtr>::iterator cell_iter = cells_to_remove.begin(); cell_iter != cells_to_remove.end(); ++cell_iter)
 		{
 			unsigned node_index = p_tissue->GetNodeCorrespondingToCell(*cell_iter)->GetIndex();
-    		CellPtr p_cell = p_tissue->GetCellUsingLocationIndex(node_index);
+			CellPtr p_cell = p_tissue->GetCellUsingLocationIndex(node_index);
 			if (mSlowDeath)
 			{
 				if (!p_cell->HasApoptosisBegun())
@@ -213,15 +213,12 @@ void AnoikisCellKillerNewPhaseModel::ResetCellKillCount()
 
 void AnoikisCellKillerNewPhaseModel::OutputCellKillerParameters(out_stream& rParamsFile)
 {
-    *rParamsFile << "\t\t\t<PopUpDistance>" << mPopUpDistance << "</PopUpDistance> \n";
-    *rParamsFile << "\t\t\t<PoppedUpLifeExpectancy>" << mPoppedUpLifeExpectancy << "</PoppedUpLifeExpectancy> \n";
+	*rParamsFile << "\t\t\t<PopUpDistance>" << mPopUpDistance << "</PopUpDistance> \n";
+	*rParamsFile << "\t\t\t<PoppedUpLifeExpectancy>" << mPoppedUpLifeExpectancy << "</PoppedUpLifeExpectancy> \n";
 
-    // Call direct parent class
-    AbstractCellKiller<2>::OutputCellKillerParameters(rParamsFile);
+	// Call direct parent class
+	AbstractCellKiller<2>::OutputCellKillerParameters(rParamsFile);
 }
-
-
-
 
 #include "SerializationExportWrapperForCpp.hpp"
 CHASTE_CLASS_EXPORT(AnoikisCellKillerNewPhaseModel)

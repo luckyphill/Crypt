@@ -14,6 +14,7 @@ what has been analyitically calculated
 
 #include "ChasteSerialization.hpp"
 #include <boost/serialization/base_object.hpp>
+#include "Debug.hpp"
 
 template<unsigned  ELEMENT_DIM, unsigned SPACE_DIM=ELEMENT_DIM>
 class BasicNonLinearSpringForceNewPhaseModel : public BasicNonLinearSpringForce<ELEMENT_DIM, SPACE_DIM>

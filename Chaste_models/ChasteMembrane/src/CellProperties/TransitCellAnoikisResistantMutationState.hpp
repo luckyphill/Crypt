@@ -5,6 +5,7 @@
 
 #include "ChasteSerialization.hpp"
 #include <boost/serialization/base_object.hpp>
+#include "Debug.hpp"
 
 /**
  * Subclass of AbstractCellMutationState defining a 'wild type' mutation state.

@@ -4,6 +4,7 @@
 #include "AbstractCellPopulationCountWriter.hpp"
 #include "ChasteSerialization.hpp"
 #include <boost/serialization/base_object.hpp>
+#include "Debug.hpp"
 
 /**
  * A class written using the visitor pattern for writing the number of cells in each proliferative phase to file.

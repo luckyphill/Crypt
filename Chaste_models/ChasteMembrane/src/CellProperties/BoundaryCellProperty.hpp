@@ -8,6 +8,7 @@
 #include <boost/serialization/base_object.hpp>
 
 #include "AbstractCellProperty.hpp"
+#include "Debug.hpp"
 
 class BoundaryCellProperty : public AbstractCellProperty
 {
@@ -25,19 +26,11 @@ private:
 
 public:
 
-    BoundaryCellProperty(unsigned colour=5)
-        : AbstractCellProperty(),
-          mColour(colour)
-    {
-    }
+    BoundaryCellProperty();
 
-    ~BoundaryCellProperty()
-    {}
+    ~BoundaryCellProperty();
 
-    unsigned GetColour() const
-    {
-        return mColour;
-    }
+    unsigned GetColour() const;
 };
 
 #include "SerializationExportWrapper.hpp"

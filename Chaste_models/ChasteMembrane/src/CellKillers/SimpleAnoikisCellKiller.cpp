@@ -43,6 +43,21 @@ void SimpleAnoikisCellKiller::SetResistantPoppedUpLifeExpectancy(double resistan
 	mResistantPoppedUpLifeExpectancy = resistantPoppedUpLifeExpectancy;
 }
 
+double SimpleAnoikisCellKiller::GetPopUpDistance()
+{
+	return mPopUpDistance;
+}
+
+double SimpleAnoikisCellKiller::GetPoppedUpLifeExpectancy()
+{
+	return mPoppedUpLifeExpectancy;
+}
+
+double SimpleAnoikisCellKiller::GetResistantPoppedUpLifeExpectancy()
+{
+	return mResistantPoppedUpLifeExpectancy;
+}
+
 /** Method to determine if an epithelial cell has lost all contacts with the gel cells below
  * TRUE if cell has popped up
  * FALSE if cell remains in the monolayer

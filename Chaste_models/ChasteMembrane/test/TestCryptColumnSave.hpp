@@ -173,7 +173,7 @@ public:
         	PRINT_VARIABLE(dt)
         }
         
-        double burn_in_time = 100; // The time needed to clear the transient behaviour from the initial set up
+        double burn_in_time = 10; // The time needed to clear the transient behaviour from the initial set up
         if(CommandLineArguments::Instance()->OptionExists("-bt"))
         {	
         	burn_in_time = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-bt");

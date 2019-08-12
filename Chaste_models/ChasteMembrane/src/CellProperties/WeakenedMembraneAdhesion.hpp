@@ -5,6 +5,7 @@
 
 #include "ChasteSerialization.hpp"
 #include <boost/serialization/base_object.hpp>
+#include "Debug.hpp"
 
 /**
  * Specifies that a cell has been tagged for death by anoikis

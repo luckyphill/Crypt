@@ -28,13 +28,20 @@
 #include "MonolayerNodeBasedCellPopulation.hpp"
 #include "NoCellCycleModel.hpp"
 #include "WildTypeCellMutationState.hpp"
-
+// Cell killers
+#include "SimpleSloughingCellKiller.hpp"
+#include "SimpleAnoikisCellKiller.hpp"
+#include "IsolatedCellKiller.hpp"
+#include "AnoikisCellKillerNewPhaseModel.hpp"
+#include "SloughingCellKillerNewPhaseModel.hpp"
+// Boundary Conditions
 #include "CryptBoundaryCondition.hpp"
 #include "DividingPopUpBoundaryCondition.hpp"
 
 class TestArchivingSrc: public AbstractCellBasedTestSuite
 {
 public:
+
 
 	void TestArchivingMonolayerNodeBasedCellPopulation()
 	{
@@ -104,6 +111,7 @@ public:
 
 			(*p_arch) >> p_cell_population;
 
+			TS_ASSERT(p_cell_population != NULL);
 			TS_ASSERT_DELTA(p_cell_population->GetDampingConstantPoppedUp(), 0.5, 1e-9);
 
 			// Tidy up
@@ -154,6 +162,9 @@ public:
 			AbstractCellPopulationBoundaryCondition<2,2>* p_boundary_condition;
 			// Restore from the archive
 			(*p_arch) >> p_boundary_condition;
+
+			TS_ASSERT(p_boundary_condition != NULL);
+			TS_ASSERT(p_boundary_condition->VerifyBoundaryCondition())
 			// Tidy up
 			delete p_boundary_condition;
 
@@ -202,11 +213,134 @@ public:
 			AbstractCellPopulationBoundaryCondition<2,2>* p_boundary_condition;
 			// Restore from the archive
 			(*p_arch) >> p_boundary_condition;
+
+			TS_ASSERT(p_boundary_condition != NULL);
+			TS_ASSERT(p_boundary_condition->VerifyBoundaryCondition())
 			// Tidy up
 			delete p_boundary_condition;
 
 		}
 	}
+
+
+	void TestArchivingSimpleSloughingCellKiller()
+	{
+		// Set up
+		OutputFileHandler handler("archive", false);    // don't erase contents of folder
+		std::string archive_filename = handler.GetOutputDirectoryFullPath() + "SimpleSloughingCellKiller.arch";
+		{
+			// Create an output archive
+			SimpleSloughingCellKiller<2> cell_killer(NULL);
+			cell_killer.SetCryptTop(20);
+
+			std::ofstream ofs(archive_filename.c_str());
+			boost::archive::text_oarchive output_arch(ofs);
+
+			// Serialize via pointer
+			SimpleSloughingCellKiller<2>* const p_cell_killer = &cell_killer;
+
+			output_arch << p_cell_killer;
+	   }
+
+	   {
+			// Create an input archive
+			std::ifstream ifs(archive_filename.c_str(), std::ios::binary);
+			boost::archive::text_iarchive input_arch(ifs);
+
+			SimpleSloughingCellKiller<2>* p_cell_killer;
+
+			// Restore from the archive
+			input_arch >> p_cell_killer;
+
+			TS_ASSERT(p_cell_killer != NULL);
+			TS_ASSERT(p_cell_killer->mCryptTop == 20);
+			TS_ASSERT(p_cell_killer->GetCellKillCount() == 0);
+
+			// Tidy up
+			delete p_cell_killer;
+		}
+	}
+
+	void TestArchivingSimpleAnoikisCellKiller()
+	{
+		// Set up
+		OutputFileHandler handler("archive", false);    // don't erase contents of folder
+		std::string archive_filename = handler.GetOutputDirectoryFullPath() + "SimpleAnoikisCellKiller.arch";
+		{
+			// Create an output archive
+			SimpleAnoikisCellKiller cell_killer(NULL);
+			cell_killer.SetSlowDeath(true);
+			cell_killer.SetPoppedUpLifeExpectancy(11);
+			cell_killer.SetResistantPoppedUpLifeExpectancy(15);
+			cell_killer.SetPopUpDistance(3);
+
+			std::ofstream ofs(archive_filename.c_str());
+			boost::archive::text_oarchive output_arch(ofs);
+
+			// Serialize via pointer
+			SimpleAnoikisCellKiller* const p_cell_killer = &cell_killer;
+
+			output_arch << p_cell_killer;
+	   }
+
+	   {
+			// Create an input archive
+			std::ifstream ifs(archive_filename.c_str(), std::ios::binary);
+			boost::archive::text_iarchive input_arch(ifs);
+
+			SimpleAnoikisCellKiller* p_cell_killer;
+
+			// Restore from the archive
+			input_arch >> p_cell_killer;
+
+			TS_ASSERT(p_cell_killer != NULL);
+			TS_ASSERT(p_cell_killer->GetPoppedUpLifeExpectancy()==11);
+			TS_ASSERT(p_cell_killer->GetResistantPoppedUpLifeExpectancy()==15);
+			TS_ASSERT(p_cell_killer->GetPopUpDistance()==3);
+			TS_ASSERT(p_cell_killer->GetCellKillCount() == 0);
+
+			// Tidy up
+			delete p_cell_killer;
+		}
+	}
+
+	void TestArchivingIsolatedCellKiller()
+	{
+		// Set up
+		OutputFileHandler handler("archive", false);    // don't erase contents of folder
+		std::string archive_filename = handler.GetOutputDirectoryFullPath() + "IsolatedCellKiller.arch";
+		{
+			// Create an output archive
+			IsolatedCellKiller cell_killer(NULL);
+
+			std::ofstream ofs(archive_filename.c_str());
+			boost::archive::text_oarchive output_arch(ofs);
+
+			// Serialize via pointer
+			IsolatedCellKiller* const p_cell_killer = &cell_killer;
+
+			output_arch << p_cell_killer;
+	   }
+
+	   {
+			// Create an input archive
+			std::ifstream ifs(archive_filename.c_str(), std::ios::binary);
+			boost::archive::text_iarchive input_arch(ifs);
+
+			IsolatedCellKiller* p_cell_killer;
+
+			// Restore from the archive
+			input_arch >> p_cell_killer;
+
+			TS_ASSERT(p_cell_killer != NULL);
+			TS_ASSERT(p_cell_killer->GetCellKillCount() == 0);
+
+			// Tidy up
+			delete p_cell_killer;
+		}
+	}
+
+
 };
 
 #endif /*TestArchivingSrc_HPP_*/

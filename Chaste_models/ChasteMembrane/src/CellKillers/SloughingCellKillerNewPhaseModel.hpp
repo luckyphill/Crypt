@@ -10,6 +10,7 @@
 
 #include "AbstractCellKiller.hpp"
 #include "DifferentiatedCellProliferativeType.hpp"
+#include "Debug.hpp"
 
 /*
  * Cell killer that removes any epithelial cell that has detached from the non-epithelial

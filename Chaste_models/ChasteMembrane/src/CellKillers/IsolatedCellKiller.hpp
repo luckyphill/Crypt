@@ -10,6 +10,7 @@
 
 #include "AbstractCellKiller.hpp"
 #include "DifferentiatedCellProliferativeType.hpp"
+#include "Debug.hpp"
 
 /*
  * Cell killer that removes any epithelial cell that has detached from the non-epithelial
@@ -27,7 +28,6 @@ private:
 	{
 		archive & boost::serialization::base_object<AbstractCellKiller<2> >(*this);
 		archive & mCellKillCount;
-		archive & mCryptTop;
 	}
 
 	unsigned mCellKillCount = 0; // Tracks the number of cells killed by anoikis
@@ -39,8 +39,6 @@ public:
 
 	// Destructor
 	~IsolatedCellKiller();
-
-	double mCryptTop;
 
 	/**
 	 *  Loops over and kills cells by anoikis or at the orifice if instructed.

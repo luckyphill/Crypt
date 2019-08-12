@@ -6,6 +6,7 @@
 #include <boost/serialization/base_object.hpp>
 
 #include "AbstractCellBasedSimulationModifier.hpp"
+#include "Debug.hpp"
 
 /**
  * A modifier class which at each simulation time step calculates the volume of each cell
