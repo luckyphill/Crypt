@@ -14,31 +14,26 @@ class WeakenedMembraneAdhesion : public AbstractCellProperty
 {
 private:
 
-    unsigned mColour;
+	unsigned mColour;
 
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & archive, const unsigned int version)
-    {
-        archive & boost::serialization::base_object<AbstractCellProperty>(*this);
-        archive & mColour;
-    }
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive & archive, const unsigned int version)
+	{
+		archive & boost::serialization::base_object<AbstractCellProperty>(*this);
+		archive & mColour;
+	}
 
 public:
 
-    WeakenedMembraneAdhesion(unsigned colour=5)
-        : AbstractCellProperty(),
-          mColour(colour)
-    {
-    }
+	WeakenedMembraneAdhesion();
 
-    ~WeakenedMembraneAdhesion()
-    {}
 
-    unsigned GetColour() const
-    {
-        return mColour;
-    }
+	~WeakenedMembraneAdhesion();
+
+
+	unsigned GetColour() const;
+
 };
 
 #include "SerializationExportWrapper.hpp"

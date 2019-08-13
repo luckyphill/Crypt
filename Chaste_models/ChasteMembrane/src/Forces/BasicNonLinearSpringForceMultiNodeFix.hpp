@@ -52,7 +52,7 @@ private:
 		archive & mModifierFraction;
 	}
 
-protected:
+public:
 
 
 	double mSpringStiffness;
@@ -72,7 +72,7 @@ protected:
 
 	double mModifierFraction = 1.0;
 
-public:
+
 
 	/**
 	 * Constructor.

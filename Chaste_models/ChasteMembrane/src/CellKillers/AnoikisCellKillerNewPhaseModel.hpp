@@ -26,16 +26,6 @@ private:
 
 	std::vector<std::pair<CellPtr, double>> mCellsForDelayedAnoikis;
 
-	bool mSlowDeath;
-
-	double mPoppedUpLifeExpectancy;
-
-	double mResistantPoppedUpLifeExpectancy;
-
-	double mPopUpDistance = 1.5; // The distance above the membrane when a cell is considered to have popped up
-
-	double mCellKillCount = 0; // Tracks the number of cells killed by anoikis
-
 
 	friend class boost::serialization::access;
 	template<class Archive>
@@ -59,12 +49,21 @@ public:
 	 * @param pCellPopulation pointer to a tissue
 	 * @param sloughOrifice whether to slough compressed cells at crypt orifice
 	 */
+
+	bool mSlowDeath;
+
+	double mPoppedUpLifeExpectancy;
+
+	double mResistantPoppedUpLifeExpectancy;
+
+	double mPopUpDistance = 1.5; // The distance above the membrane when a cell is considered to have popped up
+
+	double mCellKillCount = 0; // Tracks the number of cells killed by anoikis
+
 	AnoikisCellKillerNewPhaseModel(AbstractCellPopulation<2>* pCellPopulation);
 
 	// Destructor
 	~AnoikisCellKillerNewPhaseModel();
-
-	void SetOutputDirectory(std::string outputDirectory);
 
 	/*
 	 * @return mCutOffRadius

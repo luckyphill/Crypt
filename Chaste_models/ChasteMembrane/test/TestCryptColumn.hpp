@@ -9,7 +9,6 @@
 #include "OffLatticeSimulationTooManyCells.hpp"
 
 // Forces
-#include "BasicNonLinearSpringForceNewPhaseModel.hpp"
 #include "NormalAdhesionForceNewPhaseModel.hpp"
 #include "BasicNonLinearSpringForceMultiNodeFix.hpp"
 

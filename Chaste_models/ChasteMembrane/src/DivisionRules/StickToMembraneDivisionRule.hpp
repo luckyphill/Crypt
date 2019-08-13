@@ -45,10 +45,12 @@ private:
 	}
 
 	c_vector<double, SPACE_DIM> mMembraneAxis;
-	bool mWiggle = false;
-	double mMaxAngle = 0.01; // maxmium wiggle angle above or below membrane axis
+	
 
 public:
+
+	bool mWiggle = false;
+	double mMaxAngle = 0.01; // maxmium wiggle angle above or below membrane axis
 
 	/**
 	 * Default constructor.

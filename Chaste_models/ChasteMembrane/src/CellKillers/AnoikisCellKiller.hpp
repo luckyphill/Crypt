@@ -128,6 +128,7 @@ namespace boost
 		{
 			const AbstractCellPopulation<2>* const p_cell_population = t->GetCellPopulation();
 			ar << p_cell_population;
+
 		}
 
 		template<class Archive>

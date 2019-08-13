@@ -9,7 +9,6 @@
 #include "OffLatticeSimulationTooManyCells.hpp"
 
 // Forces
-#include "BasicNonLinearSpringForceNewPhaseModel.hpp"
 #include "NormalAdhesionForceNewPhaseModel.hpp"
 #include "BasicNonLinearSpringForceMultiNodeFix.hpp"
 
@@ -480,6 +479,8 @@ public:
 		// Post simulation tasks
 		// Save the state
 		CellBasedSimulationArchiver<2, OffLatticeSimulationTooManyCells>::Save(&simulator);
+
+		OffLatticeSimulationTooManyCells* p_sim2 = CellBasedSimulationArchiver<2, OffLatticeSimulationTooManyCells>::Load(output_directory, burn_in_time);
 
 		// Clean up singletons
 		WntConcentration<2>::Instance()->Destroy();

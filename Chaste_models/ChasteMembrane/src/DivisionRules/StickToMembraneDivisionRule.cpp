@@ -65,8 +65,6 @@ std::pair<c_vector<double, SPACE_DIM>, c_vector<double, SPACE_DIM> >
 	
 	c_vector<double, SPACE_DIM> parent_position = rCellPopulation.GetLocationOfCellCentre(pParentCell) - random_vector;
 	c_vector<double, SPACE_DIM> daughter_position = rCellPopulation.GetLocationOfCellCentre(pParentCell) + random_vector;
-	// PRINT_2_VARIABLES(parent_position(1),parent_position(1))
-	// PRINT_2_VARIABLES(daughter_position(1),daughter_position(1))
 
 	std::pair<c_vector<double, SPACE_DIM>, c_vector<double, SPACE_DIM> > positions(parent_position, daughter_position);
 
@@ -76,7 +74,12 @@ std::pair<c_vector<double, SPACE_DIM>, c_vector<double, SPACE_DIM> >
 template<unsigned SPACE_DIM>
 void StickToMembraneDivisionRule<SPACE_DIM>::SetMembraneAxis(c_vector<double, SPACE_DIM> membraneAxis)
 {
-	double magnitude = sqrt(membraneAxis(0) * membraneAxis(0) + membraneAxis(1) * membraneAxis(1));
+	double magsquared = 0;
+	for (unsigned i = 0; i < SPACE_DIM; i++)
+	{
+		magsquared += membraneAxis(i) * membraneAxis(i);
+	}
+	double magnitude = std::sqrt(magsquared);
 	mMembraneAxis = membraneAxis/magnitude;
 	// need to normalise so it is a unit vector
 

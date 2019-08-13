@@ -43,7 +43,7 @@ private:
 		archive & mWeakeningFraction;
 	}
 
-protected:
+public:
 
 	double mMembraneEpithelialSpringStiffness;
 
@@ -56,9 +56,6 @@ protected:
 	double mWeakeningFraction; // The fraction of mMembraneEpithelialSpringStiffness seen by a cell with the WeakenedMembraneAdhesion mutation
 
 
-	bool mDebugMode = false;
-
-public:
 
 	/**
 	 * Constructor.
