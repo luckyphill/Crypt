@@ -126,7 +126,6 @@ public:
 
 		// **************************************************************************************************
 		// Output control
-		bool file_output = false;
 		double sampling_multiple = 100000;
 		bool java_visualiser = true;
 		// **************************************************************************************************
@@ -404,7 +403,11 @@ public:
 		TRACE("Simulating through transient")
 		simulator.Solve();
 		// **************************************************************************************************
-
+		std::list<CellPtr> cells1 =  simulator.rGetCellPopulation().rGetCells();
+		for (std::list<CellPtr>::iterator it = cells1.begin(); it != cells1.end(); ++it)
+		{
+			PRINT_VARIABLE((*it)->GetCellId())
+		}
 
 		// **************************************************************************************************
 		// Post simulation tasks
@@ -413,6 +416,14 @@ public:
 		TRACE("Saved, now loading")
 		OffLatticeSimulationWithMutation* p_sim2 = CellBasedSimulationArchiver<2, OffLatticeSimulationWithMutation, 2>::Load(output_directory, burn_in_time);
 		p_sim2->SetEndTime(2 * burn_in_time);
+		TRACE("Check cells")
+		std::list<CellPtr> cells2 =  p_sim2->rGetCellPopulation().rGetCells();
+
+		for (std::list<CellPtr>::iterator it = cells2.begin(); it != cells2.end(); ++it)
+		{
+			PRINT_VARIABLE((*it)->GetCellId())
+		}
+
 		TRACE("Running sim after loading")
 		p_sim2->Solve();
 		CellBasedSimulationArchiver<2, OffLatticeSimulationWithMutation, 2>::Save(p_sim2);
@@ -480,7 +491,6 @@ public:
 
 		// **************************************************************************************************
 		// Output control
-		bool file_output = false;
 		double sampling_multiple = 100000;
 		bool java_visualiser = true;
 		// **************************************************************************************************
@@ -643,7 +653,7 @@ public:
 		OffLatticeSimulationWithMutation simulator(cell_population);
 		simulator.SetDt(dt);
 		simulator.SetSamplingTimestepMultiple(sampling_multiple);
-		// simulator.SetCellLimit(cell_limit);
+		simulator.SetCellLimit(cell_limit);
 		// **************************************************************************************************
 
 		// **************************************************************************************************

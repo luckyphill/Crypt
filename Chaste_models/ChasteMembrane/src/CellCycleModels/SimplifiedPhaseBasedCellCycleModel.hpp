@@ -99,13 +99,13 @@ public:
 	/**
 	 * The time when the current period of quiescence began.
 	 */
-	double mCurrentQuiescentOnsetTime;
+	double mCurrentQuiescentOnsetTime = 0;
 
 	/**
 	 * How long the current period of quiescence has lasted.
 	 * Has units of hours.
 	 */
-	double mCurrentQuiescentDuration;
+	double mCurrentQuiescentDuration = 0;
 
 	double mWntThreshold;
 

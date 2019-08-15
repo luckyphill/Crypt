@@ -931,31 +931,23 @@ public:
 			p_cell->InitialiseCellCycleModel();
 
 			TS_ASSERT_DELTA(p_model->GetPDuration(), 6.16196, 1e-5);
-			TRACE("A")
 			std::ofstream ofs(archive_filename.c_str());
 			boost::archive::text_oarchive output_arch(ofs);
-			TRACE("B")
 			// output_arch << dynamic_cast<AbstractCellCycleModel*>(p_model);
 			output_arch << p_model;
-			TRACE("C")
 			SimulationTime::Destroy();
 			RandomNumberGenerator::Destroy();
 			WntConcentration<2>::Destroy();
-			TRACE("D")
 
 		}
-		TRACE("E")
 		{
 			// We must set SimulationTime::mStartTime here to avoid tripping an assertion
-			TRACE("F")
 			SimulationTime::Instance()->SetStartTime(0.0);
 			// AbstractCellCycleModel* p_model2;
 			SimplifiedPhaseBasedCellCycleModel* p_model2;
 			std::ifstream ifs(archive_filename.c_str(), std::ios::binary);
 			boost::archive::text_iarchive input_arch(ifs);
-			TRACE("G")
 			input_arch >> p_model2;
-			TRACE("H")
 			SimplifiedPhaseBasedCellCycleModel* p_model = static_cast<SimplifiedPhaseBasedCellCycleModel*>(p_model2);
 			TS_ASSERT_EQUALS(p_model->GetDimension(), 2u);
 			TS_ASSERT_DELTA(p_model->GetBirthTime(), -2.5, 1e-12);
