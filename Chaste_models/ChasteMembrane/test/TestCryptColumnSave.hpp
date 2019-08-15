@@ -289,7 +289,7 @@ public:
 		OffLatticeSimulationWithMutation simulator(cell_population);
 		simulator.SetDt(dt);
 		simulator.SetSamplingTimestepMultiple(sampling_multiple);
-		// simulator.SetCellLimit(cell_limit);
+		simulator.SetCellLimit(cell_limit);
 		// **************************************************************************************************
 
 		// **************************************************************************************************

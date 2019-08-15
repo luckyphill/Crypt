@@ -4,7 +4,7 @@
 #SBATCH -n 1 
 #SBATCH --time=72:00:00 
 #SBATCH --mem=1GB 
-#SBATCH --array=0-64
+#SBATCH --array=0-640
 # NOTIFICATIONS
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=phillip.j.brown@adelaide.edu.au
@@ -22,7 +22,7 @@ mkdir -p output
 echo "array_job_index: $SLURM_ARRAY_TASK_ID" 
 i=1 
 found=0 
-while IFS=, read mnp eesM msM cctM wtM mvf
+while IFS=, read mnp eesM msM cctM wtM mvf runs
 do 
     if [ $i = $SLURM_ARRAY_TASK_ID ]; then 
         echo "Running mutation, mnp $mnp, eesM $eesM, msM $msM, cctM $cctM, wtM $wtM, mvf $mvf"
@@ -33,8 +33,8 @@ do
 done < detail_mutations.txt 
 
 if [ $found = 1 ]; then
-	echo "matlab -nodisplay -nodesktop -r cd ../../; addpath(genpath(pwd)); runVisualiserAnalysis('MouseColonDesc',$mnp,$eesM,$msM,$cctM,$wtM,$mvf,1); quit()"
-    matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); runVisualiserAnalysis('MouseColonDesc',$mnp,$eesM,$msM,$cctM,$wtM,$mvf,1); quit()"
+	echo "matlab -nodisplay -nodesktop -r cd ../../; addpath(genpath(pwd)); runVisualiserAnalysis('MouseColonDesc',$mnp,$eesM,$msM,$cctM,$wtM,$mvf,$runs); quit()"
+    matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); runVisualiserAnalysis('MouseColonDesc',$mnp,$eesM,$msM,$cctM,$wtM,$mvf,$runs); quit()"
 else 
   echo "detail_mutations.txt  does not have enough parameters for $SLURM_ARRAY_TASK_ID index" 
 fi

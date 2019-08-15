@@ -31,7 +31,8 @@ SimplifiedPhaseBasedCellCycleModel::SimplifiedPhaseBasedCellCycleModel(const Sim
     mWDuration(rModel.mWDuration),
     mQuiescentVolumeFraction(rModel.mQuiescentVolumeFraction),
     mEquilibriumVolume(rModel.mEquilibriumVolume),
-    mWntThreshold(rModel.mWntThreshold)
+    mWntThreshold(rModel.mWntThreshold),
+    mPopUpDivision(rModel.mPopUpDivision)
 {
     /*
      * The member variables mCurrentCellCyclePhase, mG1Duration,
