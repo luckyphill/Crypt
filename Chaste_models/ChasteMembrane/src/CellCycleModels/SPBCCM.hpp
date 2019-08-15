@@ -1,6 +1,6 @@
 
-#ifndef SimplifiedPhaseBasedCELLCYCLEMODEL_HPP_
-#define SimplifiedPhaseBasedCELLCYCLEMODEL_HPP_
+#ifndef SPBCCM_HPP_
+#define SPBCCM_HPP_
 
 #include "ChasteSerialization.hpp"
 #include "ClassIsAbstract.hpp"
@@ -16,11 +16,11 @@
 
 
 /**
- * The SimplifiedPhaseBasedCellCycleModel contains basic information to all phase based cell-cycle models.
+ * The SPBCCM contains basic information to all phase based cell-cycle models.
  * It handles assignment of aspects of cell cycle phase.
  *
  */
-class SimplifiedPhaseBasedCellCycleModel : public AbstractCellCycleModel
+class SPBCCM : public AbstractCellCycleModel
 {
 private:
 
@@ -64,7 +64,7 @@ protected:
 	 *
 	 * @param rModel the cell cycle model to copy.
 	 */
-	SimplifiedPhaseBasedCellCycleModel(const SimplifiedPhaseBasedCellCycleModel& rModel);
+	SPBCCM(const SPBCCM& rModel);
 
 public:
 	/** The phase of the cell cycle that this model is in (specified in CellCyclePhases.hpp) */
@@ -112,11 +112,11 @@ public:
 	bool mPopUpDivision = false; // If we allow cells to continue cycling when they pop up
 
 	/**
-	 * Default constructor - creates an SimplifiedPhaseBasedCellCycleModel.
+	 * Default constructor - creates an SPBCCM.
 	 */
-	SimplifiedPhaseBasedCellCycleModel();
+	SPBCCM();
 
-	~SimplifiedPhaseBasedCellCycleModel();
+	~SPBCCM();
 
 	AbstractCellCycleModel* CreateCellCycleModel();
 
@@ -161,6 +161,11 @@ public:
 	void SetWDuration(double wDuration);
 
 	double GetWDuration();
+
+
+	bool IsAgeLessThan(double comparison);
+
+	bool IsAgeGreaterThan(double comparison);
 
 	/**
 	 * @return the typical cell cycle duration for a transit cell, in hours.
@@ -234,6 +239,6 @@ public:
 };
 
 #include "SerializationExportWrapper.hpp"
-CHASTE_CLASS_EXPORT(SimplifiedPhaseBasedCellCycleModel)
+CHASTE_CLASS_EXPORT(SPBCCM)
 
-#endif /*SimplifiedPhaseBasedCELLCYCLEMODEL_HPP_*/
+#endif /*SPBCCM_HPP_*/

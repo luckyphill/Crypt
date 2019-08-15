@@ -1,6 +1,6 @@
 
 
-#include "SimplifiedPhaseBasedCellCycleModel.hpp"
+#include "SPBCCM.hpp"
 #include "StemCellProliferativeType.hpp"
 #include "TransitCellProliferativeType.hpp"
 #include "DifferentiatedCellProliferativeType.hpp"
@@ -10,7 +10,7 @@
 #include "RandomNumberGenerator.hpp"
 #include "Debug.hpp"
 
-SimplifiedPhaseBasedCellCycleModel::SimplifiedPhaseBasedCellCycleModel()
+SPBCCM::SPBCCM()
 : AbstractCellCycleModel(),
     mBasePDuration(5),
     mMinimumPDuration(1),
@@ -19,11 +19,11 @@ SimplifiedPhaseBasedCellCycleModel::SimplifiedPhaseBasedCellCycleModel()
 {
 }
 
-SimplifiedPhaseBasedCellCycleModel::~SimplifiedPhaseBasedCellCycleModel()
+SPBCCM::~SPBCCM()
 {
 }
 
-SimplifiedPhaseBasedCellCycleModel::SimplifiedPhaseBasedCellCycleModel(const SimplifiedPhaseBasedCellCycleModel& rModel)
+SPBCCM::SPBCCM(const SPBCCM& rModel)
     : AbstractCellCycleModel(rModel),
     mBasePDuration(rModel.mBasePDuration),
     mPDuration(rModel.mPDuration),
@@ -48,7 +48,7 @@ SimplifiedPhaseBasedCellCycleModel::SimplifiedPhaseBasedCellCycleModel(const Sim
      */
 }
 
-void SimplifiedPhaseBasedCellCycleModel::Initialise()
+void SPBCCM::Initialise()
 {
     // A brand new cell created in a Test script will need to have it's parent set
     // The parent will be set properly for cells created in the simulation
@@ -67,7 +67,7 @@ void SimplifiedPhaseBasedCellCycleModel::Initialise()
     mCurrentCellCyclePhase = W_PHASE;
 }
 
-void SimplifiedPhaseBasedCellCycleModel::Initialise(SimplifiedCellCyclePhase phase)
+void SPBCCM::Initialise(SimplifiedCellCyclePhase phase)
 {
     // A brand new cell created in a Test script will need to have it's parent set
     // The parent will be set properly for cells created in the simulation
@@ -89,13 +89,13 @@ void SimplifiedPhaseBasedCellCycleModel::Initialise(SimplifiedCellCyclePhase pha
 }
 
 
-void SimplifiedPhaseBasedCellCycleModel::InitialiseDaughterCell()
+void SPBCCM::InitialiseDaughterCell()
 {
     SetPDuration();
     mCurrentCellCyclePhase = W_PHASE;
 }
 
-void SimplifiedPhaseBasedCellCycleModel::SetPDuration()
+void SPBCCM::SetPDuration()
 {
     assert(mpCell != nullptr);
     
@@ -115,45 +115,45 @@ void SimplifiedPhaseBasedCellCycleModel::SetPDuration()
     }
 }
 
-double SimplifiedPhaseBasedCellCycleModel::GetPDuration()
+double SPBCCM::GetPDuration()
 {
     return mPDuration;
 }
 
-void SimplifiedPhaseBasedCellCycleModel::SetBasePDuration(double basePDuration)
+void SPBCCM::SetBasePDuration(double basePDuration)
 {
     assert(mBasePDuration > mMinimumPDuration);
     mBasePDuration = basePDuration;
 }
 
-double SimplifiedPhaseBasedCellCycleModel::GetBasePDuration()
+double SPBCCM::GetBasePDuration()
 {
     return mBasePDuration;
 }
 
-void SimplifiedPhaseBasedCellCycleModel::SetWDuration(double wDuration)
+void SPBCCM::SetWDuration(double wDuration)
 {
     assert(wDuration > mMinimumPDuration);
     mWDuration = wDuration;
 }
 
-double SimplifiedPhaseBasedCellCycleModel::GetWDuration()
+double SPBCCM::GetWDuration()
 {
     return mWDuration;
 }
 
-void SimplifiedPhaseBasedCellCycleModel::SetMinimumPDuration(double minimumPDuration)
+void SPBCCM::SetMinimumPDuration(double minimumPDuration)
 {
     assert(minimumPDuration > 0);
     mMinimumPDuration = minimumPDuration;
 }
 
-double SimplifiedPhaseBasedCellCycleModel::GetMinimumPDuration()
+double SPBCCM::GetMinimumPDuration()
 {
     return mMinimumPDuration;
 }
 
-void SimplifiedPhaseBasedCellCycleModel::UpdateCellCyclePhase()
+void SPBCCM::UpdateCellCyclePhase()
 {
 
     if ((mQuiescentVolumeFraction == DOUBLE_UNSET) || (mEquilibriumVolume == DOUBLE_UNSET))
@@ -241,7 +241,28 @@ void SimplifiedPhaseBasedCellCycleModel::UpdateCellCyclePhase()
     }
 }
 
-double SimplifiedPhaseBasedCellCycleModel::GetWntLevel()
+bool SPBCCM::IsAgeLessThan(double comparison)
+{
+
+    double eps = SimulationTime::Instance()->GetTimeStep() / 10;
+    double age = GetAge();
+
+    return ( age < comparison && std::abs(comparison - GetAge()) > eps );
+
+}
+
+bool SPBCCM::IsAgeGreaterThan(double comparison)
+{
+
+    double eps = SimulationTime::Instance()->GetTimeStep() / 10;
+    double age = GetAge();
+
+    return ( age > comparison && std::abs(comparison - GetAge()) > eps );
+
+}
+
+
+double SPBCCM::GetWntLevel()
 {
     assert(mpCell != NULL);
     double level = 0;
@@ -273,7 +294,7 @@ double SimplifiedPhaseBasedCellCycleModel::GetWntLevel()
 }
 
 
-void SimplifiedPhaseBasedCellCycleModel::ResetForDivision()
+void SPBCCM::ResetForDivision()
 {
     AbstractCellCycleModel::ResetForDivision();
     // Used for making growing cell pairs are handled properly in the force calculator
@@ -281,7 +302,7 @@ void SimplifiedPhaseBasedCellCycleModel::ResetForDivision()
     mCurrentCellCyclePhase = W_PHASE;
 }
 
-bool SimplifiedPhaseBasedCellCycleModel::ReadyToDivide()
+bool SPBCCM::ReadyToDivide()
 {
     assert(mpCell != nullptr);
 
@@ -299,75 +320,75 @@ bool SimplifiedPhaseBasedCellCycleModel::ReadyToDivide()
     return mReadyToDivide;
 }
 
-AbstractCellCycleModel* SimplifiedPhaseBasedCellCycleModel::CreateCellCycleModel()
+AbstractCellCycleModel* SPBCCM::CreateCellCycleModel()
 {
-    return new SimplifiedPhaseBasedCellCycleModel(*this);
+    return new SPBCCM(*this);
 }
 
 
-void SimplifiedPhaseBasedCellCycleModel::SetWntThreshold(double wntThreshold)
+void SPBCCM::SetWntThreshold(double wntThreshold)
 {
     mWntThreshold = wntThreshold;
 }
 
-double SimplifiedPhaseBasedCellCycleModel::GetWntThreshold()
+double SPBCCM::GetWntThreshold()
 {
     return mWntThreshold;
 }
 
-SimplifiedCellCyclePhase SimplifiedPhaseBasedCellCycleModel::GetCurrentCellCyclePhase()
+SimplifiedCellCyclePhase SPBCCM::GetCurrentCellCyclePhase()
 {
     return mCurrentCellCyclePhase;
 }
 
 
-void SimplifiedPhaseBasedCellCycleModel::SetQuiescentVolumeFraction(double quiescentVolumeFraction)
+void SPBCCM::SetQuiescentVolumeFraction(double quiescentVolumeFraction)
 {
     mQuiescentVolumeFraction = quiescentVolumeFraction;
 }
 
-double SimplifiedPhaseBasedCellCycleModel::GetQuiescentVolumeFraction() const
+double SPBCCM::GetQuiescentVolumeFraction() const
 {
     return mQuiescentVolumeFraction;
 }
 
-void SimplifiedPhaseBasedCellCycleModel::SetEquilibriumVolume(double equilibriumVolume)
+void SPBCCM::SetEquilibriumVolume(double equilibriumVolume)
 {
     mEquilibriumVolume = equilibriumVolume;
 }
 
-double SimplifiedPhaseBasedCellCycleModel::GetEquilibriumVolume() const
+double SPBCCM::GetEquilibriumVolume() const
 {
     return mEquilibriumVolume;
 }
 
-double SimplifiedPhaseBasedCellCycleModel::GetCurrentQuiescentDuration() const
+double SPBCCM::GetCurrentQuiescentDuration() const
 {
     return mCurrentQuiescentDuration;
 }
 
-double SimplifiedPhaseBasedCellCycleModel::GetCurrentQuiescentOnsetTime() const
+double SPBCCM::GetCurrentQuiescentOnsetTime() const
 {
     return mCurrentQuiescentOnsetTime;
 }
 
-double SimplifiedPhaseBasedCellCycleModel::GetAverageTransitCellCycleTime()
+double SPBCCM::GetAverageTransitCellCycleTime()
 {
     return 0;
 }
 
-double SimplifiedPhaseBasedCellCycleModel::GetAverageStemCellCycleTime()
+double SPBCCM::GetAverageStemCellCycleTime()
 {
     return 0;
 }
 
-void SimplifiedPhaseBasedCellCycleModel::SetPopUpDivision(bool popUpDivision)
+void SPBCCM::SetPopUpDivision(bool popUpDivision)
 {
     mPopUpDivision = popUpDivision;
 }
 
 
-void SimplifiedPhaseBasedCellCycleModel::OutputCellCycleModelParameters(out_stream& rParamsFile)
+void SPBCCM::OutputCellCycleModelParameters(out_stream& rParamsFile)
 {
     // Need to output phase parameters etc.
     AbstractCellCycleModel::OutputCellCycleModelParameters(rParamsFile);
@@ -376,4 +397,4 @@ void SimplifiedPhaseBasedCellCycleModel::OutputCellCycleModelParameters(out_stre
 
 // Serialization for Boost >= 1.36
 #include "SerializationExportWrapperForCpp.hpp"
-CHASTE_CLASS_EXPORT(SimplifiedPhaseBasedCellCycleModel)
+CHASTE_CLASS_EXPORT(SPBCCM)

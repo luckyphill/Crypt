@@ -236,33 +236,33 @@ public:
 		// Give the crypt its cells
 		for(unsigned i=1; i<=n; i++)
 		{
-			NoCellCycleModelPhase* p_cycle_model = new NoCellCycleModelPhase();
-
-			CellPtr p_cell(new Cell(p_state, p_cycle_model));
-			p_cell->SetCellProliferativeType(p_diff_type);
-			p_cell->AddCellProperty(p_boundary);
-			p_cell->GetCellData()->SetItem("parent", p_cell->GetCellId());
-			p_cell->InitialiseCellCycleModel();
-
-			cells.push_back(p_cell);
-
-			// This doesn't work
-			// SimplifiedPhaseBasedCellCycleModel* p_cycle_model = new SimplifiedPhaseBasedCellCycleModel();
-			// double birth_time = cellCycleTime * RandomNumberGenerator::Instance()->ranf();
-
-			// p_cycle_model->SetWDuration(wPhaseLength);
-			// p_cycle_model->SetBasePDuration(cellCycleTime - wPhaseLength);
-			// p_cycle_model->SetDimension(2);
-			// p_cycle_model->SetEquilibriumVolume(equilibriumVolume);
-			// p_cycle_model->SetQuiescentVolumeFraction(quiescentVolumeFraction);
-			// p_cycle_model->SetWntThreshold(1 - (double)n_prolif/n);
-			// p_cycle_model->SetBirthTime(-birth_time);
+			// NoCellCycleModelPhase* p_cycle_model = new NoCellCycleModelPhase();
 
 			// CellPtr p_cell(new Cell(p_state, p_cycle_model));
-			// p_cell->SetCellProliferativeType(p_trans_type);
+			// p_cell->SetCellProliferativeType(p_diff_type);
+			// p_cell->AddCellProperty(p_boundary);
+			// p_cell->GetCellData()->SetItem("parent", p_cell->GetCellId());
 			// p_cell->InitialiseCellCycleModel();
 
 			// cells.push_back(p_cell);
+
+			// This doesn't work
+			SimplifiedPhaseBasedCellCycleModel* p_cycle_model = new SimplifiedPhaseBasedCellCycleModel();
+			double birth_time = cellCycleTime * RandomNumberGenerator::Instance()->ranf();
+
+			p_cycle_model->SetWDuration(wPhaseLength);
+			p_cycle_model->SetBasePDuration(cellCycleTime - wPhaseLength);
+			p_cycle_model->SetDimension(2);
+			p_cycle_model->SetEquilibriumVolume(equilibriumVolume);
+			p_cycle_model->SetQuiescentVolumeFraction(quiescentVolumeFraction);
+			p_cycle_model->SetWntThreshold(1 - (double)n_prolif/n);
+			p_cycle_model->SetBirthTime(-birth_time);
+
+			CellPtr p_cell(new Cell(p_state, p_cycle_model));
+			p_cell->SetCellProliferativeType(p_trans_type);
+			p_cell->InitialiseCellCycleModel();
+
+			cells.push_back(p_cell);
 			
 		}
 		// **************************************************************************************************
@@ -590,33 +590,33 @@ public:
 		// Give the crypt its cells
 		for(unsigned i=1; i<=n; i++)
 		{
-			NoCellCycleModelPhase* p_cycle_model = new NoCellCycleModelPhase();
-
-			CellPtr p_cell(new Cell(p_state, p_cycle_model));
-			p_cell->SetCellProliferativeType(p_diff_type);
-			p_cell->AddCellProperty(p_boundary);
-			p_cell->GetCellData()->SetItem("parent", p_cell->GetCellId());
-			p_cell->InitialiseCellCycleModel();
-
-			cells.push_back(p_cell);
-
-			// This doesn't work
-			// SimplifiedPhaseBasedCellCycleModel* p_cycle_model = new SimplifiedPhaseBasedCellCycleModel();
-			// double birth_time = cellCycleTime * RandomNumberGenerator::Instance()->ranf();
-
-			// p_cycle_model->SetWDuration(wPhaseLength);
-			// p_cycle_model->SetBasePDuration(cellCycleTime - wPhaseLength);
-			// p_cycle_model->SetDimension(2);
-			// p_cycle_model->SetEquilibriumVolume(equilibriumVolume);
-			// p_cycle_model->SetQuiescentVolumeFraction(quiescentVolumeFraction);
-			// p_cycle_model->SetWntThreshold(1 - (double)n_prolif/n);
-			// p_cycle_model->SetBirthTime(-birth_time);
+			// NoCellCycleModelPhase* p_cycle_model = new NoCellCycleModelPhase();
 
 			// CellPtr p_cell(new Cell(p_state, p_cycle_model));
-			// p_cell->SetCellProliferativeType(p_trans_type);
+			// p_cell->SetCellProliferativeType(p_diff_type);
+			// p_cell->AddCellProperty(p_boundary);
+			// p_cell->GetCellData()->SetItem("parent", p_cell->GetCellId());
 			// p_cell->InitialiseCellCycleModel();
 
 			// cells.push_back(p_cell);
+
+			// This doesn't work
+			SimplifiedPhaseBasedCellCycleModel* p_cycle_model = new SimplifiedPhaseBasedCellCycleModel();
+			double birth_time = cellCycleTime * RandomNumberGenerator::Instance()->ranf();
+
+			p_cycle_model->SetWDuration(wPhaseLength);
+			p_cycle_model->SetBasePDuration(cellCycleTime - wPhaseLength);
+			p_cycle_model->SetDimension(2);
+			p_cycle_model->SetEquilibriumVolume(equilibriumVolume);
+			p_cycle_model->SetQuiescentVolumeFraction(quiescentVolumeFraction);
+			p_cycle_model->SetWntThreshold(1 - (double)n_prolif/n);
+			p_cycle_model->SetBirthTime(-birth_time);
+
+			CellPtr p_cell(new Cell(p_state, p_cycle_model));
+			p_cell->SetCellProliferativeType(p_trans_type);
+			p_cell->InitialiseCellCycleModel();
+
+			cells.push_back(p_cell);
 			
 		}
 		// **************************************************************************************************

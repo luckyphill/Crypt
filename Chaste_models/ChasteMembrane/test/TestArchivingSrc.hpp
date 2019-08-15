@@ -908,7 +908,7 @@ public:
 
 			// As usual, we archive via a pointer to the most abstract class possible
 			// AbstractCellCycleModel* const p_model = new SimplifiedPhaseBasedCellCycleModel();
-			SimplifiedPhaseBasedCellCycleModel* const p_model = new SimplifiedPhaseBasedCellCycleModel();
+			SimplifiedPhaseBasedCellCycleModel* p_model = new SimplifiedPhaseBasedCellCycleModel();
 
 
 			p_model->SetDimension(2);
@@ -935,8 +935,8 @@ public:
 			std::ofstream ofs(archive_filename.c_str());
 			boost::archive::text_oarchive output_arch(ofs);
 			TRACE("B")
-			output_arch << dynamic_cast<AbstractCellCycleModel*>(p_model);
-			// output_arch << p_model;
+			// output_arch << dynamic_cast<AbstractCellCycleModel*>(p_model);
+			output_arch << p_model;
 			TRACE("C")
 			SimulationTime::Destroy();
 			RandomNumberGenerator::Destroy();
@@ -949,7 +949,8 @@ public:
 			// We must set SimulationTime::mStartTime here to avoid tripping an assertion
 			TRACE("F")
 			SimulationTime::Instance()->SetStartTime(0.0);
-			AbstractCellCycleModel* p_model2;
+			// AbstractCellCycleModel* p_model2;
+			SimplifiedPhaseBasedCellCycleModel* p_model2;
 			std::ifstream ifs(archive_filename.c_str(), std::ios::binary);
 			boost::archive::text_iarchive input_arch(ifs);
 			TRACE("G")
