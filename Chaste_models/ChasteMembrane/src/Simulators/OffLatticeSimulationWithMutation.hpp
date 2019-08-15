@@ -17,6 +17,7 @@ WHEN REQUIRED: Stop when clonal conversion occurs - used for proportion testing
 
 #include "OffLatticeSimulation.hpp"
 #include <boost/serialization/base_object.hpp>
+#include "Debug.hpp"
 
 /**
  * Simple subclass of OffLatticeSimulation which just overloads StoppingEventHasOccurred

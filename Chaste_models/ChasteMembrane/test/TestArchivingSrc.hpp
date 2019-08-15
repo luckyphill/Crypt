@@ -49,9 +49,15 @@
 // Forces
 #include "NormalAdhesionForceNewPhaseModel.hpp"
 #include "BasicNonLinearSpringForceMultiNodeFix.hpp"
+#include "GeneralisedLinearSpringForce.hpp"
 // Cell cycle models
 #include "NoCellCycleModelPhase.hpp"
 #include "SimplifiedPhaseBasedCellCycleModel.hpp"
+// Simulator
+#include "OffLatticeSimulationWithMutation.hpp"
+
+// Archiver
+#include "CellBasedSimulationArchiver.hpp"
 
 class TestArchivingSrc: public AbstractCellBasedTestSuite
 {
@@ -724,78 +730,195 @@ public:
 	}
 
 	void TestArchiveNoCellCycleModelPhase()
-    {
-        OutputFileHandler handler("archive", false);
-        std::string archive_filename = handler.GetOutputDirectoryFullPath() + "NoCellCycleModelPhase.arch";
+	{
+		OutputFileHandler handler("archive", false);
+		std::string archive_filename = handler.GetOutputDirectoryFullPath() + "NoCellCycleModelPhase.arch";
 
-        {
-            // We must set up SimulationTime to avoid memory leaks
-            SimulationTime::Instance()->SetEndTimeAndNumberOfTimeSteps(1.0, 1);
+		{
+			// We must set up SimulationTime to avoid memory leaks
+			SimulationTime::Instance()->SetEndTimeAndNumberOfTimeSteps(1.0, 1);
 
-            // As usual, we archive via a pointer to the most abstract class possible
-            AbstractCellCycleModel* const p_model = new NoCellCycleModelPhase;
+			// As usual, we archive via a pointer to the most abstract class possible
+			AbstractCellCycleModel* const p_model = new NoCellCycleModelPhase;
 
-            p_model->SetDimension(2);
-            p_model->SetBirthTime(-1.0);
+			p_model->SetDimension(2);
+			p_model->SetBirthTime(-1.0);
 
-            std::ofstream ofs(archive_filename.c_str());
-            boost::archive::text_oarchive output_arch(ofs);
+			std::ofstream ofs(archive_filename.c_str());
+			boost::archive::text_oarchive output_arch(ofs);
 
-            output_arch << p_model;
+			output_arch << p_model;
 
-            delete p_model;
-            SimulationTime::Destroy();
-        }
+			delete p_model;
+			SimulationTime::Destroy();
+		}
 
-        {
-            // We must set SimulationTime::mStartTime here to avoid tripping an assertion
-            SimulationTime::Instance()->SetStartTime(0.0);
+		{
+			// We must set SimulationTime::mStartTime here to avoid tripping an assertion
+			SimulationTime::Instance()->SetStartTime(0.0);
 
-            AbstractCellCycleModel* p_model2;
+			AbstractCellCycleModel* p_model2;
 
-            std::ifstream ifs(archive_filename.c_str(), std::ios::binary);
-            boost::archive::text_iarchive input_arch(ifs);
+			std::ifstream ifs(archive_filename.c_str(), std::ios::binary);
+			boost::archive::text_iarchive input_arch(ifs);
 
-            input_arch >> p_model2;
+			input_arch >> p_model2;
 
-            // Check private data has been restored correctly
-            TS_ASSERT_DELTA(p_model2->GetBirthTime(), -1.0, 1e-12);
-            TS_ASSERT_DELTA(p_model2->GetAge(), 1.0, 1e-12);
-            TS_ASSERT_EQUALS(p_model2->GetDimension(), 2u);
-            TS_ASSERT_EQUALS(p_model2->ReadyToDivide(), false);
+			// Check private data has been restored correctly
+			TS_ASSERT_DELTA(p_model2->GetBirthTime(), -1.0, 1e-12);
+			TS_ASSERT_DELTA(p_model2->GetAge(), 1.0, 1e-12);
+			TS_ASSERT_EQUALS(p_model2->GetDimension(), 2u);
+			TS_ASSERT_EQUALS(p_model2->ReadyToDivide(), false);
 
-            // Avoid memory leaks
-            delete p_model2;
-        }
-    }
+			// Avoid memory leaks
+			delete p_model2;
+		}
+	}
 
+	void TestArchivingOffLatticeSimulationWithMutation()
+	{
+		EXIT_IF_PARALLEL;    // Cell population output doesn't work in parallel
 
-    void TestArchiveSimplifiedPhaseBasedCellCycleModel()
-    {
-        OutputFileHandler handler("archive", false);
-        std::string archive_filename = handler.GetOutputDirectoryFullPath() + "SimplifiedPhaseBasedCellCycleModel.arch";
+		unsigned n = 10;
+		// MAKE A MESH
+		// ********************************************************************************************
+		// Make the nodes
+		unsigned node_counter = 0;
 
-        {
-            // We must set up SimulationTime to avoid memory leaks
-            SimulationTime::Instance()->SetEndTimeAndNumberOfTimeSteps(1.0, 1);
-            // The RNG will produce random P phase lengths, so seed it to a fixed values
-            // to get a deterministic P phase length
-            RandomNumberGenerator::Instance()->Reseed(10);
-
-            // As usual, we archive via a pointer to the most abstract class possible
-            SimplifiedPhaseBasedCellCycleModel* const p_model = new SimplifiedPhaseBasedCellCycleModel();
+		std::vector<Node<2>*> nodes;
+		std::vector<unsigned> location_indices;
 
 
-            p_model->SetDimension(1);
-            p_model->SetBirthTime(-1.5);
+		// Column building parameters
+		double x_distance = 0;
+		double y_distance = 0;
+		double x = x_distance;
+		double y = y_distance;
 
-            p_model->SetWDuration(5);
+		// Initialise the crypt nodes
+		for(unsigned i = 0; i <= n; i++)
+		{
+			x = x_distance;
+			y = y_distance + 2 * i * 0.5;
+			Node<2>* single_node =  new Node<2>(node_counter,  false,  x, y);
+			single_node->SetRadius(0.5);
+			nodes.push_back(single_node);
+			location_indices.push_back(node_counter);
+			node_counter++;
+		}
+
+
+		NodesOnlyMesh<2> mesh;
+		mesh.ConstructNodesWithoutMesh(nodes, 1);
+
+		// MAKE A MESH: DONE
+
+
+		// MAKE CELLS
+		std::vector<CellPtr> cells;
+
+		MAKE_PTR(DifferentiatedCellProliferativeType, p_diff_type);
+		MAKE_PTR(TransitCellProliferativeType, p_trans_type);
+		MAKE_PTR(WildTypeCellMutationState, p_state);
+		MAKE_PTR(BoundaryCellProperty, p_boundary);
+
+		// Give the crypt its cells
+		for(unsigned i=0; i<=n; i++)
+		{
+			// Works with NoCellCycleModelPhase
+			NoCellCycleModelPhase* p_cycle_model = new NoCellCycleModelPhase();
+
+			CellPtr p_cell(new Cell(p_state, p_cycle_model));
+			p_cell->SetCellProliferativeType(p_diff_type);
+			p_cell->AddCellProperty(p_boundary);
+			p_cell->GetCellData()->SetItem("parent", p_cell->GetCellId());
+			p_cell->InitialiseCellCycleModel();
+
+			cells.push_back(p_cell);
+			
+			// Doesn't work with this
+			// SimplifiedPhaseBasedCellCycleModel* p_cycle_model = new SimplifiedPhaseBasedCellCycleModel();
+			// double birth_time = 15 * RandomNumberGenerator::Instance()->ranf();
+
+			// p_cycle_model->SetWDuration(10);
+			// p_cycle_model->SetBasePDuration(5);
+			// p_cycle_model->SetDimension(2);
+			// p_cycle_model->SetEquilibriumVolume(0.7);
+			// p_cycle_model->SetQuiescentVolumeFraction(0.6);
+			// p_cycle_model->SetWntThreshold(0.5);
+			// p_cycle_model->SetBirthTime(-birth_time);
+
+			// CellPtr p_cell(new Cell(p_state, p_cycle_model));
+			// p_cell->SetCellProliferativeType(p_trans_type);
+			// p_cell->InitialiseCellCycleModel();
+
+			// cells.push_back(p_cell);
+		}
+		// MAKE CELLS: DONE
+
+		// MAKE CELL POPULATION
+		NodeBasedCellPopulation<2> cell_population(mesh, cells, location_indices);
+		// MAKE CELL POPULATION: DONE
+
+		WntConcentration<2>::Instance()->SetType(LINEAR);
+        WntConcentration<2>::Instance()->SetCellPopulation(cell_population);
+        WntConcentration<2>::Instance()->SetCryptLength(n);
+
+		// MAKE SIMULATION
+		OffLatticeSimulationWithMutation simulator(cell_population);
+		simulator.SetDt(0.001);
+		simulator.SetSamplingTimestepMultiple(10);
+		simulator.SetCellLimit(11);
+		simulator.SetEndTime(1.0);
+		std::string output_dir = "TestOffLatticeSimulationWithMutation";
+		simulator.SetOutputDirectory(output_dir);
+		// MAKE SIMULATION: DONE
+
+		// Create a force law and pass it to the simulation
+		typedef GeneralisedLinearSpringForce<2> Force;
+		MAKE_PTR(Force, p_force);
+		p_force->SetCutOffLength(1.5);
+		simulator.AddForce(p_force);
+
+		CellBasedSimulationArchiver<2,OffLatticeSimulationWithMutation, 2>::Save(&simulator);
+
+		double start_time = 0.0;
+		OffLatticeSimulationWithMutation* p_simulator = CellBasedSimulationArchiver<2, OffLatticeSimulationWithMutation, 2 >::Load(output_dir, start_time);
+
+		p_simulator->Solve();
+
+		// Avoid memory leak
+		delete p_simulator;
+		WntConcentration<2>::Instance()->Destroy();
+	}
+
+	// There is a memory leak issue in this testt, but when that doesn't occur
+	// the test passes
+	void TestArchiveSimplifiedPhaseBasedCellCycleModel()
+	{
+		OutputFileHandler handler("archive", false);
+		std::string archive_filename = handler.GetOutputDirectoryFullPath() + "SimplifiedPhaseBasedCellCycleModel.arch";
+
+		{
+			// We must set up SimulationTime to avoid memory leaks
+			SimulationTime::Instance()->SetEndTimeAndNumberOfTimeSteps(1.0, 1);
+			// The RNG will produce random P phase lengths, so seed it to a fixed values
+			// to get a deterministic P phase length
+			RandomNumberGenerator::Instance()->Reseed(10);
+
+			// As usual, we archive via a pointer to the most abstract class possible
+			SimplifiedPhaseBasedCellCycleModel* const p_model = new SimplifiedPhaseBasedCellCycleModel();
+
+
+			p_model->SetDimension(2);
+
+			p_model->SetWDuration(5);
 			p_model->SetBasePDuration(5);
 			p_model->SetDimension(2);
 			p_model->SetEquilibriumVolume(0.7);
 			p_model->SetQuiescentVolumeFraction(0.6);
 			p_model->SetWntThreshold(0.5);
-			p_model->SetBirthTime(2.5);
+			p_model->SetBirthTime(-2.5);
 			p_model->SetPopUpDivision(true);
 			p_model->SetMinimumPDuration(2);
 
@@ -808,45 +931,39 @@ public:
 
 			TS_ASSERT_DELTA(p_model->GetPDuration(), 6.16196, 1e-5);
 
-			TRACE("-H")
-            std::ofstream ofs(archive_filename.c_str());
-            boost::archive::text_oarchive output_arch(ofs);
-            TRACE("-G")
-            output_arch << dynamic_cast<AbstractCellCycleModel*>(p_model);
-            TRACE("-F")
-            p_cell->~Cell();
-            // delete p_model;
-            TRACE("-E")
-            SimulationTime::Destroy();
-            RandomNumberGenerator::Destroy();
-            WntConcentration<2>::Destroy();
-            TRACE("-D")
-        }
-        TRACE("-C")
-        {
-            // We must set SimulationTime::mStartTime here to avoid tripping an assertion
-            TRACE("-B")
-            SimulationTime::Instance()->SetStartTime(0.0);
-            TRACE("-A")
-            AbstractCellCycleModel* p_model2;
-            TRACE("A")
-            std::ifstream ifs(archive_filename.c_str(), std::ios::binary);
-            boost::archive::text_iarchive input_arch(ifs);
-            TRACE("B")
-            input_arch >> p_model2;
-            TRACE("C")
-            TS_ASSERT_EQUALS(p_model2->GetDimension(), 1u);
-            TS_ASSERT_DELTA(p_model2->GetBirthTime(), -1.5, 1e-12);
-            TS_ASSERT_DELTA(p_model2->GetAge(), 1.5, 1e-12);
-            TRACE("D")
-            TS_ASSERT_EQUALS(static_cast<AbstractPhaseBasedCellCycleModel*>(p_model2)->GetCurrentCellCyclePhase(), M_PHASE);
-            TS_ASSERT_DELTA(static_cast<SimplifiedPhaseBasedCellCycleModel*>(p_model2)->GetQuiescentVolumeFraction(), 0.5, 1e-6);
-            TS_ASSERT_DELTA(static_cast<SimplifiedPhaseBasedCellCycleModel*>(p_model2)->GetEquilibriumVolume(), 1.0, 1e-6);
+			std::ofstream ofs(archive_filename.c_str());
+			boost::archive::text_oarchive output_arch(ofs);
+			output_arch << dynamic_cast<AbstractCellCycleModel*>(p_model);
+			SimulationTime::Destroy();
+			RandomNumberGenerator::Destroy();
+			WntConcentration<2>::Destroy();
+		}
+		{
+			// We must set SimulationTime::mStartTime here to avoid tripping an assertion
+			SimulationTime::Instance()->SetStartTime(0.0);
+			AbstractCellCycleModel* p_model2;
+			std::ifstream ifs(archive_filename.c_str(), std::ios::binary);
+			boost::archive::text_iarchive input_arch(ifs);
+			input_arch >> p_model2;
+			SimplifiedPhaseBasedCellCycleModel* p_model = static_cast<SimplifiedPhaseBasedCellCycleModel*>(p_model2);
+			TS_ASSERT_EQUALS(p_model->GetDimension(), 2u);
+			TS_ASSERT_DELTA(p_model->GetBirthTime(), -2.5, 1e-12);
+			TS_ASSERT_DELTA(p_model->GetAge(), 2.5, 1e-12);
 
-            // Avoid memory leaks
-            delete p_model2;
-        }
-    }
+			TS_ASSERT_DELTA(p_model->GetWntThreshold(), 0.5, 1e-5);
+
+			TS_ASSERT_DELTA(p_model->GetEquilibriumVolume(), 0.7, 1e-5);
+			TS_ASSERT_DELTA(p_model->GetQuiescentVolumeFraction(), 0.6, 1e-5);
+			TS_ASSERT_DELTA(p_model->GetMinimumPDuration(), 2, 1e-5);
+			
+			TS_ASSERT_DELTA(p_model->GetWDuration(), 5, 1e-5);
+			TS_ASSERT_DELTA(p_model->GetBasePDuration(), 5, 1e-5);
+			TS_ASSERT_DELTA(p_model->GetPDuration(), 6.16196, 1e-5);
+			// Avoid memory leaks
+			// delete p_model2;
+			// delete p_model;
+		}
+	}
 
 };
 
