@@ -78,6 +78,7 @@ public:
 
 	double GetDampingConstantPoppedUp();
 	void SetDampingConstantPoppedUp(double dampingConstantPoppedUp);
+
 };
 
 #include "SerializationExportWrapper.hpp"

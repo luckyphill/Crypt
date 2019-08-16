@@ -423,6 +423,10 @@ public:
 		{
 			PRINT_VARIABLE((*it)->GetCellId())
 		}
+		PRINT_VARIABLE(p_sim2->rGetCellPopulation().GetCellUsingLocationIndex(1))
+		PRINT_VARIABLE(p_sim2->rGetCellPopulation().GetCellUsingLocationIndex(2))
+
+		
 
 		TRACE("Running sim after loading")
 		p_sim2->Solve();

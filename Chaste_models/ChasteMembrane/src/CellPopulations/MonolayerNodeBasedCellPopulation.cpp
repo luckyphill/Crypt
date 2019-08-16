@@ -11,12 +11,6 @@ MonolayerNodeBasedCellPopulation<DIM>::MonolayerNodeBasedCellPopulation(NodesOnl
                                       bool validate)
     : NodeBasedCellPopulation<DIM>(rMesh, rCells, locationIndices)
 {
-    // this->mpNodesOnlyMesh = static_cast<NodesOnlyMesh<DIM>* >(&(this->mrMesh));
-
-    // if (validate)
-    // {
-    //     NodeBasedCellPopulation<DIM>::Validate();
-    // }
 }
 
 template<unsigned DIM>
@@ -30,10 +24,6 @@ template<unsigned DIM>
 MonolayerNodeBasedCellPopulation<DIM>::~MonolayerNodeBasedCellPopulation()
 {
     NodeBasedCellPopulation<DIM>::Clear();
-    // if (this->mDeleteMesh)
-    // {
-    //     delete &this->mrMesh;
-    // }
 }
 
 template<unsigned DIM>
@@ -69,6 +59,7 @@ void MonolayerNodeBasedCellPopulation<DIM>::SetDampingConstantPoppedUp(double da
 {
   mDampingConstantPoppedUp = dampingConstantPoppedUp;
 }
+
 
 template class MonolayerNodeBasedCellPopulation<1>;
 template class MonolayerNodeBasedCellPopulation<2>;
