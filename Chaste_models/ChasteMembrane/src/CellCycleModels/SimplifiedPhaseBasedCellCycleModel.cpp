@@ -245,7 +245,6 @@ double SimplifiedPhaseBasedCellCycleModel::GetWntLevel()
 {
 	assert(mpCell != NULL);
 	double level = 0;
-	PRINT_VARIABLE(mpCell->GetCellId())
 	switch (mDimension)
 	{
 		case 1:

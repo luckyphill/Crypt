@@ -129,7 +129,7 @@ classdef simulateCryptColumnMutation < chasteSimulation
 				error('Growing time (wt) is longer than the cell cycle time (cct)');
 			end
 
-			if obj.wt > (obj.cct * obj.cctM - 1)
+			if obj.wtM * obj.wt > (obj.cct * obj.cctM - 1)
 				error('Growing time (wt) is longer than the mutated cell cycle time (cct * cctM)');
 			end
 

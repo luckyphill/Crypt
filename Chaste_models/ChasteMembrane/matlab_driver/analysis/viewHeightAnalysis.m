@@ -12,5 +12,5 @@ function f = viewHeightAnalysis(keys, values)
 	f = heightAnalysis(simParams,mutantParams,8000,0.001,100,100,1);
 
 	f.heightOverTime();
-
+	
 end

@@ -27,6 +27,11 @@ classdef heightAnalysis < matlab.mixin.SetGet
 		h_crypt_min_t
 		h_crypt_mean_t
 
+
+		mean_h_max
+		mean_h_min
+		mean_h_mean
+
 	end
 
 	methods
@@ -124,6 +129,18 @@ classdef heightAnalysis < matlab.mixin.SetGet
 
 			obj.h_max_mean = nanmean(h_max_t);
 
+			obj.h_crypt_max_t = max(h_max_t');
+			obj.h_crypt_min_t = min(h_max_t');
+			obj.h_crypt_mean_t = nanmean(h_max_t');
+
+			obj.mean_h_max = mean(obj.h_crypt_max_t);
+			obj.mean_h_min = mean(obj.h_crypt_min_t);
+			obj.mean_h_mean = mean(obj.h_crypt_mean_t);
+
+		end
+
+		function plotHeightOverTime(obj)
+
 			h = figure;
 			plot(0:double(obj.simul.n), obj.h_max_mean, 'lineWidth', 4);
 			xlabel('Position from stem cell niche')
@@ -137,16 +154,6 @@ classdef heightAnalysis < matlab.mixin.SetGet
 
 			print([getenv('HOME'), '/Research/Crypt/Images/heightanalysis/pos_time_avg ',obj.simul.mutantParams('name')],'-dpdf');
 
-
-			h_crypt_max_t = max(h_max_t');
-			h_crypt_min_t = min(h_max_t');
-			h_crypt_mean_t = nanmean(h_max_t');
-
-			obj.h_crypt_max_t = h_crypt_max_t;
-			obj.h_crypt_min_t = h_crypt_min_t;
-			obj.h_crypt_mean_t = h_crypt_mean_t;
-
-
 			h = figure;
 			hold on
 			plot(times,h_crypt_max_t)
@@ -158,11 +165,11 @@ classdef heightAnalysis < matlab.mixin.SetGet
 			title(['Maximum stack height over time for the whole crypt: ' obj.simul.mutantParams('name')]);
 			ylim([0 8])
 
-			plot(times,mean(h_crypt_max_t) * ones(size(times)));
-			plot(times,mean(h_crypt_min_t) * ones(size(times)));
-			plot(times,mean(h_crypt_mean_t) * ones(size(times)));
+			plot(times,obj.mean_h_max * ones(size(times)));
+			plot(times,obj.mean_h_min * ones(size(times)));
+			plot(times,obj.mean_h_mean * ones(size(times)));
 
-			legend(num2str(mean(h_crypt_max_t)), num2str(mean(h_crypt_min_t)) ,num2str(mean(h_crypt_mean_t)))
+			legend( num2str(obj.mean_h_max), num2str(obj.mean_h_min) ,num2str(obj.mean_h_mean) )
 
 			set(h,'Units','Inches');
 			pos = get(h,'Position');

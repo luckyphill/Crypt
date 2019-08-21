@@ -53,6 +53,7 @@
 // Cell cycle models
 #include "NoCellCycleModelPhase.hpp"
 #include "SimplifiedPhaseBasedCellCycleModel.hpp"
+#include "ContactInhibitionCellCycleModel.hpp"
 // Simulator
 #include "OffLatticeSimulationWithMutation.hpp"
 
@@ -826,26 +827,41 @@ public:
 		for(unsigned i=0; i<=n; i++)
 		{
 			// Works with NoCellCycleModelPhase
-			NoCellCycleModelPhase* p_cycle_model = new NoCellCycleModelPhase();
+			// NoCellCycleModelPhase* p_cycle_model = new NoCellCycleModelPhase();
+
+			// CellPtr p_cell(new Cell(p_state, p_cycle_model));
+			// p_cell->SetCellProliferativeType(p_diff_type);
+			// p_cell->AddCellProperty(p_boundary);
+			// p_cell->GetCellData()->SetItem("parent", p_cell->GetCellId());
+			// p_cell->InitialiseCellCycleModel();
+
+			// cells.push_back(p_cell);
+
+			// Doesn't work with this
+			SimplifiedPhaseBasedCellCycleModel* p_cycle_model = new SimplifiedPhaseBasedCellCycleModel();
+			double birth_time = 15 * RandomNumberGenerator::Instance()->ranf();
+
+			p_cycle_model->SetWDuration(10);
+			p_cycle_model->SetBasePDuration(5);
+			p_cycle_model->SetDimension(2);
+			p_cycle_model->SetEquilibriumVolume(0.7);
+			p_cycle_model->SetQuiescentVolumeFraction(0.6);
+			p_cycle_model->SetWntThreshold(0.5);
+			p_cycle_model->SetBirthTime(-birth_time);
 
 			CellPtr p_cell(new Cell(p_state, p_cycle_model));
-			p_cell->SetCellProliferativeType(p_diff_type);
-			p_cell->AddCellProperty(p_boundary);
-			p_cell->GetCellData()->SetItem("parent", p_cell->GetCellId());
+			p_cell->SetCellProliferativeType(p_trans_type);
 			p_cell->InitialiseCellCycleModel();
 
 			cells.push_back(p_cell);
 			
-			// Doesn't work with this
-			// SimplifiedPhaseBasedCellCycleModel* p_cycle_model = new SimplifiedPhaseBasedCellCycleModel();
+			// TRACE("CI model")
+			// ContactInhibitionCellCycleModel* p_cycle_model = new ContactInhibitionCellCycleModel();
 			// double birth_time = 15 * RandomNumberGenerator::Instance()->ranf();
 
-			// p_cycle_model->SetWDuration(10);
-			// p_cycle_model->SetBasePDuration(5);
 			// p_cycle_model->SetDimension(2);
 			// p_cycle_model->SetEquilibriumVolume(0.7);
 			// p_cycle_model->SetQuiescentVolumeFraction(0.6);
-			// p_cycle_model->SetWntThreshold(0.5);
 			// p_cycle_model->SetBirthTime(-birth_time);
 
 			// CellPtr p_cell(new Cell(p_state, p_cycle_model));
@@ -855,17 +871,18 @@ public:
 			// cells.push_back(p_cell);
 		}
 		// MAKE CELLS: DONE
-
+		TRACE("A")
 		// MAKE CELL POPULATION
 		NodeBasedCellPopulation<2> cell_population(mesh, cells, location_indices);
 		// MAKE CELL POPULATION: DONE
-
+		TRACE("B")
 		WntConcentration<2>::Instance()->SetType(LINEAR);
         WntConcentration<2>::Instance()->SetCellPopulation(cell_population);
         WntConcentration<2>::Instance()->SetCryptLength(n);
-
+        TRACE("C")
 		// MAKE SIMULATION
 		OffLatticeSimulationWithMutation simulator(cell_population);
+		TRACE("D")
 		simulator.SetDt(0.001);
 		simulator.SetSamplingTimestepMultiple(10);
 		simulator.SetCellLimit(11);
@@ -873,20 +890,27 @@ public:
 		std::string output_dir = "TestOffLatticeSimulationWithMutation";
 		simulator.SetOutputDirectory(output_dir);
 		// MAKE SIMULATION: DONE
-
+		TRACE("E")
 		// Create a force law and pass it to the simulation
 		typedef GeneralisedLinearSpringForce<2> Force;
 		MAKE_PTR(Force, p_force);
 		p_force->SetCutOffLength(1.5);
 		simulator.AddForce(p_force);
-
+		TRACE("F")
 		CellBasedSimulationArchiver<2,OffLatticeSimulationWithMutation, 2>::Save(&simulator);
-
+		WntConcentration<2>::Instance()->Destroy();
+		TRACE("G")
 		double start_time = 0.0;
 		OffLatticeSimulationWithMutation* p_simulator = CellBasedSimulationArchiver<2, OffLatticeSimulationWithMutation, 2 >::Load(output_dir, start_time);
-
+		TRACE("H")
+		// MeshBasedCellPopulation<2,2>* p_tissue = static_cast<MeshBasedCellPopulation<2,2>*>(&rCellPopulation);
+		MeshBasedCellPopulation<2>* p_pop = static_cast<MeshBasedCellPopulation<2>*>(&(p_simulator->rGetCellPopulation()));
+		WntConcentration<2>::Instance()->SetType(LINEAR);
+        WntConcentration<2>::Instance()->SetCellPopulation(*p_pop);
+        WntConcentration<2>::Instance()->SetCryptLength(n);
+        TRACE("HH")
 		p_simulator->Solve();
-
+		TRACE("I")
 		// Avoid memory leak
 		delete p_simulator;
 		WntConcentration<2>::Instance()->Destroy();
