@@ -20,9 +20,9 @@ function phase_plot(param, p_range, name)
                 h.heightOverTime();
 
                 if length(h.h_crypt_max_t) > 4000
-                    max_run(j) = h.mean_h_max
-                    min_run(j) = h.mean_h_min
-                    mean_run(j) = h.mean_h_mean
+                    max_run(j) = h.mean_h_max;
+                    min_run(j) = h.mean_h_min;
+                    mean_run(j) = h.mean_h_mean;
                 end
             end
         end

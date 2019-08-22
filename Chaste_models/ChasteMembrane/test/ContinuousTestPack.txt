@@ -2,3 +2,4 @@ TestArchivingSrc.hpp
 TestCryptColumn.hpp
 TestCryptColumnSave.hpp
 TestCryptColumnMutation.hpp
+TestCryptColumnShape.hpp
