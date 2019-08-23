@@ -56,12 +56,8 @@
 #include "WntConcentration.hpp"
 
 // Writers
-#include "NodePairWriter.hpp"
 #include "EpithelialCellPositionWriter.hpp"
-#include "EpithelialCellForceWriter.hpp"
-#include "EpithelialCellPositionWriter.hpp"
-#include "NewPhaseModelBirthPositionWriter.hpp"
-#include "NewPhaseCountWriter.hpp"
+#include "PopUpLocationWriter.hpp"
 
 // Misc
 #include "FakePetscSetup.hpp"
@@ -381,6 +377,14 @@ public:
 			file_output = true;
 			TRACE("File output occuring")
 
+		}
+
+		// Output popup location data
+		bool outputPopUpLocation = false;
+		if(CommandLineArguments::Instance()->OptionExists("-Pul"))
+		{   
+			outputPopUpLocation = true;
+			TRACE("Pop up location data output")
 		}
 		// ********************************************************************************************
 
@@ -827,6 +831,11 @@ public:
 		if (file_output)
 		{
 			p_tissue->AddCellWriter<EpithelialCellPositionWriter>();
+		}
+		
+		if (outputPopUpLocation)
+		{
+			p_tissue->AddCellWriter<PopUpLocationWriter>();
 		}
 		// ********************************************************************************************
 

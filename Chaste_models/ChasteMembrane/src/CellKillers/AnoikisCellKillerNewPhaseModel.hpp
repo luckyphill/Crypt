@@ -6,6 +6,7 @@
 
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/vector.hpp>
 #include <boost/serialization/base_object.hpp>
 
 #include "AbstractCellKiller.hpp"
@@ -37,6 +38,7 @@ private:
 		archive & mResistantPoppedUpLifeExpectancy;
 		archive & mPopUpDistance; // The distance above the membrane when a cell is considered to have popped up
 		archive & mCellKillCount;
+		archive & mCellsForDelayedAnoikis;
 	}
 
    

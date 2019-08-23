@@ -23,12 +23,10 @@ AnoikisCellKillerNewPhaseModel::AnoikisCellKillerNewPhaseModel(AbstractCellPopul
 	mPoppedUpLifeExpectancy(0.0),
 	mResistantPoppedUpLifeExpectancy(0.0)
 {
-
 }
 
 AnoikisCellKillerNewPhaseModel::~AnoikisCellKillerNewPhaseModel()
 {
-//    mAnoikisOutputFile->close();
 }
 
 void AnoikisCellKillerNewPhaseModel::SetPopUpDistance(double popUpDistance)
@@ -46,10 +44,6 @@ void AnoikisCellKillerNewPhaseModel::SetResistantPoppedUpLifeExpectancy(double r
 	mResistantPoppedUpLifeExpectancy = resistantPoppedUpLifeExpectancy;
 }
 
-/** Method to determine if an epithelial cell has lost all contacts with the gel cells below
- * TRUE if cell has popped up
- * FALSE if cell remains in the monolayer
- */
 bool AnoikisCellKillerNewPhaseModel::HasCellPoppedUp(unsigned nodeIndex)
 {
 	bool has_cell_popped_up = false;	// Initialising
@@ -86,9 +80,12 @@ void AnoikisCellKillerNewPhaseModel::PopulateAnoikisList()
 			{
 				MAKE_PTR(AnoikisCellTagged,p_tagged);
 				p_cell->AddCellProperty(p_tagged);
+				p_cell->GetCellData()->SetItem("written",false);
 				std::pair<CellPtr, double> cell_data;
 				cell_data = std::make_pair(p_cell, SimulationTime::Instance()->GetTime());
 				mCellsForDelayedAnoikis.push_back(cell_data);
+				// Write position to file with time stamp
+
 			}
 		}
 	}

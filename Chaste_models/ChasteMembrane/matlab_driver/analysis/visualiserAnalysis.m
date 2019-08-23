@@ -18,7 +18,7 @@ classdef visualiserAnalysis < matlab.mixin.SetGet
 
 		function obj = visualiserAnalysis(simParams,mpos,Mnp,eesM,msM,cctM,wtM,Mvf,t,dt,bt,sm,run_number)
 
-			outputType = visualiserData(containers.Map({'sm'},{sm}));
+			outputType = {   visualiserData(containers.Map({'sm'},{sm})) ,  popUpData() };
 			mutationParams = containers.Map({'mpos', 'Mnp','eesM','msM','cctM','wtM','Mvf'}, {mpos,Mnp,eesM,msM,cctM,wtM,Mvf});
 			solverParams = containers.Map({'t', 'bt', 'dt'}, {t, bt, dt});
 			seedParams = containers.Map({'run'}, {run_number});

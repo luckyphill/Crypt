@@ -9,7 +9,12 @@ function phase_plot(param, p_range, name)
     mean_run = nan(runs,1);
     for i = 1:length(p_range)
 
-        mutantParams(param) = p_range(i);
+        for k=1:length(param)
+            % Will have to pass in the mutaiton string in a cell array
+            % This is useful for when two parameters are varied together
+            % in the same way, as cctM and wtM are (to scale the cell cycle model)
+            mutantParams(param{k}) = p_range(i);
+        end
 
         for j = 1:runs
             fprintf('Mutation %d, %f, %f, %f, %f, %f run %d\n',mutantParams('Mnp'),mutantParams('eesM'),mutantParams('msM'),mutantParams('cctM'),mutantParams('wtM'),mutantParams('Mvf'),j);	
