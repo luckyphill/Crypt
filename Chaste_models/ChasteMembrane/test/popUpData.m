@@ -46,6 +46,11 @@ classdef popUpData < dataType
 	methods (Access = protected)
 
 		function file = getFullFileName(obj,sp)
+			% This should be num2str(sp.run_number), but it wasn't when the simulations ran 23-26 Aug
+			% somehow this didn't cause an error, it just made a file name like run_\#001/
+			% The numeral 'character' must be interpreted as some ASCII code. I don't know how to programmatically
+			% access these folders, so I can't move the files right now, so I hope they can be accessed
+			% Otherwise I'll have to run the simulations again...
 			folder = [sp.saveLocation, 'run_', sp.run_number, '/'];
 
 			if exist(folder,'dir')~=7
