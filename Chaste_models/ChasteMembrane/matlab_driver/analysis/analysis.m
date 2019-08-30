@@ -16,6 +16,21 @@ classdef analysis < Abstract
 		
 		% SAVE THIS FILE UNTIL ABSTRACTION IS NEEDED
 
+		chastePath
+		
+
+
+	end
+
+	methods
+
+		function visualiseCrypt(obj)
+			% Runs the java visualiser
+			pathToAnim = [obj.chastePath, 'Chaste/anim/'];
+			fprintf('Running Chaste java visualiser\n');
+			[failed, cmdout] = system(['cd ', pathToAnim, '; java Visualize2dCentreCells ', obj.simul.outputTypes{1}.getFullFilePath(obj.simul)], '-echo');
+
+		end
 
 	end
 

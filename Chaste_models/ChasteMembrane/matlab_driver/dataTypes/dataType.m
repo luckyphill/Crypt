@@ -1,4 +1,4 @@
-classdef (Abstract) dataType
+classdef (Abstract) dataType < matlab.mixin.SetGet
 	% This is an abstract class that defines the functions required for
 	% saving and loading specific data types
 	% An example of a dataType is behavioural properties, cell positions

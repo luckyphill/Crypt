@@ -11,6 +11,10 @@ classdef popUpData < dataType
 		fileNames = 'popup_location.txt';
 	end
 
+	properties
+		finalTimeStep = 0;
+	end
+
 	methods
 
 		function obj = popUpData()
@@ -20,15 +24,14 @@ classdef popUpData < dataType
 		end
 
 		function correct = verifyData(obj, data, sp)
-			% All the check we're interested in to make sure the data is correct
+			% All the checks we're interested in to make sure the data is correct
 			% Perhaps, check that there are sufficient time steps taken?
 
-			finalTimeStep = data(end,1);
+			obj.finalTimeStep = data(end,1);
 
 			t = sp.solverParams('t');
-			bt = sp.solverParams('bt');
 
-			if finalTimeStep >= t + bt
+			if obj.finalTimeStep >= 200
 				correct = true;
 			else
 				correct = false;
@@ -51,7 +54,7 @@ classdef popUpData < dataType
 			% The numeral 'character' must be interpreted as some ASCII code. I don't know how to programmatically
 			% access these folders, so I can't move the files right now, so I hope they can be accessed
 			% Otherwise I'll have to run the simulations again...
-			folder = [sp.saveLocation, 'run_', sp.run_number, '/'];
+			folder = [sp.saveLocation, 'run_', num2str(sp.run_number), '/'];
 
 			if exist(folder,'dir')~=7
 				mkdir(folder);

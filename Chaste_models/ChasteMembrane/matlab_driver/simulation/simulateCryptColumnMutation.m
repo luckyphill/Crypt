@@ -233,7 +233,9 @@ classdef simulateCryptColumnMutation < chasteSimulation
 			k = obj.mutantParams.keys;
 			v = obj.mutantParams.values;
 			for i = 1:obj.mutantParams.Count
-				obj.inputString = [obj.inputString, sprintf(' -%s %g',k{i}, v{i})];
+				if ~strcmp(k{i}, 'name')
+					obj.inputString = [obj.inputString, sprintf(' -%s %g',k{i}, v{i})];
+				end
 			end
 
 			k = obj.solverParams.keys;

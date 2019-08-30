@@ -73,12 +73,34 @@ classdef popuplocationAnalysis < matlab.mixin.SetGet
 
 			times = data(:,1);
 
-			% Strip the times
-	        data = data(:,2:end);
-	        % Strip the empty rows
-	        data = data(:);
-	        data( ~any(data,2), : ) = [];
-	        obj.puLocation = data;
+			data = data(:,2:end);
+			% Strip the empty rows
+			data( ~any(data,2), : ) = [];
+			% handle twin nodes
+			% for each row of pop up locations, compare each pair of nodes
+			% if the two x positions are within a certain range of eachother
+			% then they are most likely part of a twin node cell
+			% remove the two, and replace it with an average point between them
+			[a,b]=size(data);
+			for j = 1:a
+				for k=1:b-1
+					for l=k+1:b
+						if abs(data(j,k) - data(j,l)) < 0.8 && data(j,k) >0 && data(j,l) > 0
+							% nodes are probably part of the same cell
+							midpt = (data(j,k) + data(j,l)) / 2;
+							data(j,k) = midpt;
+							data(j,l) = 0;
+							break;
+						end
+					end
+				end
+			end
+			
+			% Put the data in a column vector
+			data = data(:);
+			%strip the remaining zeros
+			data( ~any(data,2), : ) = [];
+			obj.puLocation = data;
 
 
 		end
