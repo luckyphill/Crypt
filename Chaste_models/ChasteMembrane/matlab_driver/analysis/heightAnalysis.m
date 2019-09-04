@@ -175,7 +175,7 @@ classdef heightAnalysis < matlab.mixin.SetGet
 			pos = get(h,'Position');
 			set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
 			
-			print([getenv('HOME'), '/Research/Crypt/Images/heightanalysis/whole_crypt_max_min_mean  ',obj.simul.mutantParams('name')],'-dpdf');
+			print([getenv('HOME'), '/Research/Crypt/Images/HeightAnalysis/whole_crypt_max_min_mean  ',obj.simul.mutantParams('name')],'-dpdf');
 
 
 

@@ -1,5 +1,5 @@
 
-function data = viewPopUpIndex(keys, values, runs)
+function [counts, edges, hours, pops] = viewPopUpIndex(keys, values, runs)
 
 	simParams = containers.Map({'n', 'np', 'ees', 'ms', 'cct', 'wt', 'vf','name'}, {29, 12, 58, 216, 15, 9, 0.675,'MouseColonDesc'});
 
@@ -17,19 +17,37 @@ function data = viewPopUpIndex(keys, values, runs)
 		f.popUpIndex();
 		data = [data; f.puLocation];
 		sims = sims + 1;
-		hours = hours + f.simul.outputTypes{1}.finalTimeStep;
+		hours = hours + f.simul.outputTypes{1}.finalPopUp;
 	end
 
-	figure();
-	histogram(data,0:19, 'Normalization','probability');
+	edges = 0:19;
+	h = figure('visible','off');
+	histogram(data,edges, 'Normalization','probability');
+
+	counts = histcounts(data,edges);
+
+	pops = length(data);
+
 	ylim([0 .12]);
-	plot_title = sprintf('Pop up index: %s = %g', keys{1}, values{1});
-	for i = 2:length(keys)
-		plot_title = [plot_title, sprintf(', %s = %g', keys{i}, values{i})];
+	plot_title = sprintf('Pop up index:');
+	for i = 1:length(keys)
+		plot_title = [plot_title, sprintf(' %s = %g', keys{i}, values{i})];
 	end
 
-	plot_title = {plot_title; sprintf('%d events over %.0f hours split between %d simulations', length(data), hours, sims)};
+	plot_title = {plot_title; sprintf('%d events over %.0f hours split between %d simulations', pops, hours, sims)};
 	title(plot_title);
+
+	set(h,'Units','Inches');
+	pos = get(h,'Position');
+	set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
+
+	imageFile = [getenv('HOME'), '/Research/Crypt/Images/PopUpIndex/popup_index'];
+	for i = 1:length(keys)
+		imageFile = [imageFile, sprintf('_%s_%g', keys{i}, values{i})];
+	end
+	
+	print(imageFile,'-dpdf');
+	close(h)
 
 end
 

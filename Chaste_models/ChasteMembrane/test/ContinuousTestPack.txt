@@ -3,3 +3,4 @@ TestCryptColumn.hpp
 TestCryptColumnSave.hpp
 TestCryptColumnMutation.hpp
 TestCryptColumnShape.hpp
+TestCryptColumnFullMutation.hpp

@@ -20,7 +20,7 @@ function phase_plot(param, p_range, name)
             fprintf('Mutation %d, %f, %f, %f, %f, %f run %d\n',mutantParams('Mnp'),mutantParams('eesM'),mutantParams('msM'),mutantParams('cctM'),mutantParams('wtM'),mutantParams('Mvf'),j);	
 
             % load each simulation, get the averages, collate over parameter range
-            h = heightAnalysis(simParams,mutantParams,4000,0.0005,100,1000,j);
+            h = heightAnalysis(simParams,mutantParams,6000,0.0005,100,100,j);
             try
                 h.heightOverTime();
 
@@ -47,6 +47,7 @@ function plot_pics(r_max,r_mean,r_min,p_range,name)
     g = figure;
     plot(p_range,r_max, p_range,r_min, p_range,r_mean,'LineWidth' , 4)
     title(name)
+    ylim([0.5 5])
     set(g,'Units','Inches');
     pos = get(g,'Position');
     set(g,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])

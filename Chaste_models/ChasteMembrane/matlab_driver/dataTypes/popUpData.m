@@ -13,6 +13,7 @@ classdef popUpData < dataType
 
 	properties
 		finalTimeStep = 0;
+		finalPopUp = 0;
 	end
 
 	methods
@@ -28,6 +29,14 @@ classdef popUpData < dataType
 			% Perhaps, check that there are sufficient time steps taken?
 
 			obj.finalTimeStep = data(end,1);
+
+			n = find(any(data(:,2:end),2),1,'last');
+			if size(n) == [0,1]
+				obj.finalPopUp = obj.finalTimeStep;
+			else
+				obj.finalPopUp = data(n,1);
+			end
+
 
 			t = sp.solverParams('t');
 
