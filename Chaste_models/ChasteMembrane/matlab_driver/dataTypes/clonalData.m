@@ -9,10 +9,10 @@ classdef clonalData < dataType
 
 	methods
 
-		function obj = clonalData(typeParams)
+		function obj = clonalData()
 			% Constructor needs to be given the parameters that the particular chasteTest
 			% needs in order to generate the expected output format
-			obj.typeParams = typeParams;
+			obj.typeParams = containers.Map({'Sml', 'Scc'}, {1,1});
 		end
 
 		function correct = verifyData(obj, data, sp)
@@ -34,14 +34,40 @@ classdef clonalData < dataType
 		end
 
 		function file = getFullFileName(obj,sp)
-			folder = [sp.saveLocation, obj.name, '/'];
+
+			file = [obj.getFullFilePath(sp), obj.fileNames, '_', num2str(sp.run_number), '.txt'];
+		end
+
+
+		function folder = getFullFilePath(obj,sp)
+			folder = [sp.saveLocation, obj.name];
+
+
+			folder = [folder, '/numerics'];
+
+			k = sp.solverParams.keys;
+			v = sp.solverParams.values;
+			for i = 1:sp.solverParams.Count
+				folder = [folder, sprintf('_%s_%g',k{i}, v{i})];
+			end
+			
+			folder = [folder, '/mutant'];
+			
+			k = sp.mutantParams.keys;
+			v = sp.mutantParams.values;
+			for i = 1:sp.mutantParams.Count
+				if ~strcmp(k{i},'name')
+					folder = [folder, sprintf('_%s_%g',k{i}, v{i})];
+				end
+			end
+
+			folder = [folder, '/'];
 
 			if exist(folder,'dir')~=7
 				mkdir(folder);
 			end
 
-			file = [folder, obj.fileNames, '_', num2str(sp.run_number), '.txt'];
-		end
+		end		
 
 	end
 

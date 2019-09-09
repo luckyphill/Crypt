@@ -6,7 +6,7 @@
 #include "CommandLineArguments.hpp"
 
 // Simulators
-#include "OffLatticeSimulation.hpp"
+#include "OffLatticeSimulationWithMutation.hpp"
 
 // Forces
 #include "NormalAdhesionForceNewPhaseModel.hpp"
@@ -63,8 +63,7 @@
 #include "FakePetscSetup.hpp"
 #include "Debug.hpp"
 
-
-class TestCryptColumnFullMutation : public AbstractCellBasedTestSuite
+class TestCryptColumnSingleMutation : public AbstractCellBasedTestSuite
 {
 	
 public:
@@ -200,7 +199,6 @@ public:
 		// ********************************************************************************************
 
 
-
 		// ********************************************************************************************
 		// Simulation parameters
 		double dt = 0.0005; // The minimum to get covergant simulations for a specific parameter set
@@ -241,6 +239,18 @@ public:
 		// Mutation input parameters
 		// ********************************************************************************************
 		TRACE("Mutation parameters")
+
+
+		// ********************************************************************************************
+		// Mutant cell position
+		unsigned mutationPosition = 1;
+		if(CommandLineArguments::Instance()->OptionExists("-mpos"))
+		{	
+			mutationPosition = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-mpos");
+		}
+		PRINT_VARIABLE(mutationPosition)
+		// ********************************************************************************************
+
 
 		// ******************************************************************************************** 
 		// Differentiation position 
@@ -324,6 +334,9 @@ public:
 			PRINT_VARIABLE(wtModifier)
 		}
 
+		// Need to ensure that the cell cycle is not less than the growing phase
+		assert(cctModifier * cellCycleTime + 1 > wtModifier * wPhaseLength);
+
 		// ********************************************************************************************
 
 		// ********************************************************************************************
@@ -336,6 +349,36 @@ public:
 
 		}
 		// ********************************************************************************************     
+  
+
+		// ********************************************************************************************
+		// Stopping criteria for mutation - there's no point in continuing when the mutation has gone
+		// ********************************************************************************************
+		
+
+		// ********************************************************************************************
+		// Stop when the monolayer has no mutant cells
+		// This is useful for expediting the detection of mutation wash out, since the mutation will
+		// not remain in the crypt when it has popped up, it's just a matter of time
+		bool stopOnEmptyMonolayer = false;
+		if(CommandLineArguments::Instance()->OptionExists("-Sml"))
+		{   
+			stopOnEmptyMonolayer = true;
+			TRACE("Stopping on empty monolayer")
+		}
+		// ********************************************************************************************
+
+		// ********************************************************************************************
+		// Stop when clonal conversion is reached
+		// This is only going to be used when observing clonal conversion likelihood
+		bool stopOnClonalConversion = false;
+		if(CommandLineArguments::Instance()->OptionExists("-Scc"))
+		{   
+			stopOnClonalConversion = true;
+			TRACE("Stopping on clonal conversion")
+		}
+		// ********************************************************************************************
+
 
 
 		// ********************************************************************************************
@@ -537,21 +580,27 @@ public:
 
 		// ********************************************************************************************
 		// Make the simulation
-		OffLatticeSimulation<2> simulator(cell_population);
+		OffLatticeSimulationWithMutation simulator(cell_population);
 		simulator.SetDt(dt);
 		simulator.SetSamplingTimestepMultiple(sampling_multiple);
+		simulator.SetCellLimit(cell_limit);
+
+		// Set stopping criteria
+		if (stopOnEmptyMonolayer)
+		{
+			simulator.StopOnEmptyMonolayer();
+		}
+
+		if (stopOnClonalConversion)
+		{
+			simulator.StopOnClonalConversion();
+		}
 		// ********************************************************************************************
 
 		// ********************************************************************************************
 		// Building the directory name
 		std::stringstream mutdir;
-
-		mutdir << "Mnp_" << mutantProliferativeCompartment;
-		mutdir << "_eesM_" << eesModifier;
-		mutdir << "_msM_" << msModifier;
-		mutdir << "_cctM_" << cctModifier;
-		mutdir << "_wtM_" << wtModifier;
-		mutdir << "_Mvf_" << mutantQuiescentVolumeFraction;
+		mutdir << "mpos_" << mutationPosition;
 
 		if (setPopUpDivision)
 		{
@@ -570,10 +619,17 @@ public:
 			mutdir << "_rcct_" << resistantCellCycleTime;	
 		}
 
+		mutdir << "_Mnp_" << mutantProliferativeCompartment;
+		mutdir << "_eesM_" << eesModifier;
+		mutdir << "_msM_" << msModifier;
+		mutdir << "_cctM_" << cctModifier;
+		mutdir << "_wtM_" << wtModifier;
+		mutdir << "_Mvf_" << mutantQuiescentVolumeFraction;
+
 		std::stringstream rundir;
 		rundir << "run_" << run_number;
 		
-		std::string output_directory = "TestCryptColumnFullMutation/" +  cryptType.str() + "/" + mutdir.str() + "/" + rundir.str();
+		std::string output_directory = "TestCryptColumnSingleMutation/" +  cryptType.str() + "/" + mutdir.str() + "/" + rundir.str();
 
 		simulator.SetOutputDirectory(output_directory);
 		OutputFileHandler output_file_handler(output_directory+"/", true);
@@ -716,37 +772,97 @@ public:
 
 
 		// ********************************************************************************************
-		// Set all of the cells to mutant cells
+		// Find the cell at mutationPosition
 		MeshBasedCellPopulation<2,2>* p_tissue = static_cast<MeshBasedCellPopulation<2,2>*>(&simulator.rGetCellPopulation());
 		std::list<CellPtr> pos_cells =  p_tissue->rGetCells();
 
-		MAKE_PTR(TransitCellAnoikisResistantMutationState, p_resistant);
-		MAKE_PTR(WeakenedMembraneAdhesion, p_Mweakened);
-		MAKE_PTR(WeakenedCellCellAdhesion, p_Eweakened);
 
-		for (std::list<CellPtr>::iterator it = pos_cells.begin(); it != pos_cells.end(); ++it)
+		// Sort the cells in order of height
+		pos_cells.sort(
+			[p_tissue](CellPtr A, CellPtr B)
 		{
-			unsigned index = p_tissue->GetLocationIndexUsingCell((*it));
-			// Make sure we don't do anything to the fixed node at the bottom
-			if (index != 0)
-			{
-				(*it)->SetMutationState(p_resistant);
-				(*it)->AddCellProperty(p_Mweakened);
-				(*it)->AddCellProperty(p_Eweakened);
+			Node<2>* node_A = p_tissue->GetNodeCorrespondingToCell(A);
+			Node<2>* node_B = p_tissue->GetNodeCorrespondingToCell(B);
+			return (node_A->rGetLocation()[1] < node_B->rGetLocation()[1]);
+		});
 
-				SimplifiedPhaseBasedCellCycleModel* p_ccm = static_cast<SimplifiedPhaseBasedCellCycleModel*>((*it)->GetCellCycleModel());
-				
-				p_ccm->SetWDuration( wtModifier * wPhaseLength);
-				p_ccm->SetBasePDuration(cctModifier * cellCycleTime - wtModifier * wPhaseLength);
-				p_ccm->SetQuiescentVolumeFraction(mutantQuiescentVolumeFraction);
-				p_ccm->SetWntThreshold(1 - (double)mutantProliferativeCompartment/n);
+		std::list<CellPtr>::iterator it = pos_cells.begin();
+		
+		double position = 0;
+		while (position < mutationPosition && it != pos_cells.end())
+		{
+			SimplifiedPhaseBasedCellCycleModel* p_ccm = static_cast<SimplifiedPhaseBasedCellCycleModel*>((*it)->GetCellCycleModel());
+			SimplifiedCellCyclePhase phase = p_ccm->GetCurrentCellCyclePhase();
+
+			if (phase == W_PHASE)
+			{
+				position += 0.5;
 			}
+			else
+			{
+				position += 1.0;
+			}
+
+			std::advance(it, 1);
 		}
 		// ********************************************************************************************
 		
 
 		// ********************************************************************************************
-		// Add cell population writers if they are requested	
+		// Add the mutation to this node and it's twin if it exists
+		// If we can't find the cell that is supposed to have a mutation, then we're in trouble
+		assert(it != pos_cells.end());
+
+		MAKE_PTR(TransitCellAnoikisResistantMutationState, p_resistant);
+		MAKE_PTR(WeakenedMembraneAdhesion, p_Mweakened);
+		MAKE_PTR(WeakenedCellCellAdhesion, p_Eweakened);
+
+		(*it)->SetMutationState(p_resistant);
+		(*it)->AddCellProperty(p_Mweakened);
+		(*it)->AddCellProperty(p_Eweakened);
+
+		// Find twin and set mutation state
+		SimplifiedPhaseBasedCellCycleModel* p_ccm = static_cast<SimplifiedPhaseBasedCellCycleModel*>((*it)->GetCellCycleModel());
+		SimplifiedCellCyclePhase phase = p_ccm->GetCurrentCellCyclePhase();
+		
+		p_ccm->SetWDuration( wtModifier * wPhaseLength);
+		p_ccm->SetBasePDuration(cctModifier * cellCycleTime - wtModifier * wPhaseLength);
+		p_ccm->SetQuiescentVolumeFraction(mutantQuiescentVolumeFraction);
+		p_ccm->SetWntThreshold(1 - (double)mutantProliferativeCompartment/n);
+
+
+		CellPtr cell_twin;
+		if (phase == W_PHASE)
+		{
+			// Find twin
+			Node<2>* p_node = p_tissue->GetNodeCorrespondingToCell((*it));
+			Node<2>* p_twin = p_force->FindTwinNode(simulator.rGetCellPopulation(), p_node);
+			if (p_twin != p_node)
+			{
+				cell_twin = simulator.rGetCellPopulation().GetCellUsingLocationIndex(p_twin->GetIndex());
+				cell_twin->SetMutationState(p_resistant);
+				cell_twin->AddCellProperty(p_Mweakened);
+				cell_twin->AddCellProperty(p_Eweakened);
+
+				SimplifiedPhaseBasedCellCycleModel* p_ccm_twin = static_cast<SimplifiedPhaseBasedCellCycleModel*>(cell_twin->GetCellCycleModel());
+				p_ccm_twin->SetWDuration( wtModifier * wPhaseLength);
+				p_ccm_twin->SetBasePDuration(cctModifier * cellCycleTime - wtModifier * wPhaseLength);
+				p_ccm_twin->SetQuiescentVolumeFraction(mutantQuiescentVolumeFraction);
+				p_ccm_twin->SetWntThreshold(1 - (double)mutantProliferativeCompartment/n);
+			}
+		}
+
+		// ********************************************************************************************
+
+		
+
+		// ********************************************************************************************
+		// Add cell population writers if they are requested
+		if (file_output)
+		{
+			p_tissue->AddCellWriter<EpithelialCellPositionWriter>();
+		}
+		
 		if (outputPopUpLocation)
 		{
 			p_tissue->AddCellWriter<PopUpLocationWriter>();
@@ -755,10 +871,23 @@ public:
 
 
 		// ********************************************************************************************
+		// The final step, turn on wash out watching - now that the mutation has been added, we want
+		// to stop the simulation when it has vanished from the crypt
+		simulator.WashOutSwitch();
+		// ******************************************************************************************** 
+
+
+		// ********************************************************************************************
 		// Run the simulation to be observed
 		TRACE("Starting simulation proper")
 		TRACE("START")
 		simulator.Solve();
+
+		if (SimulationTime::Instance()->GetTime() >= burn_in_time + simulation_length - dt)
+		{
+			TRACE("Timeout")
+		}
+
 		
 		// Here be statistics
 		TRACE("END")
