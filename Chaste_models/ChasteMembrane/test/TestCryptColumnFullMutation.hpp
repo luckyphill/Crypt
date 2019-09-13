@@ -749,7 +749,7 @@ public:
 		// Add cell population writers if they are requested	
 		if (outputPopUpLocation)
 		{
-			p_tissue->AddCellWriter<PopUpLocationWriter>();
+			p_tissue->AddPopulationWriter<PopUpLocationWriter>();
 		}
 		// ********************************************************************************************
 

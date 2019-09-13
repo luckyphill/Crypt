@@ -16,28 +16,17 @@ classdef visualiserAnalysis < matlab.mixin.SetGet
 
 	methods
 
-		function obj = visualiserAnalysis(simParams,mpos,Mnp,eesM,msM,cctM,wtM,Mvf,t,dt,bt,sm,run_number)
+		function obj = visualiserAnalysis(simParams,Mnp,eesM,msM,cctM,wtM,Mvf,t,bt,sm,run_number)
 
 			outputType = {   visualiserData(containers.Map({'sm'},{sm})) ,  popUpData() };
-			mutationParams = containers.Map({'mpos', 'Mnp','eesM','msM','cctM','wtM','Mvf'}, {mpos,Mnp,eesM,msM,cctM,wtM,Mvf});
-			solverParams = containers.Map({'t', 'bt', 'dt'}, {t, bt, dt});
+			mutationParams = containers.Map({'Mnp','eesM','msM','cctM','wtM','Mvf'}, {Mnp,eesM,msM,cctM,wtM,Mvf});
+			solverParams = containers.Map({'t', 'bt'}, {t, bt});
 			seedParams = containers.Map({'run'}, {run_number});
 
 			obj.chastePath = [getenv('HOME'), '/'];
 
-			outputLocation = getenv('CHASTE_TEST_OUTPUT');
 
-			if isempty(outputLocation)
-				obj.chasteTestOutputLocation = ['/tmp/', getenv('USER'),'/testoutput/'];
-			else
-				if ~strcmp(outputLocation(end),'/')
-					outputLocation(end+1) = '/';
-				end
-				obj.chasteTestOutputLocation = outputLocation;
-			end
-
-
-			obj.simul = simulateCryptColumnMutation(simParams, mutationParams, solverParams, seedParams, outputType, obj.chastePath, obj.chasteTestOutputLocation);
+			obj.simul = simulateCryptColumnFullMutation(simParams, mutationParams, solverParams, seedParams, outputType);
 			
 			if ~obj.simul.generateSimulationData()
 				fprintf('Failed to get the data');
@@ -47,6 +36,7 @@ classdef visualiserAnalysis < matlab.mixin.SetGet
 
 		function visualiseCrypt(obj)
 			% Runs the java visualiser
+
 			pathToAnim = [obj.chastePath, 'Chaste/anim/'];
 			fprintf('Running Chaste java visualiser\n');
 			[failed, cmdout] = system(['cd ', pathToAnim, '; java Visualize2dCentreCells ', obj.simul.saveLocation]);

@@ -4,7 +4,7 @@
 #SBATCH -n 1 
 #SBATCH --time=72:00:00 
 #SBATCH --mem=1GB 
-#SBATCH --array=0-590
+#SBATCH --array=0-580
 # NOTIFICATIONS
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=phillip.j.brown@adelaide.edu.au
@@ -33,8 +33,8 @@ do
 done < detail_mutations.txt 
 
 if [ $found = 1 ]; then
-	echo "matlab -nodisplay -nodesktop -r cd ../../; addpath(genpath(pwd)); runVisualiserAnalysis('MouseColonDesc',$mnp,$eesM,$msM,$cctM,$wtM,$mvf,$runs); quit()"
-    matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); runVisualiserAnalysis('MouseColonDesc',$mnp,$eesM,$msM,$cctM,$wtM,$mvf,$runs); quit()"
+	echo "matlab -nodisplay -nodesktop -r cd ../../; addpath(genpath(pwd)); runVisualiserAnalysis(1,$mnp,$eesM,$msM,$cctM,$wtM,$mvf,$runs); quit()"
+    matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); runVisualiserAnalysis(1,$mnp,$eesM,$msM,$cctM,$wtM,$mvf,$runs); quit()"
 else 
   echo "detail_mutations.txt  does not have enough parameters for $SLURM_ARRAY_TASK_ID index" 
 fi

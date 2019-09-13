@@ -36,8 +36,8 @@ crypt=$1
 
 
 if [ $found = 1 ]; then
-	echo "matlab -nodisplay -nodesktop -r cd ../../; addpath(genpath(pwd)); runClonalConversion(1,{1, $Mnp, $eesM, $msM, $cctM, $wtM, $Mvf}, $inst); quit()"
-    matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); runClonalConversion(1,{1, $Mnp, $eesM, $msM, $cctM, $wtM, $Mvf}, $inst) quit()"
+	echo "matlab -nodisplay -nodesktop -r cd ../../; addpath(genpath(pwd)); runClonalConversion(1, {1, $Mnp, $eesM, $msM, $cctM, $wtM, $Mvf}, $inst); quit()"
+    matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); runClonalConversion(1, {1, $Mnp, $eesM, $msM, $cctM, $wtM, $Mvf}, $inst); quit()"
 else 
   echo "clonal_sweep.txt  does not have enough parameters for $SLURM_ARRAY_TASK_ID index" 
 fi
