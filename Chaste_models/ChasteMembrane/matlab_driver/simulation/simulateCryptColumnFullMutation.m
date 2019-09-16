@@ -170,27 +170,13 @@ classdef simulateCryptColumnFullMutation < chasteSimulation
 			% This generates the full path to the specific data file for the simulation
 			% If the path doesn't exist it creates the missing folder structure
 
-			obj.saveLocation = [obj.chastePath, 'Research/Crypt/Data/Chaste/', obj.chasteTest, '/'];
+			obj.saveLocation = [obj.chastePath, 'Research/Crypt/Data/Chaste/', obj.chasteTest, '/', obj.cryptName];
 
 			% Build the folder structure with the parameter names
 			% This uses the order that the map puts it in
 			% and it doesn't account for the default value of parameters when they
 			% aren't in the simParams keys
 
-			if isKey(obj.simParams,'name');
-				% Allows for the possibility of naming a particular parameter set
-				% useful if they need to be distinguished easily, but could lead to 
-				% duplication of data and simulation time
-				obj.saveLocation = [obj.saveLocation, obj.simParams('name')];
-			else
-				k = obj.simParams.keys;
-				v = obj.simParams.values;
-
-				obj.saveLocation = [obj.saveLocation, 'params'];
-				for i = 1:obj.simParams.Count
-					obj.saveLocation = [obj.saveLocation, sprintf('_%s_%g',k{i}, v{i})];
-				end
-			end
 
 			obj.saveLocation = [obj.saveLocation, '/mutant'];
 			
