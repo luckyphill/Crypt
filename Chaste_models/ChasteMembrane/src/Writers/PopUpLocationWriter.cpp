@@ -37,7 +37,7 @@ void PopUpLocationWriter<ELEMENT_DIM, SPACE_DIM>::VisitAnyPopulation(AbstractCel
 			{
 				// If it needs to be written, check if it is a multinode cell
 				unsigned location_index = pCellPopulation->GetLocationIndexUsingCell(p_cell);
-				double parent1 = (*it)->GetCellData()->GetItem("parent");
+				double parent = (*it)->GetCellData()->GetItem("parent");
 							
 				double value = 0.0;
 				if (SPACE_DIM == 2)
