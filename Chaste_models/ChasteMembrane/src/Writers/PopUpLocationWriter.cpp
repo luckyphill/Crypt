@@ -31,20 +31,24 @@ void PopUpLocationWriter<ELEMENT_DIM, SPACE_DIM>::VisitAnyPopulation(AbstractCel
 		for (std::list<CellPtr>::iterator it = cells.begin(); it != cells.end(); ++it)
 		{
 			CellPtr p_cell = *it;
+			
 
 			// First, decide if the cell has popped up and hasn't been written
 			if ( p_cell->HasCellProperty<AnoikisCellTagged>()  &&  !p_cell->GetCellData()->GetItem("written"))
 			{
-				// If it needs to be written, check if it is a multinode cell
+				SimplifiedPhaseBasedCellCycleModel* p_ccm = static_cast<SimplifiedPhaseBasedCellCycleModel*>(p_cell->GetCellCycleModel());
+				SimplifiedCellCyclePhase phase = p_ccm->GetCurrentCellCyclePhase();
+				double age = p_ccm->GetAge();
+
 				unsigned location_index = pCellPopulation->GetLocationIndexUsingCell(p_cell);
-				double parent = (*it)->GetCellData()->GetItem("parent");
+				double parent = p_cell->GetCellData()->GetItem("parent");
 							
 				double value = 0.0;
 				if (SPACE_DIM == 2)
 				{
 					value = pCellPopulation->GetNode(location_index)->rGetLocation()[1];
 				}
-				*this->mpOutStream << ", " << value << ", " << parent;
+				*this->mpOutStream << ", " << value << ", " << parent << ", " << age << ", " << phase;
 				p_cell->GetCellData()->SetItem("written",true);
 			}
 		}
