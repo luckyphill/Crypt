@@ -62,7 +62,7 @@ public:
 
 		// ********************************************************************************************
 		// Crypt size parameters
-		unsigned n = 40;
+		unsigned n = 40; // The height in cell diameters
 		if(CommandLineArguments::Instance()->OptionExists("-n"))
 		{	
 			n = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-n");
@@ -70,7 +70,7 @@ public:
 
 		}
 
-		unsigned waves = 2;
+		unsigned waves = 2; // The number of periods in the "crypt"
 		if(CommandLineArguments::Instance()->OptionExists("-w"))
 		{	
 			waves = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-w");
@@ -78,7 +78,7 @@ public:
 
 		}
 
-		double speed = 1; // The minimum to get covergant simulations for a specific parameter set
+		double speed = 1; // The rate of movement for the wave
 		if(CommandLineArguments::Instance()->OptionExists("-sp"))
 		{
 			speed = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-sp");
@@ -87,7 +87,7 @@ public:
 
 		// ********************************************************************************************
 		// Simulation parameters
-		double dt = 0.002; // The minimum to get covergant simulations for a specific parameter set
+		double dt = 0.005; // The minimum to get covergant simulations for a specific parameter set
 		if(CommandLineArguments::Instance()->OptionExists("-dt"))
 		{
 			dt = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-dt");
@@ -108,7 +108,7 @@ public:
 		// ********************************************************************************************
 		// Output control
 		bool file_output = true;
-		double sampling_multiple = 100;
+		double sampling_multiple = 1000;
 		file_output = true;
 		TRACE("File output occuring")
 
@@ -255,15 +255,7 @@ public:
 
 	void TestCryptPulse() throw(Exception)
 	{
-		// This test simulates a column of cells that move in 2 dimensions
-		// Growing cells are represented as two nodes throughout the duration of W phase
-		// There are three types of interactions:
-		// Between cells - this uses the standard non-linear force
-		// Between cells and basement membrane - this uses a force normal to the fixed membrane
-		// Between nodes of the same cell - this uses a stronger linear force
-		// Growing cells have a special boundary condition applied to them to force the division to
-		// happen parallel to the membrane, that also, somewhat unnaturally, forces the cells
-		// into specific height above the membrane, to prevent "half-cell death"
+		// This simulates a pulse of cells moving up the crypt at a fixed speec
 
 
 
@@ -300,7 +292,7 @@ public:
 
 		// ********************************************************************************************
 		// Simulation parameters
-		double dt = 0.002; // The minimum to get covergant simulations for a specific parameter set
+		double dt = 0.005; // The minimum to get covergant simulations for a specific parameter set
 		if(CommandLineArguments::Instance()->OptionExists("-dt"))
 		{
 			dt = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-dt");
@@ -308,7 +300,7 @@ public:
 		}
 		
 
-		double simulation_length = 100;
+		double simulation_length = 23/speed;
 		if(CommandLineArguments::Instance()->OptionExists("-t"))
 		{	
 			simulation_length = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-t");
@@ -348,9 +340,14 @@ public:
 		double x = x_distance;
 		double y = y_distance;
 
-		unsigned x_layer = 1; // Thickness of non-oscilating part
+		unsigned x_layer = 0; // Thickness of non-oscilating part
 		unsigned x_height = 6; // Maximum stack height
+		if(CommandLineArguments::Instance()->OptionExists("-h"))
+		{	
+			x_height = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-h");
+			PRINT_VARIABLE(x_height)
 
+		}
 		
 
 		// Initialise the crypt nodes
@@ -358,8 +355,8 @@ public:
 		{
 			for(unsigned j = 0; j <= x_height; j++)
 			{
-				x = j;
-				y = y_distance + i;
+				x = j * sqrt(3)/2;
+				y = y_distance + i + 0.5 * (j % 2);
 				if (   x <= x_layer + (x_height + 0.1) * std::exp(  -std::pow( (y - (double)n/2) / waves, 2 )  )    )
 				{
 					Node<2>* single_node =  new Node<2>(node_counter,  false,  x, y);
@@ -410,6 +407,8 @@ public:
 		std::stringstream simdir;
 		simdir << "n_" << n;
 		simdir << "_size_" << waves;
+		simdir << "_speed_" << speed;
+		simdir << "_height_" << x_height;
 		
 		std::string output_directory = "TestCryptColumnShape/Pulse/" +  simdir.str() + "/";
 

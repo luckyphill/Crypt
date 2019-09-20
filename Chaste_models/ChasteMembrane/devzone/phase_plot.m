@@ -1,6 +1,6 @@
 function phase_plot(param, p_range, name)
-    simParams = containers.Map({'n', 'np', 'ees', 'ms', 'cct', 'wt', 'vf','name'}, {29, 12, 58, 216, 15, 9, 0.675,'MouseColonDesc'});
-    mutantParams = containers.Map({'mpos', 'Mnp','eesM','msM','cctM','wtM','Mvf'}, {1,12,1,1,1,1,0.675});
+    simParams = containers.Map({'crypt'}, {1});
+    mutantParams = containers.Map({'Mnp','eesM','msM','cctM','wtM','Mvf'}, {12,1,1,1,1,0.675});
 
     runs = 10;
 
@@ -17,10 +17,10 @@ function phase_plot(param, p_range, name)
         end
 
         for j = 1:runs
-            fprintf('Mutation %d, %f, %f, %f, %f, %f run %d\n',mutantParams('Mnp'),mutantParams('eesM'),mutantParams('msM'),mutantParams('cctM'),mutantParams('wtM'),mutantParams('Mvf'),j);	
+            fprintf('Mutation %d, %.2f, %.2f, %.2f, %.2f, %.3f run %d\n',mutantParams('Mnp'),mutantParams('eesM'),mutantParams('msM'),mutantParams('cctM'),mutantParams('wtM'),mutantParams('Mvf'),j);	
 
             % load each simulation, get the averages, collate over parameter range
-            h = heightAnalysis(simParams,mutantParams,6000,0.0005,100,100,j);
+            h = heightAnalysis(simParams,mutantParams,6000,100,1000,j);
             try
                 h.heightOverTime();
 

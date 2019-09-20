@@ -11,7 +11,7 @@ wt = 9;
 
 runs = 10;
 firstbit = '/Users/phillipbrown/testoutput/TestCryptColumnFullMutation/MouseColonDesc/';
-secondbit = '/Users/phillipbrown/Research/Crypt/Data/Chaste/TestCryptColumnFullMutation/MouseColonDesc/'
+secondbit = '/Users/phillipbrown/Research/Crypt/Data/Chaste/TestCryptColumnFullMutation/MouseColonDesc/';
 
 files = {'results.vizboundarynodes','results.vizcelltypes', 'results.viznodes', 'results.vizsetup','popup_location.txt'};
 

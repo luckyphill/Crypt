@@ -27,10 +27,10 @@ classdef popuplocationAnalysis < matlab.mixin.SetGet
 
 	methods
 
-		function obj = popuplocationAnalysis(simParams,mutantParams,t,dt,bt,sm,run_number)
+		function obj = popuplocationAnalysis(simParams,mutantParams,t,bt,sm,run_number)
 
 			outputType = popUpData();
-			solverParams = containers.Map({'t', 'bt', 'dt'}, {t, bt, dt});
+			solverParams = containers.Map({'t', 'bt'}, {t, bt});
 			seedParams = containers.Map({'run'}, {run_number});
 
 			obj.chastePath = [getenv('HOME'), '/'];
@@ -51,7 +51,7 @@ classdef popuplocationAnalysis < matlab.mixin.SetGet
 				mkdir(obj.imageLocation);
 			end
 
-			obj.simul = simulateCryptColumnMutation(simParams, mutantParams, solverParams, seedParams, outputType, obj.chastePath, obj.chasteTestOutputLocation);
+			obj.simul = simulateCryptColumnFullMutation(simParams, mutantParams, solverParams, seedParams, outputType);
 			
 			obj.simul.loadSimulationData();
 
@@ -74,33 +74,38 @@ classdef popuplocationAnalysis < matlab.mixin.SetGet
 			times = data(:,1);
 
 			data = data(:,2:end);
-			% Strip the empty rows
+
 			data( ~any(data,2), : ) = [];
-			% handle twin nodes
-			% for each row of pop up locations, compare each pair of nodes
-			% if the two x positions are within a certain range of eachother
-			% then they are most likely part of a twin node cell
-			% remove the two, and replace it with an average point between them
+
 			[a,b]=size(data);
+			all_pos = [];
 			for j = 1:a
-				for k=1:b-1
-					for l=k+1:b
-						if abs(data(j,k) - data(j,l)) < 0.8 && data(j,k) >0 && data(j,l) > 0
-							% nodes are probably part of the same cell
-							midpt = (data(j,k) + data(j,l)) / 2;
-							data(j,k) = midpt;
-							data(j,l) = 0;
-							break;
-						end
-					end
-				end
+			    
+			    % for each line grab the position and parent
+			    % for unique parents, just dump the position
+			    % for pairs, take the average
+			    
+			    pos = data(j,1:4:end);
+			    par = data(j,2:4:end);
+			    pha = data(j,4:4:end);
+			    
+			    for k = 1:length(par)
+			        if pha(k) == 2
+			            for l = 2:length(par)
+			                if par(k) == par(l)
+			                    all_pos(end+1) = (pos(k)+pos(l))/2;
+			                    break;
+			                end
+			            end
+			        else
+			            all_pos(end+1) = pos(k);
+			        end
+			            
+			    end
 			end
-			
-			% Put the data in a column vector
-			data = data(:);
-			%strip the remaining zeros
-			data( ~any(data,2), : ) = [];
-			obj.puLocation = data;
+			% This will catch a lot of zeros, so need to strip them
+			all_pos(:, ~any(all_pos,1)) = [];
+			obj.puLocation = all_pos';
 
 
 		end

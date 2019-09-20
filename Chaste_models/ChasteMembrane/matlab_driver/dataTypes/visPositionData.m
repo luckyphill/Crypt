@@ -3,7 +3,7 @@ classdef visPositionData < dataType
 	% This hence should only be used when redaing data, not generating data
 
 	properties (Constant = true)
-		name = 'visualiser_data';
+		name = 'vispos_data';
 
 		fileNames = 'results.viznodes';
 	end

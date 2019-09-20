@@ -1,11 +1,12 @@
 
 function [counts, edges, hours, pops] = viewPopUpIndex(keys, values, runs)
 
-	simParams = containers.Map({'n', 'np', 'ees', 'ms', 'cct', 'wt', 'vf','name'}, {29, 12, 58, 216, 15, 9, 0.675,'MouseColonDesc'});
+	simParams = containers.Map({'crypt'}, {1});
 
-	mutantParams = containers.Map({'mpos', 'Mnp','eesM','msM','cctM','wtM','Mvf','name'}, {1,12,1,1,1,1,0.675,'no mutation'});
+	mutantParams = containers.Map({'Mnp','eesM','msM','cctM','wtM','Mvf','name'}, {12,1,1,1,1,0.675,'no mutation'});
 
 	for i=1:length(keys)
+		% Only works when the value is the same for both keys
 		mutantParams(keys{i}) = values{i};
 	end
 
@@ -13,11 +14,11 @@ function [counts, edges, hours, pops] = viewPopUpIndex(keys, values, runs)
 	sims = 0;
 	hours = 0;
 	for i = 1:runs
-		f = popuplocationAnalysis(simParams,mutantParams,6000,0.0005,100,100,i);
+		f = popuplocationAnalysis(simParams,mutantParams,6000,100,1000,i);
 		f.popUpIndex();
 		data = [data; f.puLocation];
 		sims = sims + 1;
-		hours = hours + f.simul.outputTypes{1}.finalPopUp;
+		hours = hours + f.simul.outputTypes{1}.finalTimeStep;
 	end
 
 	edges = 0:19;
@@ -28,7 +29,7 @@ function [counts, edges, hours, pops] = viewPopUpIndex(keys, values, runs)
 
 	pops = length(data);
 
-	ylim([0 .12]);
+	ylim([0 .15]);
 	plot_title = sprintf('Pop up index:');
 	for i = 1:length(keys)
 		plot_title = [plot_title, sprintf(' %s = %g', keys{i}, values{i})];

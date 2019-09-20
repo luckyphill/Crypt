@@ -36,10 +36,10 @@ classdef heightAnalysis < matlab.mixin.SetGet
 
 	methods
 
-		function obj = heightAnalysis(simParams,mutantParams,t,dt,bt,sm,run_number)
+		function obj = heightAnalysis(simParams,mutantParams,t,bt,sm,run_number)
 
-			outputType = visPositionData(containers.Map({'sm'},{sm}));
-			solverParams = containers.Map({'t', 'bt', 'dt'}, {t, bt, dt});
+			outputTypes = {visPositionData(containers.Map({'sm'},{sm}))};
+			solverParams = containers.Map({'t', 'bt'}, {t, bt});
 			seedParams = containers.Map({'run'}, {run_number});
 
 			obj.chastePath = [getenv('HOME'), '/'];
@@ -60,8 +60,8 @@ classdef heightAnalysis < matlab.mixin.SetGet
 				mkdir(obj.imageLocation);
 			end
 
-			obj.simul = simulateCryptColumnMutation(simParams, mutantParams, solverParams, seedParams, outputType, obj.chastePath, obj.chasteTestOutputLocation);
-			
+			obj.simul = simulateCryptColumnFullMutation(simParams, mutantParams, solverParams, seedParams, outputTypes);
+
 			obj.simul.loadSimulationData();
 
 		end
@@ -78,7 +78,7 @@ classdef heightAnalysis < matlab.mixin.SetGet
 			% This will pick a point on the crypt wall and observe the maximum height of the
 			% accumulated cells over time
 
-			data = obj.simul.data.visualiser_data;
+			data = obj.simul.data.vispos_data;
 
 			times = data(:,1);
 
@@ -93,7 +93,8 @@ classdef heightAnalysis < matlab.mixin.SetGet
 			% so to keep matlab happy everything is a double...
 			% See more at
 			% https://stackoverflow.com/questions/48493352/error-colon-operands-must-be-in-the-range-of-the-data-type-no-sense
-			steps = -0.5:(double(obj.simul.n) + 0.5);
+			n = ceil(max(max(data(:,2:end))));
+			steps = -0.5:(n + 0.5);
 
 			for i=1:length(data)
 				clear sortedbypos;
@@ -103,7 +104,7 @@ classdef heightAnalysis < matlab.mixin.SetGet
 				sortedbypos{length(steps)-1} = [];
 				for j = 1:length(x)
 					for k=2:length(steps)
-						if steps(k) > y(j) && y(j) > steps(k-1)
+						if steps(k) >= y(j) && y(j) > steps(k-1)
 							sortedbypos{k-1}(end + 1) = x(j);
 						end
 					end
