@@ -32,6 +32,8 @@ classdef heightAnalysis < matlab.mixin.SetGet
 		mean_h_min
 		mean_h_mean
 
+		times
+
 	end
 
 	methods
@@ -80,7 +82,7 @@ classdef heightAnalysis < matlab.mixin.SetGet
 
 			data = obj.simul.data.vispos_data;
 
-			times = data(:,1);
+			obj.times = data(:,1);
 
 			% Matlab is fucking weird. In order to make sure only integers are given to obj.simul.n
 			% I have to restrict the type to uintX (in my case I chose X = 16). But because of some
@@ -143,11 +145,12 @@ classdef heightAnalysis < matlab.mixin.SetGet
 		function plotHeightOverTime(obj)
 
 			h = figure;
-			plot(0:double(obj.simul.n), obj.h_max_mean, 'lineWidth', 4);
+			% The x axis range is hard coded, this won't be correct in general, just for mousecolondesc
+			plot(1:length(obj.h_max_mean), obj.h_max_mean, 'lineWidth', 4);
 			xlabel('Position from stem cell niche')
 			ylabel('Time average height above BM')
 			title(['Time average stack height for each crypt position for mutation: ' obj.simul.mutantParams('name')]);
-			ylim([0.6 3.6]);
+			ylim([0.6 4]);
 
 			set(h,'Units','Inches');
 			pos = get(h,'Position');
@@ -157,18 +160,18 @@ classdef heightAnalysis < matlab.mixin.SetGet
 
 			h = figure;
 			hold on
-			plot(times,h_crypt_max_t)
-			plot(times,h_crypt_min_t)
-			plot(times,h_crypt_mean_t)
+			plot(obj.times,obj.h_crypt_max_t)
+			plot(obj.times,obj.h_crypt_min_t)
+			plot(obj.times,obj.h_crypt_mean_t)
 			legend('max height', 'min height', 'mean height');
 			xlabel('Time')
 			ylabel('Whole crypt maximum height above BM')
 			title(['Maximum stack height over time for the whole crypt: ' obj.simul.mutantParams('name')]);
 			ylim([0 8])
 
-			plot(times,obj.mean_h_max * ones(size(times)));
-			plot(times,obj.mean_h_min * ones(size(times)));
-			plot(times,obj.mean_h_mean * ones(size(times)));
+			plot(obj.times,obj.mean_h_max * ones(size(obj.times)));
+			plot(obj.times,obj.mean_h_min * ones(size(obj.times)));
+			plot(obj.times,obj.mean_h_mean * ones(size(obj.times)));
 
 			legend( num2str(obj.mean_h_max), num2str(obj.mean_h_min) ,num2str(obj.mean_h_mean) )
 

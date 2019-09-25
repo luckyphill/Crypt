@@ -50,7 +50,7 @@ function conv_shape(s,sp,h)
     
     out = '/Users/phillipbrown/Research/Crypt/Data/Chaste/MutationBaseline/';
     mkdir(out)
-    outfile = sprintf('%ssize_%d_speed_%.1f_height_%d.txt', out,s,sp,h)
+    outfile = sprintf('%ssize_%d_speed_%.1f_height_%d.txt', out,s,sp,h);
     csvwrite(outfile,want);
 end
     

@@ -14,6 +14,7 @@ classdef fftPosition < matlab.mixin.SetGet
 		fftMagData
 		max_pos_t
 		times
+		freq
 
 		simul
 
@@ -38,22 +39,38 @@ classdef fftPosition < matlab.mixin.SetGet
 			obj.simul.loadSimulationData();
 
 			obj.processData();
+			obj.fftAnalysis();
 
 		end
 
 		function fftAnalysis(obj)
 			% Displays a plot of the velocity data
 
-			L = obj.times(end);
-			test = obj.max_pos_t(:,1:29);
-			out = fft(test);
-			out2 = out(1:length(out)/2 + 1, : );
-			out2= abs(out2 / L);
-			out2(2:end -1, :) = 2*out2(2:end-1, :);
+			L = length(obj.times);
+			dt = obj.times(2) - obj.times(1);
+			Fs = 1/dt;
 
-			obj.fftData = out;
-			obj.fftMagData = out2;
-			f = (1:length(out)-1)/30/L;
+			test = obj.max_pos_t(:,1:29);
+
+			Y = fft(test);
+			P2 = abs(Y/L);
+			P1 = P2(1:L/2+1,:);
+			P1(2:end-1,:) = 2*P1(2:end-1,:);
+			obj.freq = Fs*(0:(L/2))/L;
+
+			obj.fftData = Y;
+			obj.fftMagData = P1;
+			
+			% out = fft(test);
+			% % out2 = out(1:length(out)/2 + 1, : );
+			% out2 = abs(out / L);
+			% out(2:end -1, :) = 2*out2(2:end-1, :);
+
+			% obj.fftData = out;
+			% obj.fftMagData = out2;
+			% f = (1:length(out)-1)/30/L;
+			
+			
 
 		end
 
@@ -63,6 +80,15 @@ classdef fftPosition < matlab.mixin.SetGet
 			fprintf('Running Chase java visualiser\n');
 			[failed, cmdout] = system(['cd ', pathToAnim, '; java Visualize2dCentreCells ', obj.simul.simOutputLocation]);
 
+		end
+
+		function plotFFTData(obj,pos)
+
+			figure()
+			plot(obj.times,obj.max_pos_t(:,pos));			
+
+			figure()
+			plot(obj.freq(2:end),obj.fftMagData(2:end,pos));
 		end
 
 	end

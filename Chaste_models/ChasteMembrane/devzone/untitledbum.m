@@ -34,7 +34,7 @@ for i=1:length(data)
 
 end
 
-filter = 0.05;
+filter = 0.0;
 
 L = times(end);
 test = pos_max_t(:,1:29);

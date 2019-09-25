@@ -1,4 +1,4 @@
-function phase_plot(param, p_range, name)
+function [r_max, r_min, r_mean] = phase_plot(param, p_range, name)
     simParams = containers.Map({'crypt'}, {1});
     mutantParams = containers.Map({'Mnp','eesM','msM','cctM','wtM','Mvf'}, {12,1,1,1,1,0.675});
 
