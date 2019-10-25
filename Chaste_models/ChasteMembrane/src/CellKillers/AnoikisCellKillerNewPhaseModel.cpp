@@ -146,9 +146,8 @@ std::vector<CellPtr> AnoikisCellKillerNewPhaseModel::GetCellsReadyToDie()
 /*
  * Cell Killer that kills healthy cells that pop outwards and become detached from
  * the labelled tissue cells, i.e. removal by anoikis
- *
- * Also will remove differentiated cells at the orifice if mSloughOrifice is true
  */
+
 void AnoikisCellKillerNewPhaseModel::CheckAndLabelCellsForApoptosisOrDeath()
 {
 
@@ -163,8 +162,8 @@ void AnoikisCellKillerNewPhaseModel::CheckAndLabelCellsForApoptosisOrDeath()
 
 		for(std::vector<CellPtr>::iterator cell_iter = cells_to_remove.begin(); cell_iter != cells_to_remove.end(); ++cell_iter)
 		{
-			unsigned node_index = p_tissue->GetNodeCorrespondingToCell(*cell_iter)->GetIndex();
-			CellPtr p_cell = p_tissue->GetCellUsingLocationIndex(node_index);
+			
+			CellPtr p_cell = *cell_iter;
 			if (mSlowDeath)
 			{
 				if (!p_cell->HasApoptosisBegun())

@@ -50,6 +50,9 @@ classdef clonalConversionPlot < matlab.mixin.SetGet
 			plot(obj.mrange, obj.frac, 'LineWidth', 3);
 			xlim([min(obj.mrange) max(obj.mrange)]);
 			ylim([0 1]);
+            xlabel('Mutation factor','Interpreter','latex','FontSize',14);
+            ylabel('Proportion','Interpreter','latex','FontSize',14);
+            title('Proportion of mutant take-over vs mutation factor','Interpreter','latex','FontSize',20);
 		end
 		
 

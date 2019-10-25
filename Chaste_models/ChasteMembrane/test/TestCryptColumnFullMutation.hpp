@@ -552,20 +552,15 @@ public:
 		mutdir << "_cctM_" << cctModifier;
 		mutdir << "_wtM_" << wtModifier;
 		mutdir << "_Mvf_" << mutantQuiescentVolumeFraction;
+		if (resistantPoppedUpLifeExpectancy != DBL_MAX)
+		{
+			mutdir << "_rple_" << resistantPoppedUpLifeExpectancy;
+		}
+
 
 		if (setPopUpDivision)
 		{
 			mutdir << "_rdiv_" << setPopUpDivision;
-
-			mutdir << "_rple_";
-			if (resistantPoppedUpLifeExpectancy == DBL_MAX)
-			{
-				mutdir << "MAX";
-			}
-			else
-			{
-				mutdir << resistantPoppedUpLifeExpectancy;
-			}
 
 			mutdir << "_rcct_" << resistantCellCycleTime;	
 		}
