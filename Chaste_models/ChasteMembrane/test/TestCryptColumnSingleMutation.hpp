@@ -417,14 +417,6 @@ public:
 			TRACE("File output occuring")
 
 		}
-
-		// Output popup location data
-		bool outputPopUpLocation = false;
-		if(CommandLineArguments::Instance()->OptionExists("-Pul"))
-		{   
-			outputPopUpLocation = true;
-			TRACE("Pop up location data output")
-		}
 		// ********************************************************************************************
 
 
@@ -861,11 +853,6 @@ public:
 		if (file_output)
 		{
 			p_tissue->AddCellWriter<EpithelialCellPositionWriter>();
-		}
-		
-		if (outputPopUpLocation)
-		{
-			p_tissue->AddCellWriter<PopUpLocationWriter>();
 		}
 		// ********************************************************************************************
 
