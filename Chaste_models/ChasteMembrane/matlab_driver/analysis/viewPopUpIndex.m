@@ -1,7 +1,9 @@
 
-function [counts, edges, hours, pops] = viewPopUpIndex(keys, values, runs)
+function [counts, edges, hours, pops] = viewPopUpIndex(crypt, keys, values, runs)
 
-	simParams = containers.Map({'crypt'}, {1});
+	simParams = containers.Map({'crypt'}, {crypt});
+
+	cryptName = getCryptName(crypt);
 
 	mutantParams = containers.Map({'Mnp','eesM','msM','cctM','wtM','Mvf','name'}, {12,1,1,1,1,0.675,'no mutation'});
 
@@ -42,7 +44,14 @@ function [counts, edges, hours, pops] = viewPopUpIndex(keys, values, runs)
 	pos = get(h,'Position');
 	set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)])
 
-	imageFile = [getenv('HOME'), '/Research/Crypt/Images/PopUpIndex/popup_index'];
+	imageLocation = [getenv('HOME'), '/Research/Crypt/Images/PopUpIndex/', cryptName '/'];
+
+	if exist(imageLocation,'dir')~=7
+		mkdir(imageLocation);
+	end
+
+	imageFile = [imageLocation, 'popup_index'];
+
 	for i = 1:length(keys)
 		imageFile = [imageFile, sprintf('_%s_%g', keys{i}, values{i})];
 	end

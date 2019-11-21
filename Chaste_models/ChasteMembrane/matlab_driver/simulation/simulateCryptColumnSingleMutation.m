@@ -171,7 +171,7 @@ classdef simulateCryptColumnSingleMutation < chasteSimulation
 			% This generates the path specific for the test
 			% It allows the dataType object to handle the full path after this
 
-			obj.saveLocation = [obj.chastePath, 'Research/Crypt/Data/Chaste/', obj.chasteTest, '/'];
+			obj.saveLocation = [obj.chastePath, 'Research/Crypt/Data/Chaste/', obj.chasteTest, '/', obj.cryptName, '/'];
 
 			if exist(obj.saveLocation,'dir')~=7
 				mkdir(obj.saveLocation);
