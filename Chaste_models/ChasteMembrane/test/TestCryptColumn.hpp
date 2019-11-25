@@ -211,7 +211,7 @@ public:
         if(CommandLineArguments::Instance()->OptionExists("-vis"))
         {   
             java_visualiser = true;
-            TRACE("Java visulaiser ON")
+            TRACE("Java visualiser ON")
 
         }
         // ********************************************************************************************
