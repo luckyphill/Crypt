@@ -92,6 +92,7 @@ classdef (Abstract) simulation < matlab.mixin.SetGet
 				
 				for i = 1:obj.numOutputTypes
 					if ~obj.outputTypes{i}.exists(obj)
+						fprintf('Need to generate data type: %s\n', obj.outputTypes{i}.name);
 						obj.outputTypesToRun{end + 1} = obj.outputTypes{i};
 					end
 				end

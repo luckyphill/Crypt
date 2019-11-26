@@ -37,7 +37,7 @@ classdef behaviourData < dataType
 				mkdir(folder);
 			end
 
-			file = [folder, obj.fileNames, '_', sp.run_number, '.txt'];
+			file = [folder, obj.fileNames, '_', num2str(sp.run_number), '.txt'];
 		end
 
 		function data = retrieveData(obj, sp)

@@ -6,6 +6,7 @@ classdef behaviourObjective < matlab.mixin.SetGet
 	properties
 		simul
 		objectiveFunction
+		penalty
 
 	end
 
@@ -23,7 +24,7 @@ classdef behaviourObjective < matlab.mixin.SetGet
 			outputLocation = getenv('CHASTE_TEST_OUTPUT');
 
 			if isempty(outputLocation)
-				chasteTestOutputLocation = ['/tmp/', getenv('USER'),'/testoutput/'];
+				chasteTestOutputLocation = ['/tmp/', getenv('USER'),'/'];
 			else
 				if ~strcmp(outputLocation(end),'/')
 					outputLocation(end+1) = '/';
@@ -36,17 +37,26 @@ classdef behaviourObjective < matlab.mixin.SetGet
 
 			obj.simul = simulateCryptColumn(simParams, solverParams, seedParams, outputType, chastePath, chasteTestOutputLocation);
 			
-			if obj.simul.generateSimulationData()
-				obj.calculatePenalty();
-			else
-				error('Failed to get the data')
-			end
+			obj.getPenalty();
+			
 
 		end
 
-		function penalty = calculatePenalty(obj)
+		function runSimulation(obj)
+			if obj.simul.generateSimulationData()
+				obj.simul.loadSimulationData();
+			else
+				error('Failed to get the data')
+			end
+		end
+
+		function penalty = getPenalty(obj)
 			% Use the objective function to calculate the associated penalty
-			penalty = obj.objectiveFunction(obj.simul.data);
+			obj.runSimulation();
+			penalty = obj.objectiveFunction(obj.simul.data.behaviour_data);
+			obj.penalty = penalty;
+
+			fprintf('Anoikis: %g,\nCell count: %g,\nBirth rate: %g,\nProlif compartment: %g\n\nPenalty: %g\n',obj.simul.data.behaviour_data,penalty);
 
 
 		end
