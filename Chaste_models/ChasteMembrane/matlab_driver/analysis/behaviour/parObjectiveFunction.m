@@ -17,11 +17,11 @@ function penalty = parObjectiveFunction(params, objectiveFunction, N)
 	t = 10;
 
 
-	c = parcluster
+	c = parcluster;
 	job = createJob(c);
 
 
-	testFunction = @(run_number)behaviourObjective(objectiveFunction,n,np,ees,ms,cct,wt,vf,t,dt,bt,run_number)
+	testFunction = @(run_number)behaviourObjective(objectiveFunction,n,np,ees,ms,cct,wt,vf,t,dt,bt,run_number);
 
 
 	for i = 1:N
