@@ -30,7 +30,10 @@ function penalty = parObjectiveFunction(params, objectiveFunction, N)
 
 	end
 
+	f = functions(objectiveFunction);
+	job.AttachedFiles = {f.file};
 	submit(job);
+	
 	wait(job);
 	taskoutput = fetchOutputs(job);
 

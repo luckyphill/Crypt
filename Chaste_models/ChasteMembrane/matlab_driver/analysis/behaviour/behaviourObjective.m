@@ -34,7 +34,6 @@ classdef behaviourObjective < matlab.mixin.SetGet
 
 			obj.objectiveFunction = objectiveFunction;
 
-
 			obj.simul = simulateCryptColumn(simParams, solverParams, seedParams, outputType, chastePath, chasteTestOutputLocation);
 			
 			obj.getPenalty();
@@ -53,7 +52,6 @@ classdef behaviourObjective < matlab.mixin.SetGet
 		function penalty = getPenalty(obj)
 			% Use the objective function to calculate the associated penalty
 			obj.runSimulation();
-			obj.simul.data.behaviour_data
 			penalty = obj.objectiveFunction(obj.simul.data.behaviour_data);
 			obj.penalty = penalty;
 
