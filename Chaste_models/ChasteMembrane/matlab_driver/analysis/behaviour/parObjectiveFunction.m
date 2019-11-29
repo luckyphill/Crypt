@@ -11,10 +11,10 @@ function penalty = parObjectiveFunction(params, objectiveFunction, N)
 	wt = params(6);
 	vf = params(7);
 
-	dt = 0.001;
-	bt = 10;
+	dt = 0.0005;
+	bt = 100;
 
-	t = 10;
+	t = 1000;
 
 
 	c = parcluster;
