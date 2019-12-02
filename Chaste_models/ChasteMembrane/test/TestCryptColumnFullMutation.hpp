@@ -243,6 +243,20 @@ public:
 		TRACE("Mutation parameters")
 
 		// ******************************************************************************************** 
+		// Crypt height - strictly speaking this should be emergent, but in this type of model it has
+		// to be manually controlled 
+		unsigned mutantN = n; // Number of proliferative cells, counting up from the bottom
+		if(CommandLineArguments::Instance()->OptionExists("-Mn"))
+		{   
+			mutantN = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-Mn");
+			PRINT_VARIABLE(mutantN)
+
+		}
+		// ********************************************************************************************
+
+
+
+		// ******************************************************************************************** 
 		// Differentiation position 
 		unsigned mutantProliferativeCompartment = n_prolif; // Number of proliferative cells, counting up from the bottom
 		if(CommandLineArguments::Instance()->OptionExists("-Mnp"))
@@ -678,7 +692,7 @@ public:
 		// Reset the cell killers
 		simulator.RemoveAllCellKillers();
 		MAKE_PTR_ARGS(SloughingCellKillerNewPhaseModel, p_sloughing_killer_2, (&cell_population));
-		p_sloughing_killer_2->SetCryptTop(wall_top);
+		p_sloughing_killer_2->SetCryptTop(mutantN);
 		simulator.AddCellKiller(p_sloughing_killer_2);
 
 		MAKE_PTR_ARGS(AnoikisCellKillerNewPhaseModel, p_anoikis_killer_2, (&cell_population));
