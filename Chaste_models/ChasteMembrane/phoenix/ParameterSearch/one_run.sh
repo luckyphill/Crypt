@@ -1,9 +1,9 @@
 #!/bin/bash 
 #SBATCH -p batch 
 #SBATCH -N 1 
-#SBATCH -n 16 
+#SBATCH -n 1 
 #SBATCH --time=12:00:00 
-#SBATCH --mem=1GB 
+#SBATCH --mem=2GB 
 # NOTIFICATIONS
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=phillip.j.brown@adelaide.edu.au
@@ -27,6 +27,7 @@ ms=$5
 cct=$6
 wt=$7
 vf=$8
+seed=$9
 
-echo "-nodisplay -nodesktop -r cd ../../; addpath(genpath(pwd)); parObjectiveFunction([$n,$np,$ees,$ms,$cct,$wt,$vf], @$objectiveFunction, 16); quit()"
-matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); parObjectiveFunction([$n,$np,$ees,$ms,$cct,$wt,$vf], @$objectiveFunction, 16); quit()"
+echo "-nodisplay -nodesktop -r cd ../../; addpath(genpath(pwd)); behaviourObjective(@$objectiveFunction,$n,$np,$ees,$ms,$cct,$wt,$vf,1000, 0.0005, 100, $seed); quit()"
+matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); behaviourObjective(@$objectiveFunction,$n,$np,$ees,$ms,$cct,$wt,$vf,1000, 0.0005, 100, $seed); quit()"
