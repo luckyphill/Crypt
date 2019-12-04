@@ -1,5 +1,5 @@
 function [x,fval,exitflag,output,population,scores] = gaSearch(objectiveFunction, lb, ub, N)
-	% sets up the surrogate funciton optimisation approach
+	% sets up the ga funciton optimisation approach
 	% lb and ub specifies the upper and lower bounds of the parameters
 	% parameters are given in the order:
 	% n, np, ees, ms, 10*cct, 100*temp_wt, 1000*vf
@@ -8,9 +8,7 @@ function [x,fval,exitflag,output,population,scores] = gaSearch(objectiveFunction
 
 	fun = @(params)parObjectiveFunction(params, objectiveFunction, N);
 
-	intcon = 1:7; % All parameters must be integers. Inside the parObjectiveFunction the true intput parameters are calculated
-	% options = optimoptions('surrogateopt','CheckpointFile','test.mat');
-
+	intcon = 1:7; % All parameters must be integers. Inside the parObjectiveFunction the true input parameters are calculated
 
 	A = [];
 	b = [];

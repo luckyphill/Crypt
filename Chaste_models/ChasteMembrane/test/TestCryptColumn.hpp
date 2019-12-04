@@ -91,149 +91,175 @@ public:
 
 		// ********************************************************************************************
 		// Crypt size parameters
-		unsigned n = 20;
-        if(CommandLineArguments::Instance()->OptionExists("-n"))
-        {	
-        	n = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-n");
-        	PRINT_VARIABLE(n)
+		double n = 20;
+		if(CommandLineArguments::Instance()->OptionExists("-n"))
+		{	
+			n = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-n");
+			PRINT_VARIABLE(n)
 
-        }
+		}
 
-        unsigned n_prolif = n - 10; // Number of proliferative cells, counting up from the bottom
-        if(CommandLineArguments::Instance()->OptionExists("-np"))
-        {	
-        	n_prolif = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-np");
-        	PRINT_VARIABLE(n_prolif)
+		double n_prolif = n - 10; // Number of proliferative cells, counting up from the bottom
+		if(CommandLineArguments::Instance()->OptionExists("-np"))
+		{	
+			n_prolif = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-np");
+			PRINT_VARIABLE(n_prolif)
 
-        }
-        // ********************************************************************************************
+		}
 
-        // ********************************************************************************************
-        // Force parameters
-        double epithelialStiffness = 20;
-        if(CommandLineArguments::Instance()->OptionExists("-ees"))
-        {
-        	epithelialStiffness = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-ees");
-        	PRINT_VARIABLE(epithelialStiffness)
-        }
+		double prolifFraction = 0.5; // Proliferative compartment as a fraction of crypt height
+		// To make sure this test is still compatible with old data, need to add this check
+		bool prolifByFraction = CommandLineArguments::Instance()->OptionExists("-pf");
+		if(prolifByFraction)
+		{	
+			prolifFraction = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-pf");
+			PRINT_VARIABLE(prolifFraction)
 
-        double membraneStiffness = 50;
-        if(CommandLineArguments::Instance()->OptionExists("-ms"))
-        {
-        	membraneStiffness = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-ms");
-        	PRINT_VARIABLE(membraneStiffness)
-        }
+		}
 
-        double meinekeStiffness = epithelialStiffness; // Newly divided spring stiffness
-        if(CommandLineArguments::Instance()->OptionExists("-nds"))
-        {
-        	meinekeStiffness = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-nds");
-        	PRINT_VARIABLE(meinekeStiffness)
-        }
-        // ********************************************************************************************
-
-        // ********************************************************************************************
-        // Cell cycle parameters
-        double cellCycleTime = 15.0;
-        if(CommandLineArguments::Instance()->OptionExists("-cct"))
-        {
-        	cellCycleTime = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-cct");
-        	PRINT_VARIABLE(cellCycleTime)
-        }
-
-        double wPhaseLength = 10.0;
-        if(CommandLineArguments::Instance()->OptionExists("-wt"))
-        {
-        	wPhaseLength =CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-wt");
-        	PRINT_VARIABLE(wPhaseLength)
-        }
-
-        // Should be implemented better, but a quick check to make sure the cell cycle phases
-        // aren't set too extreme.
-        assert(cellCycleTime - wPhaseLength > 1);
-
-        double quiescentVolumeFraction = 0.75;
-        if(CommandLineArguments::Instance()->OptionExists("-vf"))
-        {	
-        	quiescentVolumeFraction = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-vf");
-        	PRINT_VARIABLE(quiescentVolumeFraction)
-
-        }
-        // ********************************************************************************************
-
-        // ********************************************************************************************
-        // Simulation parameters
-        double dt = 0.002; // The minimum to get covergant simulations for a specific parameter set
-		if(CommandLineArguments::Instance()->OptionExists("-dt"))
-        {
-        	dt = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-dt");
-        	PRINT_VARIABLE(dt)
-        }
-        
-        double burn_in_time = 40; // The time needed to clear the transient behaviour from the initial set up
-        if(CommandLineArguments::Instance()->OptionExists("-bt"))
-        {	
-        	burn_in_time = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-bt");
-        	PRINT_VARIABLE(burn_in_time)
-
-        }
-
-        double simulation_length = 100;
-        if(CommandLineArguments::Instance()->OptionExists("-t"))
-        {	
-        	simulation_length = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-t");
-        	PRINT_VARIABLE(simulation_length)
-
-        }
-
-        double run_number = 1; // For the parameter sweep, must keep track of the run number for saving the output file
-        if(CommandLineArguments::Instance()->OptionExists("-run"))
-        {	
-        	run_number = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-run");
-        	PRINT_VARIABLE(run_number)
-
-        }
-        // ********************************************************************************************
+		
+		// ********************************************************************************************
 
 		// ********************************************************************************************
-        // Output control
+		// Force parameters
+		double epithelialStiffness = 20;
+		if(CommandLineArguments::Instance()->OptionExists("-ees"))
+		{
+			epithelialStiffness = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-ees");
+			PRINT_VARIABLE(epithelialStiffness)
+		}
+
+		double membraneStiffness = 50;
+		if(CommandLineArguments::Instance()->OptionExists("-ms"))
+		{
+			membraneStiffness = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-ms");
+			PRINT_VARIABLE(membraneStiffness)
+		}
+
+		double meinekeStiffness = epithelialStiffness; // Newly divided spring stiffness
+		if(CommandLineArguments::Instance()->OptionExists("-nds"))
+		{
+			meinekeStiffness = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-nds");
+			PRINT_VARIABLE(meinekeStiffness)
+		}
+		// ********************************************************************************************
+
+		// ********************************************************************************************
+		// Cell cycle parameters
+		double cellCycleTime = 15.0;
+		if(CommandLineArguments::Instance()->OptionExists("-cct"))
+		{
+			cellCycleTime = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-cct");
+			PRINT_VARIABLE(cellCycleTime)
+		}
+
+		double wPhaseLength = 10.0;
+		if(CommandLineArguments::Instance()->OptionExists("-wt"))
+		{
+			wPhaseLength =CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-wt");
+			PRINT_VARIABLE(wPhaseLength)
+		}
+
+		double growthFraction = 0.5; // W phase as a fraction of cellCycleTime
+		// To make sure this test is still compatible with old data, need to add this check
+		bool growthByFraction = CommandLineArguments::Instance()->OptionExists("-gf");
+		if(prolifByFraction)
+		{	
+			growthFraction = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-gf");
+			PRINT_VARIABLE(growthFraction)
+
+		}
+
+		// Should be implemented better, but a quick check to make sure the cell cycle phases
+		// aren't set too extreme.
+		if (!growthByFraction)
+		{
+			assert(cellCycleTime - wPhaseLength > 1);
+		}
+		
+
+		double quiescentVolumeFraction = 0.75;
+		if(CommandLineArguments::Instance()->OptionExists("-vf"))
+		{	
+			quiescentVolumeFraction = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-vf");
+			PRINT_VARIABLE(quiescentVolumeFraction)
+
+		}
+		// ********************************************************************************************
+
+		// ********************************************************************************************
+		// Simulation parameters
+		double dt = 0.0005; // The minimum to get covergant simulations for a specific parameter set
+		if(CommandLineArguments::Instance()->OptionExists("-dt"))
+		{
+			dt = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-dt");
+			PRINT_VARIABLE(dt)
+		}
+		
+		double burn_in_time = 100; // The time needed to clear the transient behaviour from the initial set up
+		if(CommandLineArguments::Instance()->OptionExists("-bt"))
+		{	
+			burn_in_time = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-bt");
+			PRINT_VARIABLE(burn_in_time)
+
+		}
+
+		double simulation_length = 100;
+		if(CommandLineArguments::Instance()->OptionExists("-t"))
+		{	
+			simulation_length = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-t");
+			PRINT_VARIABLE(simulation_length)
+
+		}
+
+		double run_number = 1; // For the parameter sweep, must keep track of the run number for saving the output file
+		if(CommandLineArguments::Instance()->OptionExists("-run"))
+		{	
+			run_number = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-run");
+			PRINT_VARIABLE(run_number)
+
+		}
+		// ********************************************************************************************
+
+		// ********************************************************************************************
+		// Output control
 		bool file_output = false;
-        double sampling_multiple = 100000;
-        if(CommandLineArguments::Instance()->OptionExists("-sm"))
-        {   
-            sampling_multiple = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-sm");
-            file_output = true;
-            TRACE("File output occuring")
+		double sampling_multiple = 100000;
+		if(CommandLineArguments::Instance()->OptionExists("-sm"))
+		{   
+			sampling_multiple = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-sm");
+			file_output = true;
+			TRACE("File output occuring")
 
-        }
+		}
 
-        bool java_visualiser = false;
-        if(CommandLineArguments::Instance()->OptionExists("-vis"))
-        {   
-            java_visualiser = true;
-            TRACE("Java visualiser ON")
+		bool java_visualiser = false;
+		if(CommandLineArguments::Instance()->OptionExists("-vis"))
+		{   
+			java_visualiser = true;
+			TRACE("Java visualiser ON")
 
-        }
-        // ********************************************************************************************
+		}
+		// ********************************************************************************************
 
 
-        // ********************************************************************************************
-        // Fixed parameters  
-        double popUpDistance = 1.1; // The distance from the membrane when cells die
-        
-        double epithelialPreferredRadius = 0.5; // Must have this value due to volume calculation - can't set node radius as SetRadius(epithelialPreferredRadius) doesn't work
+		// ********************************************************************************************
+		// Fixed parameters  
+		double popUpDistance = 1.1; // The distance from the membrane when cells die
+		
+		double epithelialPreferredRadius = 0.5; // Must have this value due to volume calculation - can't set node radius as SetRadius(epithelialPreferredRadius) doesn't work
 
-        double equilibriumVolume = M_PI * epithelialPreferredRadius * epithelialPreferredRadius;; // Depends on the preferred radius
+		double equilibriumVolume = M_PI * epithelialPreferredRadius * epithelialPreferredRadius;; // Depends on the preferred radius
 
-        double maxInteractionRadius = 3 * epithelialPreferredRadius;
-        
-        double growingFinalSpringLength = 1;//(2 * sqrt(2) - 2) * 2 * epithelialPreferredRadius * 1.2; 
+		double maxInteractionRadius = 3 * epithelialPreferredRadius;
+		
+		double growingFinalSpringLength = 1;//(2 * sqrt(2) - 2) * 2 * epithelialPreferredRadius * 1.2; 
 		// Modify this to control how large a growing cell is at any time.
 		// = 1 means we use the growing line approximation
 		// = 2 * sqrt(2) - 2 means we use the growing circle approximation
 		// = 2 * pow(2, 1/3) - 2 means we use the growing sphere approximation
-        
-        double wall_top = n; // The point where sloughing occurs
+		
+		double wall_top = n; // The point where sloughing occurs
 
 		unsigned cell_limit = 6 * n; // The most cells allowed in a simulation. If the cell count exceeds this, the simulation terminates
 		// ********************************************************************************************		
@@ -246,14 +272,14 @@ public:
 
 
 
-        // ********************************************************************************************
+		// ********************************************************************************************
 		// Seed the RNG in a "deterministic" way
-        RandomNumberGenerator::Instance()->Reseed(run_number * quiescentVolumeFraction * epithelialStiffness);
-        // ********************************************************************************************
+		RandomNumberGenerator::Instance()->Reseed(run_number * quiescentVolumeFraction * epithelialStiffness);
+		// ********************************************************************************************
 
-        // ********************************************************************************************
-        // Make the nodes
-        unsigned node_counter = 0;
+		// ********************************************************************************************
+		// Make the nodes
+		unsigned node_counter = 0;
 
 		std::vector<Node<2>*> nodes;
 		std::vector<unsigned> transit_nodes;
@@ -262,7 +288,7 @@ public:
 
 		// Column building parameters
 		double x_distance = 0.6;
-        double y_distance = 0;
+		double y_distance = 0;
 		double x = x_distance;
 		double y = y_distance;
 
@@ -325,11 +351,27 @@ public:
 			double birth_time = cellCycleTime * RandomNumberGenerator::Instance()->ranf();
 
 			p_cycle_model->SetWDuration(wPhaseLength);
-			p_cycle_model->SetBasePDuration(cellCycleTime - wPhaseLength);
+			if (growthByFraction)
+			{
+				p_cycle_model->SetBasePDuration((1 - growthFraction) * cellCycleTime);
+			}
+			else
+			{
+				p_cycle_model->SetBasePDuration(cellCycleTime - wPhaseLength);
+			}
+			
 			p_cycle_model->SetDimension(2);
-   			p_cycle_model->SetEquilibriumVolume(equilibriumVolume);
-   			p_cycle_model->SetQuiescentVolumeFraction(quiescentVolumeFraction);
-   			p_cycle_model->SetWntThreshold(1 - (double)n_prolif/n);
+			p_cycle_model->SetEquilibriumVolume(equilibriumVolume);
+			p_cycle_model->SetQuiescentVolumeFraction(quiescentVolumeFraction);
+			if(prolifByFraction)
+			{
+				p_cycle_model->SetWntThreshold(1 - prolifFraction);
+			}
+			else
+			{
+				p_cycle_model->SetWntThreshold(1 - (double)n_prolif/n);
+			}
+			
 			p_cycle_model->SetBirthTime(-birth_time);
 
 			CellPtr p_cell(new Cell(p_state, p_cycle_model));
@@ -369,19 +411,35 @@ public:
 		// ********************************************************************************************
 		// Building the directory name
 		std::stringstream simdir;
-        simdir << "n_" << n;
-        simdir << "_np_" << n_prolif;
-        simdir << "_EES_"<< epithelialStiffness;
-        simdir << "_MS_" << membraneStiffness;
-        simdir << "_CCT_" << cellCycleTime;
-		simdir << "_WT_" << wPhaseLength;
-        simdir << "_VF_" << quiescentVolumeFraction;
-        simdir << "_run_" << run_number;
-        
-        std::stringstream rundir;
-        rundir << "run_" << run_number;
-        
-        std::string output_directory = "TestCryptColumn/" +  simdir.str() + "/"  + rundir.str();
+		simdir << "n_" << n;
+		if (prolifByFraction)
+		{
+			simdir << "_pf_" << prolifFraction;
+		}
+		else
+		{
+			simdir << "_np_" << n_prolif;
+		}
+		
+		simdir << "_EES_"<< epithelialStiffness;
+		simdir << "_MS_" << membraneStiffness;
+		simdir << "_CCT_" << cellCycleTime;
+		if (growthByFraction)
+		{
+			simdir << "_GF_" << growthFraction;
+		}
+		else
+		{
+			simdir << "_WT_" << wPhaseLength;
+		}
+		
+		simdir << "_VF_" << quiescentVolumeFraction;
+		simdir << "_run_" << run_number;
+		
+		std::stringstream rundir;
+		rundir << "run_" << run_number;
+		
+		std::string output_directory = "TestCryptColumn/" +  simdir.str() + "/"  + rundir.str();
 
 		simulator.SetOutputDirectory(output_directory);
 		// ********************************************************************************************
@@ -389,18 +447,18 @@ public:
 		// ********************************************************************************************
 		// Set Wnt parameters and add in the cell population
 		WntConcentration<2>::Instance()->SetType(LINEAR);
-        WntConcentration<2>::Instance()->SetCellPopulation(cell_population);
-        WntConcentration<2>::Instance()->SetCryptLength(n);
-        // ********************************************************************************************
+		WntConcentration<2>::Instance()->SetCellPopulation(cell_population);
+		WntConcentration<2>::Instance()->SetCryptLength(n);
+		// ********************************************************************************************
 
 
 		// ********************************************************************************************
-        // File outputs
-        // Files are only output if the command line argument -sm exists and a sampling multiple is set
-        simulator.SetSamplingTimestepMultiple(sampling_multiple);
-        // The java visuliser is set separately
-        cell_population.SetOutputResultsForChasteVisualizer(java_visualiser);
-        // ********************************************************************************************
+		// File outputs
+		// Files are only output if the command line argument -sm exists and a sampling multiple is set
+		simulator.SetSamplingTimestepMultiple(sampling_multiple);
+		// The java visuliser is set separately
+		cell_population.SetOutputResultsForChasteVisualizer(java_visualiser);
+		// ********************************************************************************************
 
 		// ********************************************************************************************
 		// Add forces
@@ -411,12 +469,20 @@ public:
 		p_force->SetCutOffLength(3 * epithelialPreferredRadius);
 		
 		p_force->SetMeinekeSpringStiffness(meinekeStiffness);
-		p_force->SetMeinekeSpringGrowthDuration(wPhaseLength);
+		if (growthByFraction)
+		{
+			p_force->SetMeinekeSpringGrowthDuration(growthFraction * cellCycleTime);
+		}
+		else
+		{
+			p_force->SetMeinekeSpringGrowthDuration(wPhaseLength);
+		}
+		
 
 		MAKE_PTR(NormalAdhesionForceNewPhaseModel<2>, p_adhesion);
-        p_adhesion->SetMembraneSpringStiffness(membraneStiffness);
+		p_adhesion->SetMembraneSpringStiffness(membraneStiffness);
 
-        // ********************************************************************************************
+		// ********************************************************************************************
 
 		
 		// ********************************************************************************************
@@ -426,8 +492,8 @@ public:
 		cell_population.SetMeinekeDivisionSeparation(0.05); // Set how far apart the cells will be upon division
 		// ********************************************************************************************
 
-        // ********************************************************************************************
-        // Once paramters are set, drop in the force laws
+		// ********************************************************************************************
+		// Once paramters are set, drop in the force laws
 		simulator.AddForce(p_force);
 		simulator.AddForce(p_adhesion);
 		// ********************************************************************************************
@@ -517,13 +583,13 @@ public:
 
 
 		// ********************************************************************************************
-        // Add cell population writers if they are requested
-        if (file_output)
-        {
-        	MeshBasedCellPopulation<2,2>* p_tissue = static_cast<MeshBasedCellPopulation<2,2>*>(&simulator.rGetCellPopulation());
-            p_tissue->AddCellWriter<EpithelialCellPositionWriter>();
-        }
-        // ********************************************************************************************
+		// Add cell population writers if they are requested
+		if (file_output)
+		{
+			MeshBasedCellPopulation<2,2>* p_tissue = static_cast<MeshBasedCellPopulation<2,2>*>(&simulator.rGetCellPopulation());
+			p_tissue->AddCellWriter<EpithelialCellPositionWriter>();
+		}
+		// ********************************************************************************************
 
 
 
@@ -553,7 +619,7 @@ public:
 		// will be roughly the same as the actual divisions missed after the end.
 		// The modifier division count will be the "correct" division count for the model
 		unsigned simulation_births = simulator.GetNumBirths() - transient_births;
- 		simulation_births *= 1; // Literally just to keep the compiler on phoenix happy
+		simulation_births *= 1; // Literally just to keep the compiler on phoenix happy
 
 		// ********************************************************************************************
 		// Simulation characteristic data output
@@ -563,8 +629,8 @@ public:
 		double 		birthRate 			= double(p_mod->GetBirthCount())/simulation_length;
 		unsigned 	maxBirthPosition 	= p_mod->GetMaxBirthPosition();
 
-        // ********************************************************************************************
-        // Output data to the command line
+		// ********************************************************************************************
+		// Output data to the command line
 		TRACE("START")
 		PRINT_VARIABLE(anoikis)   				// Anoikis rate
 		PRINT_VARIABLE(averageCellCount) 		// Expected total number of cells in the crypt
