@@ -16,8 +16,9 @@ function obj = MouseColonCaecum(data)
 	max_division_position = data(4);
 
     % Anoikis rate should make up about 4% of cell production
-	
-    obj =  penalty(100*anoikis_rate,0,4,1) + penalty(average_cell_count,23,27,1) + penalty(max_division_position,15,17,1) + penalty(100*birth_rate,41,45,1);
+	% MINIMUM ANOIKIS HAS BEEN ADJUSTED UP TO 1. PREVIOUS WORK HAD MINIMUM OF ZERO
+    
+    obj =  penalty(100*anoikis_rate,1,4,1) + penalty(average_cell_count,23,27,1) + penalty(max_division_position,15,17,1) + penalty(100*birth_rate,41,45,1);
 
 
 end

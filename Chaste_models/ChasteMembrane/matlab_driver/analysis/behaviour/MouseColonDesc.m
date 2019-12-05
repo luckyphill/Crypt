@@ -16,7 +16,9 @@ function obj = MouseColonDesc(data)
 	birth_rate = data(3);
 	max_division_position = data(4);
 	
-    obj =  penalty(100*anoikis_rate,0,4,1) + penalty(average_cell_count,31,35,1) + penalty(max_division_position,19,21,1) + penalty(100*birth_rate,91,95,1);
+    % MINIMUM ANOIKIS HAS BEEN ADJUSTED UP TO 1. PREVIOUS WORK HAD MINIMUM OF ZERO
+    
+    obj =  penalty(100*anoikis_rate,1,4,1) + penalty(average_cell_count,31,35,1) + penalty(max_division_position,19,21,1) + penalty(100*birth_rate,91,95,1);
 
 
 end

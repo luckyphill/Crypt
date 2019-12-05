@@ -9,8 +9,8 @@ function [x,fval,exitflag,output] = surrogateSearch(objectiveFunction, lb, ub, N
 
 	fun = @(params)parObjectiveFunction(params, objectiveFunction, N);
 
-	intcon = [1,2,3,4,5]; % The parameters that must be integers
-	% options = optimoptions('surrogateopt','CheckpointFile','test.mat');
+	intcon = [1,2,3,4,5,6,7]; % The parameters that must be integers
+	options = optimoptions('surrogateopt','CheckpointFile','test.mat');
 
 	problem.objective = fun;
 	problem.lb = lb;
@@ -18,6 +18,9 @@ function [x,fval,exitflag,output] = surrogateSearch(objectiveFunction, lb, ub, N
 	problem.solver = 'surrogateopt';
 	problem.options = options;
 	problem.intcon = intcon;
+
+	% make the optimisation approach reproducible
+	rng default;
 	% [x,fval,exitflag,output] = surrogateopt(fun,lb,ub,intcon,options);
 	[x,fval,exitflag,output] = surrogateopt(problem);
 
