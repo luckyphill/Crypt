@@ -46,7 +46,7 @@ classdef positionData < dataType
 	methods (Access = protected)
 
 		function file = getFullFileName(obj,sp)
-			folder = [sp.saveLocation, 'run_', sp.run_number, '/'];
+			folder = [sp.saveLocation, 'run_', num2str(sp.run_number), '/'];
 
 			if exist(folder,'dir')~=7
 				mkdir(folder);
