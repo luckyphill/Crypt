@@ -38,12 +38,14 @@ classdef simulateCryptColumn < chasteSimulation
 		dt 			double {mustBeNonnegative}
 
 		% This is the RNG seed parameter
-		run_number 	double {mustBeNumeric} 	  
+		run_number 	double {mustBeNumeric}
+
+		outputLocation  
 
 	end
 
 	methods
-		function obj = simulateCryptColumn(simParams, solverParams, seedParams, outputTypes, chastePath, chasteTestOutputLocation)
+		function obj = simulateCryptColumn(simParams, solverParams, seedParams, outputTypes)
 			% The constructor for the simulateCryptColumn object
 			% This expects the variables to be handed in as maps, which helps
 			% make some of the generation functions easier and less cluttered to write
@@ -58,24 +60,31 @@ classdef simulateCryptColumn < chasteSimulation
 
 			obj.outputTypes = outputTypes;
 
-			obj.chastePath = chastePath;
-
-
 			obj.assignParameters(); % A helper method to clear up the constructor from clutter
 
-			if ~strcmp(chastePath(end),'/')
-				chastePath(end+1) = '/';
+			obj.chastePath = getenv('HOME');
+			if isempty(obj.chastePath)
+				error('HOME environment variable not set');
 			end
+			if ~strcmp(obj.chastePath(end),'/')
+				obj.chastePath(end+1) = '/';
+			end
+
+			outputLocation = getenv('CHASTE_TEST_OUTPUT');
+
+			if isempty(outputLocation)
+				outputLocation = ['/tmp/', getenv('USER'),'/testoutput/'];
+			else
+				if ~strcmp(outputLocation(end),'/')
+					outputLocation(end+1) = '/';
+				end
+			end
+
+			obj.outputLocation = outputLocation;
 
 			obj.generateSimulationCommand();
-
+			obj.generateSimOutputLocation();
 			obj.generateSaveLocation();
-
-			if ~strcmp(chasteTestOutputLocation(end),'/')
-				chasteTestOutputLocation(end+1) = '/';
-			end
-
-			obj.generateSimOutputLocation(chasteTestOutputLocation);
 
 		end
 
@@ -107,7 +116,7 @@ classdef simulateCryptColumn < chasteSimulation
 
 		end
 
-		function generateSimOutputLocation(obj, chasteTestOutputLocation)
+		function generateSimOutputLocation(obj)
 			% This generates the simulation output path for the given parameters
 			% in the given Chaste test. This will depend on how the
 			% Chaste function 'simulator.SetOutputDirectory()' is implemented, so this method
@@ -117,7 +126,7 @@ classdef simulateCryptColumn < chasteSimulation
 			% to that used in the Chaste Test, and doing that using maps takes a lot of effort
 
 
-			obj.simOutputLocation = sprintf('%stestoutput/%s/n_%g_np_%g_EES_%g_MS_%g_CCT_%g_WT_%g_VF_%g/run_%d/results_from_time_%d/', chasteTestOutputLocation, obj.chasteTest, obj.n, obj.np, obj.ees, obj.ms, obj.cct, obj.wt, obj.vf, obj.run_number, obj.bt);
+			obj.simOutputLocation = sprintf('%stestoutput/%s/n_%g_np_%g_EES_%g_MS_%g_CCT_%g_WT_%g_VF_%g/run_%d/results_from_time_%d/', obj.outputLocation, obj.chasteTest, obj.n, obj.np, obj.ees, obj.ms, obj.cct, obj.wt, obj.vf, obj.run_number, obj.bt);
 
 		end
 

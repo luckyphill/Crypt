@@ -12,7 +12,7 @@ classdef behaviourObjective < matlab.mixin.SetGet
 
 	methods
 
-		function obj = behaviourObjective(objectiveFunction,n,np,ees,ms,cct,wt,vf,t,dt,bt,run_number)
+		function obj = behaviourObjective(objectiveFunction,n,np,ees,ms,cct,wt,vf,t,dt,bt,run_number, varargin)
 
 			outputType = behaviourData();
 
@@ -34,9 +34,14 @@ classdef behaviourObjective < matlab.mixin.SetGet
 
 			obj.objectiveFunction = objectiveFunction;
 
-			obj.simul = simulateCryptColumn(simParams, solverParams, seedParams, outputType, chastePath, chasteTestOutputLocation);
+			obj.simul = simulateCryptColumn(simParams, solverParams, seedParams, outputType);
 			
-			obj.getPenalty();
+			% A hack to stop it from running when we're analysing the data
+			if length(varargin) >= 1
+				obj.getPenalty(varargin);
+			else
+				obj.getPenalty();
+			end
 			
 
 		end
@@ -49,13 +54,18 @@ classdef behaviourObjective < matlab.mixin.SetGet
 			end
 		end
 
-		function penalty = getPenalty(obj)
+		function penalty = getPenalty(obj, varargin)
 			% Use the objective function to calculate the associated penalty
-			obj.runSimulation();
+			if length(varargin) <1
+				obj.runSimulation();
+			else
+				obj.simul.loadSimulationData();
+			end
+
 			penalty = obj.objectiveFunction(obj.simul.data.behaviour_data);
 			obj.penalty = penalty;
 
-			fprintf('Anoikis: %g,\nCell count: %g,\nBirth rate: %g,\nProlif compartment: %g\n\nPenalty: %g\n',obj.simul.data.behaviour_data,penalty);
+			% fprintf('Anoikis: %g,\nCell count: %g,\nBirth rate: %g,\nProlif compartment: %g\n\nPenalty: %g\n',obj.simul.data.behaviour_data,penalty);
 
 
 		end

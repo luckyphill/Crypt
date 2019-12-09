@@ -1,0 +1,6 @@
+dyld: Library not loaded: /Users/phillipbrown/chaste_build/projects/ChasteMembrane/libchaste_project_ChasteMembrane.dylib
+  Referenced from: /Users/phillipbrown/chaste_build/projects/ChasteMembrane/test/TestCryptColumn
+  Reason: no suitable image found.  Did find:
+	/Users/phillipbrown/chaste_build/projects/ChasteMembrane/libchaste_project_ChasteMembrane.dylib: unknown file type, first eight bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+	/Users/phillipbrown/chaste_build/projects/ChasteMembrane/libchaste_project_ChasteMembrane.dylib: stat() failed with errno=1
+	/Users/phillipbrown/chaste_build/projects/ChasteMembrane/libchaste_project_ChasteMembrane.dylib: unknown file type, first eight bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00

@@ -10,7 +10,7 @@ function [x,fval,exitflag,output] = surrogateSearch(objectiveFunction, lb, ub, N
 	fun = @(params)parObjectiveFunction(params, objectiveFunction, N);
 
 	intcon = [1,2,3,4,5,6,7]; % The parameters that must be integers
-	options = optimoptions('surrogateopt','CheckpointFile','test.mat');
+	options = optimoptions('surrogateopt','InitialPoints', assembleInitialPoints(objectiveFunction));
 
 	problem.objective = fun;
 	problem.lb = lb;

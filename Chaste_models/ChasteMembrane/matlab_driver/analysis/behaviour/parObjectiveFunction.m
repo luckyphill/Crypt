@@ -7,8 +7,8 @@ function penalty = parObjectiveFunction(params, objectiveFunction, N)
 	% The optimisation algorithm outside this function has an option for restricting
 	% the inputs to integers, but not decimal, so this is a work around
 
-	n = params(1);
-	np = params(2);
+	n = params(1) / 10;
+	np = params(2) / 10;
 	ees = params(3);
 	ms = params(4);
 	cct = params(5) / 10;

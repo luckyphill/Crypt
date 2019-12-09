@@ -19,7 +19,7 @@ function obj = RatColonAsc(data)
 	
     % MINIMUM ANOIKIS HAS BEEN ADJUSTED UP TO 1. PREVIOUS WORK HAD MINIMUM OF ZERO
     
-    obj =  penalty(100*anoikis_rate,1,4,1) + penalty(average_cell_count,31,35,1) + penalty(max_division_position,27,29,1) + penalty(100*birth_rate,32,36,1);
+    obj =  penalty(100*anoikis_rate,0,4,1) + penalty(average_cell_count,31,35,1) + penalty(max_division_position,27,29,1) + penalty(100*birth_rate,32,36,1);
 
 
 end
