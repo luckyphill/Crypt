@@ -73,7 +73,7 @@ classdef simulateCryptColumn < chasteSimulation
 			outputLocation = getenv('CHASTE_TEST_OUTPUT');
 
 			if isempty(outputLocation)
-				outputLocation = ['/tmp/', getenv('USER'),'/testoutput/'];
+				outputLocation = ['/tmp/', getenv('USER'),'/'];
 			else
 				if ~strcmp(outputLocation(end),'/')
 					outputLocation(end+1) = '/';
