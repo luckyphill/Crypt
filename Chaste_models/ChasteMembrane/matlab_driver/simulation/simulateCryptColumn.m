@@ -73,7 +73,7 @@ classdef simulateCryptColumn < chasteSimulation
 			outputLocation = getenv('CHASTE_TEST_OUTPUT');
 
 			if isempty(outputLocation)
-				outputLocation = ['/tmp/', getenv('USER'),'/'];
+				outputLocation = ['/tmp/', getenv('USER'),'/testoutput/'];
 			else
 				if ~strcmp(outputLocation(end),'/')
 					outputLocation(end+1) = '/';
@@ -126,7 +126,7 @@ classdef simulateCryptColumn < chasteSimulation
 			% to that used in the Chaste Test, and doing that using maps takes a lot of effort
 
 
-			obj.simOutputLocation = sprintf('%stestoutput/%s/n_%g_np_%g_EES_%g_MS_%g_CCT_%g_WT_%g_VF_%g/run_%d/results_from_time_%d/', obj.outputLocation, obj.chasteTest, obj.n, obj.np, obj.ees, obj.ms, obj.cct, obj.wt, obj.vf, obj.run_number, obj.bt);
+			obj.simOutputLocation = sprintf('%s%s/n_%g_np_%g_EES_%g_MS_%g_CCT_%g_WT_%g_VF_%g/run_%d/results_from_time_%d/', obj.outputLocation, obj.chasteTest, obj.n, obj.np, obj.ees, obj.ms, obj.cct, obj.wt, obj.vf, obj.run_number, obj.bt);
 
 		end
 

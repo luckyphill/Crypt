@@ -14,7 +14,7 @@ module unload OpenMPI
 module unload HDF5
 
 mkdir -p output
-export CHASTE_TEST_OUTPUT=/fast/users/a1738927/testoutput
+export CHASTE_TEST_OUTPUT=/fast/users/a1738927/testoutput/
 
 Mn=$1
 Mnp=$2

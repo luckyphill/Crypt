@@ -18,6 +18,11 @@ classdef visualiserData < dataType
 
 		function found = exists(obj, sp)
 			% Checks if the file exists
+			% First, make sure the data isn't still in the testoutput location
+			% This should fail 99.9% of the time
+			try
+				obj.processOutput(sp);
+			end
 			found = true;
 			existCount = 0;
 			for i = 1:length(obj.fileNames)

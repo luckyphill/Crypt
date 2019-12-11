@@ -9,6 +9,7 @@
 #SBATCH --mail-user=phillip.j.brown@adelaide.edu.au
 
 export TZ=Australia/Adelaide
+export CHASTE_TEST_OUTPUT=/fast/users/a1738927/testoutput/
 
 module load matlab/2019a
 

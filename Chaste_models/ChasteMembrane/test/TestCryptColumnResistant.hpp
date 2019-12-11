@@ -29,6 +29,7 @@
 
 // Mutation State
 #include "WildTypeCellMutationState.hpp"
+#include "TransitCellAnoikisResistantMutationState.hpp"
 
 // Boundary conditions
 #include "BoundaryCellProperty.hpp"
@@ -63,13 +64,13 @@
 #include "FakePetscSetup.hpp"
 #include "Debug.hpp"
 
-class TestCryptColumn : public AbstractCellBasedTestSuite
+class TestCryptColumnResistant : public AbstractCellBasedTestSuite
 {
 	
 public:
 
 
-	void TestCrypt() throw(Exception)
+	void TestCryptAnoikisProof() throw(Exception)
 	{
 		// This test simulates a column of cells that move in 2 dimensions
 		// Growing cells are represented as two nodes throughout the duration of W phase
@@ -324,6 +325,7 @@ public:
 		// Make the cells
 		std::vector<CellPtr> cells;
 
+		MAKE_PTR(TransitCellAnoikisResistantMutationState, p_resistant);
 		MAKE_PTR(DifferentiatedCellProliferativeType, p_diff_type);
 		MAKE_PTR(TransitCellProliferativeType, p_trans_type);
 		MAKE_PTR(WildTypeCellMutationState, p_state);
@@ -374,7 +376,7 @@ public:
 			
 			p_cycle_model->SetBirthTime(-birth_time);
 
-			CellPtr p_cell(new Cell(p_state, p_cycle_model));
+			CellPtr p_cell(new Cell(p_resistant, p_cycle_model));
 			p_cell->SetCellProliferativeType(p_trans_type);
 			p_cell->InitialiseCellCycleModel();
 
