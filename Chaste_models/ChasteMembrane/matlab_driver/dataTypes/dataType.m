@@ -55,7 +55,7 @@ classdef (Abstract) dataType < matlab.mixin.SetGet
 			% in their implementation of the abstract methods
 
 			if ~obj.exists(sp)
-				error('dt:FileDNE', 'Could not find file(s).')
+				error('dt:FileDNE', 'File(s) do not exist where expected.')
 			end
 
 			try

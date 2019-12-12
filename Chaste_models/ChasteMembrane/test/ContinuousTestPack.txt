@@ -5,3 +5,4 @@ TestCryptColumnMutation.hpp
 TestCryptColumnShape.hpp
 TestCryptColumnFullMutation.hpp
 TestCryptColumnSingleMutation.hpp
+TestCryptColumnResistant.hpp

@@ -325,7 +325,6 @@ public:
 		// Make the cells
 		std::vector<CellPtr> cells;
 
-		MAKE_PTR(TransitCellAnoikisResistantMutationState, p_resistant);
 		MAKE_PTR(DifferentiatedCellProliferativeType, p_diff_type);
 		MAKE_PTR(TransitCellProliferativeType, p_trans_type);
 		MAKE_PTR(WildTypeCellMutationState, p_state);
@@ -376,7 +375,7 @@ public:
 			
 			p_cycle_model->SetBirthTime(-birth_time);
 
-			CellPtr p_cell(new Cell(p_resistant, p_cycle_model));
+			CellPtr p_cell(new Cell(p_state, p_cycle_model));
 			p_cell->SetCellProliferativeType(p_trans_type);
 			p_cell->InitialiseCellCycleModel();
 
@@ -440,7 +439,7 @@ public:
 		std::stringstream rundir;
 		rundir << "run_" << run_number;
 		
-		std::string output_directory = "TestCryptColumn/" +  simdir.str() + "/"  + rundir.str();
+		std::string output_directory = "TestCryptColumnResistant/" +  simdir.str() + "/"  + rundir.str();
 
 		simulator.SetOutputDirectory(output_directory);
 		// ********************************************************************************************
@@ -584,14 +583,28 @@ public:
 
 
 		// ********************************************************************************************
-		// Add cell population writers if they are requested
-		if (file_output)
-		{
-			MeshBasedCellPopulation<2,2>* p_tissue = static_cast<MeshBasedCellPopulation<2,2>*>(&simulator.rGetCellPopulation());
-			p_tissue->AddCellWriter<EpithelialCellPositionWriter>();
-		}
+		// Add in the mutations
 		// ********************************************************************************************
 
+
+
+		// ********************************************************************************************
+		// Set all of the cells to mutant cells
+		MeshBasedCellPopulation<2,2>* p_tissue = static_cast<MeshBasedCellPopulation<2,2>*>(&simulator.rGetCellPopulation());
+		std::list<CellPtr> pos_cells =  p_tissue->rGetCells();
+
+		MAKE_PTR(TransitCellAnoikisResistantMutationState, p_resistant);
+
+		for (std::list<CellPtr>::iterator it = pos_cells.begin(); it != pos_cells.end(); ++it)
+		{
+			unsigned index = p_tissue->GetLocationIndexUsingCell((*it));
+			// Make sure we don't do anything to the fixed node at the bottom
+			if (index != 0)
+			{
+				(*it)->SetMutationState(p_resistant);
+			}
+		}
+		// ********************************************************************************************
 
 
 		// ********************************************************************************************
@@ -607,38 +620,6 @@ public:
 		WntConcentration<2>::Instance()->Destroy();
 		// ********************************************************************************************
 
-		// ********************************************************************************************
-		// Collate simulation data
-		// This number will not match the cell births from CryptStateTrackingModifier
-		// The Chaste Division event is connected to the actual division event, so there will
-		// always be a 1-1 ratio, however, some Chaste divisions happen just before the burn in
-		// time finishes, while their paired actual divisions happen after, thus the Chaste divisions
-		// won't be counted, but the actual divisions will.
-		// The reverse happens when the simulation stops, some Chaste divisions will be counted, but
-		// the paired actual divisions won't have happened before the simulation ends
-		// The numbers will actually be close because those Chaste divisions missed before the start
-		// will be roughly the same as the actual divisions missed after the end.
-		// The modifier division count will be the "correct" division count for the model
-		unsigned simulation_births = simulator.GetNumBirths() - transient_births;
-		simulation_births *= 1; // Literally just to keep the compiler on phoenix happy
-
-		// ********************************************************************************************
-		// Simulation characteristic data output
-		// ********************************************************************************************
-		double 		anoikis 			= double(p_anoikis_killer_2->GetCellKillCount())/simulation_length;
-		double 		averageCellCount 	= p_mod->GetAverageCount() - 1;
-		double 		birthRate 			= double(p_mod->GetBirthCount())/simulation_length;
-		unsigned 	maxBirthPosition 	= p_mod->GetMaxBirthPosition();
-
-		// ********************************************************************************************
-		// Output data to the command line
-		TRACE("START")
-		PRINT_VARIABLE(anoikis)   				// Anoikis rate
-		PRINT_VARIABLE(averageCellCount) 		// Expected total number of cells in the crypt
-		PRINT_VARIABLE(birthRate)				// Birth rate
-		PRINT_VARIABLE(maxBirthPosition)		// Highest cell position where cell division happens
-		TRACE("END")
-		// ********************************************************************************************
 
 	};
 
