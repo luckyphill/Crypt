@@ -1,0 +1,9 @@
+sbatch genericBehaviourSweep2.sh MouseColonDesc.txt
+sbatch genericBehaviourSweep2.sh MouseColonAsc.txt
+sbatch genericBehaviourSweep2.sh MouseColonTrans.txt
+sbatch genericBehaviourSweep2.sh MouseColonCaecum.txt
+sbatch genericBehaviourSweep2.sh RatColonDesc.txt
+sbatch genericBehaviourSweep2.sh RatColonAsc.txt
+sbatch genericBehaviourSweep2.sh RatColonTrans.txt
+sbatch genericBehaviourSweep2.sh RatColonCaecum.txt
+sbatch HumanColonBehaviourSweep2.sh
