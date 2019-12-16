@@ -565,6 +565,7 @@ public:
 
 		MAKE_PTR_ARGS(AnoikisCellKillerNewPhaseModel, p_anoikis_killer_2, (&cell_population));
 		p_anoikis_killer_2->SetPopUpDistance(popUpDistance);
+		p_anoikis_killer_2->SetResistantPoppedUpLifeExpectancy(DBL_MAX);
 		simulator.AddCellKiller(p_anoikis_killer_2);
 
 		simulator.AddCellKiller(p_isolated_killer);
