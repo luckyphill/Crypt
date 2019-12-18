@@ -1,4 +1,4 @@
-function InitialPoints = assembleInitialPoints(objectiveFunction)
+function InitialPoints = assembleInitialPointsSingleSeed(objectiveFunction, j)
 	
 
 	newSearchParamsFile = [getenv('HOME'), '/Research/Crypt/Chaste_models/ChasteMembrane/matlab_driver/analysis/behaviour/', func2str(objectiveFunction), '.txt'];
@@ -23,24 +23,17 @@ function InitialPoints = assembleInitialPoints(objectiveFunction)
 
 		pen = [];
 
-		% There are 10 sims for each point
-		for j = 1:10
+		try
+			% This shouldn't start running if the file doesn't exist
+			b = behaviourObjective(objectiveFunction,n,np,ees,ms,cct,wt,vf,t,dt,bt,j, 'Dont run');
+			pen = b.getPenalty('Dont run');
 
-			
-			
-
-			try
-				% This shouldn't start running if the file doesn't exist
-				b = behaviourObjective(objectiveFunction,n,np,ees,ms,cct,wt,vf,t,dt,bt,j, 'Dont run');
-				pen(end+1) = b.getPenalty('Dont run');
-				outputStats = obj.simul.data.behaviour_data;
-
-			end
+			InitialPoints(end+1).X = params(i,:);
+			InitialPoints(end).Fval = mean(pen);
 
 		end
 
-		InitialPoints(end+1).X = params(i,:);
-		InitialPoints(end).Fval = mean(pen);
+		
 
 
 	end

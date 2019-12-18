@@ -164,7 +164,7 @@ classdef simulateCryptColumnResistant < chasteSimulation
 				obj.saveLocation = [obj.saveLocation, sprintf('_%s_%g',k{i}, v{i})];
 			end
 
-			obj.saveLocation = [obj.saveLocation, '/run_', num2str(obj.run_number), '/'];
+			obj.saveLocation = [obj.saveLocation, '/'];
 
 			if exist(obj.saveLocation,'dir')~=7
 				mkdir(obj.saveLocation);

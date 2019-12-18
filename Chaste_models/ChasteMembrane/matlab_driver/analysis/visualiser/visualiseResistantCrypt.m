@@ -38,7 +38,7 @@ classdef visualiseResistantCrypt < matlab.mixin.SetGet
 
 			pathToAnim = [obj.chastePath, 'Chaste/anim/'];
 			fprintf('Running Chaste java visualiser\n');
-			[failed, cmdout] = system(['cd ', pathToAnim, '; java Visualize2dCentreCells ', obj.simul.saveLocation], '-echo');
+			[failed, cmdout] = system(['cd ', pathToAnim, '; java Visualize2dCentreCells ', obj.simul.saveLocation, 'run_', num2str(obj.simul.run_number)], '-echo');
 
 		end
 

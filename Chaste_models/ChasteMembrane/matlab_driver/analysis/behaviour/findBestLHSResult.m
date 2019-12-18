@@ -25,12 +25,14 @@ function [bestPenalty, bestParams] = findBestLHSResult(objectiveFunction)
 		t = 2000;
 		dt = 0.0005;
 		bt = 200;
+        
+        pen = [];
 
 		% There are 10 sims for each point
 		for j = 1:10
 
 			
-			pen = [];
+			
 
 			try
 				% This shouldn't start running if the file doesn't exist

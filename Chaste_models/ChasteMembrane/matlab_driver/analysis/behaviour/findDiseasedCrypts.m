@@ -27,7 +27,7 @@ function [diseased, pen] = findDiseasedCrypts(objectiveFunction)
 			% This shouldn't start running if the file doesn't exist
 			b = behaviourObjective(objectiveFunction,n,np,ees,ms,cct,wt,vf,t,dt,bt,1, 'Dont run');
 			outputStats = b.simul.data.behaviour_data;
-			if outputStats(1) > 0.1
+			if outputStats(1) > 0.06 && outputStats(1) < 0.1
 				diseased{end+1} = params(i,:);
 				pen(end+1) = b.getPenalty('Dont run');
 			end
