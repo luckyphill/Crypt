@@ -11,7 +11,7 @@
 export TZ=Australia/Adelaide
 export CHASTE_TEST_OUTPUT=/fast/users/a1738927/testoutput/
 
-module load matlab/2019a
+module load matlab/2019b
 
 module load CMake
 module load netCDF-Fortran
