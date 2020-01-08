@@ -4,10 +4,10 @@
 % temp_wt is a work around to make sure cct-1 > wt > 1
 
 objectiveFunction = @RatColonCaecum;
-lb = [30, 9, 20, 20, 200, 11, 500];
-ub = [36, 15, 500, 500, 300, 89, 1000];
+lb = [300, 90, 20, 20, 200, 11, 500];
+ub = [360, 150, 500, 500, 300, 89, 1000];
 N = 16;
 
-[x,fval,exitflag,output] = surrogateSearch(objectiveFunction, lb, ub, N);
+[x,fval,exitflag,output] = surrogateSearchSingleSeed(objectiveFunction, lb, ub, 1)
 x
 fval

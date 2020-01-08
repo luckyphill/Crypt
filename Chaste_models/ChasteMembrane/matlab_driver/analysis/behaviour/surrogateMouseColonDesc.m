@@ -10,6 +10,6 @@ lb = [232, 96, 20, 20, 99, 20, 500];
 ub = [348, 144, 500, 500, 199, 80, 1000];
 N = 16;
 
-[x,fval,exitflag,output] = surrogateSearch(objectiveFunction, lb, ub, N);
+[x,fval,exitflag,output] = surrogateSearchSingleSeed(objectiveFunction, lb, ub, 1)
 x
 fval

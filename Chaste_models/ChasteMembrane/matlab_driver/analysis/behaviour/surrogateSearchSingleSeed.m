@@ -10,7 +10,7 @@ function [x,fval,exitflag,output] = surrogateSearchSingleSeed(objectiveFunction,
 	fun = @(params)objectiveFunctionSingleSeed(params, objectiveFunction, j);
 
 	intcon = [1,2,3,4,5,6,7]; % The parameters that must be integers
-	options = optimoptions('surrogateopt','InitialPoints', assembleInitialPointsSingleSeed(objectiveFunction, j));
+	options = optimoptions('surrogateopt','InitialPoints', assembleInitialPointsSingleSeed(objectiveFunction, j), 'MaxFunctionEvaluations', 30);
 
 	problem.objective = fun;
 	problem.lb = lb;

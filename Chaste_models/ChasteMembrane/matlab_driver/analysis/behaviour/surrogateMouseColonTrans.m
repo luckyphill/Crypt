@@ -4,10 +4,10 @@
 % temp_wt is a work around to make sure cct-1 > wt > 1
 
 objectiveFunction = @MouseColonTrans;
-lb = [34, 9, 20, 20, 160, 11, 500];
-ub = [40, 15, 500, 500, 260, 89, 1000];
+lb = [340, 90, 20, 20, 160, 11, 500];
+ub = [400, 150, 500, 500, 260, 89, 1000];
 N = 16;
 
-[x,fval,exitflag,output] = surrogateSearch(objectiveFunction, lb, ub, N);
+[x,fval,exitflag,output] = surrogateSearchSingleSeed(objectiveFunction, lb, ub, 1)
 x
 fval
