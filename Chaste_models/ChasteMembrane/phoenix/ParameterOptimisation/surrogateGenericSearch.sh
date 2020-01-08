@@ -1,7 +1,7 @@
 #!/bin/bash 
 #SBATCH -p batch 
 #SBATCH -N 1 
-#SBATCH -n 16 
+#SBATCH -n 1
 #SBATCH --time=72:00:00 
 #SBATCH --mem=16GB 
 # NOTIFICATIONS
