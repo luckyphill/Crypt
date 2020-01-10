@@ -282,7 +282,6 @@ public:
 		unsigned node_counter = 0;
 
 		std::vector<Node<2>*> nodes;
-		std::vector<unsigned> transit_nodes;
 		std::vector<unsigned> location_indices;
 
 
@@ -296,7 +295,6 @@ public:
 		Node<2>* single_node =  new Node<2>(node_counter,  false,  x, y);
 		single_node->SetRadius(epithelialPreferredRadius);
 		nodes.push_back(single_node);
-		transit_nodes.push_back(node_counter);
 		location_indices.push_back(node_counter);
 		node_counter++;
 
@@ -309,7 +307,6 @@ public:
 			Node<2>* single_node_2 =  new Node<2>(node_counter,  false,  x, y);
 			single_node_2->SetRadius(epithelialPreferredRadius);
 			nodes.push_back(single_node_2);
-			transit_nodes.push_back(node_counter);
 			location_indices.push_back(node_counter);
 			node_counter++;
 		}

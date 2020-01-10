@@ -51,7 +51,7 @@
 class TestIsolatedMembrane : public AbstractCellBasedTestSuite
 {
 	public:
-	void xTestIsolatedFlatMembrane() throw(Exception)
+	void TestIsolatedFlatMembrane() throw(Exception)
 	{
 		unsigned cells_up = 10;
 		unsigned cells_across = 30;
@@ -214,7 +214,7 @@ class TestIsolatedMembrane : public AbstractCellBasedTestSuite
 
 	}
 
-	void TestInsertCloseMembrane() throw(Exception)
+	void xTestInsertCloseMembrane() throw(Exception)
 	{
 		// In this we introduce a row of membrane point cells with a small rest length
 		std::vector<Node<2>*> nodes;
