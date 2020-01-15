@@ -35,6 +35,16 @@ void TorsionalSpringForce::SetTargetCurvature(double targetCurvature)
 	mTargetCurvature = targetCurvature;
 }
 
+void TorsionalSpringForce::SetDt(double dt)
+{
+	mDt = dt;
+}
+
+void TorsionalSpringForce::SetDampingConstant(double dampingConstant)
+{
+	mDampingConstant = dampingConstant;
+}
+
 
 /*
  * A method to find all the pairs of connections between healthy epithelial cells and labelled gel cells.
@@ -190,33 +200,46 @@ void TorsionalSpringForce::AddForceContribution(AbstractCellPopulation<2>& rCell
 		// Treating the membrane force like a torsion spring
 		double torque = mTorsionalStiffness * (current_angle - target_angle); // Positive torque means force points into lumen
 
-		// Use the CL and CR vectors to determine the line that the force will act on
-		// If we have a vector (a, b), then the vector (b, -a) is perpendicular and creates a clockwise rotation when added to the end of (a,b)
-		// while (-b, a) creates an anticlockwise rotation
-		// forceDirectionLeft will always end up pointing into the lumen, and forceDirectionRight will always point out
-		// Given we have decided that the actual direction of the force is encoded in the sign on the torque this is all we need to do
-		// c_vector<double, 2> vector_CL = p_tissue->rGetMesh().GetVectorFromAtoB(centre_location,left_location);
-		// c_vector<double, 2> vector_CR = p_tissue->rGetMesh().GetVectorFromAtoB(centre_location,right_location);
+		// To find the correct force to apply, we need to determine the angle of rotation after the movement has occurred
+		// With the angle, we then apply a rotation matrix to the centre-centre vector, to produce a vector that points
+		// to the new location. We use the new vector to determine the straight line movement from the old location to the
+		// new location. This is done in a backwards kind of way since Chaste can't deal with rotations. To determine the 
+		// direction we have to calculate the actual movement, then work out the vector that will produce it.
 
-		c_vector<double, 2> vector_CL = left_location - centre_location;
-		c_vector<double, 2> vector_CR = right_location - centre_location;
+		c_vector<double, 2> vectorCL = left_location - centre_location;
+		c_vector<double, 2> vectorCR = right_location - centre_location;
 		
-		double length_CL = norm_2(vector_CL);
-		double length_CR = norm_2(vector_CR);
+		double lengthCL = norm_2(vectorCL);
+		double lengthCR = norm_2(vectorCR);
 		
-		double forceMagnitudeLeft = torque/length_CL;
-		double forceMagnitudeRight = torque/length_CR;
-		
-		c_vector<double, 2> forceDirectionLeft;
-		c_vector<double, 2> forceDirectionRight;
-		
-		forceDirectionLeft[0] = vector_CL[1] / length_CL;
-		forceDirectionLeft[1] = - vector_CL[0] / length_CL;
+		double forceMagnitudeLeft  = torque/lengthCL;
+		double forceMagnitudeRight = torque/lengthCR;
 
-		forceDirectionRight[0] = - vector_CR[1] / length_CR;
-		forceDirectionRight[1] = vector_CR[0] / length_CR;
+		double straightMovementLeft  = mDt * forceMagnitudeLeft / mDampingConstant;
+		double straightMovementRight = mDt * forceMagnitudeRight / mDampingConstant;
 
-		c_vector<double, 2> forceVectorLeft = forceMagnitudeLeft * forceDirectionLeft;
+		double R11Left = 1 - std::pow(straightMovementLeft/lengthCL, 2) / 2;
+		double R12Left = std::sqrt( 1 - std::pow(straightMovementLeft/lengthCL, 2) / 4 ) * straightMovementLeft/lengthCL;
+
+		double R11Right = 1 - std::pow(straightMovementRight/lengthCR, 2) / 2;
+		double R12Right = std::sqrt( 1 - std::pow(straightMovementRight/lengthCR, 2) / 4 ) * straightMovementRight/lengthCR;
+
+		c_vector<double, 2> rotL;
+		c_vector<double, 2> rotR;
+
+		rotL(0) = R11Left * vectorCL(0) + R12Left * vectorCL(1);
+		rotL(1) = - R12Left * vectorCL(0) + R11Left * vectorCL(1);
+
+		rotR(0) = R11Right * vectorCR(0) - R12Right * vectorCR(1);
+		rotR(1) = R12Right * vectorCR(0) + R11Right * vectorCR(1);
+		
+		c_vector<double, 2> forceDirectionLeft  = rotL - vectorCL;
+		c_vector<double, 2> forceDirectionRight = rotR - vectorCR;
+
+		forceDirectionLeft = forceDirectionLeft / norm_2(forceDirectionLeft);
+		forceDirectionRight = forceDirectionRight / norm_2(forceDirectionRight);
+
+		c_vector<double, 2> forceVectorLeft  = forceMagnitudeLeft * forceDirectionLeft;
 		c_vector<double, 2> forceVectorRight = forceMagnitudeRight * forceDirectionRight;
 
 		rCellPopulation.GetNode(left_node)->AddAppliedForceContribution(forceVectorLeft);

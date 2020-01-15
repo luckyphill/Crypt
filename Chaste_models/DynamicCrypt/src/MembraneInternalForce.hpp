@@ -1,5 +1,5 @@
-#ifndef TorsionalSpringForce_HPP
-#define TorsionalSpringForce_HPP
+#ifndef MEMBRANEInternalFORCE_HPP
+#define MEMBRANEInternalFORCE_HPP
 
 #include "ChasteSerialization.hpp"
 #include <boost/serialization/base_object.hpp>
@@ -10,6 +10,7 @@
 
 #include "TransitCellProliferativeType.hpp"
 #include "StemCellProliferativeType.hpp"
+#include "MembraneCellProliferativeType.hpp"
 
 #include <cmath>
 #include <list>
@@ -25,22 +26,16 @@
  * as found in the Chaste Paper Tutorials for the CryptFissionPlos2016 project
  */
 
-class TorsionalSpringForce : public AbstractForce<2>
+class MembraneInternalForce : public AbstractForce<2>
 {
 	friend class TestCrossSectionModelInteractionForce;
 
 private :
 
 	/** Parameter that defines the stiffness of the basement membrane */
-	double mTorsionalStiffness;
+	double mMembraneStiffness;
 
-	/** Target curvature for the layer of cells */
-	double mTargetCurvature;
-
-	// Needed for the rotation calucaltopn
-	double mDt;
-
-	double mDampingConstant;
+	std::vector<std::vector<CellPtr>> mMembraneSections;
 
 	/** Needed for serialization. */
 	friend class boost::serialization::access;
@@ -56,10 +51,7 @@ private :
 		// If Archive is an output archive, then '&' resolves to '<<'
 		// If Archive is an input archive, then '&' resolves to '>>'
 		archive & boost::serialization::base_object<AbstractForce<2> >(*this);
-		archive & mTorsionalStiffness;
-		archive & mTargetCurvature;
-		archive & mDt;
-		archive & mDampingConstant;
+		archive & mMembraneStiffness
 	}
 
 public :
@@ -67,18 +59,13 @@ public :
 	/**
 	 * Constructor.
 	 */
-	TorsionalSpringForce();
+	MembraneInternalForce();
 
 	/**
 	 * Destructor.
 	 */
-	~TorsionalSpringForce();
+	~MembraneInternalForce();
 
-	double GetTargetAngle(AbstractCellPopulation<2>& rCellPopulation, CellPtr centre_cell,
-																		c_vector<double, 2> leftCell,
-																		c_vector<double, 2> centreCell,
-																		c_vector<double, 2> rightCell);
-	
 	/**
 	 * Pure virtual, must implement
 	 */
@@ -91,31 +78,13 @@ public :
 
 	/* Set method for Basement Membrane Parameter
 	 */
-	void SetTorsionalStiffness(double basementMembraneTorsionalStiffness);
+	void SetMembraneStiffness(double MembraneStiffness);
 
-	/* Value of Target Curvature in epithelial layer */
-	void SetTargetCurvature(double targetCurvature);
-
-	void SetDt(double dt);
-
-	void SetDampingConstant(double dampingConstant);
-
-	double GetAngleFromTriplet(AbstractCellPopulation<2>& rCellPopulation,
-															c_vector<double, 2> leftNode,
-															c_vector<double, 2> centreNode,
-															c_vector<double, 2> rightNode);
-
-	double FindParametricCurvature(AbstractCellPopulation<2>& rCellPopulation,
-									c_vector<double, 2> leftMidpoint,
-									c_vector<double, 2> centreMidpoint,
-									c_vector<double, 2> rightMidpoint);
-	
-	// Returns each distinct membrane section
-	std::vector<std::vector<unsigned>> GetMembraneSections(AbstractCellPopulation<2>& rCellPopulation);
+	void SetMembraneSections(std::vector<std::vector<CellPtr>> membraneSections);
 
 };
 
 #include "SerializationExportWrapper.hpp"
-CHASTE_CLASS_EXPORT(TorsionalSpringForce)
+CHASTE_CLASS_EXPORT(MembraneInternalForce)
 
-#endif /*TorsionalSpringForce_HPP*/
+#endif /*MEMBRANEInternalFORCE_HPP*/
