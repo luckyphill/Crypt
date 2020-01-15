@@ -15,7 +15,7 @@
 
 
 #include "TorsionalSpringForce.hpp" // A force to restore the membrane to it's preferred shape
-
+#include "MembraneInternalForce.hpp"
 #include "NoCellCycleModel.hpp"
 
 // #include "BoundaryCellProperty.hpp"
@@ -261,34 +261,10 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 		}
 		// ********************************************************************************************
 
-		std::stringstream input_file;
-		input_file << std::getenv("HOME");
-		input_file << "/Research/Crypt/Chaste_models/DynamicMembrane/test/positions/"
-		input_file <<  "membrane_" << type << ".txt";
 
-		std::ifstream membraneFile;
-		membraneFile.open (input_file.str(), std::ios::in);
-		std::vector<double> membraneX;
-		std::vector<double> membraneY;
-		std::string line;
-		if (membraneFile.is_open())
-		{
-			while (std::getline(membraneFile, line))
-			{
-				std::vector<std::string> vec;
-				boost::algorithm::split(vec, line, boost::is_any_of(","));
-				std::stringstream temp0 (vec(0));
-				std::stringstream temp1 (vec(1));
-
-				double A << temp0;
-				double B << temp1;
-
-				membraneX.push_back(A);
-				membraneY.push_back(B);
-
-			}
-			membraneFile.close();
-		}
+		std::vector<double> membraneX{2.5, 1.5, 0.8, 0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,  0.0,  0.0,  0.0,  0.0};
+		std::vector<double> membraneY{0.0, 0.25, 0.8, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 11.5, 12.5, 13.5, 14.5};
+		
 
 		std::vector<Node<2>*> nodes;
 		std::vector<unsigned> membrane_nodes;
@@ -302,11 +278,12 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 
 
 		std::vector<CellPtr> cells;
+		std::vector<CellPtr> membrane_cells;
 
 
-		for (unsigned i = 0; i < n; i++)
+		for (unsigned i = 0; i < membraneX.size(); i++)
 		{
-			nodes.push_back(new Node<2>(node_counter,  false,  i, 0));
+			nodes.push_back(new Node<2>(node_counter,  false,  membraneX[i], membraneY[i]));
 			location_indices.push_back(node_counter);
 			membrane_nodes.push_back(node_counter);
 			node_counter++;
@@ -347,7 +324,9 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 		MAKE_PTR(MembraneInternalForce, p_membrane);
 		p_membrane->SetMembraneStiffness(membraneStiffness);
 		p_membrane->SetMembraneSections(membraneSections);
+		simulator.AddForce(p_membrane);
 
+		simulator.Solve();
 
 	}
 

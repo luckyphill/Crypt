@@ -8,9 +8,6 @@
 #include "MeshBasedCellPopulation.hpp"
 #include "DifferentiatedCellProliferativeType.hpp"
 
-#include "TransitCellProliferativeType.hpp"
-#include "StemCellProliferativeType.hpp"
-#include "MembraneCellProliferativeType.hpp"
 
 #include <cmath>
 #include <list>
@@ -51,7 +48,7 @@ private :
 		// If Archive is an output archive, then '&' resolves to '<<'
 		// If Archive is an input archive, then '&' resolves to '>>'
 		archive & boost::serialization::base_object<AbstractForce<2> >(*this);
-		archive & mMembraneStiffness
+		archive & mMembraneStiffness;
 	}
 
 public :

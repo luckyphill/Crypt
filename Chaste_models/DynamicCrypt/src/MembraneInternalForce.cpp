@@ -47,8 +47,8 @@ void MembraneInternalForce::AddForceContribution(AbstractCellPopulation<2>& rCel
 			CellPtr cellA = membraneCells[i];
 			CellPtr cellB = membraneCells[i+1];
 
-			unsigned nodeA = p_tissue->GetLocationIndexUsingCell(cellA);
-			unsigned nodeB = p_tissue->GetLocationIndexUsingCell(cellB);
+			Node<2>* nodeA = p_tissue->GetNode(p_tissue->GetLocationIndexUsingCell(cellA));
+			Node<2>* nodeB = p_tissue->GetNode(p_tissue->GetLocationIndexUsingCell(cellB));
 
 			double radiusA = nodeA->GetRadius();
         	double radiusB = nodeB->GetRadius();
@@ -67,8 +67,8 @@ void MembraneInternalForce::AddForceContribution(AbstractCellPopulation<2>& rCel
 			double forceMagnitude = mMembraneStiffness * dx;
 			c_vector<double, 2> forceVector = forceMagnitude * vectorAB / lengthAB;
 
-			rCellPopulation.GetNode(nodeA)->AddAppliedForceContribution(forceVector);
-			rCellPopulation.GetNode(nodeB)->AddAppliedForceContribution(-forceVector);
+			nodeA->AddAppliedForceContribution(forceVector);
+			nodeB->AddAppliedForceContribution(-forceVector);
 	
 		}
 	}
