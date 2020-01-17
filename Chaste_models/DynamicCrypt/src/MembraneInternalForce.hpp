@@ -31,6 +31,8 @@ private :
 
 	/** Parameter that defines the stiffness of the basement membrane */
 	double mMembraneStiffness;
+	// Stiffness of reaction with any other cell
+	double mExternalStiffness;
 
 	std::vector<std::vector<CellPtr>> mMembraneSections;
 
@@ -67,6 +69,9 @@ public :
 	 * Pure virtual, must implement
 	 */
 	void AddForceContribution(AbstractCellPopulation<2>& rCellPopulation); // 
+	
+	// Add the force interaction with other cells
+	void AddExternalForceContribution(Node<2>* membraneNode, AbstractCellPopulation<2>& rCellPopulation);
 
 	/**
 	 * Pure virtual, must implement
@@ -76,6 +81,7 @@ public :
 	/* Set method for Basement Membrane Parameter
 	 */
 	void SetMembraneStiffness(double MembraneStiffness);
+	void SetExternalStiffness(double ExternalStiffness);
 
 	void SetMembraneSections(std::vector<std::vector<CellPtr>> membraneSections);
 

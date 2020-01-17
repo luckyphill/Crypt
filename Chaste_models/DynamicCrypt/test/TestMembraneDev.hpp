@@ -16,6 +16,8 @@
 
 #include "TorsionalSpringForce.hpp" // A force to restore the membrane to it's preferred shape
 #include "MembraneInternalForce.hpp"
+#include "StromalInternalForce.hpp"
+
 #include "NoCellCycleModel.hpp"
 
 // #include "BoundaryCellProperty.hpp"
@@ -24,10 +26,13 @@
 #include "UniformCellCycleModel.hpp"
 #include "NodesOnlyMesh.hpp"
 #include "NodeBasedCellPopulation.hpp"
+#include "NodeBasedCellPopulationWithParticles.hpp"
 #include "CellsGenerator.hpp"
 #include "TrianglesMeshWriter.hpp"
 
 #include "DifferentiatedCellProliferativeType.hpp"
+#include "MembraneType.hpp"
+#include "StromalType.hpp"
 
 #include "Debug.hpp"
 
@@ -40,9 +45,9 @@
 class TestMembraneDev : public AbstractCellBasedTestSuite
 {
 	public:
-	void TestMembraneTorsionSpring() throw(Exception)
+	void xTestMembraneTorsionSpring() throw(Exception)
 	{
-
+		// DOESNT PRODUCE THE DESIRED BEHAVIOUR
 		// ********************************************************************************************
 		// Input parameters in order usually expected, grouped by category
 		// ********************************************************************************************
@@ -123,9 +128,9 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 
 
 		std::vector<Node<2>*> nodes;
-		std::vector<unsigned> location_indices;
+		std::vector<unsigned> locationIndices;
 
-		unsigned node_counter = 0;
+		unsigned nodeCounter = 0;
 
 		double maxInteractionRadius = 0.8;
 
@@ -135,30 +140,30 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 
 		for (unsigned i = 0; i < n; i++)
 		{
-			nodes.push_back(new Node<2>(node_counter,  false,  i, 0));
-			location_indices.push_back(node_counter);
-			node_counter++;
+			nodes.push_back(new Node<2>(nodeCounter,  false,  i, 0));
+			locationIndices.push_back(nodeCounter);
+			nodeCounter++;
 		}
 
 		NodesOnlyMesh<2> mesh;
 		mesh.ConstructNodesWithoutMesh(nodes, maxInteractionRadius);
 
-		MAKE_PTR(DifferentiatedCellProliferativeType, p_diff_type);
-		MAKE_PTR(WildTypeCellMutationState, p_state);
+		MAKE_PTR(DifferentiatedCellProliferativeType, pDiffType);
+		MAKE_PTR(WildTypeCellMutationState, pState);
 
 		for (unsigned i = 0; i < n; i++)
 		{
-			NoCellCycleModel* p_cycle_model = new NoCellCycleModel();
-			CellPtr p_cell(new Cell(p_state, p_cycle_model));
+			NoCellCycleModel* pCycleModel = new NoCellCycleModel();
+			CellPtr pCell(new Cell(pState, pCycleModel));
 
-			p_cell->SetCellProliferativeType(p_diff_type);
-			p_cell->InitialiseCellCycleModel();
+			pCell->SetCellProliferativeType(pDiffType);
+			pCell->InitialiseCellCycleModel();
 
-			cells.push_back(p_cell);
+			cells.push_back(pCell);
 		}
 
 
-		NodeBasedCellPopulation<2> cell_population(mesh, cells, location_indices);
+		NodeBasedCellPopulation<2> cell_population(mesh, cells, locationIndices);
 
 		OffLatticeSimulation<2> simulator(cell_population);
 
@@ -184,12 +189,12 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 
 	};
 
-	void TestMembraneBulkStroma() throw(Exception)
+	void TestMembraneInternalForce() throw(Exception)
 	{
 
 		// The membrane is a string of cells, that only interact with their immediate neighbour
-		// and the crypt cells. The effect of the stromal cells is replaced with a bulk property
-		// force
+		// and the crypt cells. Stromal cells fill in the intercrypt space, and the epithelial cells
+		// sit on the membrane
 
 		// ********************************************************************************************
 		// Input parameters in order usually expected, grouped by category
@@ -219,6 +224,20 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 		{
 			membraneStiffness = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-ms");
 			PRINT_VARIABLE(membraneStiffness)
+		}
+
+		double externalStiffness = 50;
+		if(CommandLineArguments::Instance()->OptionExists("-ex"))
+		{
+			externalStiffness = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-ex");
+			PRINT_VARIABLE(externalStiffness)
+		}
+
+		double stromalStiffness = 50;
+		if(CommandLineArguments::Instance()->OptionExists("-ss"))
+		{
+			stromalStiffness = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-ss");
+			PRINT_VARIABLE(stromalStiffness)
 		}
 		// ********************************************************************************************
 
@@ -262,72 +281,113 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 		// ********************************************************************************************
 
 
-		std::vector<double> membraneX{2.5, 1.5, 0.8, 0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,  0.0,  0.0,  0.0,  0.0};
-		std::vector<double> membraneY{0.0, 0.25, 0.8, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 11.5, 12.5, 13.5, 14.5};
+		std::vector<double> membraneX{2.5, 1.5, 0.8, 0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,  0.0,  0.0,  0.0,  0.0, -0.25, -0.8, -1.5, -2.5};
+		std::vector<double> membraneY{0.0, 0.25, 0.8, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.2, 16.75, 17};
 		
 
 		std::vector<Node<2>*> nodes;
-		std::vector<unsigned> membrane_nodes;
-		std::vector<unsigned> location_indices;
+		std::vector<unsigned> membraneIndices;
+		std::vector<unsigned> locationIndices;
 
 		std::vector<std::vector<CellPtr>> membraneSections;
 
-		unsigned node_counter = 0;
+		unsigned nodeCounter = 0;
 
-		double maxInteractionRadius = 2;
+		double maxInteractionRadius = 1.2;
 
 
 		std::vector<CellPtr> cells;
-		std::vector<CellPtr> membrane_cells;
+		std::vector<CellPtr> membraneCells;
 
 
 		for (unsigned i = 0; i < membraneX.size(); i++)
 		{
-			nodes.push_back(new Node<2>(node_counter,  false,  membraneX[i], membraneY[i]));
-			location_indices.push_back(node_counter);
-			membrane_nodes.push_back(node_counter);
-			node_counter++;
+			Node<2>* pNode = new Node<2>(nodeCounter,  false,  membraneX[i], membraneY[i]);
+			pNode->SetRadius(0.5);
+			nodes.push_back(pNode);
+
+			locationIndices.push_back(nodeCounter);
+			membraneIndices.push_back(nodeCounter);
+			nodeCounter++;
+		}
+
+		
+
+		MAKE_PTR(DifferentiatedCellProliferativeType, pDiffType);
+		MAKE_PTR(MembraneType, pMembraneType);
+		MAKE_PTR(StromalType, pStromalType);
+		MAKE_PTR(WildTypeCellMutationState, pState);
+
+
+		for (unsigned i = 0; i < membraneIndices.size(); i++)
+		{
+			NoCellCycleModel* pCycleModel = new NoCellCycleModel();
+
+			CellPtr pCell(new Cell(pState, pCycleModel));
+			pCell->SetCellProliferativeType(pMembraneType);
+			pCell->InitialiseCellCycleModel();
+			membraneCells.push_back(pCell);
+			cells.push_back(pCell);
+		}
+
+		membraneSections.push_back(membraneCells);
+
+
+		// Put in the stromal cells
+		std::vector<double> stromaX{ 2.5,  1.5,  0.5, -0.5, -1.5, -2.5,
+									 -2.5, -2.5, -2.5, -2.5, -2.5, -2.5, -2.5, -2.5, -2.5, -2.5, -2.5, -2.5, -2.5, -2.5, -2.5, -2.5, -2.5,
+									  -1.5, -1.5, -1.5, -1.5, -1.5, -1.5, -1.5, -1.5, -1.5, -1.5, -1.5, -1.5, -1.5, -1.5, -1.5, -1.5, -1.5,
+									   -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
+									   	 0.5};
+		std::vector<double> stromaY{-1.0, -1.0, -1.0, -1.0, -1.0, -1.0,
+									  0.0,  1.0,  2.0,  3.0,  4.0,  5.0,  6.0,  7.0,  8.0,  9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0,
+									  	0.0,  1.0,  2.0,  3.0,  4.0,  5.0,  6.0,  7.0,  8.0,  9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0,
+									  	 0.0,  1.0,  2.0,  3.0,  4.0,  5.0,  6.0,  7.0,  8.0,  9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0,
+									  	  0.0};
+		
+		for (unsigned i = 0; i < stromaX.size(); i++)
+		{
+			Node<2>* pNode = new Node<2>(nodeCounter,  false,  stromaX[i], stromaY[i]);
+			nodes.push_back(pNode);
+
+			locationIndices.push_back(nodeCounter);
+			nodeCounter++;
+
+			NoCellCycleModel* pCycleModel = new NoCellCycleModel();
+
+			CellPtr pCell(new Cell(pState, pCycleModel));
+			pCell->SetCellProliferativeType(pStromalType);
+			pCell->InitialiseCellCycleModel();
+			pCell->GetCellData()->SetItem("parent", pCell->GetCellId());
+			cells.push_back(pCell);
 		}
 
 		NodesOnlyMesh<2> mesh;
 		mesh.ConstructNodesWithoutMesh(nodes, maxInteractionRadius);
 
-		MAKE_PTR(DifferentiatedCellProliferativeType, p_diff_type);
-		MAKE_PTR(WildTypeCellMutationState, p_state);
-
-
-		for (unsigned i = 0; i < membrane_nodes.size(); i++)
-		{
-			NoCellCycleModel* p_cycle_model = new NoCellCycleModel();
-
-			CellPtr p_cell(new Cell(p_state, p_cycle_model));
-			p_cell->SetCellProliferativeType(p_diff_type);
-
-			p_cell->InitialiseCellCycleModel();
-
-			cells.push_back(p_cell);
-			membrane_cells.push_back(p_cell);
-		}
-
-		membraneSections.push_back(membrane_cells);
-
-
-		NodeBasedCellPopulation<2> cell_population(mesh, cells, location_indices);
+		NodeBasedCellPopulation<2> cell_population(mesh, cells, locationIndices);
 
 		OffLatticeSimulation<2> simulator(cell_population);
 
-		simulator.SetOutputDirectory("TestMembraneBulkStroma");
+
+		simulator.SetOutputDirectory("TestMembraneInternalForce");
 		simulator.SetEndTime(simulation_length);
 		simulator.SetDt(dt);
 		simulator.SetSamplingTimestepMultiple(sampling_multiple);
 
 		MAKE_PTR(MembraneInternalForce, p_membrane);
 		p_membrane->SetMembraneStiffness(membraneStiffness);
+		p_membrane->SetExternalStiffness(externalStiffness);
 		p_membrane->SetMembraneSections(membraneSections);
 		simulator.AddForce(p_membrane);
 
+		MAKE_PTR(StromalInternalForce<2>, pStroma);
+		pStroma->SetSpringStiffness(stromalStiffness);
+		simulator.AddForce(pStroma);
+
 		simulator.Solve();
 
-	}
+
+	};
 
 };
