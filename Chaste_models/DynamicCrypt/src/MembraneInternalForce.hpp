@@ -31,8 +31,11 @@ private :
 
 	/** Parameter that defines the stiffness of the basement membrane */
 	double mMembraneStiffness;
+	
 	// Stiffness of reaction with any other cell
 	double mExternalStiffness;
+
+	
 
 	std::vector<std::vector<CellPtr>> mMembraneSections;
 

@@ -84,10 +84,7 @@ void MembraneInternalForce::AddForceContribution(AbstractCellPopulation<2>& rCel
 
 void MembraneInternalForce::AddExternalForceContribution(Node<2>* pMembraneNode, AbstractCellPopulation<2>& rCellPopulation)
 {
-	// Get neighbours
-	// Loop thoruhg
-		// Check that neighbour is not another membrane node/cell
-			// Apply force to non-membrane node
+
 	MeshBasedCellPopulation<2>* p_tissue = static_cast<MeshBasedCellPopulation<2>*>(&rCellPopulation);
 
 	std::vector<unsigned>& neighbours = pMembraneNode->rGetNeighbours();
@@ -111,8 +108,19 @@ void MembraneInternalForce::AddExternalForceContribution(Node<2>* pMembraneNode,
 
 			double dx = lengthAB - restLength;
 
-			double forceMagnitude = mExternalStiffness * dx;
-			c_vector<double, 2> forceVector = forceMagnitude * vectorAB / lengthAB;
+			c_vector<double, 2> forceVector;
+
+	        if (dx <= 0) //overlap is negative
+	        {
+	            // log(x+1) is undefined for x<=-1
+	            assert(dx > -restLength);
+	            forceVector = mExternalStiffness * vectorAB * restLength * log(1.0 + dx/restLength);
+	        }
+	        else
+	        {
+	            double alpha = 5.0;
+	            forceVector = mExternalStiffness * vectorAB * dx * exp(-alpha * dx/restLength);
+	        }
 
 			pMembraneNode->AddAppliedForceContribution(forceVector);
 			pNeighbour->AddAppliedForceContribution(-forceVector);

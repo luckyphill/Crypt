@@ -239,6 +239,13 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 			stromalStiffness = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-ss");
 			PRINT_VARIABLE(stromalStiffness)
 		}
+
+		double maxInteractionRadius = 0.6;
+		if(CommandLineArguments::Instance()->OptionExists("-ir"))
+		{
+			maxInteractionRadius = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-ir");
+			PRINT_VARIABLE(maxInteractionRadius)
+		}
 		// ********************************************************************************************
 
 		// ********************************************************************************************
@@ -292,8 +299,6 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 		std::vector<std::vector<CellPtr>> membraneSections;
 
 		unsigned nodeCounter = 0;
-
-		double maxInteractionRadius = 1.2;
 
 
 		std::vector<CellPtr> cells;
