@@ -23,7 +23,7 @@ function stepFromOptimal(crypt, nM, npM, eesM, msM, cctM, wtM, vfM)
     end
 end
 
-function physical = verifyParams(n,np,ees,ms,cct,wt,vf,nM,npM,eesM,msM,cctM,wtM,Mvf)
+function physical = verifyParams(n,np,ees,ms,cct,wt,vf,nM,npM,eesM,msM,cctM,wtM,vfM)
     % Need to make sure the parameters are physically possible
     physical = true;
     if wtM*wt < 2
