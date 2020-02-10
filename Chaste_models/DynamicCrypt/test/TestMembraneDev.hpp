@@ -189,7 +189,7 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 
 	};
 
-	void TestMembraneInternalForce() throw(Exception)
+	void xTestMembraneInternalForce() throw(Exception)
 	{
 
 		// The membrane is a string of cells, that only interact with their immediate neighbour

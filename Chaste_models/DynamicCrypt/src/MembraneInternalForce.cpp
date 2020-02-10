@@ -34,6 +34,11 @@ void MembraneInternalForce::SetExternalStiffness(double ExternalStiffness)
 	mExternalStiffness = ExternalStiffness;
 }
 
+void MembraneInternalForce::SetSpringBackedStiffness(double SpringBackedStiffness)
+{
+	mSpringBackedStiffness = SpringBackedStiffness;
+}
+
 
 //Method overriding the virtual method for AbstractForce. The crux of what really needs to be done.
 void MembraneInternalForce::AddForceContribution(AbstractCellPopulation<2>& rCellPopulation)
@@ -56,9 +61,9 @@ void MembraneInternalForce::AddForceContribution(AbstractCellPopulation<2>& rCel
 			Node<2>* nodeB = p_tissue->GetNode(p_tissue->GetLocationIndexUsingCell(cellB));
 
 			double radiusA = nodeA->GetRadius();
-        	double radiusB = nodeB->GetRadius();
+			double radiusB = nodeB->GetRadius();
 
-        	double restLength = radiusA + radiusB;
+			double restLength = radiusA + radiusB;
 						
 			c_vector<double, 2> locationA = p_tissue->GetLocationOfCellCentre(cellA);
 			c_vector<double, 2> locationB = p_tissue->GetLocationOfCellCentre(cellB);
@@ -86,18 +91,23 @@ void MembraneInternalForce::AddExternalForceContribution(Node<2>* pMembraneNode,
 {
 
 	MeshBasedCellPopulation<2>* p_tissue = static_cast<MeshBasedCellPopulation<2>*>(&rCellPopulation);
+	if (mUseSpringBacked)
+	{
+		// Chuck it in here just because it's slightly easier than putting it in AddForceContribution
+		AddSpringBackedForce(pMembraneNode, rCellPopulation);
+	}
 
 	std::vector<unsigned>& neighbours = pMembraneNode->rGetNeighbours();
 	for (std::vector<unsigned>::iterator it = neighbours.begin(); it != neighbours.end(); it++)
-    {
-    	Node<2>* pNeighbour =  p_tissue->GetNode(*it);
-    	CellPtr pCell = p_tissue->GetCellUsingLocationIndex(*it);
-    	if (!pCell->GetCellProliferativeType()->IsType<MembraneType>())
-    	{
-    		double radiusA = pMembraneNode->GetRadius();
-        	double radiusB = pNeighbour->GetRadius();
+	{
+		Node<2>* pNeighbour =  p_tissue->GetNode(*it);
+		CellPtr pCell = p_tissue->GetCellUsingLocationIndex(*it);
+		if (!pCell->GetCellProliferativeType()->IsType<MembraneType>())
+		{
+			double radiusA = pMembraneNode->GetRadius();
+			double radiusB = pNeighbour->GetRadius();
 
-        	double restLength = radiusA + radiusB;
+			double restLength = radiusA + radiusB;
 						
 			c_vector<double, 2> locationA = pMembraneNode->rGetLocation();
 			c_vector<double, 2> locationB = pNeighbour->rGetLocation();
@@ -110,23 +120,66 @@ void MembraneInternalForce::AddExternalForceContribution(Node<2>* pMembraneNode,
 
 			c_vector<double, 2> forceVector;
 
-	        if (dx <= 0) //overlap is negative
-	        {
-	            // log(x+1) is undefined for x<=-1
-	            assert(dx > -restLength);
-	            forceVector = mExternalStiffness * vectorAB * restLength * log(1.0 + dx/restLength);
-	        }
-	        else
-	        {
-	            double alpha = 5.0;
-	            forceVector = mExternalStiffness * vectorAB * dx * exp(-alpha * dx/restLength);
-	        }
+			if (dx <= 0) //overlap is negative
+			{
+				// log(x+1) is undefined for x<=-1
+				assert(dx > -restLength);
+				forceVector = mExternalStiffness * vectorAB * restLength * log(1.0 + dx/restLength);
+			}
+			else
+			{
+				double alpha = 5.0;
+				forceVector = mExternalStiffness * vectorAB * dx * exp(-alpha * dx/restLength);
+			}
 
 			pMembraneNode->AddAppliedForceContribution(forceVector);
 			pNeighbour->AddAppliedForceContribution(-forceVector);
-    	}
-    }
+		}
+	}
 
+}
+
+void MembraneInternalForce::AddSpringBackedForce(Node<2>* pMembraneNode, AbstractCellPopulation<2>& rCellPopulation)
+{
+	// THis is a really simple way to add a spring backed force. It is essntially the same as the normal adhesion
+	// except it is stripped back to act on membrane nodes
+	MeshBasedCellPopulation<2>* p_tissue = static_cast<MeshBasedCellPopulation<2>*>(&rCellPopulation);
+
+	double restLength = 1;
+				
+	c_vector<double, 2> locationA = pMembraneNode->rGetLocation();
+	c_vector<double, 2> locationB;
+	locationB[0] = 0;
+	locationB[1] = locationA[1];
+
+	c_vector<double, 2> vectorAB = locationB - locationA;
+
+	double lengthAB = norm_2(vectorAB);
+
+	double dx = lengthAB - restLength;
+
+	c_vector<double, 2> forceVector;
+
+	if (dx <= 0) //overlap is negative
+	{
+		// log(x+1) is undefined for x<=-1
+		assert(dx > -restLength);
+		forceVector = mSpringBackedStiffness * vectorAB * restLength * log(1.0 + dx/restLength);
+	}
+	else
+	{
+		// double alpha = 5.0;
+		// forceVector = mSpringBackedStiffness * vectorAB * dx * exp(-alpha * dx/restLength);
+		forceVector = dx * vectorAB / lengthAB;
+	}
+
+	pMembraneNode->AddAppliedForceContribution(forceVector);
+
+}
+
+void MembraneInternalForce::UseSpringBackedMembrane(bool usedSpringBacked)
+{
+	mUseSpringBacked = usedSpringBacked;
 }
 
 

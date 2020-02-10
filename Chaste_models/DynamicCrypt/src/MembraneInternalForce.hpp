@@ -35,7 +35,9 @@ private :
 	// Stiffness of reaction with any other cell
 	double mExternalStiffness;
 
-	
+	double mSpringBackedStiffness;
+
+	bool mUseSpringBacked = false;
 
 	std::vector<std::vector<CellPtr>> mMembraneSections;
 
@@ -76,6 +78,8 @@ public :
 	// Add the force interaction with other cells
 	void AddExternalForceContribution(Node<2>* membraneNode, AbstractCellPopulation<2>& rCellPopulation);
 
+	void AddSpringBackedForce(Node<2>* pMembraneNode, AbstractCellPopulation<2>& rCellPopulation);
+
 	/**
 	 * Pure virtual, must implement
 	 */
@@ -85,6 +89,9 @@ public :
 	 */
 	void SetMembraneStiffness(double MembraneStiffness);
 	void SetExternalStiffness(double ExternalStiffness);
+	void SetSpringBackedStiffness(double SpringBackedStiffness);
+
+	void UseSpringBackedMembrane(bool usedSpringBacked);
 
 	void SetMembraneSections(std::vector<std::vector<CellPtr>> membraneSections);
 
