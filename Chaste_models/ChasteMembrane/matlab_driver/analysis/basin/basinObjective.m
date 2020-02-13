@@ -62,10 +62,9 @@ classdef basinObjective < matlab.mixin.SetGet
 				obj.simul.loadSimulationData();
 			end
 
-			penalty = obj.objectiveFunction(obj.simul.data.behaviour_data);
-			obj.penalty = penalty;
+			obj.penalty = obj.objectiveFunction(obj.simul.data.behaviour_data);
 
-			fprintf('Anoikis: %g,\nCell count: %g,\nBirth rate: %g,\nProlif compartment: %g\n\nPenalty: %g\n',obj.simul.data.behaviour_data,penalty);
+			fprintf('Anoikis: %g,\nCell count: %g,\nBirth rate: %g,\nProlif compartment: %g\n\nPenalty: %g\n',obj.simul.data.behaviour_data,obj.penalty);
 
 
 		end
