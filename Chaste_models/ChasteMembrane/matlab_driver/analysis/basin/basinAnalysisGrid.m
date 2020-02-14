@@ -174,7 +174,7 @@ classdef basinAnalysisGrid < matlab.mixin.SetGet
 			
 			% Plot the figure and set axis labels etc.
 			h = figure();
-			set(gcf,'Visible', 'off');
+			set(h,'Visible', 'off');
 			imagesc(obj.griD,'AlphaData',~isnan(obj.griD), [0,10])
 			colormap parula
 			set(gca, 'XTick', 1:numX)
