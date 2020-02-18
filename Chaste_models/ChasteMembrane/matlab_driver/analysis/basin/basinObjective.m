@@ -41,8 +41,7 @@ classdef basinObjective < matlab.mixin.SetGet
 				obj.getPenalty(varargin);
 			else
 				obj.getPenalty();
-			end
-			
+			end			
 
 		end
 
