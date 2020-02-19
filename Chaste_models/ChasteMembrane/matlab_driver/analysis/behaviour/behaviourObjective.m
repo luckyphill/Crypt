@@ -20,17 +20,17 @@ classdef behaviourObjective < matlab.mixin.SetGet
 			solverParams = containers.Map({'t', 'bt', 'dt'}, {t, bt, dt});
 			seedParams = containers.Map({'run'}, {run_number});
 
-			chastePath = [getenv('HOME'), '/'];
-			outputLocation = getenv('CHASTE_TEST_OUTPUT');
+			% chastePath = [getenv('HOME'), '/'];
+			% outputLocation = getenv('CHASTE_TEST_OUTPUT');
 
-			if isempty(outputLocation)
-				chasteTestOutputLocation = ['/tmp/', getenv('USER'),'/'];
-			else
-				if ~strcmp(outputLocation(end),'/')
-					outputLocation(end+1) = '/';
-				end
-				chasteTestOutputLocation = outputLocation;
-			end
+			% if isempty(outputLocation)
+			% 	chasteTestOutputLocation = ['/tmp/', getenv('USER'),'/'];
+			% else
+			% 	if ~strcmp(outputLocation(end),'/')
+			% 		outputLocation(end+1) = '/';
+			% 	end
+			% 	chasteTestOutputLocation = outputLocation;
+			% end
 
 			obj.objectiveFunction = objectiveFunction;
 
