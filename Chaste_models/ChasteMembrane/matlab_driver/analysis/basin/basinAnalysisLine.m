@@ -5,6 +5,7 @@ classdef basinAnalysisLine < matlab.mixin.SetGet
 
 	properties
 		crypt
+		vers
 		cryptName
 		objectiveFunction
 		healthyParams
@@ -24,16 +25,18 @@ classdef basinAnalysisLine < matlab.mixin.SetGet
 
 	methods
 
-		function obj = basinAnalysisLine(crypt, mutation, values)
+		function obj = basinAnalysisLine(crypt, vers, mutation, values)
+			% Performs a parameter sweep in a single parameter for crypt with version vers
 			% Mutation is a string with the usual mutation flag,
 			% Values is an array of mutation factors to be plotted
 			% Only one mutation is considered in this analysis
 
 
 			obj.crypt = crypt;
+			obj.vers = vers;
 			obj.cryptName = getCryptName(crypt);
 			obj.objectiveFunction = str2func(obj.cryptName);
-			obj.healthyParams = getNewCryptParams(crypt, 1);
+			obj.healthyParams = getOptimalParams(crypt, vers);
 
 			obj.mutation = mutation;
 			obj.values = values;
@@ -66,7 +69,7 @@ classdef basinAnalysisLine < matlab.mixin.SetGet
 			for j = 1:length(obj.values)
 				f(i) = obj.values(j);
 				try
-					b = basinObjective(obj.objectiveFunction, obj.crypt, f(1), f(2), f(3), f(4), f(5), f(6), f(7), 'varargin');
+					b = basinObjective(obj.crypt, obj.vers, f(1), f(2), f(3), f(4), f(5), f(6), f(7), 'varargin');
 					data(end + 1) = b.penalty;
 				catch
 					data(end + 1) = nan;

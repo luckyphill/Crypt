@@ -1,3 +1,7 @@
+% DO NOT USE!!!!!!
+% This was needed for a short script an some how I got the numbers completely wrong
+% Use, or modify the numbering in getCryptName
+
 function number = getFuncNumber(I)
     I = func2str(I);
     switch I

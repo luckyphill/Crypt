@@ -17,7 +17,8 @@ module unload HDF5
 module load matlab/2019b
 
 crypt=$1
-data=$2
+vers=$2
+data=$3
 
 echo "array_job_index: $SLURM_ARRAY_TASK_ID" 
 i=1 
@@ -25,6 +26,7 @@ found=0
 while IFS=, read nM npM eesM msM cctM wtM vfM
 do 
     if [ $i = $SLURM_ARRAY_TASK_ID ]; then 
+    	echo "Crypt $crypt, version $vers"
         echo "Running mutation, nM, $nm, npM $npM, eesM $eesM, msM $msM, cctM $cctM, wtM $wtM, vfM $vfM"
         found=1 
         break 
@@ -33,8 +35,8 @@ do
 done < $data
 
 if [ $found = 1 ]; then
-	echo "matlab -nodisplay -nodesktop -r cd ../../../; addpath(genpath(pwd)); stepFromOptimal($crypt,$nM,$npM,$eesM,$msM,$cctM,$wtM,$vfM); quit()"
-    matlab -nodisplay -nodesktop -r "cd ../../../; addpath(genpath(pwd)); stepFromOptimal($crypt,$nM,$npM,$eesM,$msM,$cctM,$wtM,$vfM); quit()"
+	echo "matlab -nodisplay -nodesktop -r cd ../../../; addpath(genpath(pwd)); basinObjective($crypt,$vers,$nM,$npM,$eesM,$msM,$cctM,$wtM,$vfM); quit()"
+    matlab -nodisplay -nodesktop -r "cd ../../../; addpath(genpath(pwd)); basinObjective($crypt,$vers,$nM,$npM,$eesM,$msM,$cctM,$wtM,$vfM); quit()"
 else 
   echo "$data  does not have enough parameters for $SLURM_ARRAY_TASK_ID index" 
 fi

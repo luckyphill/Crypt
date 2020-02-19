@@ -1,27 +1,34 @@
 classdef basinObjective < matlab.mixin.SetGet
 
-	% Change into a function that handles the new stepping from optimal params
-	% Used to then create a plot of the objective function space
+	% Given a crypt and a version, along with mutation factors for each parameter
+	% This will run a simulation for a crypt based on an optimal parameter set
+	% which has been perturbed from optimal according to the mutation factors
+
+	% THIS HAS BEEN MODIFIED WITHOUT CHECKING PREVIOUS FILES THAT USED IT
 
 	properties
 		simul
 		objectiveFunction
+		params
 		penalty
+		cryptName
 
 	end
 
 	methods
 
-		function obj = basinObjective(objectiveFunction, crypt, nM, npM, eesM, msM, cctM, wtM, vfM, varargin)
-			cryptName = getCryptName(crypt);
-			params = getNewCryptParams(crypt, 1);
-			n = params(1);
-			np = params(2);
-			ees = params(3);
-			ms = params(4);
-			cct = params(5);
-			wt = params(6);
-			vf = params(7);
+		function obj = basinObjective(crypt, vers, nM, npM, eesM, msM, cctM, wtM, vfM, varargin)
+			obj.cryptName = getCryptName(crypt);
+			obj.params = getOptimalParams(crypt, vers);
+			obj.objectiveFunction = str2func(obj.cryptName);
+
+			n = obj.params(1);
+			np = obj.params(2);
+			ees = obj.params(3);
+			ms = obj.params(4);
+			cct = obj.params(5);
+			wt = obj.params(6);
+			vf = obj.params(7);
 
 			if ~obj.physical(n,np,ees,ms,cct,wt,vf,nM,npM,eesM,msM,cctM,wtM,vfM)
 				error('Check the input parameters or factors are physically possible, e.g. wt*wtM < cct*cctM - 2');
@@ -31,8 +38,6 @@ classdef basinObjective < matlab.mixin.SetGet
 			simParams = containers.Map({'n', 'np', 'ees', 'ms', 'cct', 'wt', 'vf'}, {n*nM, np*npM, ees*eesM, ms*msM, cct*cctM, wt*wtM, vfM*vf});
 			solverParams = containers.Map({'t', 'bt', 'dt'}, {1000, 100, 0.0005});
 			seedParams = containers.Map({'run'}, {1});
-
-			obj.objectiveFunction = objectiveFunction;
 
 			obj.simul = simulateCryptColumn(simParams, solverParams, seedParams, outputTypes);
 			
