@@ -38,5 +38,3 @@ if [ $found = 1 ]; then
 else 
   echo "$data  does not have enough parameters for $SLURM_ARRAY_TASK_ID index" 
 fi
-
-setBehaviour(objectiveFunction,n,np,ees,ms,cct,wt,vf,varargin)
