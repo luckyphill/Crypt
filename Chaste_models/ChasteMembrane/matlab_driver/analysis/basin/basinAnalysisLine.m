@@ -5,54 +5,60 @@ classdef basinAnalysisLine < matlab.mixin.SetGet
 
 	properties
 		crypt
-		vers
+		optimalPoint
 		cryptName
 		objectiveFunction
 		healthyParams
 		mutation
 		values
 
-		linE % Unfortunately line is a keyword...
+		penaltyLine
 		anoikisLine
-		birthLine
 		countLine
-		divisionLine
+		turnoverLine
+		compartmentLine
 
 		imageLocation
-		imageFile
+		
+		imageFilePenalty
+		imageFileAnoikis
+		imageFileCount
+		imageFileTurnover
+		imageFileCompartment
+
 
 	end
 
 	methods
 
-		function obj = basinAnalysisLine(crypt, vers, mutation, values)
-			% Performs a parameter sweep in a single parameter for crypt with version vers
+		function obj = basinAnalysisLine(crypt, optimalPoint, mutation, values)
+			% Performs a parameter sweep in a single parameter for crypt with optimalPointion optimalPoint
 			% Mutation is a string with the usual mutation flag,
 			% Values is an array of mutation factors to be plotted
 			% Only one mutation is considered in this analysis
 
 
 			obj.crypt = crypt;
-			obj.vers = vers;
+			obj.optimalPoint = optimalPoint;
 			obj.cryptName = getCryptName(crypt);
 			obj.objectiveFunction = str2func(obj.cryptName);
-			obj.healthyParams = getOptimalParams(crypt, vers);
+			obj.healthyParams = getOptimalParams(crypt, optimalPoint);
 
 			obj.mutation = mutation;
 			obj.values = values;
 
 
-			obj.imageLocation = [getenv('HOME'), '/Research/Crypt/Images/basinAnalysisLine/', obj.cryptName, '/'];
+			obj.imageLocation = sprintf('%s/Research/Crypt/Images/basinAnalysisLine/%s/optimalPoint%d/%s/',getenv('HOME'), obj.cryptName, obj.optimalPoint, getMutationName(obj.mutation) );
 			if exist(obj.imageLocation, 'dir') ~=7
 				mkdir(obj.imageLocation);
 			end
 
-			obj.imageFile = sprintf('%s%s',obj.imageLocation,obj.getParamName(mutation));
+			obj.imageFilePenalty 		= sprintf('%sPenaltyFunction',obj.imageLocation);
+			obj.imageFileAnoikis 		= sprintf('%sAnoikisRate',obj.imageLocation);
+			obj.imageFileCount 			= sprintf('%sCellCount',obj.imageLocation);
+			obj.imageFileTurnover 		= sprintf('%sCellTurnoverRate',obj.imageLocation);
+			obj.imageFileCompartment 	= sprintf('%sCompartmentCount',obj.imageLocation);
 			
-
-			obj.imageFile = strrep(obj.imageFile, '.', '_');
-
-
 			obj.makeLine();
 
 		end
@@ -60,326 +66,115 @@ classdef basinAnalysisLine < matlab.mixin.SetGet
 		function makeLine(obj)
 			% Gets all the data for the short sweep
 			% 
-			data = [];
+			penalty = [];
+			anoikis = [];
+			count = [];
+			turnover = [];
+			compartment = [];
 
 			% The mutation factors value. All should be 1 except the mutation of interest
 			f = ones(1,7);
-			i = obj.getParamNumber(obj.mutation);
+			i = getMutationNumber(obj.mutation);
 
 			for j = 1:length(obj.values)
 				f(i) = obj.values(j);
 				try
-					b = basinObjective(obj.crypt, obj.vers, f(1), f(2), f(3), f(4), f(5), f(6), f(7), 'varargin');
-					data(end + 1) = b.penalty;
+					b = basinObjective(obj.crypt, obj.optimalPoint, f(1), f(2), f(3), f(4), f(5), f(6), f(7), 'varargin');
+					penalty(end + 1) 		= b.penalty;
+					anoikis(end + 1) 		= b.simul.data.behaviour_data(1);
+					count(end + 1) 			= b.simul.data.behaviour_data(2);
+					turnover(end + 1) 		= b.simul.data.behaviour_data(3);
+					compartment(end + 1) 	= b.simul.data.behaviour_data(4);
 				catch
-					data(end + 1) = nan;
+					penalty(end + 1) 		= nan;
+					anoikis(end + 1) 		= nan;
+					count(end + 1) 			= nan;
+					turnover(end + 1) 		= nan;
+					compartment(end + 1)	= nan;
 				end
 			end
 
-			obj.linE = data;
-
-
+			obj.penaltyLine 		= penalty;
+			obj.anoikisLine 		= anoikis;
+			obj.countLine 			= count;
+			obj.turnoverLine		= turnover;
+			obj.compartmentLine		= compartment;
 
 		end
 
 		
 
-		function savePlot(obj)
-			h = obj.makePlot();
+		function savePlots(obj)
+			h = obj.makePlots();
 
 
 			% Set the size of the output file
-			set(h,'Units','Inches');
-			pos = get(h,'Position');
-			set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)]);
+			for i = 1:5
+				set(h(i),'Units','Inches');
+				pos = get(h(i),'Position');
+				set(h(i),'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)]);
+			end
 			
-			print(obj.imageFile,'-dpdf')
+			% Must match the order in make plots
+			print(h(1), obj.imageFilePenalty, '-dpdf');
+			print(h(2), obj.imageFileAnoikis, '-dpdf');
+			print(h(3), obj.imageFileCount, '-dpdf');
+			print(h(4), obj.imageFileTurnover, '-dpdf');
+			print(h(5), obj.imageFileCompartment, '-dpdf');
 
 			close(h);
 
 		end
 
-		function showPlot(obj)
-			h = obj.makePlot();
-			set(h,'Visible', 'on');
+		function showPlots(obj)
+			h = obj.makePlots();
+			for i = 1:5
+				set(h(i),'Visible', 'on');
+			end
 
 		end
 
-		function h = makePlot(obj)
-			% Plot the line
-
+		function h = makePlots(obj)
 		
 			% Plot the figure and set axis labels etc.
-			h = figure();
-			set(h,'Visible', 'off');
-			plot(obj.values, obj.linE, 'LineWidth', 4);
+			hPenalty 		= figure('Visible', 'off');
+			plot(obj.values, obj.penaltyLine, 'LineWidth', 4);
 			xlabel('Mutation factor','Interpreter','latex','FontSize',20);
-			ylabel('Objective value','Interpreter','latex','FontSize',20);
-			title(['Objective function for mutation to ', obj.getParamName(obj.mutation)],'Interpreter','latex','FontSize',20);
-
-		end
-
-		function name = getParamName(obj, I)
-
-			switch I
-				case 'nM'
-					name = 'Height';
-				case 'npM'
-					name = 'Compartment';
-				case 'eesM'
-					name = 'Stiffness';
-				case 'msM'
-					name = 'Adhesion';
-				case 'cctM'
-					name = 'Cycle';
-				case 'wtM'
-					name = 'Growth';
-				case 'vfM'
-					name = 'Inhibition';
-				otherwise
-					error('Parameter type not found');
-			end
-		end
-
-		function number = getParamNumber(obj, I)
-
-			switch I
-				case 'nM'
-					number = 1;
-				case 'npM'
-					number = 2;
-				case 'eesM'
-					number = 3;
-				case 'msM'
-					number = 4;
-				case 'cctM'
-					number = 5;
-				case 'wtM'
-					number = 6;
-				case 'vfM'
-					number = 7;
-				otherwise
-					error('Parameter type not found');
-			end
-		end
+			ylabel('Penalty','Interpreter','latex','FontSize',20);
+			title(['Objective function penalty for mutation to ', getMutationName(obj.mutation)],'Interpreter','latex','FontSize',20);
 
 
-
-		% THis is a quick copy-paste-replace way of making plots for different parts of the objective function
-		function makeAnoikisLine(obj)
-			% Makes a line of how anoikis varies with mutation factor
-			data = [];
-
-			% The mutation factors value. All should be 1 except the mutation of interest
-			f = ones(1,7);
-			i = obj.getParamNumber(obj.mutation);
-
-			for j = 1:length(obj.values)
-				f(i) = obj.values(j);
-				try
-					b = basinObjective(obj.objectiveFunction, obj.crypt, f(1), f(2), f(3), f(4), f(5), f(6), f(7), 'varargin');
-					data(end + 1) = b.simul.data.behaviour_data(1);
-				catch
-					data(end + 1) = nan;
-				end
-			end
-
-			obj.anoikisLine = data;
-
-		end
-
-		function h = makeAnoikisPlot(obj)
-			% Plot the line
-
-			obj.makeAnoikisLine();
-			% Plot the figure and set axis labels etc.
-			h = figure();
-			set(h,'Visible', 'off');
+			hAnoikis 		= figure('Visible', 'off');
 			plot(obj.values, obj.anoikisLine, 'LineWidth', 4);
 			xlabel('Mutation factor','Interpreter','latex','FontSize',20);
 			ylabel('Anoikis rate','Interpreter','latex','FontSize',20);
-			title(['Measured anoikis rate for mutation to ', obj.getParamName(obj.mutation)],'Interpreter','latex','FontSize',20);
-
-		end
-		function saveAnoikisPlot(obj)
-			h = obj.makeAnoikisPlot();
+			title(['Measured anoikis rate for mutation to ', getMutationName(obj.mutation)],'Interpreter','latex','FontSize',20);
 
 
-			% Set the size of the output file
-			set(h,'Units','Inches');
-			pos = get(h,'Position');
-			set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)]);
-			
-			print([obj.imageFile, '-Anoikis'],'-dpdf')
-
-			close(h);
-
-		end
-
-
-		
-
-		function makeBirthLine(obj)
-			% Makes a line of how Birth varies with mutation factor
-			data = [];
-
-			% The mutation factors value. All should be 1 except the mutation of interest
-			f = ones(1,7);
-			i = obj.getParamNumber(obj.mutation);
-
-			for j = 1:length(obj.values)
-				f(i) = obj.values(j);
-				try
-					b = basinObjective(obj.objectiveFunction, obj.crypt, f(1), f(2), f(3), f(4), f(5), f(6), f(7), 'varargin');
-					data(end + 1) = b.simul.data.behaviour_data(3);
-				catch
-					data(end + 1) = nan;
-				end
-			end
-
-			obj.birthLine = data;
-
-		end
-
-		function h = makeBirthPlot(obj)
-			% Plot the line
-
-			obj.makeBirthLine();
-			% Plot the figure and set axis labels etc.
-			h = figure();
-			set(h,'Visible', 'off');
-			plot(obj.values, obj.birthLine, 'LineWidth', 4);
-			xlabel('Mutation factor','Interpreter','latex','FontSize',20);
-			ylabel('Turnover rate','Interpreter','latex','FontSize',20);
-			title(['Measured turnover rate for mutation to ', obj.getParamName(obj.mutation)],'Interpreter','latex','FontSize',20);
-
-		end
-		function saveBirthPlot(obj)
-			h = obj.makeBirthPlot();
-
-
-			% Set the size of the output file
-			set(h,'Units','Inches');
-			pos = get(h,'Position');
-			set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)]);
-			
-			print([obj.imageFile, '-Birth'],'-dpdf')
-
-			close(h);
-
-		end
-
-
-
-		function makeCountLine(obj)
-			% Makes a line of how Count varies with mutation factor
-			data = [];
-
-			% The mutation factors value. All should be 1 except the mutation of interest
-			f = ones(1,7);
-			i = obj.getParamNumber(obj.mutation);
-
-			for j = 1:length(obj.values)
-				f(i) = obj.values(j);
-				try
-					b = basinObjective(obj.objectiveFunction, obj.crypt, f(1), f(2), f(3), f(4), f(5), f(6), f(7), 'varargin');
-					data(end + 1) = b.simul.data.behaviour_data(2);
-				catch
-					data(end + 1) = nan;
-				end
-			end
-
-			obj.countLine = data;
-
-		end
-
-		function h = makeCountPlot(obj)
-			% Plot the line
-
-			obj.makeCountLine();
-			% Plot the figure and set axis labels etc.
-			h = figure();
-			set(h,'Visible', 'off');
+			hCount 			= figure('Visible', 'off');
 			plot(obj.values, obj.countLine, 'LineWidth', 4);
 			xlabel('Mutation factor','Interpreter','latex','FontSize',20);
-			ylabel('Cell count','Interpreter','latex','FontSize',20);
-			title(['Crypt cell count for mutation to ', obj.getParamName(obj.mutation)],'Interpreter','latex','FontSize',20);
-
-		end
-		function saveCountPlot(obj)
-			h = obj.makeCountPlot();
+			ylabel('Average cell count','Interpreter','latex','FontSize',20);
+			title(['Average cell count for mutation to ', getMutationName(obj.mutation)],'Interpreter','latex','FontSize',20);
 
 
-			% Set the size of the output file
-			set(h,'Units','Inches');
-			pos = get(h,'Position');
-			set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)]);
-			
-			print([obj.imageFile, '-CellCount'],'-dpdf')
-
-			close(h);
-
-		end
-
-
-
-
-		function makeDivisionLine(obj)
-			% Makes a line of how Division varies with mutation factor
-			data = [];
-
-			% The mutation factors value. All should be 1 except the mutation of interest
-			f = ones(1,7);
-			i = obj.getParamNumber(obj.mutation);
-
-			for j = 1:length(obj.values)
-				f(i) = obj.values(j);
-				try
-					b = basinObjective(obj.objectiveFunction, obj.crypt, f(1), f(2), f(3), f(4), f(5), f(6), f(7), 'varargin');
-					data(end + 1) = b.simul.data.behaviour_data(4);
-				catch
-					data(end + 1) = nan;
-				end
-			end
-
-			obj.divisionLine = data;
-
-		end
-
-		function h = makeDivisionPlot(obj)
-			% Plot the line
-
-			obj.makeDivisionLine();
-			% Plot the figure and set axis labels etc.
-			h = figure();
-			set(h,'Visible', 'off');
-			plot(obj.values, obj.divisionLine, 'LineWidth', 4);
+			hTurnover 		= figure('Visible', 'off');
+			plot(obj.values, obj.turnoverLine, 'LineWidth', 4);
 			xlabel('Mutation factor','Interpreter','latex','FontSize',20);
-			ylabel('Cell count','Interpreter','latex','FontSize',20);
-			title(['Compartment cell count for mutation to ', obj.getParamName(obj.mutation)],'Interpreter','latex','FontSize',20);
-
-		end
-		function saveDivisionPlot(obj)
-			h = obj.makeDivisionPlot();
+			ylabel('Turnover','Interpreter','latex','FontSize',20);
+			title(['Measured cell turnover rate for mutation to ', getMutationName(obj.mutation)],'Interpreter','latex','FontSize',20);
 
 
-			% Set the size of the output file
-			set(h,'Units','Inches');
-			pos = get(h,'Position');
-			set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)]);
-			
-			print([obj.imageFile, '-CompartmentCount'],'-dpdf')
+			hCompartment 	= figure('Visible', 'off');
+			plot(obj.values, obj.compartmentLine, 'LineWidth', 4);
+			xlabel('Mutation factor','Interpreter','latex','FontSize',20);
+			ylabel('Compartment size','Interpreter','latex','FontSize',20);
+			title(['Maximum compartment size for mutation to ', getMutationName(obj.mutation)],'Interpreter','latex','FontSize',20);
 
-			close(h);
+			h = [hPenalty, hAnoikis, hCount, hTurnover, hCompartment];
 
 		end
 
 	end
-
-
-
-
-
-	
 
 end

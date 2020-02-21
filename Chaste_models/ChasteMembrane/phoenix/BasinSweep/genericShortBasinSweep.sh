@@ -5,6 +5,8 @@
 #SBATCH --time=72:00:00
 #SBATCH --mem=4GB 
 #SBATCH --array=1-701
+#SBATCH --output=/dev/null
+#SBATCH --error=/dev/null
 # NOTIFICATIONS
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=phillip.j.brown@adelaide.edu.au

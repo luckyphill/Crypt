@@ -3,7 +3,7 @@ function number = getCryptNumber(crypt)
 	% the designated number for the crypt
 	
 	if isa(crypt,'function_handle')
-		crypt = func2str(I);
+		crypt = func2str(crypt);
 	end
 
     switch crypt
