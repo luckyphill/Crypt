@@ -1,7 +1,7 @@
 % rootdir = '/Users/phillipbrown/Research/Crypt/Data/Chaste/TestCryptColumn/';
 % filelist = dir(fullfile(rootdir, '**/*.*'));  %get list of files and folders in any subfolder
 % filelist = filelist(~[filelist.isdir]);
-
+% 
 % objectives = {@MouseColonAsc, @MouseColonTrans, @MouseColonDesc, @MouseColonCaecum,...
 %                 @RatColonAsc, @RatColonTrans, @RatColonDesc, @RatColonCaecum, @HumanColon};
 % 
@@ -29,9 +29,9 @@
 %         end
 %     end
 % end
-
-% load('optimals.mat');
-
+% 
+% % load('optimals.mat');
+% 
 % params = [0,0,0,0,0,0,0,0];
 % for i = 1:length(optimals)
 %     t = split(optimals{i,1},'/');
@@ -61,23 +61,23 @@
 %         params(i,:) = t;
 %     end
 % end
-
-[P,q,r] = unique(params,'rows');
-
-O1 = sortrows(P(P(:,8)==1,1:7),5);
-O2 = sortrows(P(P(:,8)==2,1:7),5);
-O3 = sortrows(P(P(:,8)==3,1:7),5);
-O4 = sortrows(P(P(:,8)==4,1:7),5);
-O5 = sortrows(P(P(:,8)==5,1:7),5);
-O6 = sortrows(P(P(:,8)==6,1:7),5);
-O7 = sortrows(P(P(:,8)==7,1:7),5);
-O8 = sortrows(P(P(:,8)==8,1:7),5);
+% 
+% [P,q,r] = unique(params,'rows');
+% 
+% O1 = sortrows(P(P(:,8)==1,1:7),5);
+% O2 = sortrows(P(P(:,8)==2,1:7),5);
+% O3 = sortrows(P(P(:,8)==3,1:7),5);
+% O4 = sortrows(P(P(:,8)==4,1:7),5);
+% O5 = sortrows(P(P(:,8)==5,1:7),5);
+% O6 = sortrows(P(P(:,8)==6,1:7),5);
+% O7 = sortrows(P(P(:,8)==7,1:7),5);
+% O8 = sortrows(P(P(:,8)==8,1:7),5);
 
 % The optimal points stripped of too many close ones
 PO1 = stripTooClose(O1);
-PO2 = stripTooClose(O2);
+% PO2 = stripTooClose(O2);
 PO3 = stripTooClose(O3);
-PO4 = stripTooClose(O4);
+% PO4 = stripTooClose(O4);
 PO5 = stripTooClose(O5);
 PO6 = stripTooClose(O6);
 PO7 = stripTooClose(O7);
@@ -95,6 +95,8 @@ function PO8 = stripTooClose(O8)
     % Normalise the values to the maximum value in the column in order to find the 
     % Maximum distances between points using the euclidean norm
     SO8 = O8./max(O8);
+    
+    minDistance = 0.2;
 
     weight = [1,1,0.8,0.2,1,1,0.5];
     for i = 1:size(SO8,1)
@@ -111,7 +113,7 @@ function PO8 = stripTooClose(O8)
     % Find the value and location of the smallest distances
     [M,I] = min(XSO8,[],'all','linear');
 
-    while M < 0.25
+    while M < minDistance
         old1 = ceil(I/size(XSO8,1));
         old2 = mod(I,size(XSO8,1));
         

@@ -26,4 +26,4 @@ echo "Crypt $crypt, version $vers"
 echo "Running optimal point"
 
 echo "matlab -nodisplay -nodesktop -r cd ../../../; addpath(genpath(pwd)); basinObjective($crypt,$vers,1,1,1,1,1,1,1); quit()"
-matlab -nodisplay -nodesktop -r "cd ../../../; addpath(genpath(pwd)); basinObjective($crypt,$vers,,1,1,1,1,1,1,1); quit()"
+matlab -nodisplay -nodesktop -r "cd ../../../; addpath(genpath(pwd)); basinObjective($crypt,$vers,1,1,1,1,1,1,1); quit()"
