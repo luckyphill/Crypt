@@ -20,7 +20,11 @@ classdef setBehaviour < matlab.mixin.SetGet
 
 			obj.objectiveFunction = objectiveFunction;
 
-			obj.b = behaviourObjective(objectiveFunction,n,np,ees,ms,cct,wt,vf,1000,0.0005,100,1,varargin);
+			if length(varargin) > 0
+				obj.b = behaviourObjective(objectiveFunction,n,np,ees,ms,cct,wt,vf,1000,0.0005,100,1,varargin);
+			else
+				obj.b = behaviourObjective(objectiveFunction,n,np,ees,ms,cct,wt,vf,1000,0.0005,100,1);
+			end
 
 		end
 

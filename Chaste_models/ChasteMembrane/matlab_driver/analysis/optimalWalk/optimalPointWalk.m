@@ -93,8 +93,7 @@ classdef optimalPointWalk < matlab.mixin.SetGet
 
 			obj.makePointsToVisit();
 
-
-			for j = 1:length(obj.steps)
+			for j = 1:obj.steps
 				try
 					n 						= obj.points(j,1);
 					np						= obj.points(j,2);
@@ -104,13 +103,13 @@ classdef optimalPointWalk < matlab.mixin.SetGet
 					wt						= obj.points(j,6);
 					vf						= obj.points(j,7);
 
-					b 						= setBehaviour(obj.objectiveFunction,n,np,ees,ms,cct,wt,vf,varargin);
+					b 						= setBehaviour(obj.objectiveFunction,n,np,ees,ms,cct,wt,vf,varargin)
 
-					penalty(end + 1) 		= b.penalty;
-					anoikis(end + 1) 		= b.simul.data.behaviour_data(1);
-					count(end + 1) 			= b.simul.data.behaviour_data(2);
-					turnover(end + 1) 		= b.simul.data.behaviour_data(3);
-					compartment(end + 1) 	= b.simul.data.behaviour_data(4);
+					penalty(end + 1) 		= b.b.penalty;
+					anoikis(end + 1) 		= b.b.simul.data.behaviour_data(1);
+					count(end + 1) 			= b.b.simul.data.behaviour_data(2);
+					turnover(end + 1) 		= b.b.simul.data.behaviour_data(3);
+					compartment(end + 1) 	= b.b.simul.data.behaviour_data(4);
 				catch
 					penalty(end + 1) 		= nan;
 					anoikis(end + 1) 		= nan;
