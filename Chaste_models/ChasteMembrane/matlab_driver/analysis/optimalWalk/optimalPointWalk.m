@@ -93,7 +93,7 @@ classdef optimalPointWalk < matlab.mixin.SetGet
 
 			obj.makePointsToVisit();
 
-			for j = 1:obj.steps
+			for j = 1:length(obj.points)
 				try
 					n 						= obj.points(j,1);
 					np						= obj.points(j,2);
@@ -103,7 +103,7 @@ classdef optimalPointWalk < matlab.mixin.SetGet
 					wt						= obj.points(j,6);
 					vf						= obj.points(j,7);
 
-					b 						= setBehaviour(obj.objectiveFunction,n,np,ees,ms,cct,wt,vf,varargin)
+					b 						= setBehaviour(obj.objectiveFunction,n,np,ees,ms,cct,wt,vf,varargin);
 
 					penalty(end + 1) 		= b.b.penalty;
 					anoikis(end + 1) 		= b.b.simul.data.behaviour_data(1);
@@ -163,35 +163,35 @@ classdef optimalPointWalk < matlab.mixin.SetGet
 		
 			% Plot the figure and set axis labels etc.
 			hPenalty 		= figure('Visible', 'off');
-			plot(obj.values, obj.penaltyLine, 'LineWidth', 4);
+			plot(obj.penaltyLine, 'LineWidth', 4);
 			xlabel('Step Number','Interpreter','latex','FontSize',20);
 			ylabel('Penalty','Interpreter','latex','FontSize',20);
 			title('Objective function penalty between optimal points','Interpreter','latex','FontSize',20);
 
 
 			hAnoikis 		= figure('Visible', 'off');
-			plot(obj.values, obj.anoikisLine, 'LineWidth', 4);
+			plot(obj.anoikisLine, 'LineWidth', 4);
 			xlabel('Step Number','Interpreter','latex','FontSize',20);
 			ylabel('Anoikis rate','Interpreter','latex','FontSize',20);
 			title('Measured anoikis rate between optimal points','Interpreter','latex','FontSize',20);
 
 
 			hCount 			= figure('Visible', 'off');
-			plot(obj.values, obj.countLine, 'LineWidth', 4);
+			plot(obj.countLine, 'LineWidth', 4);
 			xlabel('Step Number','Interpreter','latex','FontSize',20);
 			ylabel('Average cell count','Interpreter','latex','FontSize',20);
 			title('Average cell count between optimal points','Interpreter','latex','FontSize',20);
 
 
 			hTurnover 		= figure('Visible', 'off');
-			plot(obj.values, obj.turnoverLine, 'LineWidth', 4);
+			plot(obj.turnoverLine, 'LineWidth', 4);
 			xlabel('Step Number','Interpreter','latex','FontSize',20);
 			ylabel('Turnover','Interpreter','latex','FontSize',20);
 			title('Measured cell turnover rate between optimal points','Interpreter','latex','FontSize',20);
 
 
 			hCompartment 	= figure('Visible', 'off');
-			plot(obj.values, obj.compartmentLine, 'LineWidth', 4);
+			plot(obj.compartmentLine, 'LineWidth', 4);
 			xlabel('Step Number','Interpreter','latex','FontSize',20);
 			ylabel('Compartment size','Interpreter','latex','FontSize',20);
 			title('Maximum compartment size between optimal points','Interpreter','latex','FontSize',20);

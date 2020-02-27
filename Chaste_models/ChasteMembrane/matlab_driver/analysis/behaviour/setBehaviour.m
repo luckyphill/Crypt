@@ -1,6 +1,6 @@
 classdef setBehaviour < matlab.mixin.SetGet
 
-	% A class that runs a behaviour object function, but with set sim params
+	% A class that runs a behaviour object function, but with set solver and seed params
 
 	properties
 		objectiveFunction

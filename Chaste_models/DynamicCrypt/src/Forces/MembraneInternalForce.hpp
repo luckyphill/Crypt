@@ -39,6 +39,8 @@ private :
 
 	bool mUseSpringBacked = false;
 
+	bool mIsPeriodic = false;
+
 	std::vector<std::vector<CellPtr>> mMembraneSections;
 
 	/** Needed for serialization. */
@@ -65,6 +67,10 @@ public :
 	 */
 	MembraneInternalForce();
 
+	MembraneInternalForce(std::vector<std::vector<CellPtr>> membraneSections);
+
+	MembraneInternalForce(std::vector<std::vector<CellPtr>> membraneSections, bool isPeriodic);
+
 	/**
 	 * Destructor.
 	 */
@@ -90,6 +96,8 @@ public :
 	void SetMembraneStiffness(double MembraneStiffness);
 	void SetExternalStiffness(double ExternalStiffness);
 	void SetSpringBackedStiffness(double SpringBackedStiffness);
+
+	void SetIsPeriodic(bool isPeriodic);
 
 	void UseSpringBackedMembrane(bool usedSpringBacked);
 

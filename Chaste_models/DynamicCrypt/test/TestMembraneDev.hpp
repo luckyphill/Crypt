@@ -6,8 +6,6 @@
 
 /* The next set of classes are needed specifically for the simulation, which can be found in the core code. */
 
-#include "HoneycombMeshGenerator.hpp" //Generates mesh
-#include "CylindricalHoneycombMeshGenerator.hpp"
 #include "OffLatticeSimulation.hpp" //Simulates the evolution of the population
 #include "MeshBasedCellPopulationWithGhostNodes.hpp"
 #include "GeneralisedLinearSpringForce.hpp" //give a force to use between cells
@@ -17,14 +15,22 @@
 #include "TorsionalSpringForce.hpp" // A force to restore the membrane to it's preferred shape
 #include "MembraneInternalForce.hpp"
 #include "StromalInternalForce.hpp"
+#include "EpithelialInternalForce.hpp"
+
+#include "StickToMembraneDivisionRule.hpp"
+
+#include "MembraneDetachmentKiller.hpp"
 
 #include "NoCellCycleModel.hpp"
+
+#include "PlaneBoundaryCondition.hpp"
 
 // #include "BoundaryCellProperty.hpp"
 
 #include "TransitCellProliferativeType.hpp"
 #include "UniformCellCycleModel.hpp"
 #include "NodesOnlyMesh.hpp"
+#include "Cylindrical2dNodesOnlyMesh.hpp"
 #include "NodeBasedCellPopulation.hpp"
 #include "NodeBasedCellPopulationWithParticles.hpp"
 #include "CellsGenerator.hpp"
@@ -33,6 +39,7 @@
 #include "DifferentiatedCellProliferativeType.hpp"
 #include "MembraneType.hpp"
 #include "StromalType.hpp"
+#include "EpithelialType.hpp"
 
 #include "Debug.hpp"
 
@@ -189,7 +196,7 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 
 	};
 
-	void xTestMembraneInternalForce() throw(Exception)
+	void TestMembraneInternalForce() throw(Exception)
 	{
 
 		// The membrane is a string of cells, that only interact with their immediate neighbour
@@ -246,8 +253,40 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 			maxInteractionRadius = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-ir");
 			PRINT_VARIABLE(maxInteractionRadius)
 		}
+
 		// ********************************************************************************************
 
+		// ********************************************************************************************
+		// Size parameters
+		double membraneRadius = 0.5;
+		if(CommandLineArguments::Instance()->OptionExists("-mr"))
+		{
+			membraneRadius = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-mr");
+			PRINT_VARIABLE(membraneRadius)
+		}
+
+		unsigned width = 20;
+		if(CommandLineArguments::Instance()->OptionExists("-w"))
+		{
+			width = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-w");
+			PRINT_VARIABLE(width)
+		}
+
+		unsigned height = 5;
+		if(CommandLineArguments::Instance()->OptionExists("-h"))
+		{
+			height = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-h");
+			PRINT_VARIABLE(height)
+		}
+		// ********************************************************************************************
+
+		// Cell cycle parameters
+		double cellCycleTime = 15.0;
+		if(CommandLineArguments::Instance()->OptionExists("-cct"))
+		{
+			cellCycleTime = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-cct");
+			PRINT_VARIABLE(cellCycleTime)
+		}
 		// ********************************************************************************************
 		// Simulation parameters
 		double dt = 0.005; // The minimum to get covergant simulations for a specific parameter set
@@ -288,10 +327,6 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 		// ********************************************************************************************
 
 
-		std::vector<double> membraneX{2.5, 1.5, 0.8, 0.25, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,  0.0,  0.0,  0.0,  0.0, -0.25, -0.8, -1.5, -2.5};
-		std::vector<double> membraneY{0.0, 0.25, 0.8, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.5, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5, 16.2, 16.75, 17};
-		
-
 		std::vector<Node<2>*> nodes;
 		std::vector<unsigned> membraneIndices;
 		std::vector<unsigned> locationIndices;
@@ -303,29 +338,55 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 
 		std::vector<CellPtr> cells;
 		std::vector<CellPtr> membraneCells;
+	
+
+		MAKE_PTR(DifferentiatedCellProliferativeType, pDiffType);
+		MAKE_PTR(MembraneType, pMembraneType);
+		MAKE_PTR(StromalType, pStromalType);
+		MAKE_PTR(EpithelialType, pEpithelialType);
+		MAKE_PTR(WildTypeCellMutationState, pState);
 
 
-		for (unsigned i = 0; i < membraneX.size(); i++)
+		// Make the stromal under-layer
+		
+		for (unsigned i = 0; i < width; i++)
 		{
-			Node<2>* pNode = new Node<2>(nodeCounter,  false,  membraneX[i], membraneY[i]);
-			pNode->SetRadius(0.5);
+			for (unsigned j = 0; j < height; j++)
+			{
+				double x = i + 0.5 * (j%2);
+				double y = j * std::sqrt(3)/2;
+				Node<2>* pNode = new Node<2>(nodeCounter,  false,  x, y);
+				nodes.push_back(pNode);
+
+				locationIndices.push_back(nodeCounter);
+				nodeCounter++;
+
+				NoCellCycleModel* pCycleModel = new NoCellCycleModel();
+
+				CellPtr pCell(new Cell(pState, pCycleModel));
+				pCell->SetCellProliferativeType(pStromalType);
+				pCell->InitialiseCellCycleModel();
+				pCell->GetCellData()->SetItem("parent", pCell->GetCellId());
+				cells.push_back(pCell);
+			}
+		}
+
+
+		// Put a layer of membrane cells on top of the stroma
+		double nMembraneCells = width / (2 * membraneRadius);
+
+		for (unsigned i = 0; i < nMembraneCells; i++)
+		{
+			double y = (height - 0.5) * std::sqrt(3)/2  +  membraneRadius * std::sqrt(3)/2;
+			double x = i * 2 * membraneRadius + 0.5 * (height%2);
+			Node<2>* pNode = new Node<2>(nodeCounter,  false,  x, y);
+			pNode->SetRadius(membraneRadius);
 			nodes.push_back(pNode);
 
 			locationIndices.push_back(nodeCounter);
 			membraneIndices.push_back(nodeCounter);
 			nodeCounter++;
-		}
 
-		
-
-		MAKE_PTR(DifferentiatedCellProliferativeType, pDiffType);
-		MAKE_PTR(MembraneType, pMembraneType);
-		MAKE_PTR(StromalType, pStromalType);
-		MAKE_PTR(WildTypeCellMutationState, pState);
-
-
-		for (unsigned i = 0; i < membraneIndices.size(); i++)
-		{
 			NoCellCycleModel* pCycleModel = new NoCellCycleModel();
 
 			CellPtr pCell(new Cell(pState, pCycleModel));
@@ -335,42 +396,50 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 			cells.push_back(pCell);
 		}
 
-		membraneSections.push_back(membraneCells);
-
-
-		// Put in the stromal cells
-		std::vector<double> stromaX{ 2.5,  1.5,  0.5, -0.5, -1.5, -2.5,
-									 -2.5, -2.5, -2.5, -2.5, -2.5, -2.5, -2.5, -2.5, -2.5, -2.5, -2.5, -2.5, -2.5, -2.5, -2.5, -2.5, -2.5,
-									  -1.5, -1.5, -1.5, -1.5, -1.5, -1.5, -1.5, -1.5, -1.5, -1.5, -1.5, -1.5, -1.5, -1.5, -1.5, -1.5, -1.5,
-									   -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5,
-									   	 0.5};
-		std::vector<double> stromaY{-1.0, -1.0, -1.0, -1.0, -1.0, -1.0,
-									  0.0,  1.0,  2.0,  3.0,  4.0,  5.0,  6.0,  7.0,  8.0,  9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0,
-									  	0.0,  1.0,  2.0,  3.0,  4.0,  5.0,  6.0,  7.0,  8.0,  9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0,
-									  	 0.0,  1.0,  2.0,  3.0,  4.0,  5.0,  6.0,  7.0,  8.0,  9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0,
-									  	  0.0};
-		
-		for (unsigned i = 0; i < stromaX.size(); i++)
+		// Add an epithelial layer
+		for (unsigned i = 0; i < width; i++)
 		{
-			Node<2>* pNode = new Node<2>(nodeCounter,  false,  stromaX[i], stromaY[i]);
+			double y = (height - 0.5) * std::sqrt(3)/2  +  (2 * membraneRadius + 0.5) * std::sqrt(3)/2;
+			double x = i + 0.5 * ((height+1)%2);
+			Node<2>* pNode = new Node<2>(nodeCounter,  false,  x, y);
+
 			nodes.push_back(pNode);
 
 			locationIndices.push_back(nodeCounter);
 			nodeCounter++;
 
-			NoCellCycleModel* pCycleModel = new NoCellCycleModel();
+			UniformCellCycleModel* pCycleModel = new UniformCellCycleModel();
+			double birth_time = cellCycleTime * RandomNumberGenerator::Instance()->ranf();
+			pCycleModel->SetBirthTime(-birth_time);
+			pCycleModel->SetMinCellCycleDuration(cellCycleTime);
 
 			CellPtr pCell(new Cell(pState, pCycleModel));
-			pCell->SetCellProliferativeType(pStromalType);
+			pCell->SetCellProliferativeType(pEpithelialType);
 			pCell->InitialiseCellCycleModel();
 			pCell->GetCellData()->SetItem("parent", pCell->GetCellId());
 			cells.push_back(pCell);
 		}
 
-		NodesOnlyMesh<2> mesh;
-		mesh.ConstructNodesWithoutMesh(nodes, maxInteractionRadius);
+		
 
-		NodeBasedCellPopulation<2> cell_population(mesh, cells, locationIndices);
+		membraneSections.push_back(membraneCells);
+
+		// NodesOnlyMesh<2> mesh;
+		// mesh.ConstructNodesWithoutMesh(nodes, maxInteractionRadius);
+		// NodeBasedCellPopulation<2> cell_population(mesh, cells, locationIndices);
+
+		Cylindrical2dNodesOnlyMesh* pMesh = new Cylindrical2dNodesOnlyMesh(width);
+		pMesh->ConstructNodesWithoutMesh(nodes, maxInteractionRadius);
+		NodeBasedCellPopulation<2> cell_population(*pMesh, cells, locationIndices);
+
+		c_vector<double, 2> membraneAxis;
+		membraneAxis(0) = 1;
+		membraneAxis(1) = 0;
+
+		MAKE_PTR(StickToMembraneDivisionRule<2>, pCentreBasedDivisionRule);
+		pCentreBasedDivisionRule->SetMembraneAxis(membraneAxis);
+		pCentreBasedDivisionRule->SetWiggleDivision(true);
+		cell_population.SetCentreBasedDivisionRule(pCentreBasedDivisionRule);
 
 		OffLatticeSimulation<2> simulator(cell_population);
 
@@ -380,15 +449,33 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 		simulator.SetDt(dt);
 		simulator.SetSamplingTimestepMultiple(sampling_multiple);
 
-		MAKE_PTR(MembraneInternalForce, p_membrane);
+		MAKE_PTR_ARGS(MembraneInternalForce, p_membrane, (membraneSections, true));
 		p_membrane->SetMembraneStiffness(membraneStiffness);
 		p_membrane->SetExternalStiffness(externalStiffness);
-		p_membrane->SetMembraneSections(membraneSections);
 		simulator.AddForce(p_membrane);
 
 		MAKE_PTR(StromalInternalForce<2>, pStroma);
 		pStroma->SetSpringStiffness(stromalStiffness);
 		simulator.AddForce(pStroma);
+
+		MAKE_PTR(EpithelialInternalForce<2>, pEpithelial);
+		pEpithelial->SetSpringStiffness(epithelialStiffness);
+		simulator.AddForce(pEpithelial);
+
+		MAKE_PTR_ARGS(MembraneDetachmentKiller, pAnoikis, (&cell_population));
+		pAnoikis->SetCutOffRadius(maxInteractionRadius);
+		simulator.AddCellKiller(pAnoikis);
+
+		c_vector<double, 2> point;
+		c_vector<double, 2> normal;
+		point[0] = 0;
+		point[1] = 0;
+		normal[0] = 0;
+		normal[1] = 1;
+
+		// MAKE_PTR_ARGS(PlaneBoundaryCondition<2,2>, pPlaneBC, (&cell_population, point, normal));
+		boost::shared_ptr<PlaneBoundaryCondition<2,2> > pPlaneBC(new PlaneBoundaryCondition<2,2>(&cell_population, point, -normal));
+		simulator.AddCellPopulationBoundaryCondition(pPlaneBC);
 
 		simulator.Solve();
 

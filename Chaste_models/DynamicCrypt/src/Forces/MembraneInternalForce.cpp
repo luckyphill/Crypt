@@ -19,6 +19,34 @@ MembraneInternalForce::MembraneInternalForce()
 {
 }
 
+MembraneInternalForce::MembraneInternalForce(std::vector<std::vector<CellPtr>> membraneSections)
+   :  AbstractForce<2>(),
+   mMembraneStiffness(50),
+   mMembraneSections(membraneSections)
+{
+}
+
+MembraneInternalForce::MembraneInternalForce(std::vector<std::vector<CellPtr>> membraneSections, bool isPeriodic)
+   :  AbstractForce<2>(),
+   mIsPeriodic(isPeriodic),
+   mMembraneSections(membraneSections)
+   
+   
+{
+	if (mIsPeriodic)
+	{
+		// If the simulation is periodic and the membrane loops around
+		// left to right, then the membrane section must be connected
+		for (std::vector<std::vector<CellPtr>>::iterator iter = mMembraneSections.begin(); iter != mMembraneSections.end(); ++iter)
+		{
+			if ((*iter).front() != (*iter).back())
+			{
+				(*iter).push_back((*iter).front());
+			}
+		}
+	}
+}
+
 MembraneInternalForce::~MembraneInternalForce()
 {
 
@@ -39,6 +67,11 @@ void MembraneInternalForce::SetSpringBackedStiffness(double SpringBackedStiffnes
 	mSpringBackedStiffness = SpringBackedStiffness;
 }
 
+void MembraneInternalForce::SetIsPeriodic(bool isPeriodic)
+{
+	mIsPeriodic = isPeriodic;
+}
+
 
 //Method overriding the virtual method for AbstractForce. The crux of what really needs to be done.
 void MembraneInternalForce::AddForceContribution(AbstractCellPopulation<2>& rCellPopulation)
@@ -51,7 +84,6 @@ void MembraneInternalForce::AddForceContribution(AbstractCellPopulation<2>& rCel
 	{
 		std::vector<CellPtr> membraneCells = *iter;
 		// We loop through the membrane sections to set the restoring forces
-		
 		for (unsigned i = 0; i < membraneCells.size() - 1; i++)
 		{
 			CellPtr cellA = membraneCells[i];
@@ -64,11 +96,12 @@ void MembraneInternalForce::AddForceContribution(AbstractCellPopulation<2>& rCel
 			double radiusB = nodeB->GetRadius();
 
 			double restLength = radiusA + radiusB;
+
 						
 			c_vector<double, 2> locationA = p_tissue->GetLocationOfCellCentre(cellA);
 			c_vector<double, 2> locationB = p_tissue->GetLocationOfCellCentre(cellB);
 
-			c_vector<double, 2> vectorAB = locationB - locationA;
+			c_vector<double, 2> vectorAB = rCellPopulation.rGetMesh().GetVectorFromAtoB(locationA, locationB);
 
 			double lengthAB = norm_2(vectorAB);
 
@@ -82,8 +115,12 @@ void MembraneInternalForce::AddForceContribution(AbstractCellPopulation<2>& rCel
 
 			AddExternalForceContribution(nodeA, rCellPopulation);
 		}
-		// The last one gets missed, so do it manually
-		AddExternalForceContribution(p_tissue->GetNode(p_tissue->GetLocationIndexUsingCell(membraneCells[membraneCells.size()-1])), rCellPopulation);
+
+		// The last one gets missed when not periodic, so do it manually
+		if (!mIsPeriodic)
+		{
+			AddExternalForceContribution(p_tissue->GetNode(p_tissue->GetLocationIndexUsingCell(membraneCells[membraneCells.size()-1])), rCellPopulation);
+		}
 	}
 }
 
@@ -112,7 +149,8 @@ void MembraneInternalForce::AddExternalForceContribution(Node<2>* pMembraneNode,
 			c_vector<double, 2> locationA = pMembraneNode->rGetLocation();
 			c_vector<double, 2> locationB = pNeighbour->rGetLocation();
 
-			c_vector<double, 2> vectorAB = locationB - locationA;
+			c_vector<double, 2> vectorAB = rCellPopulation.rGetMesh().GetVectorFromAtoB(locationA, locationB);
+			// c_vector<double, 2> vectorAB = locationB - locationA;
 
 			double lengthAB = norm_2(vectorAB);
 

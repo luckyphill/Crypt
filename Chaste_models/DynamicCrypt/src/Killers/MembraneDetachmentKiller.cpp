@@ -12,6 +12,7 @@
 #include "MeshBasedCellPopulation.hpp"
 #include "NodeBasedCellPopulation.hpp"
 #include "MembraneType.hpp"
+#include "EpithelialType.hpp"
 
 #include "Debug.hpp"
 
@@ -49,9 +50,12 @@ std::set<unsigned> MembraneDetachmentKiller::GetNeighbouringNodeIndices(unsigned
 		//Update cell population
 		pTissue->Update();
 
+		NodesOnlyMesh<2>& rMesh = pTissue->rGetMesh();
+
 		double radius = GetCutOffRadius();
 
 		neighbouring_node_indices = pTissue->GetNodesWithinNeighbourhoodRadius(nodeIndex, radius);
+
 	}
 
     return neighbouring_node_indices;
@@ -104,19 +108,21 @@ void MembraneDetachmentKiller::CheckAndLabelCellsForApoptosisOrDeath()
     		unsigned node_index = pTissue->GetNodeCorrespondingToCell(*cell_iter)->GetIndex();
 
     		CellPtr pCell = pTissue->GetCellUsingLocationIndex(node_index);
-
-			if(HasCellPoppedUp(node_index))
-			{
-				if (mSlowDeath)
+    		if (pCell->GetCellProliferativeType()->IsType<EpithelialType>())
+    		{
+				if(HasCellPoppedUp(node_index))
 				{
-					if (!pCell->HasApoptosisBegun())
+					if (mSlowDeath)
 					{
-						pCell->StartApoptosis();
+						if (!pCell->HasApoptosisBegun())
+						{
+							pCell->StartApoptosis();
+						}
+					} else {
+						pCell->Kill();
 					}
-				} else {
-					pCell->Kill();
+					
 				}
-				
 			}
 		}
 	}
