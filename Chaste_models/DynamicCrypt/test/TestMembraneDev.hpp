@@ -39,6 +39,7 @@
 #include "DifferentiatedCellProliferativeType.hpp"
 #include "MembraneType.hpp"
 #include "StromalType.hpp"
+#include "StemType.hpp"
 #include "EpithelialType.hpp"
 
 #include "Debug.hpp"
@@ -254,6 +255,20 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 			PRINT_VARIABLE(maxInteractionRadius)
 		}
 
+		double membraneRestoringRate = 10;
+		if(CommandLineArguments::Instance()->OptionExists("-mrr"))
+		{
+			membraneRestoringRate = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-mrr");
+			PRINT_VARIABLE(membraneRestoringRate)
+		}
+
+		double targetCurvature = 0.3;
+		if(CommandLineArguments::Instance()->OptionExists("-cv"))
+		{
+			targetCurvature = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-cv");
+			PRINT_VARIABLE(targetCurvature)
+		}
+
 		// ********************************************************************************************
 
 		// ********************************************************************************************
@@ -277,6 +292,13 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 		{
 			height = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-h");
 			PRINT_VARIABLE(height)
+		}
+
+		double anoikisDistance = 1.5;
+		if(CommandLineArguments::Instance()->OptionExists("-ad"))
+		{
+			anoikisDistance = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-ad");
+			PRINT_VARIABLE(anoikisDistance)
 		}
 		// ********************************************************************************************
 
@@ -343,6 +365,7 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 		MAKE_PTR(DifferentiatedCellProliferativeType, pDiffType);
 		MAKE_PTR(MembraneType, pMembraneType);
 		MAKE_PTR(StromalType, pStromalType);
+		MAKE_PTR(StemType, pStemType);
 		MAKE_PTR(EpithelialType, pEpithelialType);
 		MAKE_PTR(WildTypeCellMutationState, pState);
 
@@ -380,7 +403,7 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 			double y = (height - 0.5) * std::sqrt(3)/2  +  membraneRadius * std::sqrt(3)/2;
 			double x = i * 2 * membraneRadius + 0.5 * (height%2);
 			Node<2>* pNode = new Node<2>(nodeCounter,  false,  x, y);
-			pNode->SetRadius(membraneRadius);
+			// pNode->SetRadius(membraneRadius);
 			nodes.push_back(pNode);
 
 			locationIndices.push_back(nodeCounter);
@@ -415,6 +438,11 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 
 			CellPtr pCell(new Cell(pState, pCycleModel));
 			pCell->SetCellProliferativeType(pEpithelialType);
+			if (i==9)
+			{
+				pCell->SetCellProliferativeType(pStemType);
+			}
+			
 			pCell->InitialiseCellCycleModel();
 			pCell->GetCellData()->SetItem("parent", pCell->GetCellId());
 			cells.push_back(pCell);
@@ -449,10 +477,12 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 		simulator.SetDt(dt);
 		simulator.SetSamplingTimestepMultiple(sampling_multiple);
 
-		MAKE_PTR_ARGS(MembraneInternalForce, p_membrane, (membraneSections, true));
-		p_membrane->SetMembraneStiffness(membraneStiffness);
-		p_membrane->SetExternalStiffness(externalStiffness);
-		simulator.AddForce(p_membrane);
+		MAKE_PTR_ARGS(MembraneInternalForce, pMembrane, (membraneSections, true));
+		pMembrane->SetMembraneStiffness(membraneStiffness);
+		pMembrane->SetExternalStiffness(externalStiffness);
+		pMembrane->SetMembraneRestoringRate(membraneRestoringRate);
+		pMembrane->SetTargetCurvatureStem(targetCurvature);
+		simulator.AddForce(pMembrane);
 
 		MAKE_PTR(StromalInternalForce<2>, pStroma);
 		pStroma->SetSpringStiffness(stromalStiffness);
@@ -463,7 +493,7 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 		simulator.AddForce(pEpithelial);
 
 		MAKE_PTR_ARGS(MembraneDetachmentKiller, pAnoikis, (&cell_population));
-		pAnoikis->SetCutOffRadius(maxInteractionRadius);
+		pAnoikis->SetCutOffRadius(anoikisDistance);
 		simulator.AddCellKiller(pAnoikis);
 
 		c_vector<double, 2> point;

@@ -7,6 +7,7 @@
 
 #include "Debug.hpp"
 #include "EpithelialType.hpp"
+#include "StemType.hpp"
 #include "EpithelialInternalForce.hpp"
 
 
@@ -45,7 +46,10 @@ c_vector<double, SPACE_DIM> EpithelialInternalForce<ELEMENT_DIM,SPACE_DIM>::Calc
 		zero_vector[i] = 0;
 	}
 
-	if (!pCellA->GetCellProliferativeType()->IsType<EpithelialType>() || !pCellB->GetCellProliferativeType()->IsType<EpithelialType>())
+	bool isEpithelialA = pCellA->GetCellProliferativeType()->IsType<EpithelialType>() || pCellA->GetCellProliferativeType()->IsType<StemType>();
+	bool isEpithelialB = pCellB->GetCellProliferativeType()->IsType<EpithelialType>() || pCellB->GetCellProliferativeType()->IsType<StemType>();
+
+	if (!isEpithelialA || !isEpithelialB)
 	{
 		return zero_vector;
 	}

@@ -31,6 +31,10 @@ private :
 
 	/** Parameter that defines the stiffness of the basement membrane */
 	double mMembraneStiffness;
+
+	double mTargetCurvatureStem;
+
+	double mMembraneRestoringRate;
 	
 	// Stiffness of reaction with any other cell
 	double mExternalStiffness;
@@ -81,21 +85,33 @@ public :
 	 */
 	void AddForceContribution(AbstractCellPopulation<2>& rCellPopulation); // 
 	
-	// Add the force interaction with other cells
-	void AddExternalForceContribution(Node<2>* membraneNode, AbstractCellPopulation<2>& rCellPopulation);
-
-	void AddSpringBackedForce(Node<2>* pMembraneNode, AbstractCellPopulation<2>& rCellPopulation);
+	// Add the force interactions
+	void AddTensionForceContribution(AbstractCellPopulation<2>& rCellPopulation);
+	void AddExternalForceContribution(AbstractCellPopulation<2>& rCellPopulation);
+	void AddCurvatureForceContribution(AbstractCellPopulation<2>& rCellPopulation);
 
 	/**
 	 * Pure virtual, must implement
 	 */
 	void OutputForceParameters(out_stream& rParamsFile);
 
+	double GetAngleFromTriplet(AbstractCellPopulation<2>& rCellPopulation,c_vector<double, 2> leftNode,	c_vector<double, 2> centreNode,	c_vector<double, 2> rightNode);
+	double FindParametricCurvature(AbstractCellPopulation<2>& rCellPopulation,c_vector<double, 2> leftCell,c_vector<double, 2> centreCell,c_vector<double, 2> rightCell);
+	double GetTargetAngle(AbstractCellPopulation<2>& rCellPopulation, CellPtr centre_cell,c_vector<double, 2> leftCell,c_vector<double, 2> centreCell,c_vector<double, 2> rightCell);
+	double GetTargetCurvature(AbstractCellPopulation<2>& rCellPopulation, CellPtr centreCell,
+																		c_vector<double, 2> leftLocation,
+																		c_vector<double, 2> centreLocation,
+																		c_vector<double, 2> rightLocation);
+	
+
 	/* Set method for Basement Membrane Parameter
 	 */
 	void SetMembraneStiffness(double MembraneStiffness);
 	void SetExternalStiffness(double ExternalStiffness);
-	void SetSpringBackedStiffness(double SpringBackedStiffness);
+
+	void SetMembraneRestoringRate(double membraneRestoringRate);
+	void SetTargetCurvatureStem(double targetCurvatureStem);
+
 
 	void SetIsPeriodic(bool isPeriodic);
 
