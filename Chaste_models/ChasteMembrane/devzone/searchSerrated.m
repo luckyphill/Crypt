@@ -2,7 +2,7 @@ rootdir = [getenv('HOME'),'/Research/Crypt/Data/Chaste/TestCryptColumn/'];
 filelist = dir(fullfile(rootdir, '**/*.*'));  %get list of files and folders in any subfolder
 filelist = filelist(~[filelist.isdir]);
 
-fprintf('Found %d files', length(filelist));
+fprintf('Found %d files\n', length(filelist));
 serrated = {};
 
 for i = 1:length(filelist)
@@ -15,14 +15,14 @@ for i = 1:length(filelist)
         fullpath = [filelist(i).folder,'/',filelist(i).name];
         data = csvread(fullpath);
         if data(1) >= 0.05
-            fprintf('Found a set with serrations');
+            fprintf('Found a set with serrations\n');
             serrated{end+1,1} = fullpath;
             serrated{end,2} = 1;
         end
     end
 end
 
-fprintf('Found a total of %d serrated crypts',length(serrated));
+fprintf('Found a total of %d serrated crypts\n',length(serrated));
 
 % load('serrated.mat');
 
