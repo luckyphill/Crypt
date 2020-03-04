@@ -93,7 +93,7 @@ void MembraneInternalForce::AddForceContribution(AbstractCellPopulation<2>& rCel
 
 	AddExternalForceContribution(rCellPopulation);
 
-	// AddCurvatureForceContribution(rCellPopulation);
+	AddCurvatureForceContribution(rCellPopulation);
 
 
 
@@ -113,10 +113,10 @@ void MembraneInternalForce::AddTensionForceContribution(AbstractCellPopulation<2
 		unsigned itLimit = membraneCells.size();
 		if (mIsPeriodic)
 		{
-			itLimit -= 2;
+			itLimit -= 1;
 		}
 		// We loop through the membrane sections to set the restoring forces
-		for (unsigned i = 0; i < itLimit; i++)
+		for (unsigned i = 0; i < itLimit - 1; i++)
 		{
 			CellPtr cellA = membraneCells[i];
 			CellPtr cellB = membraneCells[i+1];
@@ -337,7 +337,7 @@ void MembraneInternalForce::AddCurvatureForceContribution(AbstractCellPopulation
 			double targetCurvature = GetTargetCurvature(rCellPopulation, centreCell, leftLocation, centreLocation, rightLocation);
 
 			// Applying the restoring force as a 'lifting' force on the centre cell
-			double forceMagnitude = - mMembraneRestoringRate * (currentCurvature - targetCurvature); // +ve force means away from lumen
+			double forceMagnitude = mMembraneRestoringRate * (currentCurvature - targetCurvature); // +ve force means away from lumen
 
 			// c_vector<double, 2> vectorLR = pTissue->rGetMesh().GetVectorFromAtoB(leftLocation,rightLocation); // Used for determining where lumen is
 			c_vector<double, 2> vectorLR = rightLocation - leftLocation;

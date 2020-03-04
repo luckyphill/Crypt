@@ -415,6 +415,7 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 			CellPtr pCell(new Cell(pState, pCycleModel));
 			pCell->SetCellProliferativeType(pMembraneType);
 			pCell->InitialiseCellCycleModel();
+			pCell->GetCellData()->SetItem("parent", pCell->GetCellId());
 			membraneCells.push_back(pCell);
 			cells.push_back(pCell);
 		}
