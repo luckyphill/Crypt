@@ -215,8 +215,6 @@ void MembraneInternalForce::AddExternalForceContribution(AbstractCellPopulation<
 
 }
 
-
-
 double MembraneInternalForce::FindParametricCurvature(AbstractCellPopulation<2>& rCellPopulation,
 															c_vector<double, 2> leftLocation,
 															c_vector<double, 2> centreLocation,
@@ -358,9 +356,6 @@ void MembraneInternalForce::AddCurvatureForceContribution(AbstractCellPopulation
 		}
 	}
 }
-
-
-
 
 
 void MembraneInternalForce::SetMembraneSections(std::vector<std::vector<CellPtr>> membraneSections)
