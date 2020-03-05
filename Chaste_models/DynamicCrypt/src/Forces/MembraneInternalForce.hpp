@@ -98,10 +98,7 @@ public :
 	double GetAngleFromTriplet(AbstractCellPopulation<2>& rCellPopulation,c_vector<double, 2> leftNode,	c_vector<double, 2> centreNode,	c_vector<double, 2> rightNode);
 	double FindParametricCurvature(AbstractCellPopulation<2>& rCellPopulation,c_vector<double, 2> leftCell,c_vector<double, 2> centreCell,c_vector<double, 2> rightCell);
 	double GetTargetAngle(AbstractCellPopulation<2>& rCellPopulation, CellPtr centre_cell,c_vector<double, 2> leftCell,c_vector<double, 2> centreCell,c_vector<double, 2> rightCell);
-	double GetTargetCurvature(AbstractCellPopulation<2>& rCellPopulation, CellPtr centreCell,
-																		c_vector<double, 2> leftLocation,
-																		c_vector<double, 2> centreLocation,
-																		c_vector<double, 2> rightLocation);
+	double GetTargetCurvature(AbstractCellPopulation<2>& rCellPopulation, CellPtr centreCell);
 	
 
 	/* Set method for Basement Membrane Parameter

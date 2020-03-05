@@ -50,9 +50,7 @@ std::set<unsigned> MembraneDetachmentKiller::GetNeighbouringNodeIndices(unsigned
 		//Update cell population
 		pTissue->Update();
 
-		NodesOnlyMesh<2>& rMesh = pTissue->rGetMesh();
-
-		double radius = GetCutOffRadius();
+		double radius = pTissue->rGetMesh().GetMaximumInteractionDistance();
 
 		neighbouring_node_indices = pTissue->GetNodesWithinNeighbourhoodRadius(nodeIndex, radius);
 
@@ -63,34 +61,42 @@ std::set<unsigned> MembraneDetachmentKiller::GetNeighbouringNodeIndices(unsigned
 
 bool MembraneDetachmentKiller::HasCellPoppedUp(unsigned nodeIndex)
 {
-	bool has_cell_popped_up = false;	// Initialising
+
+	// Get the neighbours
 	std::set<unsigned> neighbours = GetNeighbouringNodeIndices(nodeIndex);
 
-	if (dynamic_cast<NodeBasedCellPopulation<2>*>(this->mpCellPopulation))
+	// Convert the nodeIndex to CellPtr and Node<2>*
+	CellPtr pCell = this->mpCellPopulation->GetCellUsingLocationIndex(nodeIndex);
+	Node<2>* pNode = this->mpCellPopulation->GetNode(nodeIndex);
+
+	// Get the location of the cell for future checking
+	c_vector<double, 2> cellLocation = pNode->rGetLocation();
+
+	NodeBasedCellPopulation<2>* pTissue = static_cast<NodeBasedCellPopulation<2>*> (this->mpCellPopulation);
+
+
+	for(std::set<unsigned>::iterator neighbourIt=neighbours.begin(); neighbourIt != neighbours.end(); ++neighbourIt)
 	{
-		NodeBasedCellPopulation<2>* pTissue = static_cast<NodeBasedCellPopulation<2>*> (this->mpCellPopulation);
-
-		unsigned membrane_neighbours = 0;
-
-		// Iterate over the neighbouring cells to check the number of differentiated cell neighbours
-
-		for(std::set<unsigned>::iterator neighbour_iter=neighbours.begin();
-				neighbour_iter != neighbours.end();
-				++neighbour_iter)
+		// Convert the neighbour to CellPtr and Node<2>*
+		CellPtr pNeighbourCell = pTissue->GetCellUsingLocationIndex(*neighbourIt);
+		Node<2>* pNeighbourNode = this->mpCellPopulation->GetNode(*neighbourIt);
+				// For each neighbour, check if it of MembraneType
+		if (pNeighbourCell->GetCellProliferativeType()->IsType<MembraneType>() )
 		{
-			if (pTissue->GetCellUsingLocationIndex(*neighbour_iter)->GetCellProliferativeType()->IsType<MembraneType>() )
+						// If it is membrane type then need to make sure it is close enough
+			// defined by the cutt-off radius
+			c_vector<double, 2> neighbourLocation = pNeighbourNode->rGetLocation();
+
+			c_vector<double, 2> cellToNeighbour = this->mpCellPopulation->rGetMesh().GetVectorFromAtoB(neighbourLocation, cellLocation);
+			double distance = norm_2(cellToNeighbour);
+			if (distance <= mCutOffRadius)
 			{
-				membrane_neighbours += 1;
+				return false;
 			}
-		}
-
-		if(membrane_neighbours < 1)
-		{
-			has_cell_popped_up = true;
 		}
 	}
 
-	return has_cell_popped_up;
+	return true;
 }
 
 
@@ -105,9 +111,9 @@ void MembraneDetachmentKiller::CheckAndLabelCellsForApoptosisOrDeath()
     			cell_iter != pTissue->End();
     			++cell_iter)
     	{
-    		unsigned node_index = pTissue->GetNodeCorrespondingToCell(*cell_iter)->GetIndex();
+    		CellPtr pCell = (*cell_iter);
+    		unsigned node_index = pTissue->GetNodeCorrespondingToCell(pCell)->GetIndex();
 
-    		CellPtr pCell = pTissue->GetCellUsingLocationIndex(node_index);
     		if (pCell->GetCellProliferativeType()->IsType<EpithelialType>())
     		{
 				if(HasCellPoppedUp(node_index))

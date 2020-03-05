@@ -37,6 +37,8 @@ classdef (Abstract) dataType < matlab.mixin.SetGet
 
 	methods (Abstract)
 		% This method must be implemented, but can also be accessed outside of the class
+		% It is used to check if the file(s) exist in storage, but it doesn't do anything
+		% to verify they are valid
 		exists
 
 	end

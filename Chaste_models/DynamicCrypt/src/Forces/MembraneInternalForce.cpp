@@ -220,6 +220,7 @@ double MembraneInternalForce::FindParametricCurvature(AbstractCellPopulation<2>&
 															c_vector<double, 2> centreLocation,
 															c_vector<double, 2> rightLocation)
 {
+	// Using the formulas presented in Axels node based work
 	//Get the relevant vectors (all possible differences)
 	c_vector<double, 2> vectorLC = rCellPopulation.rGetMesh().GetVectorFromAtoB(leftLocation, centreLocation);
 	c_vector<double, 2> vectorCR = rCellPopulation.rGetMesh().GetVectorFromAtoB(centreLocation, rightLocation);
@@ -240,20 +241,17 @@ double MembraneInternalForce::FindParametricCurvature(AbstractCellPopulation<2>&
 	double yPrimePrime = 2 * (leftS * vectorCR[1] - rightS * vectorLC[1]) / (leftS * rightS * sumIntervals);
 
 	//Calculate curvature using formula
-	double curvature = (xPrime * yPrimePrime - yPrime * xPrimePrime) / pow((pow(xPrime,2) + pow(yPrime,2)),3/2);
+	double curvature = - (xPrime * yPrimePrime - yPrime * xPrimePrime) / pow((pow(xPrime,2) + pow(yPrime,2)),3/2);
 
 	return curvature;
 }
 
 
 
-double MembraneInternalForce::GetTargetCurvature(AbstractCellPopulation<2>& rCellPopulation, CellPtr centreCell,
-																		c_vector<double, 2> leftLocation,
-																		c_vector<double, 2> centreLocation,
-																		c_vector<double, 2> rightLocation)
+double MembraneInternalForce::GetTargetCurvature(AbstractCellPopulation<2>& rCellPopulation, CellPtr centreCell)
 {
 	// Returns the angle that we're aiming for
-	// At the moment, it doesn't handle membrane cells with both types separately, but treats them like  they're attached to transit cells
+
 	MeshBasedCellPopulation<2>* pTissue = static_cast<MeshBasedCellPopulation<2>*>(&rCellPopulation);
 
 	bool contactWithStem = false;
@@ -332,13 +330,13 @@ void MembraneInternalForce::AddCurvatureForceContribution(AbstractCellPopulation
 			// double targetAngle = GetTargetAngle(rCellPopulation, centreCell, leftLocation, centreLocation, rightLocation);
 			// // double targetAngle = 0;
 
-			double targetCurvature = GetTargetCurvature(rCellPopulation, centreCell, leftLocation, centreLocation, rightLocation);
+			double targetCurvature = GetTargetCurvature(rCellPopulation, centreCell);
 
 			// Applying the restoring force as a 'lifting' force on the centre cell
 			double forceMagnitude = mMembraneRestoringRate * (currentCurvature - targetCurvature); // +ve force means away from lumen
 
-			// c_vector<double, 2> vectorLR = pTissue->rGetMesh().GetVectorFromAtoB(leftLocation,rightLocation); // Used for determining where lumen is
-			c_vector<double, 2> vectorLR = rightLocation - leftLocation;
+			c_vector<double, 2> vectorLR = rCellPopulation.rGetMesh().GetVectorFromAtoB(leftLocation,rightLocation); // Used for determining where lumen is
+			// c_vector<double, 2> vectorLR = rightLocation - leftLocation;
 			double lengthLR = norm_2(vectorLR);
 			
 			c_vector<double, 2> forceDirection; // Trying a force like SJD

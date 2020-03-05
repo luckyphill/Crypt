@@ -16,6 +16,31 @@ classdef chasteSimulation < simulation
 
 	end
 
+	properties (Abstract, SetAccess = protected)
+		% These properties are essential for the method "runSimulation" to function
+
+		% The absolute path to the error file
+		errorFile char
+
+		% The absolute path to the chaste simulation output directory
+		simOutputLocation char
+
+		% The folder where the processed output will be saved
+		saveLocation char
+
+		% The complete simulation command for the particular simulation
+		% This will be passed to the matlab 'system' function
+		simulationCommand char
+
+		% All of the input flags for a simulation that come after the function call
+		% Will always be a substring of simulationCommand
+		% Can comment this out if not necessary, but will also need to get rid of 
+		% the 4th command in runSimulation
+		inputString char
+
+
+	end
+
 
 	properties (SetAccess = protected)
 		% These are a list of maps for the parameters.
@@ -36,30 +61,15 @@ classdef chasteSimulation < simulation
 		% The seed that defines the starting configuration
 		seedParams containers.Map 
 
-
-		% The absolute path to the error file
-		errorFile char
-
-		% The absolute path to the chaste simulation output directory
-		simOutputLocation char
-
-		% The folder where the processed output will be saved
-		saveLocation char
-
-		% The complete simulation command for the particular simulation
-		% This will be passed to the matlab 'system' function
-		simulationCommand char
-
-		% Not strictly necessary, but useful for console output to keep track of what is
-		% actually running
-		inputString char
+		% The path to the directory containing the Chaste and chaste_build folders
+		% Not explicitly used in runSimulation, but is necessary for building
+		% simOutputLocation and saveLocation, and its handly to have for later
+		chastePath
 
 		% The console output from the 'system' function. This is usually only needed when
 		% the command fails, but can sometimes be a place where the data of interest appears
+		% You don't need to set this
 		cmdout
-
-		% The path to the directory containing the Chaste and chaste_build folders 
-		chastePath
 
 	end
 

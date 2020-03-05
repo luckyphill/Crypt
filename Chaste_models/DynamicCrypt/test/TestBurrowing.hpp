@@ -50,154 +50,12 @@
 
 
 
-class TestMembraneDev : public AbstractCellBasedTestSuite
+class TestBurrowing : public AbstractCellBasedTestSuite
 {
 	public:
-	void xTestMembraneTorsionSpring() throw(Exception)
-	{
-		// DOESNT PRODUCE THE DESIRED BEHAVIOUR
-		// ********************************************************************************************
-		// Input parameters in order usually expected, grouped by category
-		// ********************************************************************************************
+	
 
-
-
-		// ********************************************************************************************
-		// Membrane parameters
-		double n = 20;
-		if(CommandLineArguments::Instance()->OptionExists("-n"))
-		{	
-			n = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-n");
-			PRINT_VARIABLE(n)
-
-		}
-
-		double membraneStiffness = 50;
-		if(CommandLineArguments::Instance()->OptionExists("-ms"))
-		{
-			membraneStiffness = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-ms");
-			PRINT_VARIABLE(membraneStiffness)
-		}
-
-		double torsionalStiffness = 1;
-		if(CommandLineArguments::Instance()->OptionExists("-ts"))
-		{
-			torsionalStiffness = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-ts");
-			PRINT_VARIABLE(torsionalStiffness)
-		}
-
-		double targetCurvature = 0.3;
-		if(CommandLineArguments::Instance()->OptionExists("-cv"))
-		{
-			targetCurvature = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-cv");
-			PRINT_VARIABLE(targetCurvature)
-		}
-		// ********************************************************************************************
-
-		// ********************************************************************************************
-		// Simulation parameters
-		double dt = 0.005; // The minimum to get covergant simulations for a specific parameter set
-		if(CommandLineArguments::Instance()->OptionExists("-dt"))
-		{
-			dt = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-dt");
-			PRINT_VARIABLE(dt)
-		}
-
-		double simulation_length = 100;
-		if(CommandLineArguments::Instance()->OptionExists("-t"))
-		{	
-			simulation_length = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-t");
-			PRINT_VARIABLE(simulation_length)
-
-		}
-		// ********************************************************************************************
-
-		// ********************************************************************************************
-		// Output control
-		bool file_output = true;
-		double sampling_multiple = 10;
-		if(CommandLineArguments::Instance()->OptionExists("-sm"))
-		{   
-			sampling_multiple = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-sm");
-			file_output = true;
-			TRACE("File output occurring")
-
-		}
-
-		bool java_visualiser = true;
-		if(CommandLineArguments::Instance()->OptionExists("-vis"))
-		{   
-			java_visualiser = true;
-			TRACE("Java visualiser ON")
-
-		}
-		// ********************************************************************************************
-
-
-
-		std::vector<Node<2>*> nodes;
-		std::vector<unsigned> locationIndices;
-
-		unsigned nodeCounter = 0;
-
-		double maxInteractionRadius = 0.8;
-
-
-		std::vector<CellPtr> cells;
-
-
-		for (unsigned i = 0; i < n; i++)
-		{
-			nodes.push_back(new Node<2>(nodeCounter,  false,  i, 0));
-			locationIndices.push_back(nodeCounter);
-			nodeCounter++;
-		}
-
-		NodesOnlyMesh<2> mesh;
-		mesh.ConstructNodesWithoutMesh(nodes, maxInteractionRadius);
-
-		MAKE_PTR(DifferentiatedCellProliferativeType, pDiffType);
-		MAKE_PTR(WildTypeCellMutationState, pState);
-
-		for (unsigned i = 0; i < n; i++)
-		{
-			NoCellCycleModel* pCycleModel = new NoCellCycleModel();
-			CellPtr pCell(new Cell(pState, pCycleModel));
-
-			pCell->SetCellProliferativeType(pDiffType);
-			pCell->InitialiseCellCycleModel();
-
-			cells.push_back(pCell);
-		}
-
-
-		NodeBasedCellPopulation<2> cell_population(mesh, cells, locationIndices);
-
-		OffLatticeSimulation<2> simulator(cell_population);
-
-		simulator.SetOutputDirectory("TestMembraneTorsionSpring");
-		simulator.SetEndTime(simulation_length);
-		simulator.SetDt(dt);
-		simulator.SetSamplingTimestepMultiple(sampling_multiple);
-
-		MAKE_PTR(GeneralisedLinearSpringForce<2>, p_force);
-		p_force->SetMeinekeSpringStiffness(membraneStiffness);
-		simulator.AddForce(p_force);
-
-		MAKE_PTR(TorsionalSpringForce, p_torsional_force);
-		p_torsional_force->SetTorsionalStiffness(torsionalStiffness);
-		p_torsional_force->SetTargetCurvature(targetCurvature);
-		p_torsional_force->SetDt(dt);
-		p_torsional_force->SetDampingConstant(1);
-
-		simulator.AddForce(p_torsional_force);
-
-		TRACE("All set up")
-		simulator.Solve();
-
-	};
-
-	void TestMembraneInternalForce() throw(Exception)
+	void TestMembranelessBurrowing() throw(Exception)
 	{
 
 		// The membrane is a string of cells, that only interact with their immediate neighbour
@@ -207,6 +65,16 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 		// ********************************************************************************************
 		// Input parameters in order usually expected, grouped by category
 		// ********************************************************************************************
+
+		// ********************************************************************************************
+		// Input parameter to choose position file
+		unsigned type = 1;
+		if(CommandLineArguments::Instance()->OptionExists("-type"))
+		{
+			type = CommandLineArguments::Instance()->GetUnsignedCorrespondingToOption("-type");
+			PRINT_VARIABLE(type)
+		}
+
 
 		// ********************************************************************************************
 		// Force parameters
@@ -238,28 +106,11 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 			PRINT_VARIABLE(stromalStiffness)
 		}
 
-		// maxInteractionRadius which is given to the nodes only mesh 
-		// It determines the range about a cell in which neighbours can be found in the getneighbours method
-		// But it searches in a radius of 2*maxInteractionRadius, I guess assuming that each cell has
-		// an "arm stretch limit" of maxInteractionRadius, so both could be stretching to their max
-		// and contact each other. So if maxInterationRadius=1, then cells 2 units apart will see each other.
-		// It is also important for cylinrical meshes. For some reason Chaste requires maxInterationRadius
-		// To divide into the domain width perfectly, meaning it can't be used as a proxy for "cutoff length"
-		double maxInteractionRadius = 1;
+		double maxInteractionRadius = 0.6;
 		if(CommandLineArguments::Instance()->OptionExists("-ir"))
 		{
 			maxInteractionRadius = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-ir");
 			PRINT_VARIABLE(maxInteractionRadius)
-		}
-
-		// This is an extra test of interaction given to the force calculators. It is applied to the 
-		// distance between two cell centres. This is where the "true" interaction radius is determined,
-		// and is a straight forward cutoff - if the distance is bigger than this, then there is no interaction
-		double interactionCutoff = 1.5;
-		if(CommandLineArguments::Instance()->OptionExists("-co"))
-		{
-			interactionCutoff = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("-co");
-			PRINT_VARIABLE(interactionCutoff)
 		}
 
 		double membraneRestoringRate = 10;
@@ -366,7 +217,6 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 
 
 		std::vector<CellPtr> cells;
-		std::vector<CellPtr> membraneCells;
 	
 
 		MAKE_PTR(DifferentiatedCellProliferativeType, pDiffType);
@@ -402,36 +252,12 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 		}
 
 
-		// Put a layer of membrane cells on top of the stroma
-		double nMembraneCells = width / (2 * membraneRadius);
-
-		for (unsigned i = 0; i < nMembraneCells; i++)
-		{
-			double y = (height - 0.5) * std::sqrt(3)/2  +  membraneRadius * std::sqrt(3)/2;
-			double x = i * 2 * membraneRadius + 0.5 * (height%2);
-			Node<2>* pNode = new Node<2>(nodeCounter,  false,  x, y);
-			// pNode->SetRadius(membraneRadius);
-			nodes.push_back(pNode);
-
-			locationIndices.push_back(nodeCounter);
-			membraneIndices.push_back(nodeCounter);
-			nodeCounter++;
-
-			NoCellCycleModel* pCycleModel = new NoCellCycleModel();
-
-			CellPtr pCell(new Cell(pState, pCycleModel));
-			pCell->SetCellProliferativeType(pMembraneType);
-			pCell->InitialiseCellCycleModel();
-			pCell->GetCellData()->SetItem("parent", pCell->GetCellId());
-			membraneCells.push_back(pCell);
-			cells.push_back(pCell);
-		}
-
 		// Add an epithelial layer
 		for (unsigned i = 0; i < width; i++)
 		{
-			double y = (height - 0.5) * std::sqrt(3)/2  +  (2 * membraneRadius + 0.5) * std::sqrt(3)/2;
-			double x = i + 0.5 * ((height+1)%2);
+			
+			double x = i + 0.5 * (height%2);
+			double y = height * std::sqrt(3)/2;
 			Node<2>* pNode = new Node<2>(nodeCounter,  false,  x, y);
 
 			nodes.push_back(pNode);
@@ -445,20 +271,12 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 			pCycleModel->SetMinCellCycleDuration(cellCycleTime);
 
 			CellPtr pCell(new Cell(pState, pCycleModel));
-			pCell->SetCellProliferativeType(pEpithelialType);
-			if (i== 8 || i==9 || i==10)
-			{
-				pCell->SetCellProliferativeType(pStemType);
-			}
+			pCell->SetCellProliferativeType(pStromalType);
 			
 			pCell->InitialiseCellCycleModel();
 			pCell->GetCellData()->SetItem("parent", pCell->GetCellId());
 			cells.push_back(pCell);
 		}
-
-		
-
-		membraneSections.push_back(membraneCells);
 
 		// NodesOnlyMesh<2> mesh;
 		// mesh.ConstructNodesWithoutMesh(nodes, maxInteractionRadius);
@@ -480,31 +298,15 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 		OffLatticeSimulation<2> simulator(cell_population);
 
 
-		simulator.SetOutputDirectory("TestMembraneInternalForce");
+		simulator.SetOutputDirectory("TestMembranelessBurrowing");
 		simulator.SetEndTime(simulation_length);
 		simulator.SetDt(dt);
 		simulator.SetSamplingTimestepMultiple(sampling_multiple);
 
-		MAKE_PTR_ARGS(MembraneInternalForce, pMembrane, (membraneSections, true));
-		pMembrane->SetMembraneStiffness(membraneStiffness);
-		pMembrane->SetExternalStiffness(externalStiffness);
-		pMembrane->SetMembraneRestoringRate(membraneRestoringRate);
-		pMembrane->SetTargetCurvatureStem(targetCurvature);
-		simulator.AddForce(pMembrane);
 
 		MAKE_PTR(StromalInternalForce<2>, pStroma);
 		pStroma->SetSpringStiffness(stromalStiffness);
-		pStroma->SetCutOffLength(interactionCutoff);
 		simulator.AddForce(pStroma);
-
-		MAKE_PTR(EpithelialInternalForce<2>, pEpithelial);
-		pEpithelial->SetSpringStiffness(epithelialStiffness);
-		pEpithelial->SetCutOffLength(interactionCutoff);
-		simulator.AddForce(pEpithelial);
-
-		MAKE_PTR_ARGS(MembraneDetachmentKiller, pAnoikis, (&cell_population));
-		pAnoikis->SetCutOffRadius(anoikisDistance);
-		simulator.AddCellKiller(pAnoikis);
 
 		c_vector<double, 2> point;
 		c_vector<double, 2> normal;
