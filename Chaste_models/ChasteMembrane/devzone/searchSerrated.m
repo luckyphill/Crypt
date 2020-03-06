@@ -14,15 +14,15 @@
 %         % If the result is 0, store the full file path and the crypt
 %         fullpath = [filelist(i).folder,'/',filelist(i).name];
 %         data = csvread(fullpath);
-%         if data(1) >= 0.07
+%         if data(1) >= 0.09
 %             fprintf('Found a set with serrations\n');
 %             serrated{end+1,1} = fullpath;
 %             serrated{end,2} = data(1);
 %         end
 %     end
 % end
-% 
-% fprintf('Found a total of %d serrated crypts\n',length(serrated));
+
+fprintf('Found a total of %d serrated crypts\n',length(serrated));
 
 % load('serrated.mat');
 
@@ -102,3 +102,58 @@ S6 = S(I==6,:);
 S7 = S(I==7,:);
 S8 = S(I==8,:);
 % save(P, 'serratedParams.mat');
+
+closest1 = getClosest(1, S1);
+closest2 = getClosest(2, S2);
+closest3 = getClosest(3, S3);
+closest4 = getClosest(4, S4);
+closest5 = getClosest(5, S5);
+closest6 = getClosest(6, S6);
+closest7 = getClosest(7, S7);
+closest8 = getClosest(8, S8);
+
+
+[~,C1,~] = kmeans(S1, 5);
+[~,C2,~] = kmeans(S2, 1);
+[~,C3,~] = kmeans(S3, 4);
+[~,C4,~] = kmeans(S4, 3);
+[~,C5,~] = kmeans(S5, 7);
+[~,C6,~] = kmeans(S6, 2);
+[~,C7,~] = kmeans(S7, 2);
+[~,C8,~] = kmeans(S8, 7);
+
+DC1 = [round(C1(:,[1,2,]),1),round(C1(:,[3,4])),round(C1(:,[5,6]),1),round(C1(:,7),3)];
+DC2 = [round(C2(:,[1,2,]),1),round(C2(:,[3,4])),round(C2(:,[5,6]),1),round(C2(:,7),3)];
+DC3 = [round(C3(:,[1,2,]),1),round(C3(:,[3,4])),round(C3(:,[5,6]),1),round(C3(:,7),3)];
+DC4 = [round(C4(:,[1,2,]),1),round(C4(:,[3,4])),round(C4(:,[5,6]),1),round(C4(:,7),3)];
+DC5 = [round(C5(:,[1,2,]),1),round(C5(:,[3,4])),round(C5(:,[5,6]),1),round(C5(:,7),3)];
+DC6 = [round(C6(:,[1,2,]),1),round(C6(:,[3,4])),round(C6(:,[5,6]),1),round(C6(:,7),3)];
+DC7 = [round(C7(:,[1,2,]),1),round(C7(:,[3,4])),round(C7(:,[5,6]),1),round(C7(:,7),3)];
+DC8 = [round(C8(:,[1,2,]),1),round(C8(:,[3,4])),round(C8(:,[5,6]),1),round(C8(:,7),3)];
+
+csvwrite([getCryptName(1), '.txt'], closest1);
+csvwrite([getCryptName(2), '.txt'], closest2);
+csvwrite([getCryptName(3), '.txt'], closest3);
+csvwrite([getCryptName(4), '.txt'], closest4);
+csvwrite([getCryptName(5), '.txt'], closest5);
+csvwrite([getCryptName(6), '.txt'], closest6);
+csvwrite([getCryptName(7), '.txt'], closest7);
+csvwrite([getCryptName(8), '.txt'], closest8);
+
+function closest = getClosest(i, S1)
+
+    % Finds the closest serrated point to each optimal point
+    closest = [];
+    for j=1:27
+        try
+            oParams = getOptimalParams(i, j);
+            XS1 = S1 - oParams;
+            DXS1 = vecnorm(XS1(:,[1,2,5,6]) ,2,2);
+            [M,I] = min(DXS1);
+            closest(j,:) = S1(I,:);
+        end
+    end
+
+end
+
+

@@ -79,6 +79,11 @@ void MembraneInternalForce::SetExternalStiffness(double externalStiffness)
 	mExternalStiffness = externalStiffness;
 }
 
+void MembraneInternalForce::SetCutOffLength(double cutOffLength)
+{
+	mCutOffLength = cutOffLength;
+}
+
 void MembraneInternalForce::SetIsPeriodic(bool isPeriodic)
 {
 	mIsPeriodic = isPeriodic;
@@ -93,7 +98,7 @@ void MembraneInternalForce::AddForceContribution(AbstractCellPopulation<2>& rCel
 
 	AddExternalForceContribution(rCellPopulation);
 
-	AddCurvatureForceContribution(rCellPopulation);
+	// AddCurvatureForceContribution(rCellPopulation);
 
 
 
@@ -190,24 +195,27 @@ void MembraneInternalForce::AddExternalForceContribution(AbstractCellPopulation<
 
 					double lengthAB = norm_2(vectorAB);
 
-					double dx = lengthAB - restLength;
-
-					c_vector<double, 2> forceVector;
-
-					if (dx <= 0) //overlap is negative
+					if (lengthAB <= mCutOffLength)
 					{
-						// log(x+1) is undefined for x<=-1
-						assert(dx > -restLength);
-						forceVector = mExternalStiffness * vectorAB * restLength * log(1.0 + dx/restLength);
-					}
-					else
-					{
-						double alpha = 5.0;
-						forceVector = mExternalStiffness * vectorAB * dx * exp(-alpha * dx/restLength);
-					}
+						double dx = lengthAB - restLength;
 
-					pMembraneNode->AddAppliedForceContribution(forceVector);
-					pNeighbour->AddAppliedForceContribution(-forceVector);
+						c_vector<double, 2> forceVector;
+
+						if (dx <= 0) //overlap is negative
+						{
+							// log(x+1) is undefined for x<=-1
+							assert(dx > -restLength);
+							forceVector = mExternalStiffness * vectorAB * restLength * log(1.0 + dx/restLength);
+						}
+						else
+						{
+							double alpha = 5.0;
+							forceVector = mExternalStiffness * vectorAB * dx * exp(-alpha * dx/restLength);
+						}
+
+						pMembraneNode->AddAppliedForceContribution(forceVector);
+						pNeighbour->AddAppliedForceContribution(-forceVector);
+					}
 				}
 			}
 		}

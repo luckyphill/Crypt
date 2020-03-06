@@ -40,8 +40,7 @@ classdef simulateCryptColumn < chasteSimulation
 		% This is the RNG seed parameter
 		run_number 	double {mustBeNumeric}
 
-		outputLocation  
-
+		outputLocation
 	end
 
 	methods

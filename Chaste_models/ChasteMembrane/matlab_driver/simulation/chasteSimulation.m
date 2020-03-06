@@ -16,11 +16,8 @@ classdef chasteSimulation < simulation
 
 	end
 
-	properties (Abstract, SetAccess = protected)
+	properties (SetAccess = protected)
 		% These properties are essential for the method "runSimulation" to function
-
-		% The absolute path to the error file
-		errorFile char
 
 		% The absolute path to the chaste simulation output directory
 		simOutputLocation char
@@ -70,6 +67,9 @@ classdef chasteSimulation < simulation
 		% the command fails, but can sometimes be a place where the data of interest appears
 		% You don't need to set this
 		cmdout
+
+		% The absolute path to the error file
+		errorFile char
 
 	end
 

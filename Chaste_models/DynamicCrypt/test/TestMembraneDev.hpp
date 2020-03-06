@@ -446,10 +446,10 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 
 			CellPtr pCell(new Cell(pState, pCycleModel));
 			pCell->SetCellProliferativeType(pEpithelialType);
-			if (i== 8 || i==9 || i==10)
-			{
-				pCell->SetCellProliferativeType(pStemType);
-			}
+			// if (i== 8 || i==9 || i==10)
+			// {
+			// 	pCell->SetCellProliferativeType(pStemType);
+			// }
 			
 			pCell->InitialiseCellCycleModel();
 			pCell->GetCellData()->SetItem("parent", pCell->GetCellId());
@@ -490,6 +490,7 @@ class TestMembraneDev : public AbstractCellBasedTestSuite
 		pMembrane->SetExternalStiffness(externalStiffness);
 		pMembrane->SetMembraneRestoringRate(membraneRestoringRate);
 		pMembrane->SetTargetCurvatureStem(targetCurvature);
+		pMembrane->SetCutOffLength(interactionCutoff);
 		simulator.AddForce(pMembrane);
 
 		MAKE_PTR(StromalInternalForce<2>, pStroma);

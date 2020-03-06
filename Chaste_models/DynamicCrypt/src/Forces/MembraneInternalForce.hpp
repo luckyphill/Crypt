@@ -35,6 +35,8 @@ private :
 	double mTargetCurvatureStem;
 
 	double mMembraneRestoringRate;
+
+	double mCutOffLength = 1.5;
 	
 	// Stiffness of reaction with any other cell
 	double mExternalStiffness;
@@ -108,6 +110,7 @@ public :
 
 	void SetMembraneRestoringRate(double membraneRestoringRate);
 	void SetTargetCurvatureStem(double targetCurvatureStem);
+	void SetCutOffLength(double cutOffLength);
 
 
 	void SetIsPeriodic(bool isPeriodic);
