@@ -1,4 +1,4 @@
-classdef serratedPointJump < matlab.mixin.SetGet
+classdef serratedPointJump2 < matlab.mixin.SetGet
 
 	% Change into a function that handles the new stepping from optimal params
 	% Used to then create a plot of the objective function space
@@ -37,7 +37,7 @@ classdef serratedPointJump < matlab.mixin.SetGet
 
 	methods
 
-		function obj = serratedPointJump(crypt, optimalPoint, varargin)
+		function obj = serratedPointJump2(crypt, optimalPoint, n, varargin)
 			% Starting at an optimalPoint, we jump to the closest known serrated point
 			% by jumping each parameter and combination of parameters from optimal to serrated values
 
@@ -49,10 +49,10 @@ classdef serratedPointJump < matlab.mixin.SetGet
 			obj.objectiveFunction 	= str2func(obj.cryptName);
 
 			obj.healthyParams 		= getOptimalParams(crypt, optimalPoint);
-			obj.serratedParams 		= getSerratedParams(crypt, optimalPoint);
+			obj.serratedParams 		= getSerratedParams2(crypt, optimalPoint, n);
 
 
-			obj.imageLocation = sprintf('%s/Research/Crypt/Images/serratedPointJump/%s/',getenv('HOME'), obj.cryptName);
+			obj.imageLocation = sprintf('%s/Research/Crypt/Images/serratedPointJump2/%s/',getenv('HOME'), obj.cryptName);
 			if exist(obj.imageLocation, 'dir') ~=7
 				mkdir(obj.imageLocation);
 			end
