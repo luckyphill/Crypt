@@ -53,11 +53,11 @@ classdef simulateCryptColumn < chasteSimulation
 			% be used on multiple different machines without needing to manually change
 			% the path each time the script moves to another computer
 
-			obj.simParams = simParams;
-			obj.solverParams = solverParams;
-			obj.seedParams = seedParams;
+			obj.simParams 		= simParams;
+			obj.solverParams 	= solverParams;
+			obj.seedParams 		= seedParams;
 
-			obj.outputTypes = outputTypes;
+			obj.outputTypes 	= outputTypes;
 
 			obj.assignParameters(); % A helper method to clear up the constructor from clutter
 
