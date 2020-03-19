@@ -28,7 +28,7 @@ classdef Cell < matlab.mixin.SetGet
 		areaGradientBottomRight
 		areaGradientBottomLeft
 
-		deformationEnergyParameter = 1
+		deformationEnergyParameter = 10
 		
 	end
 
@@ -93,16 +93,16 @@ classdef Cell < matlab.mixin.SetGet
 
 			% deformation_contribution -= 2*GetNagaiHondaDeformationEnergyParameter()*(element_areas[elem_index] - target_areas[elem_index])*element_area_gradient;
 
-			force = -2 * obj.deformationEnergyParameter * (obj.cellArea - obj.targetCellArea) * obj.areaGradientTopLeft;
+			force = 2 * obj.deformationEnergyParameter * (obj.cellArea - obj.targetCellArea) * obj.areaGradientTopLeft;
 			obj.nodeTopLeft.AddForceContribution(force);
 
-			force = -2 * obj.deformationEnergyParameter * (obj.cellArea - obj.targetCellArea) * obj.areaGradientTopRight;
+			force = 2 * obj.deformationEnergyParameter * (obj.cellArea - obj.targetCellArea) * obj.areaGradientTopRight;
 			obj.nodeTopRight.AddForceContribution(force);
 
-			force = -2 * obj.deformationEnergyParameter * (obj.cellArea - obj.targetCellArea) * obj.areaGradientBottomRight;
+			force = 2 * obj.deformationEnergyParameter * (obj.cellArea - obj.targetCellArea) * obj.areaGradientBottomRight;
 			obj.nodeBottomRight.AddForceContribution(force);
 
-			force = -2 * obj.deformationEnergyParameter * (obj.cellArea - obj.targetCellArea) * obj.areaGradientBottomLeft;
+			force = 2 * obj.deformationEnergyParameter * (obj.cellArea - obj.targetCellArea) * obj.areaGradientBottomLeft;
 			obj.nodeBottomLeft.AddForceContribution(force);
 			
 

@@ -7,12 +7,15 @@ classdef CellPopulation < matlab.mixin.SetGet
 		cellList
 
 		nodeList
-		nextNodeId
+		nextNodeId = 1
 
 		elementList
-		nextElementId
+		nextElementId = 1
 
-		nextCellId
+		nextCellId = 1
+
+		dt = 0.01
+		eta = 1
 		
 	end
 
@@ -21,9 +24,6 @@ classdef CellPopulation < matlab.mixin.SetGet
 			% All the initilising
 
 			% For the first cell, need to create 4 elements and 4 nodes
-			obj.nextNodeId = 1;
-			obj.nextElementId = 1;
-
 
 			nodeBottomLeft 	= Node(0,0,obj.GetNextNodeId());
 			nodeBottomRight	= Node(1,0,obj.GetNextNodeId());
@@ -40,7 +40,7 @@ classdef CellPopulation < matlab.mixin.SetGet
 			obj.AddElementsToList([elementBottom, elementRight, elementTop, elementLeft]);
 
 
-			obj.cellList = Cell(elementBottom, elementLeft, elementTop, elementRight, 1);
+			obj.cellList = Cell(elementBottom, elementLeft, elementTop, elementRight, obj.GetNextCellId());
 
 			for i = 2:nCells
 				% Each time we advance to the next cell, the right most nodes and element of the previous cell
@@ -60,11 +60,10 @@ classdef CellPopulation < matlab.mixin.SetGet
 
 				obj.AddElementsToList([elementBottom, elementRight, elementTop]);
 
-				obj.cellList(i) = Cell(elementBottom, elementLeft, elementTop, elementRight, i);
+				obj.cellList(i) = Cell(elementBottom, elementLeft, elementTop, elementRight, obj.GetNextCellId());
 			end
 
 		end
-
 
 
 		function VisualiseCellPopulation(obj)
@@ -88,6 +87,51 @@ classdef CellPopulation < matlab.mixin.SetGet
 			axis equal
 		end
 
+		function NextTimeStep(obj)
+			% Updates all the forces and applies the movements
+
+			
+			obj.UpdateElementForces();
+			obj.UpdateCellAreaForces();
+			
+			obj.MakeNodesMove();
+
+			% All forces are applied, now move
+
+			
+
+		end
+
+		function UpdateCellAreaForces(obj)
+			
+			for i = 1:length(obj.cellList)
+				obj.cellList(i).UpdateForce();
+			end
+
+		end
+
+		function UpdateElementForces(obj)
+
+			for i = 1:length(obj.elementList)
+				obj.elementList(i).UpdateForce();
+			end
+
+		end
+
+		function MakeNodesMove(obj)
+
+			for i = 1:length(obj.nodeList)
+
+				force = obj.nodeList(i).force;
+				position = obj.nodeList(i).position;
+
+				newPosition = position + obj.dt/obj.eta * force;
+
+				obj.nodeList(i).MoveNode(newPosition);
+			end
+
+		end
+
 	end
 
 	methods (Access = private)
@@ -99,6 +143,11 @@ classdef CellPopulation < matlab.mixin.SetGet
 		function id = GetNextElementId(obj)
 			id = obj.nextElementId;
 			obj.nextElementId = obj.nextElementId + 1;
+		end
+
+		function id = GetNextCellId(obj)
+			id = obj.nextCellId;
+			obj.nextCellId = obj.nextCellId + 1;
 		end
 
 		function AddNodesToList(obj, listOfNodes)

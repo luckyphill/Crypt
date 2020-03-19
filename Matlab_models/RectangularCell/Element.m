@@ -11,8 +11,9 @@ classdef Element < matlab.mixin.SetGet
 		Node2
 
 		naturalLength = 1
-		stiffness = 10
+		stiffness = 20
 
+		len
 		dx
 		force
 
@@ -52,9 +53,7 @@ classdef Element < matlab.mixin.SetGet
 		end
 
 		function UpdateDx(obj)
-
-			l = norm(obj.Node1.position - obj.Node2.position);
-			obj.dx = obj.naturalLength - l;
+			obj.dx = obj.naturalLength - obj.GetLength();
 		end
 
 		function UpdateForce(obj)

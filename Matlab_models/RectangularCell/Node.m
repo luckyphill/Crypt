@@ -58,6 +58,16 @@ classdef Node < matlab.mixin.SetGet
 
 		end
 
+		function MoveNode(obj, pos)
+			% This function is used to move the position due to time stepping
+			% so the force must be reset here
+
+			obj.NewPosition(pos);
+			% Reset the force for next time step
+			obj.force = [0,0];
+
+		end
+
 
 
 	end
