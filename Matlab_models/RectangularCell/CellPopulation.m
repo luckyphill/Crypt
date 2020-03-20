@@ -15,6 +15,7 @@ classdef CellPopulation < matlab.mixin.SetGet
 		nextCellId = 1
 
 		dt = 0.01
+		t = 0
 		eta = 1
 		
 	end
@@ -43,6 +44,8 @@ classdef CellPopulation < matlab.mixin.SetGet
 			obj.cellList = Cell(elementBottom, elementLeft, elementTop, elementRight, obj.GetNextCellId());
 			obj.cellList(1).SetCellCycleLength(20);
 			obj.cellList(1).SetGrowingPhaseLength(5);
+			obj.cellList(1).SetBirthTime(6 + randi(13));
+
 
 			for i = 2:nCells
 				% Each time we advance to the next cell, the right most nodes and element of the previous cell
@@ -65,6 +68,7 @@ classdef CellPopulation < matlab.mixin.SetGet
 				obj.cellList(i) = Cell(elementBottom, elementLeft, elementTop, elementRight, obj.GetNextCellId());
 				obj.cellList(i).SetCellCycleLength(20);
 				obj.cellList(i).SetGrowingPhaseLength(5);
+				obj.cellList(i).SetBirthTime(6 + randi(13));
 			end
 
 		end
@@ -94,14 +98,18 @@ classdef CellPopulation < matlab.mixin.SetGet
 		function NextTimeStep(obj)
 			% Updates all the forces and applies the movements
 
+
 			
 			obj.UpdateElementForces();
 			obj.UpdateCellAreaForces();
 			
 			obj.MakeNodesMove();
 
-			% All forces are applied, now move
+			obj.MakeCellsDivide();
 
+			obj.MakeCellsAge();
+
+			obj.t = obj.t + obj.dt;
 			
 
 		end
@@ -149,6 +157,14 @@ classdef CellPopulation < matlab.mixin.SetGet
 
 			obj.AddNewCells(newCells);
 
+
+		end
+
+		function MakeCellsAge(obj)
+
+			for i = 1:length(obj.cellList)
+				obj.cellList(i).AgeCell(obj.dt);
+			end
 
 		end
 

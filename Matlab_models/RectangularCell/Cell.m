@@ -207,12 +207,12 @@ classdef Cell < matlab.mixin.SetGet
 				obj.currentCellTopLength = obj.newCellTopLength + (obj.age/obj.growingPhaseLength) * (obj.grownCellTopLength - obj.newCellTopLength);
 				obj.currentCellBottomLength = obj.newCellBottomLength + (obj.age/obj.growingPhaseLength) * (obj.grownCellBottomLength - obj.newCellBottomLength);
 			else
-				obj.currentCellTopLength = obj.grownCellTopLength
-				obj.currentCellBottomLength = obj.grownCellBottomLength
+				obj.currentCellTopLength = obj.grownCellTopLength;
+				obj.currentCellBottomLength = obj.grownCellBottomLength;
 			end
 
-			obj.elementTop.naturaLength = obj.currentCellTopLength;
-			obj.elementBottom.naturaLength = obj.currentCellBottomLength;
+			obj.elementTop.naturalLength = obj.currentCellTopLength;
+			obj.elementBottom.naturalLength = obj.currentCellBottomLength;
 
 		end
 
@@ -221,7 +221,7 @@ classdef Cell < matlab.mixin.SetGet
 
 			obj.meanCellCycleLength = cct;
 
-			obj.cellCycleLength = cct * (1 + normrnd(0,2));
+			obj.cellCycleLength = cct + normrnd(0,2);
 
 			% Need to add a check to make sure it's not ridiculously short
 			% This isn't done very well at the minute, may cause problems
@@ -236,7 +236,7 @@ classdef Cell < matlab.mixin.SetGet
 			% Make sure it's not ridiculously short
 
 			obj.meanGrowingPhaseLength = wt;
-			obj.growingPhaseLength = wt * (1 + normrnd(0,2));
+			obj.growingPhaseLength = wt + normrnd(0,2);
 
 
 		end
