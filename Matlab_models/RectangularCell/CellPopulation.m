@@ -41,6 +41,8 @@ classdef CellPopulation < matlab.mixin.SetGet
 
 
 			obj.cellList = Cell(elementBottom, elementLeft, elementTop, elementRight, obj.GetNextCellId());
+			obj.cellList(1).SetCellCycleLength(20);
+			obj.cellList(1).SetGrowingPhaseLength(5);
 
 			for i = 2:nCells
 				% Each time we advance to the next cell, the right most nodes and element of the previous cell
@@ -61,6 +63,8 @@ classdef CellPopulation < matlab.mixin.SetGet
 				obj.AddElementsToList([elementBottom, elementRight, elementTop]);
 
 				obj.cellList(i) = Cell(elementBottom, elementLeft, elementTop, elementRight, obj.GetNextCellId());
+				obj.cellList(i).SetCellCycleLength(20);
+				obj.cellList(i).SetGrowingPhaseLength(5);
 			end
 
 		end
@@ -132,6 +136,42 @@ classdef CellPopulation < matlab.mixin.SetGet
 
 		end
 
+		function MakeCellsDivide(obj)
+
+			% Call the divide process, and update the lists
+			newCells = Cell.empty;
+			for i = 1:length(obj.cellList)
+				c = obj.cellList(i);
+				if c.IsReadyToDivide();
+					newCells(end + 1) = c.Divide();
+				end
+			end
+
+			obj.AddNewCells(newCells);
+
+
+		end
+
+		function AddNewCells(obj, newCellList)
+			% When a cell divides, need to make sure the new cell object
+			% as well as the new elements and nodes are correctly added to
+			% their respective lists
+
+			for i = 1:length(newCellList)
+				% If we get to this point, the cell should definitely be new
+				% so don't have to worry about checking
+				nc = newCellList(i);
+				obj.cellList(end + 1) = nc;
+
+				obj.AddNodesToList([nc.nodeTopLeft, nc.nodeTopRight, nc.nodeBottomLeft, nc.nodeBottomRight]);
+
+				obj.AddElementsToList([nc.elementRight, nc.elementLeft, nc.elementTop, nc.elementBottom]);
+
+			end
+
+
+		end
+
 	end
 
 	methods (Access = private)
@@ -151,11 +191,22 @@ classdef CellPopulation < matlab.mixin.SetGet
 		end
 
 		function AddNodesToList(obj, listOfNodes)
-			obj.nodeList = [obj.nodeList, listOfNodes];
+			for i = 1:length(listOfNodes)
+				% If any of the nodes are already in the list, don't add them
+				if sum(ismember(listOfNodes(i), obj.nodeList)) == 0
+					obj.nodeList = [obj.nodeList, listOfNodes(i)];
+				end
+			end
+
 		end
 
 		function AddElementsToList(obj, listOfElements)
-			obj.elementList = [obj.elementList, listOfElements];
+			for i = 1:length(listOfElements)
+				% If any of the Elements are already in the list, don't add them
+				if sum(ismember(listOfElements(i), obj.elementList)) == 0
+					obj.elementList = [obj.elementList, listOfElements(i)];
+				end
+			end
 		end
 
 	end

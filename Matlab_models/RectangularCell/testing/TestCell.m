@@ -17,6 +17,8 @@ classdef TestCell < matlab.unittest.TestCase
 			% TODO: Make this work with arbitrary order of elements
 			c = Cell(e2, e4, e3, e1, 1);
 
+			c.deformationEnergyParameter = 1;
+
 
 			testCase.verifyEqual(c.id,1);
 
@@ -91,19 +93,51 @@ classdef TestCell < matlab.unittest.TestCase
 			% TODO: Make this work with arbitrary order of elements
 			c = Cell(e2, e4, e3, e1, 1);
 
+			c.deformationEnergyParameter = 1;
+
 			c.UpdateAreaGradientAtNode();
 
-			testCase.verifyEqual(c.areaGradientTopLeft,[0.55,-0.55]);
-			testCase.verifyEqual(c.areaGradientTopRight,[-0.5,-0.5]);
-			testCase.verifyEqual(c.areaGradientBottomLeft,[0.5,0.5]);
-			testCase.verifyEqual(c.areaGradientBottomRight,[-0.55,0.55]);
+			testCase.verifyEqual(c.areaGradientTopLeft, [0.55, -0.55]);
+			testCase.verifyEqual(c.areaGradientTopRight, [-0.5, -0.5]);
+			testCase.verifyEqual(c.areaGradientBottomLeft, [0.5, 0.5]);
+			testCase.verifyEqual(c.areaGradientBottomRight, [-0.55, 0.55]);
 
 			c.UpdateForce();
 			
-			testCase.verifyEqual(c.nodeTopLeft.force,[0.11,-0.11]);
-			testCase.verifyEqual(c.nodeTopRight.force,[-0.11,-0.11]);
-			testCase.verifyEqual(c.nodeBottomLeft.force,[0.11,0.11]);
-			testCase.verifyEqual(c.nodeBottomRight.force,[-0.11,0.11]);
+			testCase.verifyEqual(c.nodeTopLeft.force, [0.11, -0.11], 'RelTol', 1e-8);
+			testCase.verifyEqual(c.nodeTopRight.force, [-0.1, -0.1], 'RelTol', 1e-8);
+			testCase.verifyEqual(c.nodeBottomLeft.force, [0.1, 0.1], 'RelTol', 1e-8);
+			testCase.verifyEqual(c.nodeBottomRight.force, [-0.11, 0.11], 'RelTol', 1e-8);
+
+		end
+
+		function TestDivide(testCase)
+
+			n1 = Node(0,0,1);
+			n2 = Node(0,1,2);
+			n3 = Node(1,0,3);
+			n4 = Node(1,1,4);
+
+			e1 = Element(n1,n2,1);
+			e2 = Element(n1,n3,2);
+			e3 = Element(n2,n4,3);
+			e4 = Element(n3,n4,4);
+
+			% TODO: Make this work with arbitrary order of elements
+			c = Cell(e2, e4, e3, e1, 1);
+
+			d = c.Divide();
+
+			testCase.verifyEqual(c.nodeTopLeft.position,[0.5, 1]);
+			testCase.verifyEqual(c.nodeTopRight.position,[1, 1]);
+			testCase.verifyEqual(c.nodeBottomLeft.position,[0.5, 0]);
+			testCase.verifyEqual(c.nodeBottomRight.position,[1, 0]);
+
+			testCase.verifyEqual(d.nodeTopLeft.position,[0, 1]);
+			testCase.verifyEqual(d.nodeTopRight.position,[0.5, 1]);
+			testCase.verifyEqual(d.nodeBottomLeft.position,[0, 0]);
+			testCase.verifyEqual(d.nodeBottomRight.position,[0.5, 0]);
+
 
 		end
 

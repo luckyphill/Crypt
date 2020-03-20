@@ -6,7 +6,7 @@ t = 0;
 
 dt = 0.01;
 
-tEnd = 20000*dt;
+tEnd = 300*dt;
 
 eta = 1;
 

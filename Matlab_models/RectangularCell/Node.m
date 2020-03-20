@@ -49,6 +49,19 @@ classdef Node < matlab.mixin.SetGet
 			obj.elementList = [obj.elementList , ele];
 		end
 
+		function RemoveElement(obj, ele)
+			% Test not written for this yet
+			for i = 1:length(obj.elementList)
+
+				% Using == here because we're comparing pointers
+				if obj.elementList(i) == ele
+					obj.elementList(i) = [];
+					break;
+				end
+			end
+
+		end
+
 		function NewPosition(obj, pos)
 
 			obj.position = pos;

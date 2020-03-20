@@ -43,6 +43,12 @@ classdef Element < matlab.mixin.SetGet
 			obj.naturalLength = len;
 		end
 
+		function len = GetNaturalLength(obj)
+
+			% Added here so it can be modified by cell age
+			len = obj.naturalLength;
+		end
+
 		function SetStiffness(obj, stf)
 
 			obj.stiffness = stf;
@@ -53,7 +59,7 @@ classdef Element < matlab.mixin.SetGet
 		end
 
 		function UpdateDx(obj)
-			obj.dx = obj.naturalLength - obj.GetLength();
+			obj.dx = obj.GetNaturalLength() - obj.GetLength();
 		end
 
 		function UpdateForce(obj)
@@ -73,6 +79,30 @@ classdef Element < matlab.mixin.SetGet
 
 		function AddCell(obj, c)
 			obj.cellList = [obj.cellList , c];
+		end
+
+
+		function ReplaceNode(obj, oldNode, newNode)
+			% Removes the old node from the element, and replaces
+			% it with a new node. This is used in cell division primarily
+
+			switch oldNode
+			case obj.Node1
+				% Remove link back to this element
+				obj.Node1.RemoveElement(obj);
+				obj.Node1 = newNode;
+				obj.Node1.AddElement(obj);
+
+			case obj.Node2
+				% Remove link back to this element
+				obj.Node2.RemoveElement(obj);
+				obj.Node2 = newNode;
+				obj.Node2.AddElement(obj);
+			otherwise
+				error('Node not in this element')
+			end
+
+
 		end
 
 	end

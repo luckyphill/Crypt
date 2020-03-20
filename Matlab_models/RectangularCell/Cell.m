@@ -19,9 +19,27 @@ classdef Cell < matlab.mixin.SetGet
 		nodeBottomLeft
 		nodeBottomRight
 
-		age
+		age = 0
 		cellArea
-		targetCellArea = 1
+
+		newCellTargetArea = 0.5
+		grownCellTargetArea = 1
+		currentCellTargetArea = 1
+
+		% The natural length of the top and bottom elements
+		% used to make cells trapezoidal shaped
+		newCellTopLength = 0.5
+		grownCellTopLength = 1
+		currentCellTopLength = 1
+
+		newCellBottomLength = 0.5
+		grownCellBottomLength = 1
+		currentCellBottomLength = 1
+
+		meanCellCycleLength
+		cellCycleLength
+		meanGrowingPhaseLength
+		growingPhaseLength
 
 		areaGradientTopLeft
 		areaGradientTopRight
@@ -93,22 +111,141 @@ classdef Cell < matlab.mixin.SetGet
 
 			% deformation_contribution -= 2*GetNagaiHondaDeformationEnergyParameter()*(element_areas[elem_index] - target_areas[elem_index])*element_area_gradient;
 
-			force = 2 * obj.deformationEnergyParameter * (obj.cellArea - obj.targetCellArea) * obj.areaGradientTopLeft;
+			force = 2 * obj.deformationEnergyParameter * (obj.cellArea - obj.GetCellTargetArea()) * obj.areaGradientTopLeft;
 			obj.nodeTopLeft.AddForceContribution(force);
 
-			force = 2 * obj.deformationEnergyParameter * (obj.cellArea - obj.targetCellArea) * obj.areaGradientTopRight;
+			force = 2 * obj.deformationEnergyParameter * (obj.cellArea - obj.GetCellTargetArea()) * obj.areaGradientTopRight;
 			obj.nodeTopRight.AddForceContribution(force);
 
-			force = 2 * obj.deformationEnergyParameter * (obj.cellArea - obj.targetCellArea) * obj.areaGradientBottomRight;
+			force = 2 * obj.deformationEnergyParameter * (obj.cellArea - obj.GetCellTargetArea()) * obj.areaGradientBottomRight;
 			obj.nodeBottomRight.AddForceContribution(force);
 
-			force = 2 * obj.deformationEnergyParameter * (obj.cellArea - obj.targetCellArea) * obj.areaGradientBottomLeft;
+			force = 2 * obj.deformationEnergyParameter * (obj.cellArea - obj.GetCellTargetArea()) * obj.areaGradientBottomLeft;
 			obj.nodeBottomLeft.AddForceContribution(force);
-			
 
 
 		end
 
+		function targetArea = GetCellTargetArea(obj)
+			% This is so the target area can be a function of cell age
+
+			targetArea = obj.currentCellTargetArea;
+
+		end
+
+		function newCell = Divide(obj)
+			% To divide, split the top and bottom elements in half
+			% add an element in the middle
+
+			% After division, cell growth occurs
+
+			tl 					= obj.nodeTopLeft.position;
+			tr 					= obj.nodeTopRight.position;
+			br 					= obj.nodeBottomRight.position;
+			bl 					= obj.nodeBottomLeft.position;
+
+			midTop 				= tl + (tr - tl)/2;
+			midBottom 			= bl + (br - bl)/2;
+
+			% TODO: Sort out id counting from here (maybe remove it altogether?)
+			nodeMiddleTop 		= Node(midTop(1),midTop(2),1);
+			nodeMiddleBottom 	= Node(midBottom(1), midBottom(2),2);
+			
+			elementMiddle 		= Element(nodeMiddleTop, nodeMiddleBottom, 1);
+
+			% Existing cell is moved to the right, new cell appears to the left
+
+			newElementTop 		= Element(obj.nodeTopLeft, nodeMiddleTop, 1);
+			newElementBottom 	= Element(obj.nodeBottomLeft, nodeMiddleBottom, 1);
+
+			% Create new cell before remodelling old cell
+			newCell = Cell(newElementBottom, obj.elementLeft, newElementTop, elementMiddle, 1);
+			newCell.SetCellCycleLength(obj.meanCellCycleLength);
+			newCell.SetGrowingPhaseLength(obj.meanGrowingPhaseLength);
+
+			% Preserve the existing elements to stay with the original cell
+			obj.elementTop.ReplaceNode(obj.nodeTopLeft, nodeMiddleTop);
+			obj.elementBottom.ReplaceNode(obj.nodeBottomLeft, nodeMiddleBottom);
+			obj.elementLeft 	= elementMiddle;
+
+			% Replace the nodes of the cell
+			obj.nodeTopLeft 	= nodeMiddleTop;
+			obj.nodeBottomLeft 	= nodeMiddleBottom;
+
+			% Old cell should be completely remodelled by this point, adjust the age back to zero
+
+			obj.age = 0;
+
+		end
+
+		function ready = IsReadyToDivide(obj)
+
+			% Need to implement a cell cycle model thing here
+			if obj.age > obj.cellCycleLength
+				ready = true;
+			else
+				ready = false;
+			end
+
+		end
+
+		function AgeCell(obj, dt)
+
+			% This will be done at the end of the time step
+
+			obj.age = obj.age + dt;
+
+			% Increase the target area
+			if obj.age < obj.growingPhaseLength
+				obj.currentCellTargetArea = obj.newCellTargetArea + (obj.age/obj.growingPhaseLength) * (obj.grownCellTargetArea - obj.newCellTargetArea);
+			else
+				obj.currentCellTargetArea = obj.grownCellTargetArea;
+			end
+
+			% Manage top and bottom element lengths
+			if obj.age < obj.growingPhaseLength
+				obj.currentCellTopLength = obj.newCellTopLength + (obj.age/obj.growingPhaseLength) * (obj.grownCellTopLength - obj.newCellTopLength);
+				obj.currentCellBottomLength = obj.newCellBottomLength + (obj.age/obj.growingPhaseLength) * (obj.grownCellBottomLength - obj.newCellBottomLength);
+			else
+				obj.currentCellTopLength = obj.grownCellTopLength
+				obj.currentCellBottomLength = obj.grownCellBottomLength
+			end
+
+			obj.elementTop.naturaLength = obj.currentCellTopLength;
+			obj.elementBottom.naturaLength = obj.currentCellBottomLength;
+
+		end
+
+
+		function SetCellCycleLength(obj, cct)
+
+			obj.meanCellCycleLength = cct;
+
+			obj.cellCycleLength = cct * (1 + normrnd(0,2));
+
+			% Need to add a check to make sure it's not ridiculously short
+			% This isn't done very well at the minute, may cause problems
+			if obj.cellCycleLength < 2
+				obj.cellCycleLength = cct;
+			end
+
+		end
+
+		function SetGrowingPhaseLength(obj, wt)
+			% Wanted to call it gt, but apparently thats a reserved keyword in matlab...
+			% Make sure it's not ridiculously short
+
+			obj.meanGrowingPhaseLength = wt;
+			obj.growingPhaseLength = wt * (1 + normrnd(0,2));
+
+
+		end
+
+		function SetBirthTime(obj, birth)
+			% When making new cells, we don't want them to be dividing at the same time
+			obj.age = birth;
+
+		end
 
 	end
 
