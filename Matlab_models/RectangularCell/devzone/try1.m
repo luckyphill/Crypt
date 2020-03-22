@@ -41,11 +41,10 @@ tissue2 = CellPopulation(11);
 
 while t < tEnd
 
+	tissue2.NextTimeStep();
 
-	tissue.UpdateElementForces();
-	tissue.UpdateCellAreaForces();
-	tissue.MakeNodesMove();
 	t = t + dt;
+	
 
 end
 
@@ -59,10 +58,11 @@ tEnd = 5000*dt;
 eta = 1;
 
 while t < tEnd
-
-	tissue2.NextTimeStep();
-
+	tissue.UpdateElementForces();
+	tissue.UpdateCellAreaForces();
+	tissue.MakeNodesMove();
 	t = t + dt;
+	
 
 end
 
