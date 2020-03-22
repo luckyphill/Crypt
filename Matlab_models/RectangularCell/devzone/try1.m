@@ -45,12 +45,26 @@ while t < tEnd
 	tissue.UpdateElementForces();
 	tissue.UpdateCellAreaForces();
 	tissue.MakeNodesMove();
+	t = t + dt;
 
-	
+end
+
+
+t = 0;
+
+dt = 0.01;
+
+tEnd = 5000*dt;
+
+eta = 1;
+
+while t < tEnd
+
 	tissue2.NextTimeStep();
 
 	t = t + dt;
 
 end
+
 
 
