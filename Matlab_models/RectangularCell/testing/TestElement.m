@@ -24,7 +24,7 @@ classdef TestElement < matlab.unittest.TestCase
 
 		end
 
-		function TestApplyForce(testCase)
+		function TestApplySpringForce(testCase)
 			n1 = Node(1,1,1);
 			n2 = Node(2,1,2);
 
@@ -33,7 +33,25 @@ classdef TestElement < matlab.unittest.TestCase
 			e.SetNaturalLength(2);
 			e.SetStiffness(2);
 
-			e.UpdateForce();
+			e.UpdateForceSpring();
+
+			testCase.verifyEqual(e.dx, 1);
+			testCase.verifyEqual(e.force, 2);
+
+			testCase.verifyEqual(e.direction1to2, [1,0]);
+			testCase.verifyEqual(e.force1to2, [2,0]);
+
+		end
+
+		function TestApplyAdhesionForce(testCase)
+			n1 = Node(1,1,1);
+			n2 = Node(2,1,2);
+
+			e = Element(n1,n2,1);
+
+			e.SetEdgeAdhesionParameter(2);
+
+			e.UpdateForceAdhesion();
 
 			testCase.verifyEqual(e.dx, 1);
 			testCase.verifyEqual(e.force, 2);

@@ -36,6 +36,7 @@ classdef Node < matlab.mixin.SetGet
 
 		function UpdatePosition(obj, dtEta)
 
+			% Used primarily for testing to avoid making a cell population
 			newPosition = obj.position + dtEta * obj.force;
 
 			obj.NewPosition(newPosition);
@@ -74,6 +75,7 @@ classdef Node < matlab.mixin.SetGet
 		function MoveNode(obj, pos)
 			% This function is used to move the position due to time stepping
 			% so the force must be reset here
+			% This is only to be used by the numerical integration
 
 			obj.NewPosition(pos);
 			% Reset the force for next time step

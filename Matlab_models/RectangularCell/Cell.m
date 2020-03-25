@@ -21,10 +21,15 @@ classdef Cell < matlab.mixin.SetGet
 
 		age = 0
 		cellArea
+		cellPerimeter
 
 		newCellTargetArea = 0.5
 		grownCellTargetArea = 1
 		currentCellTargetArea = 1
+
+		newCellTargetPerimeter = 3
+		grownCellTargetPerimeter = 4
+		currentCellTargetPerimeter = 4
 
 		% The natural length of the top and bottom elements
 		% used to make cells trapezoidal shaped
@@ -46,7 +51,13 @@ classdef Cell < matlab.mixin.SetGet
 		areaGradientBottomRight
 		areaGradientBottomLeft
 
+		perimeterGradientTopLeft
+		perimeterGradientTopRight
+		perimeterGradientBottomRight
+		perimeterGradientBottomLeft
+
 		deformationEnergyParameter = 10
+		surfaceEnergyParameter = 1
 		
 	end
 
@@ -87,24 +98,64 @@ classdef Cell < matlab.mixin.SetGet
 
 		end
 
+		function UpdateCellPerimeter(obj)
+
+			obj.cellPerimeter = obj.elementTop.GetLength() + obj.elementRight.GetLength() + obj.elementBottom.GetLength() + obj.elementLeft.GetLength();
+
+		end
+
 		function UpdateAreaGradientAtNode(obj)
 
 			% Each node has an associated area gradient according the NagaiHondaForce, lifted directly from Chaste
 			% I really have no idea what's going on here, I'm just crossing my fingers and hoping it makes sense
 
-			tl = obj.nodeTopRight.position - obj.nodeBottomLeft.position;
-			tr = obj.nodeBottomRight.position - obj.nodeTopLeft.position;
-			br = obj.nodeBottomLeft.position - obj.nodeTopRight.position;
-			bl = obj.nodeTopLeft.position - obj.nodeBottomRight.position;
+			% The area gradient is a direction pointing into the cell,
+			% determined by the edges attached to the node of interest
+			% For a given cell, each node (A) is part of two edges. These edges have other nodes (B and C)
+			% We find the vector B to C, and with some cross product arithmetic find a perpendicular
+			% vector that points into the cell
 
 
-			obj.areaGradientTopLeft = 0.5 * [tl(2), -tl(1)];
-			obj.areaGradientTopRight = 0.5 * [tr(2), -tr(1)];
+			tl = obj.nodeTopRight.position 		- obj.nodeBottomLeft.position;
+			tr = obj.nodeBottomRight.position 	- obj.nodeTopLeft.position;
+			br = obj.nodeBottomLeft.position 	- obj.nodeTopRight.position;
+			bl = obj.nodeTopLeft.position 		- obj.nodeBottomRight.position;
+
+
+			obj.areaGradientTopLeft 	= 0.5 * [tl(2), -tl(1)];
+			obj.areaGradientTopRight 	= 0.5 * [tr(2), -tr(1)];
 			obj.areaGradientBottomRight = 0.5 * [br(2), -br(1)];
-			obj.areaGradientBottomLeft = 0.5 * [bl(2), -bl(1)];
+			obj.areaGradientBottomLeft 	= 0.5 * [bl(2), -bl(1)];
+
 		end
 
-		function UpdateForce(obj)
+		function UpdatePerimeterGradientAtNode(obj)
+
+			% Each node has an associated perimeter gradient according the NagaiHondaForce, lifted directly from Chaste
+			% I really have no idea what's going on here, I'm just crossing my fingers and hoping it makes sense
+
+			% The perimeter gradient is a direction pointing into the cell,
+			% determined by the edges attached to the node of interest
+			% For a given cell, each node (A) is part of two edges. These edges have other nodes (B and C)
+			% We find the unit vectors A to B and A to C, and add them together to get a vector
+			% pointing into the cell
+
+			% Go around in a clockwise direction
+
+			right 	= (obj.nodeTopRight.position 	- obj.nodeBottomRight.position) / obj.elementRight.GetLength();
+			bottom 	= (obj.nodeBottomRight.position - obj.nodeBottomLeft.position) 	/ obj.elementBottom.GetLength();
+			left 	= (obj.nodeBottomLeft.position 	- obj.nodeTopLeft.position) 	/ obj.elementLeft.GetLength();
+			top 	= (obj.nodeTopLeft.position 	- obj.nodeTopRight.position) 	/ obj.elementTop.GetLength();
+
+
+			obj.perimeterGradientTopLeft 		= top 		- left;
+			obj.perimeterGradientTopRight 		= right 	- top;
+			obj.perimeterGradientBottomRight 	= bottom 	- right;
+			obj.perimeterGradientBottomLeft 	= left 		- bottom;
+
+		end
+
+		function UpdateTargetAreaForce(obj)
 			% Add the forces to each node due to cell area properites
 			obj.UpdateAreaGradientAtNode();
 			obj.UpdateCellArea();
@@ -123,6 +174,30 @@ classdef Cell < matlab.mixin.SetGet
 			force = 2 * obj.deformationEnergyParameter * (obj.cellArea - obj.GetCellTargetArea()) * obj.areaGradientBottomLeft;
 			obj.nodeBottomLeft.AddForceContribution(force);
 
+		end
+
+		function UpdateTargetPerimeterForce(obj)
+			obj.UpdatePerimeterGradientAtNode();
+			obj.UpdateCellPerimeter();
+
+			force = 2 * obj.surfaceEnergyParameter * (obj.cellPerimeter - obj.GetCellTargetPerimeter()) * obj.perimeterGradientTopLeft;
+			obj.nodeTopLeft.AddForceContribution(force);
+
+			force = 2 * obj.surfaceEnergyParameter * (obj.cellPerimeter - obj.GetCellTargetPerimeter()) * obj.perimeterGradientTopRight;
+			obj.nodeTopRight.AddForceContribution(force);
+
+			force = 2 * obj.surfaceEnergyParameter * (obj.cellPerimeter - obj.GetCellTargetPerimeter()) * obj.perimeterGradientBottomRight;
+			obj.nodeBottomRight.AddForceContribution(force);
+
+			force = 2 * obj.surfaceEnergyParameter * (obj.cellPerimeter - obj.GetCellTargetPerimeter()) * obj.perimeterGradientBottomLeft;
+			obj.nodeBottomLeft.AddForceContribution(force);
+
+
+		end
+
+		function UpdateForce(obj)
+			obj.UpdateTargetAreaForce();
+			obj.UpdateTargetPerimeterForce();
 
 		end
 
@@ -130,6 +205,13 @@ classdef Cell < matlab.mixin.SetGet
 			% This is so the target area can be a function of cell age
 
 			targetArea = obj.currentCellTargetArea;
+
+		end
+
+		function targetPerimeter = GetCellTargetPerimeter(obj)
+			% This is so the target Perimeter can be a function of cell age
+
+			targetPerimeter = obj.currentCellTargetPerimeter;
 
 		end
 
@@ -197,22 +279,26 @@ classdef Cell < matlab.mixin.SetGet
 
 			% Increase the target area
 			if obj.age < obj.growingPhaseLength
-				obj.currentCellTargetArea = obj.newCellTargetArea + (obj.age/obj.growingPhaseLength) * (obj.grownCellTargetArea - obj.newCellTargetArea);
+				obj.currentCellTargetArea 		= obj.newCellTargetArea + (obj.age/obj.growingPhaseLength) * (obj.grownCellTargetArea - obj.newCellTargetArea);
+
 			else
-				obj.currentCellTargetArea = obj.grownCellTargetArea;
+				obj.currentCellTargetArea 		= obj.grownCellTargetArea;
 			end
 
-			% Manage top and bottom element lengths
-			if obj.age < obj.growingPhaseLength
-				obj.currentCellTopLength = obj.newCellTopLength + (obj.age/obj.growingPhaseLength) * (obj.grownCellTopLength - obj.newCellTopLength);
-				obj.currentCellBottomLength = obj.newCellBottomLength + (obj.age/obj.growingPhaseLength) * (obj.grownCellBottomLength - obj.newCellBottomLength);
-			else
-				obj.currentCellTopLength = obj.grownCellTopLength;
-				obj.currentCellBottomLength = obj.grownCellBottomLength;
-			end
+			% Here we are assuming the cell is a rectangle with fixed height 1
+			obj.currentCellTargetPerimeter 	= 2 * (1 + obj.currentCellTargetArea);
 
-			obj.elementTop.naturalLength = obj.currentCellTopLength;
-			obj.elementBottom.naturalLength = obj.currentCellBottomLength;
+			% % Manage top and bottom element lengths
+			% if obj.age < obj.growingPhaseLength
+			% 	obj.currentCellTopLength = obj.newCellTopLength + (obj.age/obj.growingPhaseLength) * (obj.grownCellTopLength - obj.newCellTopLength);
+			% 	obj.currentCellBottomLength = obj.newCellBottomLength + (obj.age/obj.growingPhaseLength) * (obj.grownCellBottomLength - obj.newCellBottomLength);
+			% else
+			% 	obj.currentCellTopLength = obj.grownCellTopLength;
+			% 	obj.currentCellBottomLength = obj.grownCellBottomLength;
+			% end
+
+			% obj.elementTop.naturalLength = obj.currentCellTopLength;
+			% obj.elementBottom.naturalLength = obj.currentCellBottomLength;
 
 		end
 

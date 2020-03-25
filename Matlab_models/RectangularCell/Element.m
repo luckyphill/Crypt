@@ -20,6 +20,9 @@ classdef Element < matlab.mixin.SetGet
 		direction1to2
 		force1to2
 
+		edgeGradient
+		edgeAdhesionParameter = 0.1
+
 		cellList
 		
 	end
@@ -43,6 +46,11 @@ classdef Element < matlab.mixin.SetGet
 			obj.naturalLength = len;
 		end
 
+		function SetEdgeAdhesionParameter(obj, p)
+
+			obj.edgeAdhesionParameter = p;
+		end
+
 		function len = GetNaturalLength(obj)
 
 			% Added here so it can be modified by cell age
@@ -63,6 +71,28 @@ classdef Element < matlab.mixin.SetGet
 		end
 
 		function UpdateForce(obj)
+
+			% obj.UpdateForceSpring();
+			obj.UpdateForceAdhesion();
+			
+		end
+
+		function UpdateForceAdhesion(obj)
+
+			% Each element has a gradient according to NagaiHonda force that is used for calculating the contribution from adhesion
+			% The gradient is the opposite sign at each node, so need to take care to make sure the sign is correct
+			% for each node when the force is actually applied. To this end, we will always have the vector pointing from Node1 to Node2
+			% This force always wants to shrink the element, so pushes the nodes together along the element's vector
+			obj.edgeGradient = (obj.Node2.position - obj.Node1.position) / obj.GetLength();
+
+			force = obj.edgeAdhesionParameter * obj.edgeGradient;
+
+			obj.Node1.AddForceContribution(force);
+			obj.Node2.AddForceContribution(-force);
+
+		end
+
+		function UpdateForceSpring(obj)
 
 			obj.UpdateDx()
 			obj.force = obj.stiffness * obj.dx;
