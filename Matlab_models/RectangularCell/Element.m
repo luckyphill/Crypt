@@ -63,10 +63,12 @@ classdef Element < matlab.mixin.SetGet
 		end
 
 		function len = GetLength(obj)
+
 			len = norm(obj.Node1.position - obj.Node2.position);
 		end
 
 		function UpdateDx(obj)
+
 			obj.dx = obj.GetNaturalLength() - obj.GetLength();
 		end
 
@@ -108,6 +110,7 @@ classdef Element < matlab.mixin.SetGet
 
 
 		function AddCell(obj, c)
+
 			obj.cellList = [obj.cellList , c];
 		end
 
@@ -115,21 +118,24 @@ classdef Element < matlab.mixin.SetGet
 		function ReplaceNode(obj, oldNode, newNode)
 			% Removes the old node from the element, and replaces
 			% it with a new node. This is used in cell division primarily
-
+			if oldNode == newNode
+				warning('e:sameNode', 'The old node is the same as the new node. This is probably not what you wanted to do')
+			end
+			
 			switch oldNode
-			case obj.Node1
-				% Remove link back to this element
-				obj.Node1.RemoveElement(obj);
-				obj.Node1 = newNode;
-				obj.Node1.AddElement(obj);
+				case obj.Node1
+					% Remove link back to this element
+					obj.Node1.RemoveElement(obj);
+					obj.Node1 = newNode;
+					obj.Node1.AddElement(obj);
 
-			case obj.Node2
-				% Remove link back to this element
-				obj.Node2.RemoveElement(obj);
-				obj.Node2 = newNode;
-				obj.Node2.AddElement(obj);
-			otherwise
-				error('Node not in this element')
+				case obj.Node2
+					% Remove link back to this element
+					obj.Node2.RemoveElement(obj);
+					obj.Node2 = newNode;
+					obj.Node2.AddElement(obj);
+				otherwise
+					error('e:nodeNotFound','Node not in this element')
 			end
 
 

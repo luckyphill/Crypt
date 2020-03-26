@@ -8,6 +8,8 @@ classdef Node < matlab.mixin.SetGet
 
 		position
 
+		previousPosition
+
 		id
 
 		force = [0, 0]
@@ -65,6 +67,7 @@ classdef Node < matlab.mixin.SetGet
 
 		function NewPosition(obj, pos)
 
+			obj.previousPosition = obj.position;
 			obj.position = pos;
 
 			obj.x = pos(1);

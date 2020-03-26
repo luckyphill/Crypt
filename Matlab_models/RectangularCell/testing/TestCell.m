@@ -32,7 +32,7 @@ classdef TestCell < matlab.unittest.TestCase
 			testCase.verifyEqual(c.nodeBottomLeft,n1);
 			testCase.verifyEqual(c.nodeBottomRight,n3);
 
-			testCase.verifyEqual(c.targetCellArea, 1);
+			testCase.verifyEqual(c.currentCellTargetArea, 1);
 			testCase.verifyEqual(c.deformationEnergyParameter,1);
 
 		end
@@ -79,7 +79,7 @@ classdef TestCell < matlab.unittest.TestCase
 
 		end
 
-		function TestForces(testCase)
+		function TestTargetAreaForce(testCase)
 			n1 = Node(0,0,1);
 			n2 = Node(0,1,2);
 			n3 = Node(1,0,3);
@@ -102,12 +102,58 @@ classdef TestCell < matlab.unittest.TestCase
 			testCase.verifyEqual(c.areaGradientBottomLeft, [0.5, 0.5]);
 			testCase.verifyEqual(c.areaGradientBottomRight, [-0.55, 0.55]);
 
-			c.UpdateForce();
+			c.UpdateTargetAreaForce();
 			
 			testCase.verifyEqual(c.nodeTopLeft.force, [0.11, -0.11], 'RelTol', 1e-8);
 			testCase.verifyEqual(c.nodeTopRight.force, [-0.1, -0.1], 'RelTol', 1e-8);
 			testCase.verifyEqual(c.nodeBottomLeft.force, [0.1, 0.1], 'RelTol', 1e-8);
 			testCase.verifyEqual(c.nodeBottomRight.force, [-0.11, 0.11], 'RelTol', 1e-8);
+
+
+		end
+
+		function TestTargetPerimeterForce(testCase)
+			n1 = Node(0,0,1);
+			n2 = Node(0,1,2);
+			n3 = Node(1,0,3);
+			n4 = Node(1.1,1.1,4);
+
+			e1 = Element(n1,n2,1);
+			e2 = Element(n1,n3,2);
+			e3 = Element(n2,n4,3);
+			e4 = Element(n3,n4,4);
+
+			% TODO: Make this work with arbitrary order of elements
+			c = Cell(e2, e1, e3, e4, 1);
+			c.surfaceEnergyParameter = 1;
+
+			c.UpdatePerimeterGradientAtNode();
+
+			testCase.verifyEqual(c.elementTop, e3);
+			testCase.verifyEqual(c.elementRight, e4);
+			testCase.verifyEqual(c.elementBottom, e2);
+			testCase.verifyEqual(c.elementLeft, e1);
+
+			testCase.verifyEqual(c.elementTop.GetLength(), 1.1045 ,'AbsTol', 1e-4);
+			testCase.verifyEqual(c.elementRight.GetLength(), 1.1045 ,'AbsTol', 1e-4);
+			testCase.verifyEqual(c.elementBottom.GetLength(), 1 ,'AbsTol', 1e-4);
+			testCase.verifyEqual(c.elementLeft.GetLength(), 1 ,'AbsTol', 1e-4);
+
+			testCase.verifyEqual(c.perimeterGradientTopLeft, [0.9959, -0.9095], 'AbsTol', 1e-4);
+			testCase.verifyEqual(c.perimeterGradientTopRight, [-1.0864, -1.0864], 'AbsTol', 1e-4);
+			testCase.verifyEqual(c.perimeterGradientBottomLeft, [1, 1], 'AbsTol', 1e-4);
+			testCase.verifyEqual(c.perimeterGradientBottomRight, [-0.9095, 0.9959], 'AbsTol', 1e-4);
+
+			c.UpdateTargetPerimeterForce();
+
+			testCase.verifyEqual(c.GetCellTargetPerimeter(), 4);
+			testCase.verifyEqual(c.GetCellPerimeter(), 4.2090,'AbsTol', 1e-4);
+
+			testCase.verifyEqual(c.nodeTopLeft.force, [0.4163, -0.3802], 'AbsTol', 1e-3);
+			testCase.verifyEqual(c.nodeTopRight.force, [-0.4541, -.4541], 'AbsTol', 1e-3);
+			testCase.verifyEqual(c.nodeBottomLeft.force, [0.418, 0.418], 'AbsTol', 1e-3);
+			testCase.verifyEqual(c.nodeBottomRight.force, [-0.3802, 0.4163], 'AbsTol', 1e-3);
+
 
 		end
 

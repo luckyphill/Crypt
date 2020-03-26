@@ -38,6 +38,14 @@ classdef TestNode < matlab.unittest.TestCase
 			testCase.verifyEqual(n.y,1.01);
 			testCase.verifyEqual(n.force,[0,0]);
 
+			% Move node using move method
+			% This resets the force on the node also
+			n = Node(1,1,3);
+			n.MoveNode([2,2]);
+			testCase.verifyEqual(n.position,[2, 2]);
+			testCase.verifyEqual(n.x,2);
+			testCase.verifyEqual(n.y,2);
+			testCase.verifyEqual(n.force,[0,0]);
 
 		end
 
@@ -50,6 +58,12 @@ classdef TestNode < matlab.unittest.TestCase
 
 			testCase.verifyEqual(n1.elementList, e);
 			testCase.verifyEqual(n2.elementList, e);
+
+			% Remove the element from both lists
+			n1.RemoveElement(e);
+			n2.RemoveElement(e);
+			testCase.verifyEqual(n1.elementList, []);
+			testCase.verifyEqual(n2.elementList, []);
 		end
 
 

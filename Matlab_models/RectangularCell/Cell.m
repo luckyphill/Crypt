@@ -148,10 +148,10 @@ classdef Cell < matlab.mixin.SetGet
 			top 	= (obj.nodeTopLeft.position 	- obj.nodeTopRight.position) 	/ obj.elementTop.GetLength();
 
 
-			obj.perimeterGradientTopLeft 		= top 		- left;
-			obj.perimeterGradientTopRight 		= right 	- top;
-			obj.perimeterGradientBottomRight 	= bottom 	- right;
-			obj.perimeterGradientBottomLeft 	= left 		- bottom;
+			obj.perimeterGradientTopLeft 		= left 		- top;
+			obj.perimeterGradientTopRight 		= top 		- right;
+			obj.perimeterGradientBottomRight 	= right 	- bottom;
+			obj.perimeterGradientBottomLeft 	= bottom 	- left;
 
 		end
 
@@ -162,17 +162,12 @@ classdef Cell < matlab.mixin.SetGet
 
 			% deformation_contribution -= 2*GetNagaiHondaDeformationEnergyParameter()*(element_areas[elem_index] - target_areas[elem_index])*element_area_gradient;
 
-			force = 2 * obj.deformationEnergyParameter * (obj.cellArea - obj.GetCellTargetArea()) * obj.areaGradientTopLeft;
-			obj.nodeTopLeft.AddForceContribution(force);
+			magnitude = 2 * obj.deformationEnergyParameter * (obj.cellArea - obj.GetCellTargetArea());
 
-			force = 2 * obj.deformationEnergyParameter * (obj.cellArea - obj.GetCellTargetArea()) * obj.areaGradientTopRight;
-			obj.nodeTopRight.AddForceContribution(force);
-
-			force = 2 * obj.deformationEnergyParameter * (obj.cellArea - obj.GetCellTargetArea()) * obj.areaGradientBottomRight;
-			obj.nodeBottomRight.AddForceContribution(force);
-
-			force = 2 * obj.deformationEnergyParameter * (obj.cellArea - obj.GetCellTargetArea()) * obj.areaGradientBottomLeft;
-			obj.nodeBottomLeft.AddForceContribution(force);
+			obj.nodeTopLeft.AddForceContribution(		magnitude * obj.areaGradientTopLeft);
+			obj.nodeTopRight.AddForceContribution(		magnitude * obj.areaGradientTopRight);
+			obj.nodeBottomRight.AddForceContribution(	magnitude * obj.areaGradientBottomRight);
+			obj.nodeBottomLeft.AddForceContribution(	magnitude * obj.areaGradientBottomLeft);
 
 		end
 
@@ -180,17 +175,11 @@ classdef Cell < matlab.mixin.SetGet
 			obj.UpdatePerimeterGradientAtNode();
 			obj.UpdateCellPerimeter();
 
-			force = 2 * obj.surfaceEnergyParameter * (obj.cellPerimeter - obj.GetCellTargetPerimeter()) * obj.perimeterGradientTopLeft;
-			obj.nodeTopLeft.AddForceContribution(force);
-
-			force = 2 * obj.surfaceEnergyParameter * (obj.cellPerimeter - obj.GetCellTargetPerimeter()) * obj.perimeterGradientTopRight;
-			obj.nodeTopRight.AddForceContribution(force);
-
-			force = 2 * obj.surfaceEnergyParameter * (obj.cellPerimeter - obj.GetCellTargetPerimeter()) * obj.perimeterGradientBottomRight;
-			obj.nodeBottomRight.AddForceContribution(force);
-
-			force = 2 * obj.surfaceEnergyParameter * (obj.cellPerimeter - obj.GetCellTargetPerimeter()) * obj.perimeterGradientBottomLeft;
-			obj.nodeBottomLeft.AddForceContribution(force);
+			magnitude = 2 * obj.surfaceEnergyParameter * (obj.cellPerimeter - obj.GetCellTargetPerimeter());
+			obj.nodeTopLeft.AddForceContribution(		magnitude * obj.perimeterGradientTopLeft);
+			obj.nodeTopRight.AddForceContribution(		magnitude * obj.perimeterGradientTopRight);
+			obj.nodeBottomRight.AddForceContribution(	magnitude * obj.perimeterGradientBottomRight);
+			obj.nodeBottomLeft.AddForceContribution(	magnitude * obj.perimeterGradientBottomLeft);
 
 
 		end
@@ -208,11 +197,25 @@ classdef Cell < matlab.mixin.SetGet
 
 		end
 
+		function currentArea = GetCellArea(obj)
+
+			obj.UpdateCellArea();
+
+			currentArea = obj.cellArea;
+
+		end
+
 		function targetPerimeter = GetCellTargetPerimeter(obj)
 			% This is so the target Perimeter can be a function of cell age
 
 			targetPerimeter = obj.currentCellTargetPerimeter;
 
+		end
+
+		function currentPerimeter = GetCellPerimeter(obj)
+
+			obj.UpdateCellPerimeter();
+			currentPerimeter = obj.cellPerimeter;
 		end
 
 		function newCell = Divide(obj)
@@ -312,7 +315,7 @@ classdef Cell < matlab.mixin.SetGet
 			% Need to add a check to make sure it's not ridiculously short
 			% This isn't done very well at the minute, may cause problems
 			if obj.cellCycleLength < 2
-				obj.cellCycleLength = cct;
+				obj.cellCycleLength = 2;
 			end
 
 		end

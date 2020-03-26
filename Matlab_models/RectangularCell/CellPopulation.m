@@ -93,7 +93,16 @@ classdef CellPopulation < matlab.mixin.SetGet
 			end
 
 			axis equal
+
 		end
+
+		function AnimateCellPopulation(obj)
+
+
+
+		end
+
+
 
 		function NextTimeStep(obj)
 			% Updates all the forces and applies the movements
@@ -185,7 +194,21 @@ classdef CellPopulation < matlab.mixin.SetGet
 
 			end
 
+		end
 
+		function numCells = GetNumCells(obj)
+
+			numCells = length(obj.cellList);
+		end
+
+		function numElements = GetNumElements(obj)
+
+			numElements = length(obj.elementList);
+		end
+
+		function numNodes = GetNumNodes(obj)
+
+			numNodes = length(obj.nodeList);
 		end
 
 	end
