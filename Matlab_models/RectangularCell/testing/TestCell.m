@@ -19,7 +19,6 @@ classdef TestCell < matlab.unittest.TestCase
 
 			c.deformationEnergyParameter = 1;
 
-
 			testCase.verifyEqual(c.id,1);
 
 			testCase.verifyEqual(c.elementTop,e3);
@@ -34,6 +33,18 @@ classdef TestCell < matlab.unittest.TestCase
 
 			testCase.verifyEqual(c.currentCellTargetArea, 1);
 			testCase.verifyEqual(c.deformationEnergyParameter,1);
+
+			c.SetCellCycleLength(30);
+			c.SetGrowingPhaseLength(10);
+			
+			testCase.verifyEqual(c.meanCellCycleLength,30);
+			% testCase.verifyEqual(c.cellCycleLength,30);
+			testCase.verifyEqual(c.meanGrowingPhaseLength,10);
+			% testCase.verifyEqual(c.growingPhaseLength,10);
+
+			% Need to test that it stays above a certain minimum length
+
+			
 
 		end
 

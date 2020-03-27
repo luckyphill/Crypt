@@ -20,6 +20,7 @@
 #include "NodeBasedCellPopulation.hpp"
 #include "MonolayerNodeBasedCellPopulation.hpp"
 
+
 // Proliferative types
 #include "DifferentiatedCellProliferativeType.hpp"
 #include "TransitCellProliferativeType.hpp"

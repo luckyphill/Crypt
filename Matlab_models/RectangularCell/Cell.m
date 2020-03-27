@@ -181,7 +181,6 @@ classdef Cell < matlab.mixin.SetGet
 			obj.nodeBottomRight.AddForceContribution(	magnitude * obj.perimeterGradientBottomRight);
 			obj.nodeBottomLeft.AddForceContribution(	magnitude * obj.perimeterGradientBottomLeft);
 
-
 		end
 
 		function UpdateForce(obj)
@@ -216,6 +215,7 @@ classdef Cell < matlab.mixin.SetGet
 
 			obj.UpdateCellPerimeter();
 			currentPerimeter = obj.cellPerimeter;
+
 		end
 
 		function newCell = Divide(obj)
@@ -305,7 +305,6 @@ classdef Cell < matlab.mixin.SetGet
 
 		end
 
-
 		function SetCellCycleLength(obj, cct)
 
 			obj.meanCellCycleLength = cct;
@@ -326,7 +325,6 @@ classdef Cell < matlab.mixin.SetGet
 
 			obj.meanGrowingPhaseLength = wt;
 			obj.growingPhaseLength = wt + normrnd(0,2);
-
 
 		end
 

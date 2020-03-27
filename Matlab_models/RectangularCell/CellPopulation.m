@@ -21,7 +21,7 @@ classdef CellPopulation < matlab.mixin.SetGet
 	end
 
 	methods
-		function obj = CellPopulation(nCells)
+		function obj = CellPopulation(nCells, cct, wt)
 			% All the initilising
 
 			% For the first cell, need to create 4 elements and 4 nodes
@@ -42,9 +42,9 @@ classdef CellPopulation < matlab.mixin.SetGet
 
 
 			obj.cellList = Cell(elementBottom, elementLeft, elementTop, elementRight, obj.GetNextCellId());
-			obj.cellList(1).SetCellCycleLength(20);
-			obj.cellList(1).SetGrowingPhaseLength(5);
-			obj.cellList(1).SetBirthTime(6 + randi(13));
+			obj.cellList(1).SetCellCycleLength(cct);
+			obj.cellList(1).SetGrowingPhaseLength(wt);
+			obj.cellList(1).SetBirthTime(wt + randi(cct - wt - 1));
 
 
 			for i = 2:nCells
