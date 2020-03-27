@@ -99,7 +99,6 @@ classdef CellPopulation < matlab.mixin.SetGet
 		function AnimateCellPopulation(obj)
 
 
-
 		end
 
 
