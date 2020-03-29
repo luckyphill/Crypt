@@ -12,6 +12,7 @@ classdef AbstractCellCycleModel < matlab.mixin.SetGet
 
 		% Returns true if the cell meets the conditions for dividing
 		ready = IsReadyToDivide(obj);
+		fraction = GetGrowthPhaseFraction(obj);
 
 	end
 
@@ -27,10 +28,11 @@ classdef AbstractCellCycleModel < matlab.mixin.SetGet
 			obj.age = birth;
 		end
 
-		function AgeCell(obj, dt)
+		function AgeCellCycle(obj, dt)
 
 			obj.age = obj.age + dt;
 		end
+
 
 	end
 

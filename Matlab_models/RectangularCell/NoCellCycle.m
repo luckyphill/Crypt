@@ -3,11 +3,19 @@ classdef NoCellCycle < AbstractCellCycleModel
 
 	methods
 
+		function obj = NoCellCycle()
+
+		end
+
 		% Cell cycle mode does nothing, so it never divides
-		function ready = IsReadyToDivide(obj);
+		function ready = IsReadyToDivide(obj)
 
 			ready = false;
+		end
 
+		function fraction = GetGrowthPhaseFraction(obj)
+
+			fraction = 1;
 		end
 
 	end

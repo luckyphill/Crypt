@@ -41,10 +41,7 @@ classdef Cell < matlab.mixin.SetGet
 		grownCellBottomLength = 1
 		currentCellBottomLength = 1
 
-		meanCellCycleLength
-		cellCycleLength
-		meanGrowingPhaseLength
-		growingPhaseLength
+		CellCycleModel
 
 		areaGradientTopLeft
 		areaGradientTopRight
@@ -62,7 +59,7 @@ classdef Cell < matlab.mixin.SetGet
 	end
 
 	methods
-		function obj = Cell(ElementBottom, ElementLeft, ElementTop, ElementRight, id)
+		function obj = Cell(Cycle, ElementBottom, ElementLeft, ElementTop, ElementRight, id)
 			% All the initilising
 			% A cell will always have 4 elements
 
@@ -76,12 +73,24 @@ classdef Cell < matlab.mixin.SetGet
 			obj.elementLeft.AddCell(obj);
 			obj.elementRight.AddCell(obj);
 
+			obj.CellCycleModel = Cycle;
 
 			obj.AddNodesInOrder();
 
 			obj.id = id;
 
 		end
+
+		function set.CellCycleModel( obj, v )
+			% This is to validate the object given to outputType in the constructor
+			if isa(v, 'AbstractCellCycleModel')
+            	validateattributes(v, {'AbstractCellCycleModel'}, {});
+            	obj.CellCycleModel = v;
+            else
+            	error('c:NotValidCCM','Not a valid cell cycle');
+            end
+
+        end
 
 		function UpdateCellArea(obj)
 			% Use the shoelace formula to calculate the cellArea of the cell
@@ -192,7 +201,9 @@ classdef Cell < matlab.mixin.SetGet
 		function targetArea = GetCellTargetArea(obj)
 			% This is so the target area can be a function of cell age
 
-			targetArea = obj.currentCellTargetArea;
+			fraction = obj.CellCycleModel.GetGrowthPhaseFraction();
+
+			targetArea = obj.newCellTargetArea + fraction * (obj.grownCellTargetArea - obj.newCellTargetArea);
 
 		end
 
@@ -206,8 +217,8 @@ classdef Cell < matlab.mixin.SetGet
 
 		function targetPerimeter = GetCellTargetPerimeter(obj)
 			% This is so the target Perimeter can be a function of cell age
-
-			targetPerimeter = obj.currentCellTargetPerimeter;
+			targetArea = obj.GetCellTargetArea();	
+			targetPerimeter = 2 * (1 + targetArea);
 
 		end
 
@@ -265,72 +276,15 @@ classdef Cell < matlab.mixin.SetGet
 
 		function ready = IsReadyToDivide(obj)
 
-			% Need to implement a cell cycle model thing here
-			if obj.age > obj.cellCycleLength
-				ready = true;
-			else
-				ready = false;
-			end
+			ready = obj.CellCycleModel.IsReadyToDivide();
 
 		end
 
 		function AgeCell(obj, dt)
 
 			% This will be done at the end of the time step
-
 			obj.age = obj.age + dt;
-
-			% Increase the target area
-			if obj.age < obj.growingPhaseLength
-				obj.currentCellTargetArea 		= obj.newCellTargetArea + (obj.age/obj.growingPhaseLength) * (obj.grownCellTargetArea - obj.newCellTargetArea);
-
-			else
-				obj.currentCellTargetArea 		= obj.grownCellTargetArea;
-			end
-
-			% Here we are assuming the cell is a rectangle with fixed height 1
-			obj.currentCellTargetPerimeter 	= 2 * (1 + obj.currentCellTargetArea);
-
-			% % Manage top and bottom element lengths
-			% if obj.age < obj.growingPhaseLength
-			% 	obj.currentCellTopLength = obj.newCellTopLength + (obj.age/obj.growingPhaseLength) * (obj.grownCellTopLength - obj.newCellTopLength);
-			% 	obj.currentCellBottomLength = obj.newCellBottomLength + (obj.age/obj.growingPhaseLength) * (obj.grownCellBottomLength - obj.newCellBottomLength);
-			% else
-			% 	obj.currentCellTopLength = obj.grownCellTopLength;
-			% 	obj.currentCellBottomLength = obj.grownCellBottomLength;
-			% end
-
-			% obj.elementTop.naturalLength = obj.currentCellTopLength;
-			% obj.elementBottom.naturalLength = obj.currentCellBottomLength;
-
-		end
-
-		function SetCellCycleLength(obj, cct)
-
-			obj.meanCellCycleLength = cct;
-
-			obj.cellCycleLength = cct + normrnd(0,2);
-
-			% Need to add a check to make sure it's not ridiculously short
-			% This isn't done very well at the minute, may cause problems
-			if obj.cellCycleLength < 2
-				obj.cellCycleLength = 2;
-			end
-
-		end
-
-		function SetGrowingPhaseLength(obj, wt)
-			% Wanted to call it gt, but apparently thats a reserved keyword in matlab...
-			% Make sure it's not ridiculously short
-
-			obj.meanGrowingPhaseLength = wt;
-			obj.growingPhaseLength = wt + normrnd(0,2);
-
-		end
-
-		function SetBirthTime(obj, birth)
-			% When making new cells, we don't want them to be dividing at the same time
-			obj.age = birth;
+			obj.CellCycleModel.AgeCellCycle(dt);
 
 		end
 

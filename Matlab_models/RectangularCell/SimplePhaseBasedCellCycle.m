@@ -1,5 +1,10 @@
 classdef SimplePhaseBasedCellCycle < AbstractCellCycleModel
-	% A cell cycle that does nothing except count the age of the cell
+	% A cell cycle with 2 phases, a growth phase and a pause phase
+	% During the pause phase the cell is a constant size (or target size)
+	% During the growing phase, the cell is increasing its volume (or target volume)
+
+	% After a fresh division, the cell stays a constant size, for a time specified by
+	% pausePhaseLength, after which it starts growing
 
 	properties
 
@@ -22,6 +27,11 @@ classdef SimplePhaseBasedCellCycle < AbstractCellCycleModel
 				ready = true;
 			end
 
+		end
+
+		function fraction = GetGrowthPhaseFraction(obj)
+
+			fraction = (obj.age - obj.pausePhaseLength) / obj.growingPhaseLength;
 		end
 
 		function SetPausePhaseLength(obj, pt)

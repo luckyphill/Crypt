@@ -6,11 +6,11 @@ t = 0;
 
 dt = 0.01;
 
-tEnd = 10*dt;
+tEnd = 1000*dt;
 
 eta = 1;
 
-tissue = CellPopulation(11, 20, 10);
+tissue = CellPopulation(11);
 tissue.cellList(5).elementTop.SetEdgeAdhesionParameter(0.2);
 tissue.cellList(5).elementBottom.SetEdgeAdhesionParameter(0.5);
 tissue.cellList(6).elementTop.SetEdgeAdhesionParameter(0.2);
