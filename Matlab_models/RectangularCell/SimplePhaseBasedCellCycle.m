@@ -19,6 +19,18 @@ classdef SimplePhaseBasedCellCycle < AbstractCellCycleModel
 
 	methods
 
+		function obj = SimplePhaseBasedCellCycle(p, g)
+			obj.SetPausePhaseLength(p);
+			obj.SetGrowingPhaseLength(g);
+
+		end
+
+		function newCCM = Duplicate(obj)
+
+			newCCM = SimplePhaseBasedCellCycle(obj.meanPausePhaseLength, obj.meanGrowingPhaseLength);
+
+		end
+
 		% Cell cycle mode does nothing, so it never divides
 		function ready = IsReadyToDivide(obj);
 

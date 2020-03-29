@@ -12,7 +12,10 @@ classdef AbstractCellCycleModel < matlab.mixin.SetGet
 
 		% Returns true if the cell meets the conditions for dividing
 		ready = IsReadyToDivide(obj);
+		% If a cell grows, then need to know the point in this growth
 		fraction = GetGrowthPhaseFraction(obj);
+		% When a cell divides, duplicate the ccm for the new cell
+		newCCM = Duplicate();
 
 	end
 

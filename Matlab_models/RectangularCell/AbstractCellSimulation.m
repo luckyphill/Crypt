@@ -1,8 +1,8 @@
-classdef CellPopulation < matlab.mixin.SetGet
-	% A class specifying the details about nodes
+classdef AbstractCellSimulation < matlab.mixin.SetGet
+	% A parent class that contains all the functions for running a simulation
+	% The child/concrete class will only need a constructor that assembles the cells
 
 	properties
-		% A cell population must have a list of cells
 
 		cellList
 
@@ -13,69 +13,18 @@ classdef CellPopulation < matlab.mixin.SetGet
 		nextElementId = 1
 
 		nextCellId = 1
-
-		dt = 0.01
-		t = 0
-		eta = 1
 		
 	end
 
+	properties (Abstract)
+
+		dt
+		t
+		eta
+
+	end
+
 	methods
-		function obj = CellPopulation(nCells)
-			% All the initilising
-
-			% For the first cell, need to create 4 elements and 4 nodes
-
-			nodeBottomLeft 	= Node(0,0,obj.GetNextNodeId());
-			nodeBottomRight	= Node(1,0,obj.GetNextNodeId());
-			nodeTopRight 	= Node(1,1,obj.GetNextNodeId());
-			nodeTopLeft 	= Node(0,1,obj.GetNextNodeId());
-
-			obj.AddNodesToList([nodeBottomLeft, nodeBottomRight, nodeTopRight, nodeTopLeft]);
-
-			elementBottom 	= Element(nodeBottomLeft, nodeBottomRight,obj.GetNextElementId());
-			elementRight 	= Element(nodeBottomRight, nodeTopRight,obj.GetNextElementId());
-			elementTop	 	= Element(nodeTopLeft, nodeTopRight,obj.GetNextElementId());
-			elementLeft 	= Element(nodeBottomLeft, nodeTopLeft,obj.GetNextElementId());
-
-			obj.AddElementsToList([elementBottom, elementRight, elementTop, elementLeft]);
-
-			ccm = NoCellCycle();
-
-			obj.cellList = Cell(ccm, elementBottom, elementLeft, elementTop, elementRight, obj.GetNextCellId());
-			% obj.cellList(1).SetCellCycleLength(cct);
-			% obj.cellList(1).SetGrowingPhaseLength(wt);
-			% obj.cellList(1).SetBirthTime(wt + randi(cct - wt - 1));
-
-
-			for i = 2:nCells
-				% Each time we advance to the next cell, the right most nodes and element of the previous cell
-				% become the leftmost element of the new cell
-
-				nodeBottomLeft 	= nodeBottomRight;
-				nodeTopLeft 	= nodeTopRight;
-				nodeBottomRight	= Node(i,0,obj.GetNextNodeId());
-				nodeTopRight 	= Node(i,1,obj.GetNextNodeId());
-
-				obj.AddNodesToList([nodeBottomRight, nodeTopRight]);
-
-				elementLeft 	= elementRight;
-				elementBottom 	= Element(nodeBottomLeft, nodeBottomRight,obj.GetNextElementId());
-				elementTop	 	= Element(nodeTopLeft, nodeTopRight,obj.GetNextElementId());
-				elementRight 	= Element(nodeBottomRight, nodeTopRight,obj.GetNextElementId());
-
-				obj.AddElementsToList([elementBottom, elementRight, elementTop]);
-
-				ccm = NoCellCycle();
-
-				obj.cellList(i) = Cell(ccm, elementBottom, elementLeft, elementTop, elementRight, obj.GetNextCellId());
-				% obj.cellList(i).SetCellCycleLength(20);
-				% obj.cellList(i).SetGrowingPhaseLength(5);
-				% obj.cellList(i).SetBirthTime(6 + randi(13));
-			end
-
-		end
-
 
 		function VisualiseCellPopulation(obj)
 
@@ -104,15 +53,11 @@ classdef CellPopulation < matlab.mixin.SetGet
 
 		end
 
-
-
 		function NextTimeStep(obj)
 			% Updates all the forces and applies the movements
-
-
 			
 			obj.UpdateElementForces();
-			obj.UpdateCellAreaForces();
+			obj.UpdateCellForces();
 			
 			obj.MakeNodesMove();
 
@@ -122,10 +67,18 @@ classdef CellPopulation < matlab.mixin.SetGet
 
 			obj.t = obj.t + obj.dt;
 			
-
 		end
 
-		function UpdateCellAreaForces(obj)
+		function NTimeSteps(obj, n)
+			% Advances a set number of time steps
+			
+			for i = 1:n
+				obj.NextTimeStep();
+			end
+			
+		end
+
+		function UpdateCellForces(obj)
 			
 			for i = 1:length(obj.cellList)
 				obj.cellList(i).UpdateForce();
@@ -167,7 +120,6 @@ classdef CellPopulation < matlab.mixin.SetGet
 			end
 
 			obj.AddNewCells(newCells);
-
 
 		end
 
@@ -215,7 +167,7 @@ classdef CellPopulation < matlab.mixin.SetGet
 
 	end
 
-	methods (Access = private)
+	methods (Access = protected)
 		function id = GetNextNodeId(obj)
 			id = obj.nextNodeId;
 			obj.nextNodeId = obj.nextNodeId + 1;

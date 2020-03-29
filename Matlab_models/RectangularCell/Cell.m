@@ -59,14 +59,15 @@ classdef Cell < matlab.mixin.SetGet
 	end
 
 	methods
-		function obj = Cell(Cycle, ElementBottom, ElementLeft, ElementTop, ElementRight, id)
+		function obj = Cell(Cycle, elementList, id)
 			% All the initilising
 			% A cell will always have 4 elements
+			% elementList must have 4 elements in the order [ElementTop, ElementBottom, ElementLeft, ElementRight]
 
-			obj.elementTop = ElementTop;
-			obj.elementBottom = ElementBottom;
-			obj.elementLeft = ElementLeft;
-			obj.elementRight = ElementRight;
+			obj.elementTop = elementList(1);
+			obj.elementBottom = elementList(2);
+			obj.elementLeft = elementList(3);
+			obj.elementRight = elementList(4);
 
 			obj.elementTop.AddCell(obj);
 			obj.elementBottom.AddCell(obj);
@@ -255,9 +256,8 @@ classdef Cell < matlab.mixin.SetGet
 			newElementBottom 	= Element(obj.nodeBottomLeft, nodeMiddleBottom, 1);
 
 			% Create new cell before remodelling old cell
-			newCell = Cell(newElementBottom, obj.elementLeft, newElementTop, elementMiddle, 1);
-			newCell.SetCellCycleLength(obj.meanCellCycleLength);
-			newCell.SetGrowingPhaseLength(obj.meanGrowingPhaseLength);
+			newCCM = obj.CellCycleModel.Duplicate();
+			newCell = Cell(newCCM, [newElementTop, newElementBottom, obj.elementLeft, elementMiddle], 1);
 
 			% Preserve the existing elements to stay with the original cell
 			obj.elementTop.ReplaceNode(obj.nodeTopLeft, nodeMiddleTop);

@@ -7,6 +7,12 @@ classdef NoCellCycle < AbstractCellCycleModel
 
 		end
 
+		function newCCM = Duplicate(obj)
+
+			newCCM = NoCellCycle();
+
+		end
+
 		% Cell cycle mode does nothing, so it never divides
 		function ready = IsReadyToDivide(obj)
 

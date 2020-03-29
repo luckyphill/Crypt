@@ -44,32 +44,38 @@ classdef Element < matlab.mixin.SetGet
 		function SetNaturalLength(obj, len)
 
 			obj.naturalLength = len;
+
 		end
 
 		function SetEdgeAdhesionParameter(obj, p)
 
 			obj.edgeAdhesionParameter = p;
+
 		end
 
 		function len = GetNaturalLength(obj)
 
 			% Added here so it can be modified by cell age
 			len = obj.naturalLength;
+
 		end
 
 		function SetStiffness(obj, stf)
 
 			obj.stiffness = stf;
+
 		end
 
 		function len = GetLength(obj)
 
 			len = norm(obj.Node1.position - obj.Node2.position);
+
 		end
 
 		function UpdateDx(obj)
 
 			obj.dx = obj.GetNaturalLength() - obj.GetLength();
+
 		end
 
 		function UpdateForce(obj)
@@ -106,12 +112,14 @@ classdef Element < matlab.mixin.SetGet
 
 			obj.Node1.AddForceContribution(-obj.force1to2);
 			obj.Node2.AddForceContribution(obj.force1to2);
+
 		end
 
 
 		function AddCell(obj, c)
 
 			obj.cellList = [obj.cellList , c];
+
 		end
 
 
@@ -137,7 +145,6 @@ classdef Element < matlab.mixin.SetGet
 				otherwise
 					error('e:nodeNotFound','Node not in this element')
 			end
-
 
 		end
 

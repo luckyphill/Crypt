@@ -62,8 +62,8 @@ classdef TestNode < matlab.unittest.TestCase
 			% Remove the element from both lists
 			n1.RemoveElement(e);
 			n2.RemoveElement(e);
-			testCase.verifyEqual(n1.elementList, []);
-			testCase.verifyEqual(n2.elementList, []);
+			testCase.verifyEmpty(n1.elementList);
+			testCase.verifyEmpty(n2.elementList);
 		end
 
 

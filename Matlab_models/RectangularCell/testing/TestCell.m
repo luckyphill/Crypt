@@ -9,22 +9,22 @@ classdef TestCell < matlab.unittest.TestCase
 			n3 = Node(1,0,3);
 			n4 = Node(1,1,4);
 
-			e1 = Element(n1,n2,1);
-			e2 = Element(n1,n3,2);
-			e3 = Element(n2,n4,3);
-			e4 = Element(n3,n4,4);
+			el = Element(n1,n2,1);
+			eb = Element(n1,n3,2);
+			et = Element(n2,n4,3);
+			er = Element(n3,n4,4);
 
 			% TODO: Make this work with arbitrary order of elements
-			c = Cell(e2, e4, e3, e1, 1);
+			c = Cell(NoCellCycle, [et,eb,el,er], 1);
 
 			c.deformationEnergyParameter = 1;
 
 			testCase.verifyEqual(c.id,1);
 
-			testCase.verifyEqual(c.elementTop,e3);
-			testCase.verifyEqual(c.elementBottom,e2);
-			testCase.verifyEqual(c.elementLeft,e4);
-			testCase.verifyEqual(c.elementRight,e1);
+			testCase.verifyEqual(c.elementTop,et);
+			testCase.verifyEqual(c.elementBottom,eb);
+			testCase.verifyEqual(c.elementLeft,el);
+			testCase.verifyEqual(c.elementRight,er);
 
 			testCase.verifyEqual(c.nodeTopLeft,n2);
 			testCase.verifyEqual(c.nodeTopRight,n4);
@@ -33,18 +33,6 @@ classdef TestCell < matlab.unittest.TestCase
 
 			testCase.verifyEqual(c.currentCellTargetArea, 1);
 			testCase.verifyEqual(c.deformationEnergyParameter,1);
-
-			c.SetCellCycleLength(30);
-			c.SetGrowingPhaseLength(10);
-			
-			testCase.verifyEqual(c.meanCellCycleLength,30);
-			% testCase.verifyEqual(c.cellCycleLength,30);
-			testCase.verifyEqual(c.meanGrowingPhaseLength,10);
-			% testCase.verifyEqual(c.growingPhaseLength,10);
-
-			% Need to test that it stays above a certain minimum length
-
-			
 
 		end
 
@@ -56,13 +44,13 @@ classdef TestCell < matlab.unittest.TestCase
 			n3 = Node(1,0,3);
 			n4 = Node(1,1,4);
 
-			e1 = Element(n1,n2,1);
-			e2 = Element(n1,n3,2);
-			e3 = Element(n2,n4,3);
-			e4 = Element(n3,n4,4);
+			el = Element(n1,n2,1);
+			eb = Element(n1,n3,2);
+			et = Element(n2,n4,3);
+			er = Element(n3,n4,4);
 
 			% TODO: Make this work with arbitrary order of elements
-			c = Cell(e2, e4, e3, e1, 1);
+			c = Cell(NoCellCycle, [et,eb,el,er], 1);
 
 
 			c.UpdateCellArea();
@@ -75,13 +63,13 @@ classdef TestCell < matlab.unittest.TestCase
 			n3 = Node(1,0,3);
 			n4 = Node(1.1,1.1,4);
 
-			e1 = Element(n1,n2,1);
-			e2 = Element(n1,n3,2);
-			e3 = Element(n2,n4,3);
-			e4 = Element(n3,n4,4);
+			el = Element(n1,n2,1);
+			eb = Element(n1,n3,2);
+			et = Element(n2,n4,3);
+			er = Element(n3,n4,4);
 
 			% TODO: Make this work with arbitrary order of elements
-			c = Cell(e2, e4, e3, e1, 1);
+			c = Cell(NoCellCycle, [et,eb,el,er], 1);
 
 
 			c.UpdateCellArea();
@@ -96,13 +84,13 @@ classdef TestCell < matlab.unittest.TestCase
 			n3 = Node(1,0,3);
 			n4 = Node(1.1,1.1,4);
 
-			e1 = Element(n1,n2,1);
-			e2 = Element(n1,n3,2);
-			e3 = Element(n2,n4,3);
-			e4 = Element(n3,n4,4);
+			el = Element(n1,n2,1);
+			eb = Element(n1,n3,2);
+			et = Element(n2,n4,3);
+			er = Element(n3,n4,4);
 
 			% TODO: Make this work with arbitrary order of elements
-			c = Cell(e2, e4, e3, e1, 1);
+			c = Cell(NoCellCycle, [et,eb,el,er], 1);
 
 			c.deformationEnergyParameter = 1;
 
@@ -129,21 +117,21 @@ classdef TestCell < matlab.unittest.TestCase
 			n3 = Node(1,0,3);
 			n4 = Node(1.1,1.1,4);
 
-			e1 = Element(n1,n2,1);
-			e2 = Element(n1,n3,2);
-			e3 = Element(n2,n4,3);
-			e4 = Element(n3,n4,4);
+			el = Element(n1,n2,1);
+			eb = Element(n1,n3,2);
+			et = Element(n2,n4,3);
+			er = Element(n3,n4,4);
 
 			% TODO: Make this work with arbitrary order of elements
-			c = Cell(e2, e1, e3, e4, 1);
+			c = Cell(NoCellCycle, [et,eb,el,er], 1);
 			c.surfaceEnergyParameter = 1;
 
 			c.UpdatePerimeterGradientAtNode();
 
-			testCase.verifyEqual(c.elementTop, e3);
-			testCase.verifyEqual(c.elementRight, e4);
-			testCase.verifyEqual(c.elementBottom, e2);
-			testCase.verifyEqual(c.elementLeft, e1);
+			testCase.verifyEqual(c.elementTop, et);
+			testCase.verifyEqual(c.elementRight, er);
+			testCase.verifyEqual(c.elementBottom, eb);
+			testCase.verifyEqual(c.elementLeft, el);
 
 			testCase.verifyEqual(c.elementTop.GetLength(), 1.1045 ,'AbsTol', 1e-4);
 			testCase.verifyEqual(c.elementRight.GetLength(), 1.1045 ,'AbsTol', 1e-4);
@@ -175,13 +163,13 @@ classdef TestCell < matlab.unittest.TestCase
 			n3 = Node(1,0,3);
 			n4 = Node(1,1,4);
 
-			e1 = Element(n1,n2,1);
-			e2 = Element(n1,n3,2);
-			e3 = Element(n2,n4,3);
-			e4 = Element(n3,n4,4);
+			el = Element(n1,n2,1);
+			eb = Element(n1,n3,2);
+			et = Element(n2,n4,3);
+			er = Element(n3,n4,4);
 
 			% TODO: Make this work with arbitrary order of elements
-			c = Cell(e2, e4, e3, e1, 1);
+			c = Cell(NoCellCycle, [et,eb,el,er], 1);
 
 			d = c.Divide();
 
