@@ -26,9 +26,9 @@ classdef AbstractCellCycleModel < matlab.mixin.SetGet
 			age = obj.age;
 		end
 
-		function SetBirthTime(obj, birth)
+		function SetAge(obj, age)
 
-			obj.age = birth;
+			obj.age = age;
 		end
 
 		function AgeCellCycle(obj, dt)

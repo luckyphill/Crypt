@@ -17,8 +17,8 @@ classdef CellGrowing < AbstractCellSimulation
 			% For the first cell, need to create 4 elements and 4 nodes
 
 			nodeBottomLeft 	= Node(0,0,obj.GetNextNodeId());
-			nodeBottomRight	= Node(1,0,obj.GetNextNodeId());
-			nodeTopRight 	= Node(1,1,obj.GetNextNodeId());
+			nodeBottomRight	= Node(0.5,0,obj.GetNextNodeId());
+			nodeTopRight 	= Node(0.5,1,obj.GetNextNodeId());
 			nodeTopLeft 	= Node(0,1,obj.GetNextNodeId());
 
 			obj.AddNodesToList([nodeBottomLeft, nodeBottomRight, nodeTopRight, nodeTopLeft]);
@@ -41,8 +41,8 @@ classdef CellGrowing < AbstractCellSimulation
 
 				nodeBottomLeft 	= nodeBottomRight;
 				nodeTopLeft 	= nodeTopRight;
-				nodeBottomRight	= Node(i,0,obj.GetNextNodeId());
-				nodeTopRight 	= Node(i,1,obj.GetNextNodeId());
+				nodeBottomRight	= Node(i*0.5,0,obj.GetNextNodeId());
+				nodeTopRight 	= Node(i*0.5,1,obj.GetNextNodeId());
 
 				obj.AddNodesToList([nodeBottomRight, nodeTopRight]);
 

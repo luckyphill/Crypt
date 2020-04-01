@@ -23,11 +23,15 @@ classdef SimplePhaseBasedCellCycle < AbstractCellCycleModel
 			obj.SetPausePhaseLength(p);
 			obj.SetGrowingPhaseLength(g);
 
+			% Cell will start off in the pause phase
+			obj.SetAge(randi(p - 2));
+
 		end
 
 		function newCCM = Duplicate(obj)
 
 			newCCM = SimplePhaseBasedCellCycle(obj.meanPausePhaseLength, obj.meanGrowingPhaseLength);
+			newCCM.SetAge(0);
 
 		end
 
@@ -43,14 +47,28 @@ classdef SimplePhaseBasedCellCycle < AbstractCellCycleModel
 
 		function fraction = GetGrowthPhaseFraction(obj)
 
-			fraction = (obj.age - obj.pausePhaseLength) / obj.growingPhaseLength;
+			if obj.age < obj.pausePhaseLength
+				fraction = 0;
+			else
+				fraction = (obj.age - obj.pausePhaseLength) / obj.growingPhaseLength;
+			end
+
 		end
 
 		function SetPausePhaseLength(obj, pt)
 
 			obj.meanPausePhaseLength = pt;
 
-			obj.pausePhaseLength = pt + normrnd(0,2);
+			% Normally distributed, but clipped
+			wobble = normrnd(0,2);
+			if wobble < -3
+				wobble = -3;
+			end
+			if wobble > 3
+				wobble = 3;
+			end
+
+			obj.pausePhaseLength = pt + wobble;
 
 		end
 
@@ -58,7 +76,16 @@ classdef SimplePhaseBasedCellCycle < AbstractCellCycleModel
 			% Wanted to call it gt, but apparently thats a reserved keyword in matlab...
 
 			obj.meanGrowingPhaseLength = wt;
-			obj.growingPhaseLength = wt + normrnd(0,2);
+
+			% Normally distributed, but clipped
+			wobble = normrnd(0,2);
+			if wobble < -3
+				wobble = -3;
+			end
+			if wobble > 3
+				wobble = 3;
+			end
+			obj.growingPhaseLength = wt + wobble;
 
 		end
 

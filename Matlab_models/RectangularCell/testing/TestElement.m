@@ -85,6 +85,54 @@ classdef TestElement < matlab.unittest.TestCase
 
 			testCase.verifyError(@()e.ReplaceNode(n1,n2), 'e:nodeNotFound', 'no error from replace node');
 
+		end
+
+		function TestRigidBody(testCase)
+			
+			% Make an element that is shorter than the min length
+			n1 = Node(0,0,1);
+			n2 = Node(0.15,0,2);
+
+			e = Element(n1,n2,1);
+
+			% Test compression
+			n1.AddForceContribution([1,0]);
+			n2.AddForceContribution([-1,0]);
+
+			e.AppliedRigidBodyForces();
+
+			testCase.verifyEqual(n1.force,[0,0]);
+			testCase.verifyEqual(n2.force,[0,0]);
+
+			% Test pushing r to l
+			n1 = Node(0,0,1);
+			n2 = Node(0.15,0,2);
+
+			e = Element(n1,n2,1);
+
+			n1.AddForceContribution([-0.1,0]);
+			n2.AddForceContribution([-1,0]);
+
+			e.AppliedRigidBodyForces();
+
+			testCase.verifyEqual(n1.force,[-1.1,0]);
+			testCase.verifyEqual(n2.force,[-1,0]);
+
+			% Test pushing l to r
+			n1 = Node(0,0,1);
+			n2 = Node(0.15,0,2);
+
+			e = Element(n1,n2,1);
+			
+			n1.AddForceContribution([1,0]);
+			n2.AddForceContribution([0.1,0]);
+
+			e.AppliedRigidBodyForces();
+
+			testCase.verifyEqual(n1.force,[1,0]);
+			testCase.verifyEqual(n2.force,[1.1,0]);
+
+
 
 		end
 

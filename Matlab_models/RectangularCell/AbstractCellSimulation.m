@@ -13,6 +13,12 @@ classdef AbstractCellSimulation < matlab.mixin.SetGet
 		nextElementId = 1
 
 		nextCellId = 1
+
+		collisionDetection = false
+
+		leftBoundaryCell
+		rightBoundaryCell
+
 		
 	end
 
@@ -56,12 +62,21 @@ classdef AbstractCellSimulation < matlab.mixin.SetGet
 		function NextTimeStep(obj)
 			% Updates all the forces and applies the movements
 			
-			obj.UpdateElementForces();
+			
 			obj.UpdateCellForces();
+			% Element forces must happen last because it contains the rigid body
+			% tweak to prevent element flipping
+			obj.UpdateElementForces();
 			
 			obj.MakeNodesMove();
 
 			obj.MakeCellsDivide();
+
+			obj.UpdateBoundaryCells();
+
+			if ~obj.collisionDetection
+				obj.UpdateIfCollisionDetectionNeeded();
+			end
 
 			obj.MakeCellsAge();
 
@@ -74,10 +89,60 @@ classdef AbstractCellSimulation < matlab.mixin.SetGet
 			
 			for i = 1:n
 				obj.NextTimeStep();
+				if obj.collisionDetection
+					if obj.DetectCollision()
+						fprintf('Collision detected. Stopped at t = %.2f\n',obj.t);
+						break;
+					end
+				end
 			end
 			
 		end
 
+		function UpdateBoundaryCells(obj)
+
+			if isempty(obj.leftBoundaryCell)
+				% Probably the first time this has been run,
+				% so need to find the boundary cells first
+				% This won't work in general, but will be the case most of the time at this point
+				obj.leftBoundaryCell 	= obj.cellList(1);
+				obj.rightBoundaryCell 	= obj.cellList(end);
+			end
+
+			if obj.leftBoundaryCell.GetAge() <= obj.dt
+				% Boundary cell has just divided, so need to check which of the new
+				% cells is the leftmost
+				if length(obj.leftBoundaryCell.elementLeft.cellList) > 1
+					% The left element of the cell is part of at least two cells
+					% So need to replace the leftBoundaryCell
+					if obj.leftBoundaryCell == obj.leftBoundaryCell.elementLeft.cellList(1)
+						obj.leftBoundaryCell = obj.leftBoundaryCell.elementLeft.cellList(2);
+					else
+						obj.leftBoundaryCell = obj.leftBoundaryCell.elementLeft.cellList(1);
+					end
+
+				end
+
+			end
+
+			if obj.rightBoundaryCell.GetAge() <= obj.dt
+				% Boundary cell has just divided, so need to check which of the new
+				% cells is the rightmost
+				if length(obj.rightBoundaryCell.elementRight.cellList) > 1
+					% The right element of the cell is part of at least two cells
+					% So need to replace the rightBoundaryCell
+					if obj.rightBoundaryCell == obj.rightBoundaryCell.elementRight.cellList(1)
+						obj.rightBoundaryCell = obj.rightBoundaryCell.elementRight.cellList(2);
+					else
+						obj.rightBoundaryCell = obj.rightBoundaryCell.elementRight.cellList(1);
+					end
+
+				end
+
+			end
+
+		end
+		
 		function UpdateCellForces(obj)
 			
 			for i = 1:length(obj.cellList)
@@ -153,16 +218,80 @@ classdef AbstractCellSimulation < matlab.mixin.SetGet
 		function numCells = GetNumCells(obj)
 
 			numCells = length(obj.cellList);
+
 		end
 
 		function numElements = GetNumElements(obj)
 
 			numElements = length(obj.elementList);
+
 		end
 
 		function numNodes = GetNumNodes(obj)
 
 			numNodes = length(obj.nodeList);
+
+		end
+
+		function UpdateIfCollisionDetectionNeeded(obj)
+
+			% An approximate way to tell if collision detection is needed to speed up
+			% simulation time when there is no chance
+
+			detectionThresholdRatio = 0.85;
+
+			sTop 	= 0;
+			sBottom = 0;
+
+			widthTop 	= obj.rightBoundaryCell.nodeTopRight.x 		- obj.leftBoundaryCell.nodeTopLeft.x;
+			widthBottom = obj.rightBoundaryCell.nodeBottomRight.x 	- obj.leftBoundaryCell.nodeBottomLeft.x;
+
+			% Traverse the top and bottom elements to get the path lengths
+			for i = 1:obj.GetNumCells()
+
+				sTop 	= sTop + obj.cellList(i).elementTop.GetLength();
+				sBottom = sBottom + obj.cellList(i).elementBottom.GetLength();
+
+			end
+
+			if widthTop/sTop < detectionThresholdRatio || widthBottom/sBottom < detectionThresholdRatio
+				obj.collisionDetection = true;
+				fprintf('Collision detection turned on at t=%.2f\n',obj.t);
+			end
+
+		end
+
+		function detected = DetectCollision(obj)
+
+			detected = false;
+			i = 1;
+			while ~detected && i <= obj.GetNumCells()
+				j = i+1;
+				while ~detected && j <= obj.GetNumCells()
+
+					cell1 = obj.cellList(i);
+					cell2 = obj.cellList(j);
+
+					c1c2(1) = cell1.IsPointInsideCell(cell2.nodeTopLeft.position);
+					c1c2(2) = cell1.IsPointInsideCell(cell2.nodeTopRight.position);
+					c1c2(3) = cell1.IsPointInsideCell(cell2.nodeBottomLeft.position);
+					c1c2(4) = cell1.IsPointInsideCell(cell2.nodeBottomRight.position);
+
+					c2c1(1) = cell2.IsPointInsideCell(cell1.nodeTopLeft.position);
+					c2c1(2) = cell2.IsPointInsideCell(cell1.nodeTopRight.position);
+					c2c1(3) = cell2.IsPointInsideCell(cell1.nodeBottomLeft.position);
+					c2c1(4) = cell2.IsPointInsideCell(cell1.nodeBottomRight.position);
+
+					detected = sum(c1c2) + sum(c2c1);
+
+					j = j + 1;
+
+				end
+
+				i = i + 1;
+			end
+
+
 		end
 
 	end

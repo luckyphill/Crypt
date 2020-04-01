@@ -5,6 +5,8 @@ classdef NoCellCycle < AbstractCellCycleModel
 
 		function obj = NoCellCycle()
 
+			obj.SetAge(0);
+
 		end
 
 		function newCCM = Duplicate(obj)

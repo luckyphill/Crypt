@@ -23,6 +23,8 @@ classdef Element < matlab.mixin.SetGet
 		edgeGradient
 		edgeAdhesionParameter = 0.1
 
+		minimumLength = 0.2
+
 		cellList
 		
 	end
@@ -82,7 +84,52 @@ classdef Element < matlab.mixin.SetGet
 
 			% obj.UpdateForceSpring();
 			obj.UpdateForceAdhesion();
+
+			% Experimental: If the edge is too small, treat it like a rigid body for compressive forces
+			% this will mean the force applied to one node along the element axis
+			% will be applied to the other
+
+			if obj.GetLength() < obj.minimumLength
+				% fprintf('Rigid body force needed\n');
+				obj.AppliedRigidBodyForces();
+			end
 			
+		end
+
+		function AppliedRigidBodyForces(obj)
+
+			% If the resulting forces on the element result in compression
+			% treat the element like a rigid body by transferring the axial forces
+			% from one element to the other
+			unitVector1to2 = (obj.Node2.position - obj.Node1.position) / obj.GetLength();
+
+			axial1 = sum(obj.Node1.force .* unitVector1to2);
+			axial2 = sum(obj.Node2.force .* unitVector1to2);
+
+			if axial1 > 0 && axial2 < 0
+				% The forces are pointing towards each other
+				% apply axial forces to other nodes
+				obj.Node1.AddForceContribution(axial2 * unitVector1to2);
+				obj.Node2.AddForceContribution(axial1 * unitVector1to2);
+				% fprintf('Responded to compression\n')
+			end
+
+			if (axial1 > 0 && axial2 > 0) && axial1 > axial2
+				% The forces are pointing in the same direction but the
+				% inward pointing force is larger, so add inward for to
+				% the other node
+				obj.Node2.AddForceContribution(axial1 * unitVector1to2);
+				% fprintf('Responded to pushing 1 to 2\n')
+			end
+
+			if (axial1 < 0 && axial2 < 0) && axial1 > axial2
+				% Same as above, but the other force is inwards facing
+				obj.Node1.AddForceContribution(axial2 * unitVector1to2);
+				% fprintf('Responded to pushing 2 to 1\n')
+			end
+
+
+
 		end
 
 		function UpdateForceAdhesion(obj)

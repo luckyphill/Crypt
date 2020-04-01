@@ -186,6 +186,25 @@ classdef TestCell < matlab.unittest.TestCase
 
 		end
 
+		function TestInsideCell(testCase)
+
+			n1 = Node(0,0,1);
+			n2 = Node(0,1,2);
+			n3 = Node(1,0,3);
+			n4 = Node(1,1,4);
+
+			el = Element(n1,n2,1);
+			eb = Element(n1,n3,2);
+			et = Element(n2,n4,3);
+			er = Element(n3,n4,4);
+
+			% TODO: Make this work with arbitrary order of elements
+			c = Cell(NoCellCycle, [et,eb,el,er], 1);
+
+			testCase.verifyTrue(c.IsPointInsideCell([0.5, 0.5]));
+			testCase.verifyFalse(c.IsPointInsideCell([1.5, 0.5]));
+		end
+
 	end
 
 end

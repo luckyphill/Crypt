@@ -270,7 +270,7 @@ classdef Cell < matlab.mixin.SetGet
 
 			% Old cell should be completely remodelled by this point, adjust the age back to zero
 
-			obj.age = 0;
+			obj.CellCycleModel.SetAge(0);
 
 		end
 
@@ -285,6 +285,27 @@ classdef Cell < matlab.mixin.SetGet
 			% This will be done at the end of the time step
 			obj.age = obj.age + dt;
 			obj.CellCycleModel.AgeCellCycle(dt);
+
+		end
+
+		function age = GetAge(obj)
+
+			age = obj.CellCycleModel.GetAge();
+			
+		end
+
+
+		function inside = IsPointInsideCell(obj, point)
+
+			% Assemble vertices
+			x = [obj.nodeTopLeft.x, obj.nodeTopRight.x, obj.nodeBottomLeft.x, obj.nodeBottomRight.x];
+			y = [obj.nodeTopLeft.y, obj.nodeTopRight.y, obj.nodeBottomLeft.y, obj.nodeBottomRight.y];
+
+			[inside, on] = inpolygon(point(1), point(2), x ,y);
+
+			if inside && on
+				inside = false;
+			end
 
 		end
 
