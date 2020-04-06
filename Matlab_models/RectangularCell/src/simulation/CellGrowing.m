@@ -36,7 +36,9 @@ classdef CellGrowing < AbstractCellSimulation
 
 			obj.AddCellBasedForce(NagaiHondaForce(areaEnergy, perimeterEnergy, adhesionEnergy));
 
-			% obj.AddElementBasedForce(RigidBodyEdgeModifierForce(0.1));
+			obj.AddCellBasedForce(CornerForceFletcher(100,pi/2));
+
+			obj.AddElementBasedForce(RigidBodyEdgeModifierForce(0.1));
 			
 			obj.collisionDetectionRequested = true;
 

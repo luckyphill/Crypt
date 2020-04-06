@@ -141,6 +141,46 @@ classdef TestForce < matlab.unittest.TestCase
 			testCase.verifyEqual(n1.force,[1,0]);
 			testCase.verifyEqual(n2.force,[1.1,0]);
 
+		end
+
+		function TestCornerForceFletcher(testCase)
+			% Tests for the corner force to push angles to their prefered size
+
+			n1 = Node(0,0,1);
+			n2 = Node(0,1,2);
+			n3 = Node(1,0,3);
+			n4 = Node(1.1,1.1,4);
+
+			el = Element(n1,n2,1);
+			eb = Element(n1,n3,2);
+			et = Element(n2,n4,3);
+			er = Element(n3,n4,4);
+
+			c = Cell(NoCellCycle, [et,eb,el,er], 1);
+
+			f = CornerForceFletcher(1, pi/2);
+
+			[atl, abr, abl, atr] = f.GetCornerAngles(c);
+
+			testCase.verifyEqual(atl, 1.6615, 'AbsTol', 1e-4);
+			testCase.verifyEqual(abr, 1.6615, 'AbsTol', 1e-4);
+			testCase.verifyEqual(abl, pi/2  , 'AbsTol', 1e-4);
+			testCase.verifyEqual(atr, 1.3895, 'AbsTol', 1e-4);
+
+			[vtl, vbr, vbl, vtr] = f.GetCornerVectors(c);
+
+			testCase.verifyEqual(vtl, [0.7384, -0.6743]		  , 'AbsTol', 1e-4);
+			testCase.verifyEqual(vbl, [1/sqrt(2) ,1/sqrt(2)]  , 'AbsTol', 1e-4);
+			testCase.verifyEqual(vtr, [-1/sqrt(2), -1/sqrt(2)], 'AbsTol', 1e-4);
+			testCase.verifyEqual(vbr, [-0.6743, 0.7384]		  , 'AbsTol', 1e-4);
+
+			f. AddCornerForces(c);
+
+			% Needs fixing
+			testCase.verifyEqual(c.nodeTopLeft.force, -0.090659^3 * [0.7384, -0.6743], 'AbsTol', 1e-4);
+			testCase.verifyEqual(c.nodeTopRight.force, 0.1812^3 * [-1/sqrt(2), -1/sqrt(2)], 'AbsTol', 1e-4);
+			testCase.verifyEqual(c.nodeBottomLeft.force, [0, 0], 'AbsTol', 1e-4);
+			testCase.verifyEqual(c.nodeBottomRight.force, -0.090659^3 * [-0.6743, 0.7384], 'AbsTol', 1e-4);
 
 
 		end

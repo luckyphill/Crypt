@@ -32,8 +32,8 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 		leftBoundaryCell
 		rightBoundaryCell
 
-		cellBasedForces
-		elementBasedForces
+		cellBasedForces AbstractCellBasedForce
+		elementBasedForces AbstractElementBasedForce
 		
 	end
 

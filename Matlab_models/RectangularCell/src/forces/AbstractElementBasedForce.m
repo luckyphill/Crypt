@@ -1,4 +1,4 @@
-classdef AbstractElementBasedForce < matlab.mixin.SetGet
+classdef AbstractElementBasedForce < matlab.mixin.Heterogeneous
 	% This class gives the details for how a force will be applied
 	% to each Element (as opposed to each cell, or the whole population)
 
