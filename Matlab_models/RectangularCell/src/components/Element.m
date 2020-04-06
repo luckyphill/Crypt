@@ -95,57 +95,7 @@ classdef Element < matlab.mixin.SetGet
 			end
 			
 		end
-
-		function AppliedRigidBodyForces(obj)
-
-			% If the resulting forces on the element result in compression
-			% treat the element like a rigid body by transferring the axial forces
-			% from one element to the other
-			unitVector1to2 = (obj.Node2.position - obj.Node1.position) / obj.GetLength();
-
-			axial1 = sum(obj.Node1.force .* unitVector1to2);
-			axial2 = sum(obj.Node2.force .* unitVector1to2);
-
-			if axial1 > 0 && axial2 < 0
-				% The forces are pointing towards each other
-				% apply axial forces to other nodes
-				obj.Node1.AddForceContribution(axial2 * unitVector1to2);
-				obj.Node2.AddForceContribution(axial1 * unitVector1to2);
-				% fprintf('Responded to compression\n')
-			end
-
-			if (axial1 > 0 && axial2 > 0) && axial1 > axial2
-				% The forces are pointing in the same direction but the
-				% inward pointing force is larger, so add inward for to
-				% the other node
-				obj.Node2.AddForceContribution(axial1 * unitVector1to2);
-				% fprintf('Responded to pushing 1 to 2\n')
-			end
-
-			if (axial1 < 0 && axial2 < 0) && axial1 > axial2
-				% Same as above, but the other force is inwards facing
-				obj.Node1.AddForceContribution(axial2 * unitVector1to2);
-				% fprintf('Responded to pushing 2 to 1\n')
-			end
-
-
-
-		end
-
-		function UpdateForceAdhesion(obj)
-
-			% Each element has a gradient according to NagaiHonda force that is used for calculating the contribution from adhesion
-			% The gradient is the opposite sign at each node, so need to take care to make sure the sign is correct
-			% for each node when the force is actually applied. To this end, we will always have the vector pointing from Node1 to Node2
-			% This force always wants to shrink the element, so pushes the nodes together along the element's vector
-			obj.edgeGradient = (obj.Node2.position - obj.Node1.position) / obj.GetLength();
-
-			force = obj.edgeAdhesionParameter * obj.edgeGradient;
-
-			obj.Node1.AddForceContribution(force);
-			obj.Node2.AddForceContribution(-force);
-
-		end
+		
 
 		function UpdateForceSpring(obj)
 

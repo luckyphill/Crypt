@@ -114,91 +114,6 @@ classdef Cell < matlab.mixin.SetGet
 
 		end
 
-		function UpdateAreaGradientAtNode(obj)
-
-			% Each node has an associated area gradient according the NagaiHondaForce, lifted directly from Chaste
-			% I really have no idea what's going on here, I'm just crossing my fingers and hoping it makes sense
-
-			% The area gradient is a direction pointing into the cell,
-			% determined by the edges attached to the node of interest
-			% For a given cell, each node (A) is part of two edges. These edges have other nodes (B and C)
-			% We find the vector B to C, and with some cross product arithmetic find a perpendicular
-			% vector that points into the cell
-
-
-			tl = obj.nodeTopRight.position 		- obj.nodeBottomLeft.position;
-			tr = obj.nodeBottomRight.position 	- obj.nodeTopLeft.position;
-			br = obj.nodeBottomLeft.position 	- obj.nodeTopRight.position;
-			bl = obj.nodeTopLeft.position 		- obj.nodeBottomRight.position;
-
-
-			obj.areaGradientTopLeft 	= 0.5 * [tl(2), -tl(1)];
-			obj.areaGradientTopRight 	= 0.5 * [tr(2), -tr(1)];
-			obj.areaGradientBottomRight = 0.5 * [br(2), -br(1)];
-			obj.areaGradientBottomLeft 	= 0.5 * [bl(2), -bl(1)];
-
-		end
-
-		function UpdatePerimeterGradientAtNode(obj)
-
-			% Each node has an associated perimeter gradient according the NagaiHondaForce, lifted directly from Chaste
-			% I really have no idea what's going on here, I'm just crossing my fingers and hoping it makes sense
-
-			% The perimeter gradient is a direction pointing into the cell,
-			% determined by the edges attached to the node of interest
-			% For a given cell, each node (A) is part of two edges. These edges have other nodes (B and C)
-			% We find the unit vectors A to B and A to C, and add them together to get a vector
-			% pointing into the cell
-
-			% Go around in a clockwise direction
-
-			right 	= (obj.nodeTopRight.position 	- obj.nodeBottomRight.position) / obj.elementRight.GetLength();
-			bottom 	= (obj.nodeBottomRight.position - obj.nodeBottomLeft.position) 	/ obj.elementBottom.GetLength();
-			left 	= (obj.nodeBottomLeft.position 	- obj.nodeTopLeft.position) 	/ obj.elementLeft.GetLength();
-			top 	= (obj.nodeTopLeft.position 	- obj.nodeTopRight.position) 	/ obj.elementTop.GetLength();
-
-
-			obj.perimeterGradientTopLeft 		= left 		- top;
-			obj.perimeterGradientTopRight 		= top 		- right;
-			obj.perimeterGradientBottomRight 	= right 	- bottom;
-			obj.perimeterGradientBottomLeft 	= bottom 	- left;
-
-		end
-
-		function UpdateTargetAreaForce(obj)
-			% Add the forces to each node due to cell area properites
-			obj.UpdateAreaGradientAtNode();
-			obj.UpdateCellArea();
-
-			% deformation_contribution -= 2*GetNagaiHondaDeformationEnergyParameter()*(element_areas[elem_index] - target_areas[elem_index])*element_area_gradient;
-
-			magnitude = 2 * obj.deformationEnergyParameter * (obj.cellArea - obj.GetCellTargetArea());
-
-			obj.nodeTopLeft.AddForceContribution(		magnitude * obj.areaGradientTopLeft);
-			obj.nodeTopRight.AddForceContribution(		magnitude * obj.areaGradientTopRight);
-			obj.nodeBottomRight.AddForceContribution(	magnitude * obj.areaGradientBottomRight);
-			obj.nodeBottomLeft.AddForceContribution(	magnitude * obj.areaGradientBottomLeft);
-
-		end
-
-		function UpdateTargetPerimeterForce(obj)
-			obj.UpdatePerimeterGradientAtNode();
-			obj.UpdateCellPerimeter();
-
-			magnitude = 2 * obj.surfaceEnergyParameter * (obj.cellPerimeter - obj.GetCellTargetPerimeter());
-			obj.nodeTopLeft.AddForceContribution(		magnitude * obj.perimeterGradientTopLeft);
-			obj.nodeTopRight.AddForceContribution(		magnitude * obj.perimeterGradientTopRight);
-			obj.nodeBottomRight.AddForceContribution(	magnitude * obj.perimeterGradientBottomRight);
-			obj.nodeBottomLeft.AddForceContribution(	magnitude * obj.perimeterGradientBottomLeft);
-
-		end
-
-		function UpdateForce(obj)
-			obj.UpdateTargetAreaForce();
-			obj.UpdateTargetPerimeterForce();
-
-		end
-
 		function targetArea = GetCellTargetArea(obj)
 			% This is so the target area can be a function of cell age
 
@@ -305,6 +220,68 @@ classdef Cell < matlab.mixin.SetGet
 
 			if inside && on
 				inside = false;
+			end
+
+		end
+
+		function flipped = HasEdgeFlipped(obj)
+
+			flipped = false;
+			% An edge will only flip on the top or bottom
+			% When that happens, the left and right edges will cross
+			% The following algorithm decides if the edges cross
+
+			X1 = obj.elementLeft.Node1.x;
+			X2 = obj.elementLeft.Node2.x;
+
+			Y1 = obj.elementLeft.Node1.y;
+			Y2 = obj.elementLeft.Node2.y;
+
+			X3 = obj.elementRight.Node1.x;
+			X4 = obj.elementRight.Node2.x;
+
+			Y3 = obj.elementRight.Node1.y;
+			Y4 = obj.elementRight.Node2.y;
+
+			% Basic run-down of algorithm:
+			% The lines are parameterised so that
+			% elementLeft  = (x1(t), y1(t)) = (A1t + a1, B1t + b1)
+			% elementRight = (x2(s), y2(s)) = (A2s + a2, B2s + b2)
+			% where 0 <= t,s <=1
+			% If the lines cross, then there is a unique value of t,s such that
+			% x1(t) == x2(s) and y1(t) == y2(s)
+			% There will always be a value of t and s that satisfies these
+			% conditions (except for when the lines are parallel), so to make
+			% sure the actual segments cross, we MUST have 0 <= t,s <=1
+
+			% Solving this, we have
+			% t = ( B2(a1 - a2) - A2(b1 - b2) ) / (A2B1 - A1B2)
+			% s = ( B1(a1 - a2) - A1(b1 - b2) ) / (A2B1 - A1B2)
+			% Where 
+			% A1 = X2 - X1, a1 = X1
+			% B1 = Y2 - Y1, b1 = Y1
+			% A2 = X4 - X3, a2 = X3
+			% B2 = Y4 - Y3, b2 = Y3
+
+			denom = (X4 - X3)*(Y2 - Y1) - (X2 - X1)*(Y4 - Y3);
+
+			% denom == 0 means parallel
+
+			if denom ~= 0
+				% if the numerator for either t or s expression is larger than the
+				% |denominator|, then |t| or |s| will be greater than 1, i.e. out of their range
+				% so both must be less than
+				tNum = (Y4 - Y3)*(X1 - X3) - (X4 - X3)*(Y1 - Y3);
+				sNum = (Y2 - Y1)*(X1 - X3) - (X2 - X1)*(Y1 - Y3);
+				
+				if abs(tNum) <= abs(denom) && abs(sNum) <= abs(denom)
+					% magnitudes are correct, now check the signs
+					if sign(tNum) == sign(denom) && sign(sNum) == sign(denom)
+						% If the signs of the numerator and denominators are the same
+						% Then s and t satisfy their range restrictions, hence the elements cross
+						flipped = true;
+					end
+				end
 			end
 
 		end

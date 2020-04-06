@@ -1,4 +1,4 @@
-classdef AbstractCellSimulation < matlab.mixin.SetGet
+classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 	% A parent class that contains all the functions for running a simulation
 	% The child/concrete class will only need a constructor that assembles the cells
 
@@ -14,11 +14,26 @@ classdef AbstractCellSimulation < matlab.mixin.SetGet
 
 		nextCellId = 1
 
-		collisionDetection = false
+		collisionDetectionOn = false
+
+		collisionDetectionRequested = false
+
+		topWiggleRatio
+		bottomWiggleRatio
+		avgYDeviation
+		alphaWrinkleParameter
+
+		storeTopWiggleRatio = []
+		storeBottomWiggleRatio = []
+		storeNumCells = []
+		storeAvgYDeviation = []
+		storeAlphaWrinkleParameter = []
 
 		leftBoundaryCell
 		rightBoundaryCell
 
+		cellBasedForces
+		elementBasedForces
 		
 	end
 
@@ -54,7 +69,27 @@ classdef AbstractCellSimulation < matlab.mixin.SetGet
 
 		end
 
+		function PlotTimeSeriesData(obj)
+
+			% Plots all of the stored calculations
+
+			figure;
+			t = obj.dt:obj.dt:obj.t;
+
+			plot(t,obj.storeTopWiggleRatio, t, obj.storeAvgYDeviation, t, obj.storeAlphaWrinkleParameter);
+			legend({'Wiggle', 'YDev', 'alpha'});
+
+
+		end
+
+		function SetRNGSeed(obj, seed)
+
+			rng(seed);
+
+		end
+
 		function AnimateCellPopulation(obj)
+
 
 
 		end
@@ -63,10 +98,12 @@ classdef AbstractCellSimulation < matlab.mixin.SetGet
 			% Updates all the forces and applies the movements
 			
 			
-			obj.UpdateCellForces();
+			obj.GenerateCellBasedForces();
+			obj.GenerateElementBasedForces();
+
 			% Element forces must happen last because it contains the rigid body
 			% tweak to prevent element flipping
-			obj.UpdateElementForces();
+			
 			
 			obj.MakeNodesMove();
 
@@ -74,7 +111,13 @@ classdef AbstractCellSimulation < matlab.mixin.SetGet
 
 			obj.UpdateBoundaryCells();
 
-			if ~obj.collisionDetection
+			obj.UpdateSimpleWiggleRatio();
+
+			obj.UpdateAverageYDeviation();
+
+			obj.UpdateAlphaWrinkleParameter
+
+			if ~obj.collisionDetectionOn && obj.collisionDetectionRequested
 				obj.UpdateIfCollisionDetectionNeeded();
 			end
 
@@ -88,13 +131,31 @@ classdef AbstractCellSimulation < matlab.mixin.SetGet
 			% Advances a set number of time steps
 			
 			for i = 1:n
+				% Do all the calculations
 				obj.NextTimeStep();
-				if obj.collisionDetection
+
+				% Store the relevant data
+				obj.storeTopWiggleRatio(end + 1) = obj.topWiggleRatio;
+				obj.storeBottomWiggleRatio(end + 1) = obj.bottomWiggleRatio;
+				obj.storeNumCells(end + 1) = obj.GetNumCells();
+				obj.storeAvgYDeviation(end + 1) = obj.avgYDeviation;
+				obj.storeAlphaWrinkleParameter(end + 1) = obj.alphaWrinkleParameter;
+
+				
+				% Make sure nothing has gone wrong
+				if obj.collisionDetectionOn
 					if obj.DetectCollision()
 						fprintf('Collision detected. Stopped at t = %.2f\n',obj.t);
 						break;
 					end
 				end
+				if obj.DetectEdgeFlip()
+					fprintf('Edge flip detected. Stopped at t = %.2f\n',obj.t);
+					break;
+				end
+
+				
+
 			end
 			
 		end
@@ -143,18 +204,18 @@ classdef AbstractCellSimulation < matlab.mixin.SetGet
 
 		end
 		
-		function UpdateCellForces(obj)
+		function GenerateCellBasedForces(obj)
 			
-			for i = 1:length(obj.cellList)
-				obj.cellList(i).UpdateForce();
+			for i = 1:length(obj.cellBasedForces)
+				obj.cellBasedForces(i).AddCellBasedForces(obj.cellList);
 			end
 
 		end
 
-		function UpdateElementForces(obj)
+		function GenerateElementBasedForces(obj)
 
-			for i = 1:length(obj.elementList)
-				obj.elementList(i).UpdateForce();
+			for i = 1:length(obj.elementBasedForces)
+				obj.elementBasedForces(i).AddElementBasedForces(obj.elementList);
 			end
 
 		end
@@ -215,6 +276,26 @@ classdef AbstractCellSimulation < matlab.mixin.SetGet
 
 		end
 
+		function AddCellBasedForce(obj, f)
+
+			if isempty(obj.cellBasedForces)
+				obj.cellBasedForces = f;
+			else
+				obj.cellBasedForces(end + 1) = f;
+			end
+
+		end
+
+		function AddElementBasedForce(obj, f)
+
+			if isempty(obj.elementBasedForces)
+				obj.elementBasedForces = f;
+			else
+				obj.elementBasedForces(end + 1) = f;
+			end
+
+		end
+
 		function numCells = GetNumCells(obj)
 
 			numCells = length(obj.cellList);
@@ -238,7 +319,19 @@ classdef AbstractCellSimulation < matlab.mixin.SetGet
 			% An approximate way to tell if collision detection is needed to speed up
 			% simulation time when there is no chance
 
-			detectionThresholdRatio = 0.85;
+			detectionThresholdRatio = 1 / 0.85;
+
+			if (obj.topWiggleRatio > detectionThresholdRatio || obj.bottomWiggleRatio > detectionThresholdRatio)
+				obj.collisionDetectionOn = true;
+				fprintf('Collision detection turned on at t=%.4f\n',obj.t);
+			end
+
+		end
+
+		function UpdateSimpleWiggleRatio(obj)
+
+			% Compares the x range that cells cover to the
+			% path length that the top and bottom edges cover
 
 			sTop 	= 0;
 			sBottom = 0;
@@ -254,10 +347,45 @@ classdef AbstractCellSimulation < matlab.mixin.SetGet
 
 			end
 
-			if widthTop/sTop < detectionThresholdRatio || widthBottom/sBottom < detectionThresholdRatio
-				obj.collisionDetection = true;
-				fprintf('Collision detection turned on at t=%.2f\n',obj.t);
+			obj.topWiggleRatio = sTop / widthTop;
+			obj.bottomWiggleRatio = sBottom / widthBottom;
+
+		end
+
+		function UpdateAlphaWrinkleParameter(obj)
+
+			% Calculates the alpha wrinkliness parameter from Dunn 2011 eqn 10
+
+			r = 0;
+
+			for i = 1:obj.GetNumCells()
+
+				c = obj.cellList(i);
+
+				dy = c.elementTop.Node1.y - c.elementTop.Node2.y;
+				dx = c.elementTop.Node1.x - c.elementTop.Node2.x;
+
+				r = r + abs(dy/dx);
+
 			end
+
+			obj.alphaWrinkleParameter = r / obj.GetNumCells();
+		end
+
+		function UpdateAverageYDeviation(obj)
+
+			% Go through each cell along the top and calculate the average distance
+			% from the x axis
+
+			heightSum = abs(obj.cellList(1).nodeTopLeft.y) + abs(obj.cellList(1).nodeTopRight.y);
+
+			for i = 2:obj.GetNumCells()
+
+				heightSum = heightSum + abs(obj.cellList(i).nodeTopRight.y);
+
+			end
+
+			obj.avgYDeviation = heightSum / ( obj.GetNumCells() + 1 );
 
 		end
 
@@ -291,6 +419,22 @@ classdef AbstractCellSimulation < matlab.mixin.SetGet
 				i = i + 1;
 			end
 
+		end
+
+		function detected = DetectEdgeFlip(obj)
+
+			% If an edge has flipped, that mean the cell is no longer a physical shape
+			% so we need to detect this and stop the simulation
+
+			detected = false;
+			i = 1;
+			while ~detected && i <= obj.GetNumCells()
+
+				detected = obj.cellList(i).HasEdgeFlipped();
+
+				i = i + 1;
+
+			end
 
 		end
 

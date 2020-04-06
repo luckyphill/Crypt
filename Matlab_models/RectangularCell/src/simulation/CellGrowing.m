@@ -11,10 +11,12 @@ classdef CellGrowing < AbstractCellSimulation
 	end
 
 	methods
-		function obj = CellGrowing(nCells, p, g)
+		function obj = CellGrowing(nCells, p, g, areaEnergy, perimeterEnergy, adhesionEnergy, seed)
 			% All the initilising
 
 			% For the first cell, need to create 4 elements and 4 nodes
+
+			obj.SetRNGSeed(seed);
 
 			nodeBottomLeft 	= Node(0,0,obj.GetNextNodeId());
 			nodeBottomRight	= Node(0.5,0,obj.GetNextNodeId());
@@ -23,14 +25,20 @@ classdef CellGrowing < AbstractCellSimulation
 
 			obj.AddNodesToList([nodeBottomLeft, nodeBottomRight, nodeTopRight, nodeTopLeft]);
 
-			elementBottom 	= Element(nodeBottomLeft, nodeBottomRight,obj.GetNextElementId());
-			elementRight 	= Element(nodeBottomRight, nodeTopRight,obj.GetNextElementId());
-			elementTop	 	= Element(nodeTopLeft, nodeTopRight,obj.GetNextElementId());
-			elementLeft 	= Element(nodeBottomLeft, nodeTopLeft,obj.GetNextElementId());
+			elementBottom 	= Element(nodeBottomLeft, nodeBottomRight, obj.GetNextElementId());
+			elementRight 	= Element(nodeBottomRight, nodeTopRight, obj.GetNextElementId());
+			elementTop	 	= Element(nodeTopLeft, nodeTopRight, obj.GetNextElementId());
+			elementLeft 	= Element(nodeBottomLeft, nodeTopLeft, obj.GetNextElementId());
 
 			obj.AddElementsToList([elementBottom, elementRight, elementTop, elementLeft]);
 
 			ccm = SimplePhaseBasedCellCycle(p, g);
+
+			obj.AddCellBasedForce(NagaiHondaForce(areaEnergy, perimeterEnergy, adhesionEnergy));
+
+			% obj.AddElementBasedForce(RigidBodyEdgeModifierForce(0.1));
+			
+			obj.collisionDetectionRequested = true;
 
 			obj.cellList = Cell(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
 

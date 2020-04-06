@@ -15,7 +15,7 @@ classdef AbstractCellCycleModel < matlab.mixin.SetGet
 		% If a cell grows, then need to know the point in this growth
 		fraction = GetGrowthPhaseFraction(obj);
 		% When a cell divides, duplicate the ccm for the new cell
-		newCCM = Duplicate();
+		newCCM = Duplicate(obj);
 
 	end
 
