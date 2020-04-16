@@ -34,10 +34,8 @@ classdef CornerForceFletcher < AbstractCellBasedForce
 
 		function AddCornerForces(obj, c)
 
-			% Each element has a gradient according to NagaiHonda force that is used for calculating the contribution from adhesion
-			% The gradient is the opposite sign at each node, so need to take care to make sure the sign is correct
-			% for each node when the force is actually applied. To this end, we will always have the vector pointing from Node1 to Node2
-			% This force always wants to shrink the element, so pushes the nodes together along the element's vector
+			% Each corner has a preferred angle (usually pi/2), and any deviation from that produces a force
+			% bisecting the angle in to the cell. This follows the work in Fletcher et al 2013
 
 
 			[angleTopLeft, angleBottomRight, angleBottomLeft, angleTopRight] 		= obj.GetCornerAngles(c);
@@ -53,6 +51,7 @@ classdef CornerForceFletcher < AbstractCellBasedForce
 
 		function [atl, abr, abl, atr] = GetCornerAngles(obj, c)
 
+			% Calculate the angles at each corner
 			ntl = c.nodeTopLeft.position;
 			ntr = c.nodeTopRight.position;
 			nbl = c.nodeBottomLeft.position;
@@ -68,6 +67,7 @@ classdef CornerForceFletcher < AbstractCellBasedForce
 
 		function [vtl, vbr, vbl, vtr] = GetCornerVectors(obj, c)
 
+			% Finding a unit vector that bisects the angle two elements make
 			ntl = c.nodeTopLeft.position;
 			ntr = c.nodeTopRight.position;
 			nbl = c.nodeBottomLeft.position;

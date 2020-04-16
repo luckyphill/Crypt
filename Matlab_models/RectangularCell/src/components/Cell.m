@@ -286,6 +286,52 @@ classdef Cell < matlab.mixin.SetGet
 
 		end
 
+		function DrawCell(obj)
+
+			% plot a line for each element
+
+			h = figure();
+			hold on
+			elementList = [obj.elementTop, obj.elementBottom, obj.elementLeft, obj.elementRight];
+			for i = 1:length(elementList)
+
+				x1 = elementList(i).Node1.x;
+				x2 = elementList(i).Node2.x;
+				x = [x1,x2];
+				y1 = elementList(i).Node1.y;
+				y2 = elementList(i).Node2.y;
+				y = [y1,y2];
+
+				line(x,y)
+			end
+
+			axis equal
+
+		end
+
+		function DrawCellPrevious(obj)
+
+			% plot a line for each element
+
+			h = figure();
+			hold on
+			elementList = [obj.elementTop, obj.elementBottom, obj.elementLeft, obj.elementRight];
+			for i = 1:length(elementList)
+
+				x1 = elementList(i).Node1.previousPosition(1);
+				x2 = elementList(i).Node2.previousPosition(1);
+				x = [x1,x2];
+				y1 = elementList(i).Node1.previousPosition(2);
+				y2 = elementList(i).Node2.previousPosition(2);
+				y = [y1,y2];
+
+				line(x,y)
+			end
+
+			axis equal
+
+		end
+
 	end
 
 	methods (Access = private)

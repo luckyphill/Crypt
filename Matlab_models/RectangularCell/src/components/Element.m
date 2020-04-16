@@ -21,7 +21,6 @@ classdef Element < matlab.mixin.SetGet
 		force1to2
 
 		edgeGradient
-		edgeAdhesionParameter = 0.1
 
 		minimumLength = 0.2
 
@@ -49,22 +48,10 @@ classdef Element < matlab.mixin.SetGet
 
 		end
 
-		function SetEdgeAdhesionParameter(obj, p)
-
-			obj.edgeAdhesionParameter = p;
-
-		end
-
 		function len = GetNaturalLength(obj)
 
 			% Added here so it can be modified by cell age
 			len = obj.naturalLength;
-
-		end
-
-		function SetStiffness(obj, stf)
-
-			obj.stiffness = stf;
 
 		end
 
@@ -74,41 +61,26 @@ classdef Element < matlab.mixin.SetGet
 
 		end
 
-		function UpdateDx(obj)
+		% Saving for if a force object is written
+		% function UpdateForceSpring(obj)
 
-			obj.dx = obj.GetNaturalLength() - obj.GetLength();
+		% 	obj.UpdateDx()
+		% 	obj.force = obj.stiffness * obj.dx;
 
-		end
+		% 	obj.direction1to2 = obj.Node2.position - obj.Node1.position;
+		% 	obj.direction1to2 = obj.direction1to2 / norm(obj.direction1to2);
 
-		function UpdateForce(obj)
+		% 	obj.force1to2 = obj.direction1to2 * obj.force;
 
-			% obj.UpdateForceSpring();
-			obj.UpdateForceAdhesion();
+		% 	obj.Node1.AddForceContribution(-obj.force1to2);
+		% 	obj.Node2.AddForceContribution(obj.force1to2);
 
-			% Experimental: If the edge is too small, treat it like a rigid body for compressive forces
-			% this will mean the force applied to one node along the element axis
-			% will be applied to the other
+		% end
 
-			if obj.GetLength() < obj.minimumLength
-				% fprintf('Rigid body force needed\n');
-				obj.AppliedRigidBodyForces();
-			end
-			
-		end
-		
+		function direction1to2 = GetVector1to2(obj)
 
-		function UpdateForceSpring(obj)
-
-			obj.UpdateDx()
-			obj.force = obj.stiffness * obj.dx;
-
-			obj.direction1to2 = obj.Node2.position - obj.Node1.position;
-			obj.direction1to2 = obj.direction1to2 / norm(obj.direction1to2);
-
-			obj.force1to2 = obj.direction1to2 * obj.force;
-
-			obj.Node1.AddForceContribution(-obj.force1to2);
-			obj.Node2.AddForceContribution(obj.force1to2);
+			direction1to2 = obj.Node2.position - obj.Node1.position;
+			direction1to2 = obj.direction1to2 / norm(obj.direction1to2);
 
 		end
 

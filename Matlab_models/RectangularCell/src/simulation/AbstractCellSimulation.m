@@ -69,6 +69,28 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		end
 
+		function VisualisePrevious(obj)
+
+			% plot a line for each element
+
+			h = figure();
+			hold on
+			for i = 1:length(obj.elementList)
+
+				x1 = obj.elementList(i).Node1.previousPosition(1);
+				x2 = obj.elementList(i).Node2.previousPosition(1);
+				x = [x1,x2];
+				y1 = obj.elementList(i).Node1.previousPosition(2);
+				y2 = obj.elementList(i).Node2.previousPosition(2);
+				y = [y1,y2];
+
+				line(x,y)
+			end
+
+			axis equal
+
+		end
+
 		function PlotTimeSeriesData(obj)
 
 			% Plots all of the stored calculations
@@ -102,7 +124,8 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			obj.GenerateElementBasedForces();
 
 			% Element forces must happen last because it contains the rigid body
-			% tweak to prevent element flipping
+			% tweak to prevent element flipping. This is a dodgy way to do it,
+			% but I can't think of a better and quick solution
 			
 			
 			obj.MakeNodesMove();
@@ -389,7 +412,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		end
 
-		function detected = DetectCollision(obj)
+		function [detected, varargout] = DetectCollision(obj)
 
 			detected = false;
 			i = 1;
@@ -417,6 +440,11 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 				end
 
 				i = i + 1;
+			end
+
+			if detected
+				varargout{1} = cell1;
+				varargout{2} = cell2;
 			end
 
 		end

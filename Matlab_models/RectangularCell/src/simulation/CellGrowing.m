@@ -4,7 +4,7 @@ classdef CellGrowing < AbstractCellSimulation
 	% that have differing cell adhesion parameters at the top and bottom
 	properties
 
-		dt = 0.01
+		dt = 0.005
 		t = 0
 		eta = 1
 
@@ -36,9 +36,13 @@ classdef CellGrowing < AbstractCellSimulation
 
 			obj.AddCellBasedForce(NagaiHondaForce(areaEnergy, perimeterEnergy, adhesionEnergy));
 
-			obj.AddCellBasedForce(CornerForceFletcher(100,pi/2));
+			% obj.AddCellBasedForce(CornerForceCouple(0.1,pi/2));
 
-			obj.AddElementBasedForce(RigidBodyEdgeModifierForce(0.1));
+			% obj.AddCellBasedForce(CornerForceFletcher(10,pi/2));
+
+			% obj.AddElementBasedForce(RigidBodyEdgeModifierForce(0.2));
+
+			% obj.AddElementBasedForce(EdgeSpringForce(@(n,l) 20 * exp(1-25 * l/n)));
 			
 			obj.collisionDetectionRequested = true;
 
