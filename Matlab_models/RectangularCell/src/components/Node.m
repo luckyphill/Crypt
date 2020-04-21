@@ -14,9 +14,13 @@ classdef Node < matlab.mixin.SetGet
 
 		force = [0, 0]
 
+		previousForce
+
 		% This will be circular - each element will have two nodes
-		% each node can be part of multiple elements
+		% each node can be part of multiple elements, similarly for cells
 		elementList = []
+
+		cellList = []
 
 	end
 
@@ -30,38 +34,52 @@ classdef Node < matlab.mixin.SetGet
 
 			obj.position = [x,y];
 			obj.id 	= id;
+
 		end
 
 		function AddForceContribution(obj, force)
 			obj.force = obj.force + force;
+
 		end
 
 		function UpdatePosition(obj, dtEta)
 
+			% OBSOLETE: NOT LONGER USED
 			% Used primarily for testing to avoid making a cell population
 			newPosition = obj.position + dtEta * obj.force;
 
 			obj.NewPosition(newPosition);
 
 			% Reset the force for next time step
+			obj.previousForce = obj.force;
 			obj.force = [0,0];
 
 		end
 
 		function AddElement(obj, ele)
 			obj.elementList = [obj.elementList , ele];
+			% Technically should add each cell at a time
+			% but the cellLists work the same way, so we can get away with it
+			obj.AddCell(ele.cellList);
 		end
 
 		function RemoveElement(obj, ele)
-			% Test not written for this yet
-			for i = 1:length(obj.elementList)
+			
+			% Remove the element from the list
+			obj.elementList(obj.elementList == ele) = [];
 
-				% Using == here because we're comparing pointers
-				if obj.elementList(i) == ele
-					obj.elementList(i) = [];
-					break;
-				end
-			end
+			% If removing this element means a node is no longer associated with
+			% a specific cell, then the cell must also be removed. It's easier just to regenerate the cellList
+
+			% Make a list of the cells that the node must be part of
+			obj.cellList = unique([obj.elementList.cellList]);
+
+		end
+
+		function RemoveCell(obj, c)
+
+			% Not likely to need this now, but leaving it anyway
+			obj.cellList(obj.cellList == c) = [];
 
 		end
 
@@ -82,10 +100,16 @@ classdef Node < matlab.mixin.SetGet
 
 			obj.NewPosition(pos);
 			% Reset the force for next time step
+			obj.previousForce = obj.force;
 			obj.force = [0,0];
 
 		end
 
+		function AddCell(obj, c)
+
+			Lidx = ~ismember(c,obj.cellList);
+			obj.cellList = [obj.cellList , c(Lidx)];
+		end
 
 
 	end

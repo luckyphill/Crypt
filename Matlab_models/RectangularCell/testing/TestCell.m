@@ -119,10 +119,14 @@ classdef TestCell < matlab.unittest.TestCase
 			et = Element(n2,n4,3);
 			er = Element(n3,n4,4);
 
-			% TODO: Make this work with arbitrary order of elements
 			c = Cell(NoCellCycle, [et,eb,el,er], 1);
 
+			% The cell is made of the points (0,0),(0,1),(1,0),(1,1)
+			% So point (0.5,0.5) must be in, (1,0.5) must be on
+			% and point (1.5,0.5) must be out
+
 			testCase.verifyTrue(c.IsPointInsideCell([0.5, 0.5]));
+			testCase.verifyFalse(c.IsPointInsideCell([1, 0.5]));
 			testCase.verifyFalse(c.IsPointInsideCell([1.5, 0.5]));
 
 		end

@@ -36,15 +36,14 @@ classdef CellGrowing < AbstractCellSimulation
 
 			obj.AddCellBasedForce(NagaiHondaForce(areaEnergy, perimeterEnergy, adhesionEnergy));
 
-			% obj.AddCellBasedForce(CornerForceCouple(0.1,pi/2));
+			obj.AddCellBasedForce(CornerForceCouple(0.1,pi/2));
 
-			% obj.AddCellBasedForce(CornerForceFletcher(10,pi/2));
+			% obj.AddCellBasedForce(CornerForceFletcher(20,pi/2));
 
-			% obj.AddElementBasedForce(RigidBodyEdgeModifierForce(0.2));
-
-			% obj.AddElementBasedForce(EdgeSpringForce(@(n,l) 20 * exp(1-25 * l/n)));
+			obj.AddElementBasedForce(EdgeSpringForce(@(n,l) 20 * exp(1-25 * l/n)));
 			
-			obj.collisionDetectionRequested = true;
+			% obj.collisionDetectionRequested = false;
+			obj.collisionDetectionOn = true;
 
 			obj.cellList = Cell(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
 

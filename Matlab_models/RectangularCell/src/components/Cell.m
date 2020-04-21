@@ -212,9 +212,9 @@ classdef Cell < matlab.mixin.SetGet
 
 		function inside = IsPointInsideCell(obj, point)
 
-			% Assemble vertices
-			x = [obj.nodeTopLeft.x, obj.nodeTopRight.x, obj.nodeBottomLeft.x, obj.nodeBottomRight.x];
-			y = [obj.nodeTopLeft.y, obj.nodeTopRight.y, obj.nodeBottomLeft.y, obj.nodeBottomRight.y];
+			% Assemble vertices in the correct order to produce a quadrilateral
+			x = [obj.nodeTopLeft.x, obj.nodeTopRight.x, obj.nodeBottomRight.x, obj.nodeBottomLeft.x];
+			y = [obj.nodeTopLeft.y, obj.nodeTopRight.y, obj.nodeBottomRight.y, obj.nodeBottomLeft.y];
 
 			[inside, on] = inpolygon(point(1), point(2), x ,y);
 

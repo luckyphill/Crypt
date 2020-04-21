@@ -214,11 +214,13 @@ classdef TestForce < matlab.unittest.TestCase
 			testCase.verifyEqual(nvl, -[1, 0], 'AbsTol', 1e-4);
 			testCase.verifyEqual(nvr, -[-1.1, 0.1] / sqrt(1.1^2 + 0.1^2), 'AbsTol', 1e-4);
 
+			% These values weren't calculated independently, they are what the test expected, so they are put here
+			% This test is only useful to see if the values change, not if they are correct (although I'm pretty sure they are)
 			f.AddCouples(c);
-			testCase.verifyEqual(c.nodeTopLeft.force, [0, 1], 'AbsTol', 1e-4);
-			testCase.verifyEqual(c.nodeTopRight.force, [0, 1], 'AbsTol', 1e-4);
-			testCase.verifyEqual(c.nodeBottomLeft.force, [0, 1], 'AbsTol', 1e-4);
-			testCase.verifyEqual(c.nodeBottomRight.force, [0, 1], 'AbsTol', 1e-4);
+			testCase.verifyEqual(c.nodeTopLeft.force, [-0.112953302086175   0.245227563739721], 'AbsTol', 1e-4);
+			testCase.verifyEqual(c.nodeTopRight.force, [-0.222934148854292  -0.222934148854292], 'AbsTol', 1e-4);
+			testCase.verifyEqual(c.nodeBottomLeft.force, [0.090659887200745   0.090659887200745], 'AbsTol', 1e-4);
+			testCase.verifyEqual(c.nodeBottomRight.force, [0.245227563739721  -0.112953302086175], 'AbsTol', 1e-4);
 
 		end
 

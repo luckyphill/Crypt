@@ -14,6 +14,9 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		nextCellId = 1
 
+		collisionDetected = false
+		edgeFlipDetected = false
+
 		collisionDetectionOn = false
 
 		collisionDetectionRequested = false
@@ -126,6 +129,9 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			% Element forces must happen last because it contains the rigid body
 			% tweak to prevent element flipping. This is a dodgy way to do it,
 			% but I can't think of a better and quick solution
+			% 17042020 no longer necessary to have these in this order because not using
+			% that particular edge flipping stopper. Still ought to implement a 'modifier'
+			% stage in time stepping
 			
 			
 			obj.MakeNodesMove();
@@ -140,9 +146,9 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 			obj.UpdateAlphaWrinkleParameter
 
-			if ~obj.collisionDetectionOn && obj.collisionDetectionRequested
-				obj.UpdateIfCollisionDetectionNeeded();
-			end
+			% if ~obj.collisionDetectionOn && obj.collisionDetectionRequested
+			% 	obj.UpdateIfCollisionDetectionNeeded();
+			% end
 
 			obj.MakeCellsAge();
 
@@ -167,7 +173,8 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 				
 				% Make sure nothing has gone wrong
 				if obj.collisionDetectionOn
-					if obj.DetectCollision()
+					obj.ProcessCollisions();
+					if obj.collisionDetected
 						fprintf('Collision detected. Stopped at t = %.2f\n',obj.t);
 						break;
 					end
@@ -289,6 +296,21 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 				% If we get to this point, the cell should definitely be new
 				% so don't have to worry about checking
 				nc = newCellList(i);
+
+				% Since the new cell is made by the old cell, we don't know the
+				% global id numbers until we get to this point
+				nc.id = obj.GetNextCellId();
+
+				nc.elementTop.id = obj.GetNextElementId();
+				nc.elementBottom.id = obj.GetNextElementId();
+				nc.elementLeft.id = obj.GetNextElementId();
+				nc.elementRight.id = obj.GetNextElementId();
+
+				nc.nodeTopLeft.id = obj.GetNextNodeId();
+				nc.nodeTopRight.id = obj.GetNextNodeId();
+				nc.nodeBottomLeft.id = obj.GetNextNodeId();
+				nc.nodeBottomRight.id = obj.GetNextNodeId();
+
 				obj.cellList(end + 1) = nc;
 
 				obj.AddNodesToList([nc.nodeTopLeft, nc.nodeTopRight, nc.nodeBottomLeft, nc.nodeBottomRight]);
@@ -337,12 +359,197 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		end
 
+
+		function ProcessCollisions(obj)
+
+			% Initial sort by x coordinate then y
+			% Note: in testing it was not clear that the y coordinate was always
+			% ordered in ascending order, however, this may have something to do
+			% with the precision of the x coords involved. Two x coords that have
+			% the same decimal representation up to 12 decimals may not be equal
+			% past this, and that could be what I wasn't seeing
+			a = reshape([obj.nodeList.position], [2, length(obj.nodeList)]);
+			[~,idx] = sortrows(a');
+			% Initial sort by x coordinate
+			% [~,idx] = sort([obj.nodeList.x]);
+
+			obj.nodeList = obj.nodeList(idx);
+
+			collisions = obj.FindCollisions(obj.nodeList);
+
+			% For each collision there is some pair of cells that need to be corrected
+			% so they are not intersecting
+			% A collision could also be when an edge has flipped, so need to be careful
+
+			if ~isempty(collisions)
+				obj.collisionDetected = true;
+			end
+
+
+		end
+
+		function collisions = FindCollisions(obj, nodes)
+			% Don't really need to take the argument nodes, but it helps for unit testing
+
+			% At this point, the array nodes must be ordered by x coordinate.
+			% Sorting could happen in here, but by sorting the actual list held by
+			% the cell population, there will be some speed up since the order will
+			% not change much between time steps
+
+			% For each cell we are tracking the number of constituent nodes that have
+			% been visited. When it reaches 4, then the cell is removed from consideration
+			cellVisitTally = containers.Map( 'KeyType', 'double', 'ValueType', 'any');
+
+			% a list of the cell that are cut by the scanning line
+			activeCells = Cell.empty();
+
+			% A cell array of edge pairs that collide
+			collisions = {};
+
+			for i = 1:length(nodes)
+
+
+				candidates = nodes(i).cellList;
+
+				% Update the list of active cells
+
+				for j = 1:length(candidates)
+
+					if isKey(cellVisitTally, candidates(j).id)
+						% If this is the 4th node we've visited for a particular cell, then
+						% get rid of it from active cells
+						if cellVisitTally(candidates(j).id) == 3
+							Lidx = ismember(candidates(j), activeCells);
+							activeCells(Lidx) = [];
+						else
+							cellVisitTally(candidates(j).id) = cellVisitTally(candidates(j).id) + 1;
+						end
+					else
+						cellVisitTally(candidates(j).id) = 1;
+						activeCells = [activeCells, candidates(j)];
+					end
+				end
+
+				% For each active cell, compare it against the other active cells
+				% There should be a smart way to do this so we don't need to do every comparison
+				% but only the ones with adjacent cells (not cells that share nodes)
+
+				% Initially this should be fast because there won't be many active cells at one time
+				% but if there are long crypts forming, then this could be quite high
+
+
+
+
+
+
+				for j = 1:length(activeCells)
+
+					cell1 = activeCells(j);
+
+					for k = j+1:length(activeCells)
+						c1c2 = zeros(1,4);
+						c2c1 = zeros(1,4);
+						cell2 = activeCells(k);
+						% If the cells aren't immediate neighbours, check for intersections
+						if (cell2.nodeTopLeft ~= cell1.nodeTopLeft) && (cell2.nodeTopLeft ~= cell1.nodeTopRight)
+							
+							% Check if they intersect
+							c1c2(1) = cell1.IsPointInsideCell(cell2.nodeTopLeft.position);
+							c1c2(2) = cell1.IsPointInsideCell(cell2.nodeTopRight.position);
+							c1c2(3) = cell1.IsPointInsideCell(cell2.nodeBottomLeft.position);
+							c1c2(4) = cell1.IsPointInsideCell(cell2.nodeBottomRight.position);
+
+							c2c1(1) = cell2.IsPointInsideCell(cell1.nodeTopLeft.position);
+							c2c1(2) = cell2.IsPointInsideCell(cell1.nodeTopRight.position);
+							c2c1(3) = cell2.IsPointInsideCell(cell1.nodeBottomLeft.position);
+							c2c1(4) = cell2.IsPointInsideCell(cell1.nodeBottomRight.position);
+
+							% The first cell contains a node from the second cell
+							
+						else
+							% If they are immediate neighbours, determine which element they have in common
+							if cell1.elementLeft == cell2.elementRight
+								% Check the right nodes of cell 1 and left nodes of cell 2
+								c1c2(1) = cell1.IsPointInsideCell(cell2.nodeBottomLeft.position);
+								c1c2(2) = cell1.IsPointInsideCell(cell2.nodeTopLeft.position);
+
+								c2c1(1) = cell2.IsPointInsideCell(cell1.nodeBottomRight.position);
+								c2c1(2) = cell2.IsPointInsideCell(cell1.nodeTopRight.position);
+							end
+
+							if cell2.elementLeft == cell1.elementRight
+								% Check the right nodes of cell 2 and left nodes of cell 1
+								c1c2(1) = cell1.IsPointInsideCell(cell2.nodeBottomRight.position);
+								c1c2(2) = cell1.IsPointInsideCell(cell2.nodeTopRight.position);
+
+								c2c1(1) = cell2.IsPointInsideCell(cell1.nodeBottomLeft.position);
+								c2c1(2) = cell2.IsPointInsideCell(cell1.nodeTopLeft.position);
+							end
+
+
+						end
+
+						% If either are true, then we have an intersection
+						if sum(c1c2) > 0
+							collisions{end + 1} = {cell1, cell2};
+						end
+
+						if sum(c2c1) > 0
+							collisions{end + 1} = {cell2, cell1};
+						end
+
+					end
+
+				end
+
+			end
+
+
+
+		end
+
+		function collisions = LineIntersections(obj, E)
+
+			% Naming convention follows that in Computational Geometry: An Introduction p 284
+			% E is ordered list of nodes (by x then y)
+			% A is a list of intersecting element pairs
+			% L is an ordered list of active elements (by y)
+
+			A = {};
+			L = Element.empty();
+
+			i = 1;
+			while i <= length(E)
+				n = E(i);
+
+				% Decide which elements are in the list already
+				[~, Lidx] = ismember(n.elementList, L);
+
+				% If they are not in the list, then they are to be added
+				% in their correct position and intersections checked
+				
+				L = [L, n.elementList(Lidx)];
+
+				% If they are already in the list, then they are to be
+				% removed, and the newly adjacent elements are to be checked
+				L(~Lidx) = [];
+				
+
+
+
+				i = i + 1;
+			end
+
+
+		end
+
+
 		function UpdateIfCollisionDetectionNeeded(obj)
 
 			% An approximate way to tell if collision detection is needed to speed up
 			% simulation time when there is no chance
 
-			detectionThresholdRatio = 1 / 0.85;
+			detectionThresholdRatio = 1 / 0.88;
 
 			if (obj.topWiggleRatio > detectionThresholdRatio || obj.bottomWiggleRatio > detectionThresholdRatio)
 				obj.collisionDetectionOn = true;
@@ -393,6 +600,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			end
 
 			obj.alphaWrinkleParameter = r / obj.GetNumCells();
+
 		end
 
 		function UpdateAverageYDeviation(obj)
@@ -443,13 +651,14 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			end
 
 			if detected
+				obj.collisionDetected = true;
 				varargout{1} = cell1;
 				varargout{2} = cell2;
 			end
 
 		end
 
-		function detected = DetectEdgeFlip(obj)
+		function [detected, varargout] = DetectEdgeFlip(obj)
 
 			% If an edge has flipped, that mean the cell is no longer a physical shape
 			% so we need to detect this and stop the simulation
@@ -462,6 +671,11 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 				i = i + 1;
 
+			end
+
+			if detected
+				obj.edgeFlipDetected = true;
+				varargout{1} = obj.cellList(i);
 			end
 
 		end

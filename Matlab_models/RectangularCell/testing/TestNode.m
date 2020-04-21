@@ -49,21 +49,59 @@ classdef TestNode < matlab.unittest.TestCase
 
 		end
 
-		function TestPointToElement(testCase)
+		function TestPointToElementAndCell(testCase)
 
-			n1 = Node(1,1,1);
-			n2 = Node(2,1,2);
 
-			e = Element(n1,n2,1);
+			n1 = Node(0,0,1);
+			n2 = Node(0,1,2);
+			n3 = Node(1,0,3);
+			n4 = Node(1,1,4);
 
-			testCase.verifyEqual(n1.elementList, e);
-			testCase.verifyEqual(n2.elementList, e);
+			el = Element(n1,n2,1);
+			eb = Element(n1,n3,2);
+			et = Element(n2,n4,3);
+			er = Element(n3,n4,4);
+
+			c = Cell(NoCellCycle, [et,eb,el,er], 1);
+
+
+			testCase.verifyTrue(ismember(el,n1.elementList));
+			testCase.verifyTrue(ismember(el,n2.elementList));
+
+			testCase.verifyTrue(ismember(eb,n1.elementList));
+			testCase.verifyTrue(ismember(eb,n3.elementList));
+
+			testCase.verifyTrue(ismember(et,n4.elementList));
+			testCase.verifyTrue(ismember(et,n2.elementList));
+
+			testCase.verifyTrue(ismember(er,n3.elementList));
+			testCase.verifyTrue(ismember(er,n4.elementList));
+
+			testCase.verifyTrue(ismember(c,n1.cellList));
+			testCase.verifyTrue(ismember(c,n2.cellList));
 
 			% Remove the element from both lists
-			n1.RemoveElement(e);
-			n2.RemoveElement(e);
+			n1.RemoveElement(el);
+			n2.RemoveElement(el);
+
+			testCase.verifyFalse(ismember(el,n1.elementList));
+			testCase.verifyFalse(ismember(el,n2.elementList));
+
+			testCase.verifyTrue(ismember(c,n1.cellList));
+			testCase.verifyTrue(ismember(c,n2.cellList));
+
+			n1.RemoveElement(er);
+			n2.RemoveElement(er);
+			n1.RemoveElement(eb);
+			n2.RemoveElement(eb);
+			n1.RemoveElement(et);
+			n2.RemoveElement(et);
+
 			testCase.verifyEmpty(n1.elementList);
 			testCase.verifyEmpty(n2.elementList);
+
+			testCase.verifyEmpty(n1.cellList);
+			testCase.verifyEmpty(n2.cellList);
 		end
 
 

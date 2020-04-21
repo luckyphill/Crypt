@@ -61,21 +61,6 @@ classdef Element < matlab.mixin.SetGet
 
 		end
 
-		% Saving for if a force object is written
-		% function UpdateForceSpring(obj)
-
-		% 	obj.UpdateDx()
-		% 	obj.force = obj.stiffness * obj.dx;
-
-		% 	obj.direction1to2 = obj.Node2.position - obj.Node1.position;
-		% 	obj.direction1to2 = obj.direction1to2 / norm(obj.direction1to2);
-
-		% 	obj.force1to2 = obj.direction1to2 * obj.force;
-
-		% 	obj.Node1.AddForceContribution(-obj.force1to2);
-		% 	obj.Node2.AddForceContribution(obj.force1to2);
-
-		% end
 
 		function direction1to2 = GetVector1to2(obj)
 
@@ -88,13 +73,33 @@ classdef Element < matlab.mixin.SetGet
 		function AddCell(obj, c)
 
 			obj.cellList = [obj.cellList , c];
+			obj.Node1.AddCell(c);
+			obj.Node2.AddCell(c);
 
 		end
 
+		function otherNode = GetOtherNode(obj, node)
+			% Since we don't know what order the nodes are in, we need a special way to grab the
+			% other node if we already know one of them
+
+			if node == obj.Node1
+				otherNode = obj.Node1;
+			else
+				if node == obj.Node2
+					otherNode = obj.Node2;
+				else
+					error('Node not in this element');
+				end
+			end
+
+
+		end
 
 		function ReplaceNode(obj, oldNode, newNode)
 			% Removes the old node from the element, and replaces
 			% it with a new node. This is used in cell division primarily
+
+			% To do this properly, we need fix all the links to nodes and cells
 			if oldNode == newNode
 				warning('e:sameNode', 'The old node is the same as the new node. This is probably not what you wanted to do')
 			end
