@@ -95,6 +95,7 @@ classdef TestCell < matlab.unittest.TestCase
 
 			d = c.Divide();
 
+			% Check the nodes are in the correct position
 			testCase.verifyEqual(c.nodeTopLeft.position,[0.5, 1]);
 			testCase.verifyEqual(c.nodeTopRight.position,[1, 1]);
 			testCase.verifyEqual(c.nodeBottomLeft.position,[0.5, 0]);
@@ -104,6 +105,38 @@ classdef TestCell < matlab.unittest.TestCase
 			testCase.verifyEqual(d.nodeTopRight.position,[0.5, 1]);
 			testCase.verifyEqual(d.nodeBottomLeft.position,[0, 0]);
 			testCase.verifyEqual(d.nodeBottomRight.position,[0.5, 0]);
+
+			% Test all the links
+			newtl = d.nodeTopLeft;
+			newtr = d.nodeTopRight;
+			newbl = d.nodeBottomLeft;
+			newbr = d.nodeBottomRight;
+
+			newt = d.elementTop;
+			newb = d.elementBottom;
+			newl = d.elementLeft;
+			newr = d.elementRight;
+
+			% Check links with nodes
+			% This is where errors could occur
+			testCase.verifyTrue(ismember(c, newtl.cellList));
+			testCase.verifyTrue(ismember(c, newbl.cellList));
+			testCase.verifyEqual(c.nodeTopLeft, newtr);
+			testCase.verifyEqual(c.nodeBottomLeft, newbr);
+
+			% Should be a given
+			testCase.verifyTrue(ismember(d, newtl.cellList));
+			testCase.verifyTrue(ismember(d, newbl.cellList));
+			testCase.verifyTrue(ismember(d, newtr.cellList));
+			testCase.verifyTrue(ismember(d, newbr.cellList));
+
+			% Check links with elements
+			% This is where the error could occur
+			testCase.verifyEqual(newl, el);
+			testCase.verifyTrue(ismember(c, newr.cellList));
+			testCase.verifyFalse(ismember(c, newl.cellList));
+			testCase.verifyEqual(c.elementLeft, newr);
+
 
 		end
 
@@ -123,9 +156,12 @@ classdef TestCell < matlab.unittest.TestCase
 
 			% The cell is made of the points (0,0),(0,1),(1,0),(1,1)
 			% So point (0.5,0.5) must be in, (1,0.5) must be on
-			% and point (1.5,0.5) must be out
+			% and point (1.5,0.5) must be out.
+			% If the nodes are oriented incorrectly [0.5, 0.5] will
+			% be on the edge of the cell
 
 			testCase.verifyTrue(c.IsPointInsideCell([0.5, 0.5]));
+			testCase.verifyTrue(c.IsPointInsideCell([0.6, 0.6]));
 			testCase.verifyFalse(c.IsPointInsideCell([1, 0.5]));
 			testCase.verifyFalse(c.IsPointInsideCell([1.5, 0.5]));
 

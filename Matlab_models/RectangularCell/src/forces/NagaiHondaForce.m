@@ -54,8 +54,8 @@ classdef NagaiHondaForce < AbstractCellBasedForce
 
 		function AddTargetPerimeterForces(obj, c)
 			
-			[tl, tr, br, bl] 	= obj.GetPerimeterGradientAtNodes(c);
-			currentPerimeter 	= c.GetCellPerimeter();
+			[currentPerimeter, tl, tr, br, bl] 	= obj.GetPerimeterAndGradientAtNodes(c);
+			% currentPerimeter 	= c.GetCellPerimeter();
 			targetPerimeter 	= c.GetCellTargetPerimeter();
 
 			magnitude = 2 * obj.surfaceEnergyParameter * (currentPerimeter - targetPerimeter);
@@ -126,7 +126,7 @@ classdef NagaiHondaForce < AbstractCellBasedForce
 
 		end
 
-		function [pgtl, pgtr, pgbr, pgbl] = GetPerimeterGradientAtNodes(obj, c)
+		function [p, pgtl, pgtr, pgbr, pgbl] = GetPerimeterAndGradientAtNodes(obj, c)
 
 			% Each node has an associated perimeter gradient according the NagaiHondaForce, lifted directly from Chaste
 			% I really have no idea what's going on here, I'm just crossing my fingers and hoping it makes sense
@@ -139,10 +139,17 @@ classdef NagaiHondaForce < AbstractCellBasedForce
 
 			% Go around in a clockwise direction
 
-			right 	= (c.nodeTopRight.position 		- c.nodeBottomRight.position) 	/ c.elementRight.GetLength();
-			bottom 	= (c.nodeBottomRight.position 	- c.nodeBottomLeft.position) 	/ c.elementBottom.GetLength();
-			left 	= (c.nodeBottomLeft.position 	- c.nodeTopLeft.position) 		/ c.elementLeft.GetLength();
-			top 	= (c.nodeTopLeft.position 		- c.nodeTopRight.position) 		/ c.elementTop.GetLength();
+			lRight = c.elementRight.GetLength();
+			lBottom = c.elementBottom.GetLength();
+			lLeft = c.elementLeft.GetLength();
+			lTop = c.elementTop.GetLength();
+
+			p = lRight + lBottom + lLeft + lTop;
+
+			right 	= (c.nodeTopRight.position 		- c.nodeBottomRight.position) 	/ lRight;
+			bottom 	= (c.nodeBottomRight.position 	- c.nodeBottomLeft.position) 	/ lBottom;
+			left 	= (c.nodeBottomLeft.position 	- c.nodeTopLeft.position) 		/ lLeft;
+			top 	= (c.nodeTopLeft.position 		- c.nodeTopRight.position) 		/ lTop;
 
 
 			pgtl 	= left 		- top;

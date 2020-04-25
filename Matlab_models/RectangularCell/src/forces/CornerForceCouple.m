@@ -50,33 +50,58 @@ classdef CornerForceCouple < AbstractCellBasedForce
 			torqueBottomLeft = 	obj.cornerSpringRate * ( obj.preferedAngle - angleBottomLeft);
 			torqueBottomRight = obj.cornerSpringRate * ( obj.preferedAngle - angleBottomRight);
 
-			% Forces due to top left angle
-			c.nodeBottomLeft.AddForceContribution(  torqueTopLeft * vectorLeft  / c.elementLeft.GetLength() );
-			c.nodeTopLeft.AddForceContribution(    -torqueTopLeft * vectorLeft  / c.elementLeft.GetLength() );
+			lenLeft = c.elementLeft.GetLength();
+			lenRight = c.elementRight.GetLength();
+			lenTop = c.elementTop.GetLength();
+			lenBottom = c.elementBottom.GetLength();
 
-			c.nodeTopLeft.AddForceContribution(    -torqueTopLeft * vectorTop   / c.elementTop.GetLength() );
-			c.nodeTopRight.AddForceContribution(    torqueTopLeft * vectorTop   / c.elementTop.GetLength() );
+			%----------------------------------------------------------------------------------
+			% Reordering this to avoid too many calls to AddForceContribution
+			blForce = (torqueTopLeft * vectorLeft  /  lenLeft) + (torqueBottomRight * vectorBottom / lenBottom) - (torqueBottomLeft * vectorBottom  / lenBottom) - (torqueBottomLeft * vectorLeft / lenLeft);
+			c.nodeBottomLeft.AddForceContribution(blForce);
 
-			% Forces due to top right angle
-			c.nodeTopLeft.AddForceContribution(     torqueTopRight * vectorTop  / c.elementTop.GetLength() );
-			c.nodeTopRight.AddForceContribution(   -torqueTopRight * vectorTop  / c.elementTop.GetLength() );
+			tlForce = - (torqueTopLeft * vectorLeft  / lenLeft) - (torqueTopLeft * vectorTop   / lenTop) + (torqueTopRight * vectorTop  / lenTop) + (torqueBottomLeft * vectorLeft / lenLeft);
+			c.nodeTopLeft.AddForceContribution(tlForce);
+
+			trForce = (torqueTopLeft * vectorTop   / lenTop) - (torqueTopRight * vectorTop  / lenTop) - (torqueTopRight * vectorRight / lenRight) + (torqueBottomRight * vectorRight  / lenRight);
+			c.nodeTopRight.AddForceContribution(trForce);
+
+			brForce = (torqueTopRight * vectorRight / lenRight) - (torqueBottomRight * vectorRight  / lenRight) - (torqueBottomRight * vectorBottom / lenBottom) + (torqueBottomLeft * vectorBottom  / lenBottom);
+			c.nodeBottomRight.AddForceContribution(brForce);
+			%----------------------------------------------------------------------------------
+
+			% % The following code is replaced by that above which is a bit quicker to run
+			% % It is kept here for reference to help understanding where the forces are going 
+			% % Forces due to top left angle
+			% c.nodeBottomLeft.AddForceContribution(  torqueTopLeft * vectorLeft  /  lenLeft);
+			% c.nodeTopLeft.AddForceContribution(    -torqueTopLeft * vectorLeft  / lenLeft );
+
+			% c.nodeTopLeft.AddForceContribution(    -torqueTopLeft * vectorTop   / lenTop );
+			% c.nodeTopRight.AddForceContribution(    torqueTopLeft * vectorTop   / lenTop );
+
+			% % Forces due to top right angle
+			% c.nodeTopLeft.AddForceContribution(     torqueTopRight * vectorTop  / lenTop );
+			% c.nodeTopRight.AddForceContribution(   -torqueTopRight * vectorTop  / lenTop );
 			
-			c.nodeTopRight.AddForceContribution(   -torqueTopRight * vectorRight / c.elementRight.GetLength() );
-			c.nodeBottomRight.AddForceContribution( torqueTopRight * vectorRight / c.elementRight.GetLength() );
+			% c.nodeTopRight.AddForceContribution(   -torqueTopRight * vectorRight / lenRight );
+			% c.nodeBottomRight.AddForceContribution( torqueTopRight * vectorRight / lenRight );
 
-			% Forces due to bottom right angle
-			c.nodeTopRight.AddForceContribution(    torqueBottomRight * vectorRight  / c.elementRight.GetLength() );
-			c.nodeBottomRight.AddForceContribution(-torqueBottomRight * vectorRight  / c.elementRight.GetLength() );
+			% % Forces due to bottom right angle
+			% c.nodeTopRight.AddForceContribution(    torqueBottomRight * vectorRight  / lenRight );
+			% c.nodeBottomRight.AddForceContribution(-torqueBottomRight * vectorRight  / lenRight );
 			
-			c.nodeBottomRight.AddForceContribution(-torqueBottomRight * vectorBottom / c.elementBottom.GetLength() );
-			c.nodeBottomLeft.AddForceContribution(  torqueBottomRight * vectorBottom / c.elementBottom.GetLength() );
+			% c.nodeBottomRight.AddForceContribution(-torqueBottomRight * vectorBottom / lenBottom );
+			% c.nodeBottomLeft.AddForceContribution(  torqueBottomRight * vectorBottom / lenBottom );
 
-			% Forces due to bottom left angle
-			c.nodeBottomRight.AddForceContribution( torqueBottomLeft * vectorBottom  / c.elementBottom.GetLength() );
-			c.nodeBottomLeft.AddForceContribution( -torqueBottomLeft * vectorBottom  / c.elementBottom.GetLength() );
+			% % Forces due to bottom left angle
+			% c.nodeBottomRight.AddForceContribution( torqueBottomLeft * vectorBottom  / lenBottom );
+			% c.nodeBottomLeft.AddForceContribution( -torqueBottomLeft * vectorBottom  / lenBottom );
 			
-			c.nodeBottomLeft.AddForceContribution( -torqueBottomLeft * vectorLeft / c.elementLeft.GetLength() );
-			c.nodeTopLeft.AddForceContribution(     torqueBottomLeft * vectorLeft / c.elementLeft.GetLength() );
+			% c.nodeBottomLeft.AddForceContribution( -torqueBottomLeft * vectorLeft / lenLeft );
+			% c.nodeTopLeft.AddForceContribution(     torqueBottomLeft * vectorLeft / lenLeft );
+
+
+
 
 		end
 

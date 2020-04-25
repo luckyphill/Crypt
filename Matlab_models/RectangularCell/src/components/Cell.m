@@ -12,12 +12,18 @@ classdef Cell < matlab.mixin.SetGet
 		elementLeft
 		elementRight
 
+		elementList
+
 		% Can't know for certain which order the nodes will be placed into the element
 		% so need to determine these carefully when initialising
 		nodeTopLeft
 		nodeTopRight
 		nodeBottomLeft
 		nodeBottomRight
+
+		% Knowing the location of the nodes is extremely useful, but sometimes it's quicker
+		% to access a list
+		nodeList = []
 
 		age = 0
 		cellArea
@@ -145,47 +151,105 @@ classdef Cell < matlab.mixin.SetGet
 
 		end
 
+		function cellLeft = GetAdjacentCellLeft(obj)
+
+			cellLeft = obj.elementLeft.GetOtherCell(obj);
+
+		end
+
+		function cellRight = GetAdjacentCellRight(obj)
+
+			cellRight = obj.elementRight.GetOtherCell(obj);
+
+		end
+
 		function newCell = Divide(obj)
 			% To divide, split the top and bottom elements in half
 			% add an element in the middle
 
-			% After division, cell growth occurs
+			% This process needs to be done carefully to update all the new
+			% links between node, element and cell
 
-			tl 					= obj.nodeTopLeft.position;
-			tr 					= obj.nodeTopRight.position;
-			br 					= obj.nodeBottomRight.position;
-			bl 					= obj.nodeBottomLeft.position;
+			%  o------o------o
+			%  |      |      |
+			%  |      |      |
+			%  |      |      |
+			%  |      |      |
+			%  |      |      |
+			%  o------o------o
 
-			midTop 				= tl + (tr - tl)/2;
-			midBottom 			= bl + (br - bl)/2;
+			% Becomes
 
-			% TODO: Sort out id counting from here (maybe remove it altogether?)
+			%  o------o~~~x---o
+			%  |      |   l   |
+			%  |      |   l   |
+			%  |      |   l   |
+			%  |      |   l   |
+			%  |      |   l   |
+			%  o------o~~~x---o
+
+			% Links for everything in new cell will automatically be correct
+			% but need to update links for old centre nodes and old centre edge
+			% because they will point to the original cell
+
+
+			% Find the new points for the nodes
+
+			midTop 				= obj.elementTop.GetMidPoint;
+			midBottom 			= obj.elementBottom.GetMidPoint;
+
+			% Make the new nodes
 			nodeMiddleTop 		= Node(midTop(1),midTop(2),1);
 			nodeMiddleBottom 	= Node(midBottom(1), midBottom(2),2);
 			
-			elementMiddle 		= Element(nodeMiddleTop, nodeMiddleBottom, 1);
-
-			% Existing cell is moved to the right, new cell appears to the left
-
+			% Make the new elements,
+			newElementMiddle 	= Element(nodeMiddleTop, nodeMiddleBottom, 1);
 			newElementTop 		= Element(obj.nodeTopLeft, nodeMiddleTop, 1);
 			newElementBottom 	= Element(obj.nodeBottomLeft, nodeMiddleBottom, 1);
 
-			% Create new cell before remodelling old cell
+			% Duplicate the cell cycle model from the old cell
 			newCCM = obj.CellCycleModel.Duplicate();
-			newCell = Cell(newCCM, [newElementTop, newElementBottom, obj.elementLeft, elementMiddle], 1);
 
-			% Preserve the existing elements to stay with the original cell
+			% Now we have all the parts we need to build the new cell in its correct position
+			% The new cell will have the correct links with its constituent elements and nodes
+			newCell = Cell(newCCM, [newElementTop, newElementBottom, obj.elementLeft, newElementMiddle], 1);
+
+
+			% Now we need to remodel the old cell and fix all the links
+
+			% The old cell needs to change the links to the top left and bottom left nodes
+			% and the left element
+			% The old left element needs it's link to old cell (it already has a link to new cell)
+
+			% The top and bottom elements stay with the old cell, but we need to replace the
+			% left nodes with the new middle nodes. This function repairs the links from node
+			% to cell
 			obj.elementTop.ReplaceNode(obj.nodeTopLeft, nodeMiddleTop);
 			obj.elementBottom.ReplaceNode(obj.nodeBottomLeft, nodeMiddleBottom);
-			obj.elementLeft 	= elementMiddle;
 
-			% Replace the nodes of the cell
+			% Fix the link to the top left and bottom left nodes
 			obj.nodeTopLeft 	= nodeMiddleTop;
 			obj.nodeBottomLeft 	= nodeMiddleBottom;
+
+			% Old top left nodes are now replaced.
+
+			% Now to fix the links with the new left element and old left element
+
+			% At this point, old left element still links to old cell (and vice versa), and new left element
+			% only links to new cell.
+
+			obj.elementLeft.RemoveCell(obj);
+			obj.elementLeft = newElementMiddle;
+
+			newElementMiddle.AddCell(obj);
+						
 
 			% Old cell should be completely remodelled by this point, adjust the age back to zero
 
 			obj.CellCycleModel.SetAge(0);
+
+			% Finally, reset the node list
+			obj.nodeList =  [obj.nodeTopLeft, obj.nodeTopRight, obj.nodeBottomLeft, obj.nodeBottomRight];
 
 		end
 
@@ -213,8 +277,9 @@ classdef Cell < matlab.mixin.SetGet
 		function inside = IsPointInsideCell(obj, point)
 
 			% Assemble vertices in the correct order to produce a quadrilateral
-			x = [obj.nodeTopLeft.x, obj.nodeTopRight.x, obj.nodeBottomRight.x, obj.nodeBottomLeft.x];
-			y = [obj.nodeTopLeft.y, obj.nodeTopRight.y, obj.nodeBottomRight.y, obj.nodeBottomLeft.y];
+
+			x = [obj.nodeList.x];
+			y = [obj.nodeList.y];
 
 			[inside, on] = inpolygon(point(1), point(2), x ,y);
 
@@ -338,26 +403,50 @@ classdef Cell < matlab.mixin.SetGet
 		function AddNodesInOrder(obj)
 			% Adds the nodes properly so we always know which node is where
 
-			% One of the nodes in elementTop must be nodeTopLeft
-			% pick the leftmost of the two. If the cell gets rotated, this will need to change
-			% but for now it will do
+			% NodeTopLeft must be in both elementTop and elementLeft etc.
+			% so use this fact to allocate the nodes properly
 
-			if obj.elementTop.Node1.x < obj.elementTop.Node2.x
-				obj.nodeTopLeft = obj.elementTop.Node1;
-				obj.nodeTopRight = obj.elementTop.Node2;
-			else
-				obj.nodeTopLeft = obj.elementTop.Node2;
-				obj.nodeTopRight = obj.elementTop.Node1;
+			top1 = obj.elementTop.Node1;
+			top2 = obj.elementTop.Node2;
+
+			left1 = obj.elementLeft.Node1;
+			left2 = obj.elementLeft.Node2;
+
+			if top1 == left1
+				obj.nodeTopLeft = top1;
+				obj.nodeTopRight = top2;
+				obj.nodeBottomLeft = left2;
+				obj.nodeBottomRight = obj.elementBottom.GetOtherNode(left2);
 			end
 
-			if obj.elementBottom.Node1.x < obj.elementBottom.Node2.x
-				obj.nodeBottomLeft = obj.elementBottom.Node1;
-				obj.nodeBottomRight = obj.elementBottom.Node2;
-			else
-				obj.nodeBottomLeft = obj.elementBottom.Node2;
-				obj.nodeBottomRight = obj.elementBottom.Node1;
+			if top1 == left2
+				obj.nodeTopLeft = top1;
+				obj.nodeTopRight = top2;
+				obj.nodeBottomLeft = left1;
+				obj.nodeBottomRight = obj.elementBottom.GetOtherNode(left1);
 			end
 
+			if top2 == left1
+				obj.nodeTopLeft = top2;
+				obj.nodeTopRight = top1;
+				obj.nodeBottomLeft = left2;
+				obj.nodeBottomRight = obj.elementBottom.GetOtherNode(left2);
+			end
+
+			if top2 == left2
+				obj.nodeTopLeft = top2;
+				obj.nodeTopRight = top1;
+				obj.nodeBottomLeft = left1;
+				obj.nodeBottomRight = obj.elementBottom.GetOtherNode(left1);
+			end
+
+			% This order is critical for IsPointIncideCell to work correctly
+			obj.nodeList = [obj.nodeTopLeft, obj.nodeTopRight, obj.nodeBottomRight, obj.nodeBottomLeft];
+			
+			obj.nodeTopLeft.AddCell(obj);
+			obj.nodeTopRight.AddCell(obj);
+			obj.nodeBottomLeft.AddCell(obj);
+			obj.nodeBottomRight.AddCell(obj);
 
 		end
 

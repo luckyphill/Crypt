@@ -10,6 +10,11 @@ classdef TestNode < matlab.unittest.TestCase
 			testCase.verifyEqual(n.id,3);
 			testCase.verifyEqual(n.position,[1,2]);
 			testCase.verifyEqual(n.force,[0,0]);
+			testCase.verifyEqual(n.previousForce,[0,0]);
+
+			testCase.verifyEmpty(n.isTopNode);
+			testCase.verifyEmpty(n.elementList);
+			testCase.verifyEmpty(n.cellList);
 
 		end
 
@@ -79,6 +84,12 @@ classdef TestNode < matlab.unittest.TestCase
 
 			testCase.verifyTrue(ismember(c,n1.cellList));
 			testCase.verifyTrue(ismember(c,n2.cellList));
+
+			testCase.verifyTrue(n2.isTopNode);
+			testCase.verifyTrue(n4.isTopNode);
+
+			testCase.verifyFalse(n1.isTopNode);
+			testCase.verifyFalse(n3.isTopNode);
 
 			% Remove the element from both lists
 			n1.RemoveElement(el);

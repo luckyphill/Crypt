@@ -46,7 +46,7 @@ classdef TestForce < matlab.unittest.TestCase
 			c.nodeBottomLeft.force = [0, 0];
 			c.nodeBottomRight.force = [0, 0];
 
-			[pgtl, pgtr, pgbr, pgbl] = f.GetPerimeterGradientAtNodes(c);
+			[p, pgtl, pgtr, pgbr, pgbl] = f.GetPerimeterAndGradientAtNodes(c);
 
 			testCase.verifyEqual(pgtl, [0.9959, -0.9095], 'AbsTol', 1e-4);
 			testCase.verifyEqual(pgtr, [-1.0864, -1.0864], 'AbsTol', 1e-4);

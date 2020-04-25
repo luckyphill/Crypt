@@ -40,6 +40,7 @@ classdef Element < matlab.mixin.SetGet
 
 			obj.Node1.AddElement(obj);
 			obj.Node2.AddElement(obj);
+
 		end
 
 		function SetNaturalLength(obj, len)
@@ -56,11 +57,10 @@ classdef Element < matlab.mixin.SetGet
 		end
 
 		function len = GetLength(obj)
-
+			
 			len = norm(obj.Node1.position - obj.Node2.position);
 
 		end
-
 
 		function direction1to2 = GetVector1to2(obj)
 
@@ -69,12 +69,18 @@ classdef Element < matlab.mixin.SetGet
 
 		end
 
+		function midPoint = GetMidPoint(obj)
+
+			direction1to2 = obj.Node2.position - obj.Node1.position;
+			midPoint = obj.Node1.position + 0.5 * direction1to2;
+
+
+		end
+
 
 		function AddCell(obj, c)
 
 			obj.cellList = [obj.cellList , c];
-			obj.Node1.AddCell(c);
-			obj.Node2.AddCell(c);
 
 		end
 
@@ -83,12 +89,34 @@ classdef Element < matlab.mixin.SetGet
 			% other node if we already know one of them
 
 			if node == obj.Node1
-				otherNode = obj.Node1;
+				otherNode = obj.Node2;
 			else
 				if node == obj.Node2
-					otherNode = obj.Node2;
+					otherNode = obj.Node1;
 				else
 					error('Node not in this element');
+				end
+			end
+
+
+		end
+
+		function otherCell = GetOtherCell(obj, c)
+			% Since we don't know what order the cells are in, we need a special way to grab the
+			% other cell if we already know one of them. There will be two cases per simulation
+			% where there is no other cell, so in these cases, return logical false
+
+			otherCell = [];
+
+			if length(obj.cellList) == 2
+				if c == obj.cellList(1)
+					otherCell = obj.cellList(2);
+				else
+					if c == obj.cellList(2)
+						otherCell = obj.cellList(1);
+					else
+						error('Cell doesnt contain this element');
+					end
 				end
 			end
 
@@ -120,6 +148,28 @@ classdef Element < matlab.mixin.SetGet
 					error('e:nodeNotFound','Node not in this element')
 			end
 
+		end
+
+		function ReplaceCell(obj, oldC, newC)
+
+			% Currently the cell list has at most two entries
+			if obj.cellList(1) == oldC
+				obj.cellList(1) == newC;
+			else
+				if length(obj.cellList) == 2
+					if obj.cellList(2) == oldC
+						obj.cellList(2) = newC;
+					else
+						error('Cell does not contain this element');
+					end
+				end
+			end
+
+		end
+
+		function RemoveCell(obj, c)
+			% No error checking that cell is actually part of the list
+			obj.cellList(obj.cellList == c) = [];
 		end
 
 	end

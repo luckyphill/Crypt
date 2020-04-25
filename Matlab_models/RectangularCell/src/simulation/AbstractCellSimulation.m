@@ -21,6 +21,8 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		collisionDetectionRequested = false
 
+		centreLine
+
 		topWiggleRatio
 		bottomWiggleRatio
 		avgYDeviation
@@ -70,6 +72,9 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 			axis equal
 
+			obj.UpdateCentreLine();
+			plot(obj.centreLine(:,1), obj.centreLine(:,2), 'k');
+
 		end
 
 		function VisualisePrevious(obj)
@@ -113,9 +118,57 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		end
 
-		function AnimateCellPopulation(obj)
+		function AnimateNTimeSteps(obj, n, sm)
+			% Since we aren't storing data at this point, the only way to animate is to
+			% calculate then plot
 
+			% Set up the line objects initially
 
+			% Initialise an array of line objects
+			h = figure();
+			hold on
+
+			lineObjects(length(obj.elementList)) = line([1,1],[2,2]);
+
+			for i = 1:length(obj.elementList)
+				
+				x1 = obj.elementList(i).Node1.x;
+				x2 = obj.elementList(i).Node2.x;
+				x = [x1,x2];
+				y1 = obj.elementList(i).Node1.y;
+				y2 = obj.elementList(i).Node2.y;
+				y = [y1,y2];
+
+				lineObjects(i) = line(x,y);
+			end
+
+			totalSteps = 0;
+			while totalSteps < n
+
+				obj.NTimeSteps(sm);
+				totalSteps = totalSteps + sm;
+
+				for j = 1:length(obj.elementList)
+				
+					x1 = obj.elementList(j).Node1.x;
+					x2 = obj.elementList(j).Node2.x;
+					x = [x1,x2];
+					y1 = obj.elementList(j).Node1.y;
+					y2 = obj.elementList(j).Node2.y;
+					y = [y1,y2];
+
+					if j > length(lineObjects)
+						lineObjects(j) = line(x,y);
+					else
+						lineObjects(j).XData = x;
+						lineObjects(j).YData = y;
+					end
+				end
+
+				drawnow
+				title(sprintf('t=%g',obj.t));
+
+			end
 
 		end
 
@@ -146,14 +199,14 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 			obj.UpdateAlphaWrinkleParameter
 
-			% if ~obj.collisionDetectionOn && obj.collisionDetectionRequested
-			% 	obj.UpdateIfCollisionDetectionNeeded();
-			% end
+			if ~obj.collisionDetectionOn && obj.collisionDetectionRequested
+				obj.UpdateIfCollisionDetectionNeeded();
+			end
 
 			obj.MakeCellsAge();
 
 			obj.t = obj.t + obj.dt;
-			
+
 		end
 
 		function NTimeSteps(obj, n)
@@ -188,50 +241,6 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 			end
 			
-		end
-
-		function UpdateBoundaryCells(obj)
-
-			if isempty(obj.leftBoundaryCell)
-				% Probably the first time this has been run,
-				% so need to find the boundary cells first
-				% This won't work in general, but will be the case most of the time at this point
-				obj.leftBoundaryCell 	= obj.cellList(1);
-				obj.rightBoundaryCell 	= obj.cellList(end);
-			end
-
-			if obj.leftBoundaryCell.GetAge() <= obj.dt
-				% Boundary cell has just divided, so need to check which of the new
-				% cells is the leftmost
-				if length(obj.leftBoundaryCell.elementLeft.cellList) > 1
-					% The left element of the cell is part of at least two cells
-					% So need to replace the leftBoundaryCell
-					if obj.leftBoundaryCell == obj.leftBoundaryCell.elementLeft.cellList(1)
-						obj.leftBoundaryCell = obj.leftBoundaryCell.elementLeft.cellList(2);
-					else
-						obj.leftBoundaryCell = obj.leftBoundaryCell.elementLeft.cellList(1);
-					end
-
-				end
-
-			end
-
-			if obj.rightBoundaryCell.GetAge() <= obj.dt
-				% Boundary cell has just divided, so need to check which of the new
-				% cells is the rightmost
-				if length(obj.rightBoundaryCell.elementRight.cellList) > 1
-					% The right element of the cell is part of at least two cells
-					% So need to replace the rightBoundaryCell
-					if obj.rightBoundaryCell == obj.rightBoundaryCell.elementRight.cellList(1)
-						obj.rightBoundaryCell = obj.rightBoundaryCell.elementRight.cellList(2);
-					else
-						obj.rightBoundaryCell = obj.rightBoundaryCell.elementRight.cellList(1);
-					end
-
-				end
-
-			end
-
 		end
 		
 		function GenerateCellBasedForces(obj)
@@ -363,7 +372,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 		function ProcessCollisions(obj)
 
 			% Initial sort by x coordinate then y
-			% Note: in testing it was not clear that the y coordinate was always
+			% Note: in testing this line of code it was not clear that the y coordinate was always
 			% ordered in ascending order, however, this may have something to do
 			% with the precision of the x coords involved. Two x coords that have
 			% the same decimal representation up to 12 decimals may not be equal
@@ -384,7 +393,6 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			if ~isempty(collisions)
 				obj.collisionDetected = true;
 			end
-
 
 		end
 
@@ -419,8 +427,9 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 						% If this is the 4th node we've visited for a particular cell, then
 						% get rid of it from active cells
 						if cellVisitTally(candidates(j).id) == 3
-							Lidx = ismember(candidates(j), activeCells);
-							activeCells(Lidx) = [];
+							% Lidx = ismember(candidates(j), activeCells);
+							% activeCells(Lidx) = [];
+							activeCells(candidates(j)==activeCells) = [];
 						else
 							cellVisitTally(candidates(j).id) = cellVisitTally(candidates(j).id) + 1;
 						end
@@ -430,86 +439,133 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 					end
 				end
 
-				% For each active cell, compare it against the other active cells
-				% There should be a smart way to do this so we don't need to do every comparison
-				% but only the ones with adjacent cells (not cells that share nodes)
+				
+				% The only way collisions can occur is if an internal element (left or right)
+				% intersects with an external element (top or bottom). Therefore, we only need
+				% to compare these groups against each other. If an intersection is found,
+				% then we just need to take the node from the internal element and the 
+				% external element and we have our pairs.
 
-				% Initially this should be fast because there won't be many active cells at one time
-				% but if there are long crypts forming, then this could be quite high
+				% Since we are visiting nodes in order already, we can just check if that node
+				% is 
 
 
 
 
-
+				% This check each active cell to see if the current node is inside
+				% There are probably some speed benefits to be found by exploiting
+				% y position order, but leave that for later
 
 				for j = 1:length(activeCells)
 
 					cell1 = activeCells(j);
 
-					for k = j+1:length(activeCells)
-						c1c2 = zeros(1,4);
-						c2c1 = zeros(1,4);
-						cell2 = activeCells(k);
-						% If the cells aren't immediate neighbours, check for intersections
-						if (cell2.nodeTopLeft ~= cell1.nodeTopLeft) && (cell2.nodeTopLeft ~= cell1.nodeTopRight)
-							
-							% Check if they intersect
-							c1c2(1) = cell1.IsPointInsideCell(cell2.nodeTopLeft.position);
-							c1c2(2) = cell1.IsPointInsideCell(cell2.nodeTopRight.position);
-							c1c2(3) = cell1.IsPointInsideCell(cell2.nodeBottomLeft.position);
-							c1c2(4) = cell1.IsPointInsideCell(cell2.nodeBottomRight.position);
+					% Can make this a bit quicker by excluding the cells that the node
+					% is part of, but the process of excluding may be slower than just checking
 
-							c2c1(1) = cell2.IsPointInsideCell(cell1.nodeTopLeft.position);
-							c2c1(2) = cell2.IsPointInsideCell(cell1.nodeTopRight.position);
-							c2c1(3) = cell2.IsPointInsideCell(cell1.nodeBottomLeft.position);
-							c2c1(4) = cell2.IsPointInsideCell(cell1.nodeBottomRight.position);
+					if ~sum(cell1==candidates) 
+						if cell1.IsPointInsideCell(nodes(i).position)
+							% The node is inside the cell, we need to decide
+							% which edge it crossed to get there. This will either
+							% be the top or bottom edges.
+							% Given the geometry of the simulation, top nodes can only cross
+							% top edges, likewise with bottom, so just need to determine which it is
+							% There may be some rare cases where the most reasonable edge topair with
+							% is from an adjacent cell, but we ignore these for now
 
-							% The first cell contains a node from the second cell
-							
-						else
-							% If they are immediate neighbours, determine which element they have in common
-							if cell1.elementLeft == cell2.elementRight
-								% Check the right nodes of cell 1 and left nodes of cell 2
-								c1c2(1) = cell1.IsPointInsideCell(cell2.nodeBottomLeft.position);
-								c1c2(2) = cell1.IsPointInsideCell(cell2.nodeTopLeft.position);
-
-								c2c1(1) = cell2.IsPointInsideCell(cell1.nodeBottomRight.position);
-								c2c1(2) = cell2.IsPointInsideCell(cell1.nodeTopRight.position);
+							if nodes(i).isTopNode
+								collisions{end + 1} = {nodes(i), cell1.elementTop};
+							else
+								collisions{end + 1} = {nodes(i), cell1.elementBottom};
 							end
-
-							if cell2.elementLeft == cell1.elementRight
-								% Check the right nodes of cell 2 and left nodes of cell 1
-								c1c2(1) = cell1.IsPointInsideCell(cell2.nodeBottomRight.position);
-								c1c2(2) = cell1.IsPointInsideCell(cell2.nodeTopRight.position);
-
-								c2c1(1) = cell2.IsPointInsideCell(cell1.nodeBottomLeft.position);
-								c2c1(2) = cell2.IsPointInsideCell(cell1.nodeTopLeft.position);
-							end
-
-
-						end
-
-						% If either are true, then we have an intersection
-						if sum(c1c2) > 0
-							collisions{end + 1} = {cell1, cell2};
-						end
-
-						if sum(c2c1) > 0
-							collisions{end + 1} = {cell2, cell1};
 						end
 
 					end
 
 				end
 
-			end
+				% Keeping this seemingly bloated code here.
+				% For some bizarre reason, the below section of code runs quicker than the above
+				% is the check ~sum(cell1==candidates) is removed, even though there are roughly 16000
+				% fewer calls in the stand profiler test. And it's not just a little bit, the difference
+				% is roughly 100% slower...
+				% I have no idea why this is the case, but I suspect it is something to do with matlab
+				% optimising itself for multiple repeated calls to the same function since the profiler
+				% marks the first call at 1.2s and subsequent calls at 0.7s
+				% 
 
+				% for j = 1:length(activeCells)
+
+				% 	cell1 = activeCells(j);
+
+				% 	for k = j+1:length(activeCells)
+				% 		c1c2 = zeros(1,4);
+				% 		c2c1 = zeros(1,4);
+				% 		cell2 = activeCells(k);
+				% 		% If the cells aren't immediate neighbours, check for intersections
+				% 		if (cell2.nodeTopLeft ~= cell1.nodeTopLeft) && (cell2.nodeTopLeft ~= cell1.nodeTopRight)
+							
+				% 			% Check if they intersect
+				% 			c1c2(1) = cell1.IsPointInsideCell(cell2.nodeTopLeft.position);
+				% 			c1c2(2) = cell1.IsPointInsideCell(cell2.nodeTopRight.position);
+				% 			c1c2(3) = cell1.IsPointInsideCell(cell2.nodeBottomLeft.position);
+				% 			c1c2(4) = cell1.IsPointInsideCell(cell2.nodeBottomRight.position);
+
+				% 			c2c1(1) = cell2.IsPointInsideCell(cell1.nodeTopLeft.position);
+				% 			c2c1(2) = cell2.IsPointInsideCell(cell1.nodeTopRight.position);
+				% 			c2c1(3) = cell2.IsPointInsideCell(cell1.nodeBottomLeft.position);
+				% 			c2c1(4) = cell2.IsPointInsideCell(cell1.nodeBottomRight.position);
+
+				% 			% The first cell contains a node from the second cell
+							
+				% 		else
+				% 			% If they are immediate neighbours, determine which element they have in common
+				% 			if cell1.elementLeft == cell2.elementRight
+				% 				% Check the right nodes of cell 1 and left nodes of cell 2
+				% 				c1c2(1) = cell1.IsPointInsideCell(cell2.nodeBottomLeft.position);
+				% 				c1c2(2) = cell1.IsPointInsideCell(cell2.nodeTopLeft.position);
+
+				% 				c2c1(1) = cell2.IsPointInsideCell(cell1.nodeBottomRight.position);
+				% 				c2c1(2) = cell2.IsPointInsideCell(cell1.nodeTopRight.position);
+				% 			end
+
+				% 			if cell2.elementLeft == cell1.elementRight
+				% 				% Check the right nodes of cell 2 and left nodes of cell 1
+				% 				c1c2(1) = cell1.IsPointInsideCell(cell2.nodeBottomRight.position);
+				% 				c1c2(2) = cell1.IsPointInsideCell(cell2.nodeTopRight.position);
+
+				% 				c2c1(1) = cell2.IsPointInsideCell(cell1.nodeBottomLeft.position);
+				% 				c2c1(2) = cell2.IsPointInsideCell(cell1.nodeTopLeft.position);
+				% 			end
+
+
+				% 		end
+
+				% 		% If either are true, then we have an intersection
+				% 		if sum(c1c2) > 0
+				% 			collisions{end + 1} = {cell1, cell2};
+				% 		end
+
+				% 		if sum(c2c1) > 0
+				% 			collisions{end + 1} = {cell2, cell1};
+				% 		end
+
+				% 	end
+
+				% end
+
+
+
+
+
+			end
 
 
 		end
 
 		function collisions = LineIntersections(obj, E)
 
+			% NOT FULLY IMPLEMENTED YET
 			% Naming convention follows that in Computational Geometry: An Introduction p 284
 			% E is ordered list of nodes (by x then y)
 			% A is a list of intersecting element pairs
@@ -549,7 +605,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			% An approximate way to tell if collision detection is needed to speed up
 			% simulation time when there is no chance
 
-			detectionThresholdRatio = 1 / 0.88;
+			detectionThresholdRatio = 1 / 0.85;
 
 			if (obj.topWiggleRatio > detectionThresholdRatio || obj.bottomWiggleRatio > detectionThresholdRatio)
 				obj.collisionDetectionOn = true;
@@ -617,6 +673,135 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			end
 
 			obj.avgYDeviation = heightSum / ( obj.GetNumCells() + 1 );
+
+		end
+
+		function UpdateCentreLine(obj)
+
+			% Makes a sequence of points that defines the centre line of the cells
+			cL = [];
+
+			obj.UpdateBoundaryCells();
+
+			c = obj.leftBoundaryCell;
+
+			cL(end + 1, :) = c.elementLeft.GetMidPoint();
+			e = c.elementRight;
+
+			cL(end + 1, :) = e.GetMidPoint();
+
+			% Jump through the cells until we hit the right most cell
+			c = e.GetOtherCell(c);
+
+			while ~isempty(c) 
+
+				e = c.elementRight;
+				cL(end + 1, :) = e.GetMidPoint();
+				c = e.GetOtherCell(c);
+			end
+
+			obj.centreLine = cL;
+
+		end
+
+		function CentreLineFFT(obj)
+
+			obj.UpdateCentreLine();
+
+			% To do a FFT, we need the space steps to be even,
+			% so we need to interpolate between points on the
+			% centre line to get the additional points
+
+
+			newPoints = [];
+
+			dx = obj.cellList(1).newCellTopLength / 10;
+
+			% Discretise the centre line in steps of dx between the endpoints
+			% This usually won't hit the exact end, but we don't care about a tiny piece at the end
+			x = obj.centreLine(1,1):dx:obj.centreLine(end,1);
+			y = zeros(size(x));
+
+			j = 1;
+			i = 1;
+			while j < length(obj.centreLine) && i <= length(x)
+
+				cl = obj.centreLine([j,j+1],:);
+					
+				m = (cl(2,2) - cl(1,2)) / (cl(2,1) - cl(1,1));
+				
+				c = cl(1,2) - m * cl(1,1);
+
+
+				f = @(x) m * x + c;
+
+				while i <= length(x) && x(i) < obj.centreLine(j+1,1)
+
+					y(i) = f(x(i));
+					newPoints(i,:) = [x(i), y(i)];
+
+					i = i + 1;
+				end
+
+				j = j + 1;
+
+
+			end
+
+			Y = fft(y);
+
+			L = ceil(- obj.centreLine(1,1) + obj.centreLine(end,1));
+			P2 = abs(Y/L);
+			P1 = P2(1:L/2+1);
+			P1(2:end-1) = 2*P1(2:end-1);
+
+			f = (0:(L/2))/(L/dx);
+			figure
+			plot(f,P1)
+
+		end
+
+		function UpdateBoundaryCells(obj)
+
+			if isempty(obj.leftBoundaryCell)
+				% Probably the first time this has been run,
+				% so need to find the boundary cells first
+				% This won't work in general, but will be the case most of the time at this point
+				obj.leftBoundaryCell 	= obj.cellList(1);
+				obj.rightBoundaryCell 	= obj.cellList(end);
+			end
+
+			% if obj.leftBoundaryCell.GetAge() <= obj.dt
+				% Boundary cell has just divided, so need to check which of the new
+				% cells is the leftmost
+				if length(obj.leftBoundaryCell.elementLeft.cellList) > 1
+					% The left element of the cell is part of at least two cells
+					% So need to replace the leftBoundaryCell
+					if obj.leftBoundaryCell == obj.leftBoundaryCell.elementLeft.cellList(1)
+						obj.leftBoundaryCell = obj.leftBoundaryCell.elementLeft.cellList(2);
+					else
+						obj.leftBoundaryCell = obj.leftBoundaryCell.elementLeft.cellList(1);
+					end
+
+				end
+
+			% end
+
+			% if obj.rightBoundaryCell.GetAge() <= obj.dt
+				% Boundary cell has just divided, so need to check which of the new
+				% cells is the rightmost
+				if length(obj.rightBoundaryCell.elementRight.cellList) > 1
+					% The right element of the cell is part of at least two cells
+					% So need to replace the rightBoundaryCell
+					if obj.rightBoundaryCell == obj.rightBoundaryCell.elementRight.cellList(1)
+						obj.rightBoundaryCell = obj.rightBoundaryCell.elementRight.cellList(2);
+					else
+						obj.rightBoundaryCell = obj.rightBoundaryCell.elementRight.cellList(1);
+					end
+
+				end
+
+			% end
 
 		end
 

@@ -14,13 +14,15 @@ classdef Node < matlab.mixin.SetGet
 
 		force = [0, 0]
 
-		previousForce
+		previousForce = [0, 0]
 
 		% This will be circular - each element will have two nodes
 		% each node can be part of multiple elements, similarly for cells
 		elementList = []
 
 		cellList = []
+
+		isTopNode
 
 	end
 
@@ -60,7 +62,8 @@ classdef Node < matlab.mixin.SetGet
 			obj.elementList = [obj.elementList , ele];
 			% Technically should add each cell at a time
 			% but the cellLists work the same way, so we can get away with it
-			obj.AddCell(ele.cellList);
+			% obj.AddCell(ele.cellList);
+			
 		end
 
 		function RemoveElement(obj, ele)
@@ -109,8 +112,12 @@ classdef Node < matlab.mixin.SetGet
 
 			Lidx = ~ismember(c,obj.cellList);
 			obj.cellList = [obj.cellList , c(Lidx)];
-		end
 
+			if length(obj.cellList) > 0
+				obj.isTopNode = (obj == obj.cellList(1).nodeTopLeft || obj == obj.cellList(1).nodeTopRight);
+			end
+
+		end
 
 	end
 

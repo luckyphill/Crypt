@@ -42,8 +42,8 @@ classdef CellGrowing < AbstractCellSimulation
 
 			obj.AddElementBasedForce(EdgeSpringForce(@(n,l) 20 * exp(1-25 * l/n)));
 			
-			% obj.collisionDetectionRequested = false;
-			obj.collisionDetectionOn = true;
+			obj.collisionDetectionRequested = true;
+			% obj.collisionDetectionOn = true;
 
 			obj.cellList = Cell(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
 
