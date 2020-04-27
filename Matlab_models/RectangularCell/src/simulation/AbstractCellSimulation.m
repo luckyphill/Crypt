@@ -17,6 +17,8 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 		collisionDetected = false
 		edgeFlipDetected = false
 
+		collisions
+
 		collisionDetectionOn = false
 
 		collisionDetectionRequested = false
@@ -384,13 +386,13 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 			obj.nodeList = obj.nodeList(idx);
 
-			collisions = obj.FindCollisions(obj.nodeList);
+			obj.collisions = obj.FindCollisions(obj.nodeList);
 
 			% For each collision there is some pair of cells that need to be corrected
 			% so they are not intersecting
 			% A collision could also be when an edge has flipped, so need to be careful
 
-			if ~isempty(collisions)
+			if ~isempty(obj.collisions)
 				obj.collisionDetected = true;
 			end
 
@@ -452,16 +454,13 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 
 
-				% This check each active cell to see if the current node is inside
+				% This checks each active cell to see if the current node is inside
 				% There are probably some speed benefits to be found by exploiting
 				% y position order, but leave that for later
 
 				for j = 1:length(activeCells)
 
 					cell1 = activeCells(j);
-
-					% Can make this a bit quicker by excluding the cells that the node
-					% is part of, but the process of excluding may be slower than just checking
 
 					if ~sum(cell1==candidates) 
 						if cell1.IsPointInsideCell(nodes(i).position)
@@ -486,8 +485,8 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 				% Keeping this seemingly bloated code here.
 				% For some bizarre reason, the below section of code runs quicker than the above
-				% is the check ~sum(cell1==candidates) is removed, even though there are roughly 16000
-				% fewer calls in the stand profiler test. And it's not just a little bit, the difference
+				% if the check ~sum(cell1==candidates) is removed, even though there are roughly 16000
+				% fewer calls in the standard profiler test. And it's not just a little bit, the difference
 				% is roughly 100% slower...
 				% I have no idea why this is the case, but I suspect it is something to do with matlab
 				% optimising itself for multiple repeated calls to the same function since the profiler
