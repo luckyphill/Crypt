@@ -18,10 +18,10 @@ classdef CellGrowing < AbstractCellSimulation
 
 			obj.SetRNGSeed(seed);
 
-			nodeBottomLeft 	= Node(0,0,obj.GetNextNodeId());
-			nodeBottomRight	= Node(0.5,0,obj.GetNextNodeId());
-			nodeTopRight 	= Node(0.5,1,obj.GetNextNodeId());
 			nodeTopLeft 	= Node(0,1,obj.GetNextNodeId());
+			nodeBottomLeft 	= Node(0,0,obj.GetNextNodeId());
+			nodeTopRight 	= Node(0.5,1,obj.GetNextNodeId());
+			nodeBottomRight	= Node(0.5,0,obj.GetNextNodeId());
 
 			obj.AddNodesToList([nodeBottomLeft, nodeBottomRight, nodeTopRight, nodeTopLeft]);
 
@@ -54,8 +54,9 @@ classdef CellGrowing < AbstractCellSimulation
 
 				nodeBottomLeft 	= nodeBottomRight;
 				nodeTopLeft 	= nodeTopRight;
-				nodeBottomRight	= Node(i*0.5,0,obj.GetNextNodeId());
 				nodeTopRight 	= Node(i*0.5,1,obj.GetNextNodeId());
+				nodeBottomRight	= Node(i*0.5,0,obj.GetNextNodeId());
+				
 
 				obj.AddNodesToList([nodeBottomRight, nodeTopRight]);
 
@@ -71,6 +72,9 @@ classdef CellGrowing < AbstractCellSimulation
 				obj.cellList(i) = Cell(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
 
 			end
+
+			obj.leftBoundaryCell = obj.cellList(1);
+			obj.rightBoundaryCell = obj.cellList(end);
 
 
 		end

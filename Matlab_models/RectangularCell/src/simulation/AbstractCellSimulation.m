@@ -23,10 +23,14 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		collisionDetectionRequested = false
 
+		stopOnCollision = false
+
+		stochasticJiggle = true
+
 		centreLine
 
-		topWiggleRatio
-		bottomWiggleRatio
+		topWiggleRatio = 1;
+		bottomWiggleRatio = 1;
 		avgYDeviation
 		alphaWrinkleParameter
 
@@ -87,14 +91,51 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			hold on
 			for i = 1:length(obj.elementList)
 
-				x1 = obj.elementList(i).Node1.previousPosition(1);
-				x2 = obj.elementList(i).Node2.previousPosition(1);
-				x = [x1,x2];
-				y1 = obj.elementList(i).Node1.previousPosition(2);
-				y2 = obj.elementList(i).Node2.previousPosition(2);
-				y = [y1,y2];
+				if ~isempty(obj.elementList(i).Node1.previousPosition) && ~isempty(obj.elementList(i).Node2.previousPosition)
+					x1 = obj.elementList(i).Node1.previousPosition(1);
+					x2 = obj.elementList(i).Node2.previousPosition(1);
+					x = [x1,x2];
+					y1 = obj.elementList(i).Node1.previousPosition(2);
+					y2 = obj.elementList(i).Node2.previousPosition(2);
+					y = [y1,y2];
 
-				line(x,y)
+					line(x,y)
+				else
+					% There are three cases, where one or both nodes are new i.e. have no previous position
+					if isempty(obj.elementList(i).Node1.previousPosition) && ~isempty(obj.elementList(i).Node2.previousPosition)
+						x1 = obj.elementList(i).Node1.position(1);
+						x2 = obj.elementList(i).Node2.previousPosition(1);
+						x = [x1,x2];
+						y1 = obj.elementList(i).Node1.position(2);
+						y2 = obj.elementList(i).Node2.previousPosition(2);
+						y = [y1,y2];
+
+						line(x,y)
+					end
+
+					if ~isempty(obj.elementList(i).Node1.previousPosition) && isempty(obj.elementList(i).Node2.previousPosition)
+						x1 = obj.elementList(i).Node1.previousPosition(1);
+						x2 = obj.elementList(i).Node2.position(1);
+						x = [x1,x2];
+						y1 = obj.elementList(i).Node1.previousPosition(2);
+						y2 = obj.elementList(i).Node2.position(2);
+						y = [y1,y2];
+
+						line(x,y)
+					end
+
+					if isempty(obj.elementList(i).Node1.previousPosition) && isempty(obj.elementList(i).Node2.previousPosition)
+						x1 = obj.elementList(i).Node1.position(1);
+						x2 = obj.elementList(i).Node2.position(1);
+						x = [x1,x2];
+						y1 = obj.elementList(i).Node1.position(2);
+						y2 = obj.elementList(i).Node2.position(2);
+						y = [y1,y2];
+ 
+						line(x,y,'LineStyle',':')
+					end
+
+				end
 			end
 
 			axis equal
@@ -110,7 +151,6 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 			plot(t,obj.storeTopWiggleRatio, t, obj.storeAvgYDeviation, t, obj.storeAlphaWrinkleParameter);
 			legend({'Wiggle', 'YDev', 'alpha'});
-
 
 		end
 
@@ -145,7 +185,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			end
 
 			totalSteps = 0;
-			while totalSteps < n
+			while totalSteps < n && ~obj.collisionDetected
 
 				obj.NTimeSteps(sm);
 				totalSteps = totalSteps + sm;
@@ -191,6 +231,14 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			
 			obj.MakeNodesMove();
 
+			if ~obj.collisionDetectionOn && obj.collisionDetectionRequested
+				obj.UpdateIfCollisionDetectionNeeded();
+			end
+
+			if obj.collisionDetectionOn
+				obj.ProcessCollisions();
+			end
+
 			obj.MakeCellsDivide();
 
 			obj.UpdateBoundaryCells();
@@ -200,10 +248,6 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			obj.UpdateAverageYDeviation();
 
 			obj.UpdateAlphaWrinkleParameter
-
-			if ~obj.collisionDetectionOn && obj.collisionDetectionRequested
-				obj.UpdateIfCollisionDetectionNeeded();
-			end
 
 			obj.MakeCellsAge();
 
@@ -227,12 +271,9 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 				
 				% Make sure nothing has gone wrong
-				if obj.collisionDetectionOn
-					obj.ProcessCollisions();
-					if obj.collisionDetected
-						fprintf('Collision detected. Stopped at t = %.2f\n',obj.t);
-						break;
-					end
+				if obj.stopOnCollision
+					fprintf('Collision detected. Stopped at t = %.2f\n',obj.t);
+					break;
 				end
 				if obj.DetectEdgeFlip()
 					fprintf('Edge flip detected. Stopped at t = %.2f\n',obj.t);
@@ -266,6 +307,19 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			for i = 1:length(obj.nodeList)
 
 				force = obj.nodeList(i).force;
+				if obj.stochasticJiggle
+					% Add in a tiny amount of stochasticity to the force calculation
+					% to nudge it out of unstable equilibria
+
+					% Make a random direction vector
+					v = [rand-0.5,rand-0.5];
+					v = v/norm(v);
+
+					% Add the random vector, and make sure it is orders of magnitude
+					% smaller than the actual force
+					force = force + v * norm(force) / 10000;
+
+				end
 				position = obj.nodeList(i).position;
 
 				newPosition = position + obj.dt/obj.eta * force;
@@ -281,7 +335,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			newCells = Cell.empty;
 			for i = 1:length(obj.cellList)
 				c = obj.cellList(i);
-				if c.IsReadyToDivide();
+				if c.IsReadyToDivide()
 					newCells(end + 1) = c.Divide();
 				end
 			end
@@ -312,15 +366,17 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 				% global id numbers until we get to this point
 				nc.id = obj.GetNextCellId();
 
-				nc.elementTop.id = obj.GetNextElementId();
-				nc.elementBottom.id = obj.GetNextElementId();
-				nc.elementLeft.id = obj.GetNextElementId();
-				nc.elementRight.id = obj.GetNextElementId();
+				for i = 1:4
+					if ~ismember(nc.nodeList(i),obj.nodeList)
+						nc.nodeList(i).id = obj.GetNextNodeId();
+					end
+				end
 
-				nc.nodeTopLeft.id = obj.GetNextNodeId();
-				nc.nodeTopRight.id = obj.GetNextNodeId();
-				nc.nodeBottomLeft.id = obj.GetNextNodeId();
-				nc.nodeBottomRight.id = obj.GetNextNodeId();
+				for i = 1:4
+					if ~ismember(nc.elementList(i),obj.elementList)
+						nc.elementList(i).id = obj.GetNextElementId();
+					end
+				end
 
 				obj.cellList(end + 1) = nc;
 
@@ -392,8 +448,14 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			% so they are not intersecting
 			% A collision could also be when an edge has flipped, so need to be careful
 
-			if ~isempty(obj.collisions)
-				obj.collisionDetected = true;
+			% if ~isempty(obj.collisions)
+			% 	obj.collisionDetected = true;
+			% end
+
+			for i = 1:length(obj.collisions)
+				node = obj.collisions{i}{1};
+				element = obj.collisions{i}{2};
+				obj.MoveNodeToElement(node, element);
 			end
 
 		end
@@ -413,7 +475,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			% a list of the cell that are cut by the scanning line
 			activeCells = Cell.empty();
 
-			% A cell array of edge pairs that collide
+			% A cell array of element pairs that collide
 			collisions = {};
 
 			for i = 1:length(nodes)
@@ -465,11 +527,11 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 					if ~sum(cell1==candidates) 
 						if cell1.IsPointInsideCell(nodes(i).position)
 							% The node is inside the cell, we need to decide
-							% which edge it crossed to get there. This will either
-							% be the top or bottom edges.
+							% which element it crossed to get there. This will either
+							% be the top or bottom elements.
 							% Given the geometry of the simulation, top nodes can only cross
-							% top edges, likewise with bottom, so just need to determine which it is
-							% There may be some rare cases where the most reasonable edge topair with
+							% top elements, likewise with bottom, so just need to determine which it is
+							% There may be some rare cases where the most reasonable element topair with
 							% is from an adjacent cell, but we ignore these for now
 
 							if nodes(i).isTopNode
@@ -559,52 +621,222 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 			end
 
-
 		end
 
-		function collisions = LineIntersections(obj, E)
+		function MoveNodeToElement(obj, node, element)
+			% Given a node/element pair that represents a collision
+			% move the node so that it sits on the element
 
-			% NOT FULLY IMPLEMENTED YET
-			% Naming convention follows that in Computational Geometry: An Introduction p 284
-			% E is ordered list of nodes (by x then y)
-			% A is a list of intersecting element pairs
-			% L is an ordered list of active elements (by y)
+			% Draw a line between nodes current and previous positions
+			% Where this crosses the element, place the node there
 
-			A = {};
-			L = Element.empty();
+			X1 = element.Node1.x;
+			X2 = element.Node2.x;
 
-			i = 1;
-			while i <= length(E)
-				n = E(i);
+			Y1 = element.Node1.y;
+			Y2 = element.Node2.y;
 
-				% Decide which elements are in the list already
-				[~, Lidx] = ismember(n.elementList, L);
+			X3 = node.x;
+			X4 = node.previousPosition(1);
 
-				% If they are not in the list, then they are to be added
-				% in their correct position and intersections checked
-				
-				L = [L, n.elementList(Lidx)];
+			Y3 = node.y;
+			Y4 = node.previousPosition(2);
 
-				% If they are already in the list, then they are to be
-				% removed, and the newly adjacent elements are to be checked
-				L(~Lidx) = [];
-				
+			% Basic run-down of algorithm:
+			% The lines are parameterised so that
+			% elementLeft  = (x1(t), y1(t)) = (A1t + a1, B1t + b1)
+			% elementRight = (x2(s), y2(s)) = (A2s + a2, B2s + b2)
+			% where 0 <= t,s <=1
+			% If the lines cross, then there is a unique value of t,s such that
+			% x1(t) == x2(s) and y1(t) == y2(s)
+			% There will always be a value of t and s that satisfies these
+			% conditions (except for when the lines are parallel), so to make
+			% sure the actual segments cross, we MUST have 0 <= t,s <=1
 
+			% Solving this, we have
+			% t = ( B2(a1 - a2) - A2(b1 - b2) ) / (A2B1 - A1B2)
+			% s = ( B1(a1 - a2) - A1(b1 - b2) ) / (A2B1 - A1B2)
+			% Where 
+			% A1 = X2 - X1, a1 = X1
+			% B1 = Y2 - Y1, b1 = Y1
+			% A2 = X4 - X3, a2 = X3
+			% B2 = Y4 - Y3, b2 = Y3
 
+			denom = (X4 - X3)*(Y2 - Y1) - (X2 - X1)*(Y4 - Y3);
 
-				i = i + 1;
+			if denom == 0 
+				error('Lines are parallel. THis should not be possible here')
 			end
 
+			tNum = (Y4 - Y3)*(X1 - X3) - (X4 - X3)*(Y1 - Y3);
+			sNum = (Y2 - Y1)*(X1 - X3) - (X2 - X1)*(Y1 - Y3);
+
+			crossed = false;
+			if abs(tNum) <= abs(denom) && abs(sNum) <= abs(denom)
+					% magnitudes are correct, now check the signs
+				if sign(tNum) == sign(denom) && sign(sNum) == sign(denom)
+					% If the signs of the numerator and denominators are the same
+					% Then s and t satisfy their range restrictions, hence the elements cross
+					crossed = true;
+				end
+			end
+
+			% if ~crossed
+			% 	error('Lines do not cross. This should not be possible here')
+			% end
+
+
+
+			t = tNum / denom;
+
+			inter = [(X2 - X1) * t + X1, (Y2 - Y1) * t + Y1];
+
+			node.AdjustPosition(inter);
 
 		end
 
+		function MoveNodeAndElement(obj, node, element)
+
+			% Given a node/element pair that represents a collision
+			% move the node and element to the point where the collision
+			% occurred
+
+			% Grab the previous positions
+
+			X1 = element.Node1.previousPosition(1);
+			X2 = element.Node2.previousPosition(1);
+
+			Y1 = element.Node1.previousPosition(2);
+			Y2 = element.Node2.previousPosition(2);
+
+			X3 = node.previousPosition(1);
+			Y3 = node.previousPosition(2);
+
+			% Grab the previous forces
+
+			F1x = element.Node1.previousForce(1);
+			F2x = element.Node2.previousForce(1);
+
+			F1y = element.Node1.previousForce(2);
+			F2y = element.Node2.previousForce(2);
+
+			F3x = node.previousForce(1);
+			F3y = node.previousForce(2);
+
+			% To find the point of contact, we need to solve
+			% (X2 + tF2x) + (1-s)(X1 + tF1x) = X3 + tF3x
+			% (Y2 + tF2y) + (1-s)(Y1 + tF1y) = Y3 + tF3y
+			% to find the time and position of contact.
+			% Where Xi is the position of node i before moving
+			% Fix is the force before moving
+			% and the parameter 0<s<1 defines the location on the edge
+			% while 0<t<dt defines the time within the timestep interval
+			% when contact occurs
+
+			% Rearranging this pair of equations to solve for s and t is a bitch
+			% so we break the components up separately
+
+			% When solving for s and t we end up with quadratic equations
+			% meaning there are a possibility of two solutions
+			% In the context of the model, only one of them is valid, so
+			% we need to carefully choose the correct one.
+
+			% The quadratic solving t ends up being
+			% At^2 + Bt + C = 0, where
+			A = F1y*(F3x - F2x) - F1x*(F3y - F2y);
+			B = F1y*(X3 - X2) - F1x*(Y3 - Y2) + Y1*(F3x - F2x) - X1*(F3y - F2y);
+			C = Y1*(X3 - X2) - X1*(Y3 - Y2);
+
+			% The solutions for t are then
+			tplus = (-B + sqrt(B^2 - 4*A*C) ) / (2*A);
+			tminu = (-B - sqrt(B^2 - 4*A*C) ) / (2*A);
+
+			% The solutions for s are then
+			splus = 1 - ( (X3 - X2) + tplus * (F3x - F2x) ) / (X1 + tplus*F1x );
+			sminu = 1 - ( (X3 - X2) + tminu * (F3x - F2x) ) / (X1 + tminu*F1x );
+
+			% These equations can also be used to solve s, and they MUST give the same result
+			% splus = 1 - ( (Y3 - Y2) + tplus * (F3y - F2y) ) / (Y1 + tplus*F1y );
+			% sminu = 1 - ( (Y3 - Y2) + tminu * (F3y - F2y) ) / (Y1 + tminu*F1y );
+
+			% Both t and s must satisfy their range restrictions
+
+			s = nan;
+			t = nan;
+			satisfied = false;
+			if (0 <= splus && splus <=1) && (0 <= tplus && tplus <= obj.dt)
+				s = splus;
+				t = tplus;
+				satisfied = true;
+			end
+
+			if (0 <= sminu && sminu <=1) && (0 <= tminu && tminu <= obj.dt)
+				if satisfied == true
+					error('Both plus and minus solutions satisfy the constraints');
+				end
+				s = sminu;
+				t = tminu;
+			end
+
+			if isnan(t)
+				error('Failed to move node and edge after collision');
+			end
+
+			eN1Position = [X1 + t*F1x, Y1 + t*F1y];
+			eN2Position = [X2 + t*F2x, Y2 + t*F2y];
+			nPosition = [X3 + t*F3x, Y3 + t*F3y];
+
+			
+
+			% Now that we have moved the node back to their collision point,
+			% we need to account for the 'left over force' and balance that
+			% out accoridingly in a rigid body approximation
+			% The left over movement will be determined by the unused time
+			% i.e. dt - t, multiplied by the force
+
+
+			% Let u be the unit vector along the edge, and v the
+			% unit vector perpendicular. 
+
+			u = element.GetVector1to2();
+			v = [u(2), -u(1)];
+
+			F1 = [F1x, F1y];
+			F2 = [F2x, F2y];
+			F3 = [F3x, F3y];
+
+			F1p = dot(F1, v);
+			F2p = dot(F2, v);
+			F3p = dot(F3, v);
+
+			l = element.GetLength();
+			l1 = norm(eN1Position - nPosition);
+			l2 = norm(eN2Position - nPosition);
+
+			Fn1 = F1 - F2p * v * l2/l1 + F3p * v * l2/l;
+			Fn2 = F2 - F1p * v * l1/l2 + F3p * v * l1/l;
+			Fn3 = F3 + F1p * v * l/l2 + F2p * v * l/l1;
+
+			% Now we manually apply the forces. This is not the best method
+			% and will probably cause issues when multiple nodes are in
+			% contact with the same edge
+
+			eN1Position = eN1Position + (obj.dt-t)/obj.eta * Fn1;
+			eN2Position = eN2Position + (obj.dt-t)/obj.eta * Fn2;
+			nPosition = nPosition + (obj.dt-t)/obj.eta * Fn3;
+
+			element.Node1.AdjustPosition(eN1Position);
+			element.Node2.AdjustPosition(eN2Position);
+			node.AdjustPosition(nPosition);
+
+		end
 
 		function UpdateIfCollisionDetectionNeeded(obj)
 
 			% An approximate way to tell if collision detection is needed to speed up
 			% simulation time when there is no chance
 
-			detectionThresholdRatio = 1 / 0.85;
+			detectionThresholdRatio = 1.8;
 
 			if (obj.topWiggleRatio > detectionThresholdRatio || obj.bottomWiggleRatio > detectionThresholdRatio)
 				obj.collisionDetectionOn = true;
@@ -616,7 +848,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 		function UpdateSimpleWiggleRatio(obj)
 
 			% Compares the x range that cells cover to the
-			% path length that the top and bottom edges cover
+			% path length that the top and bottom elements cover
 
 			sTop 	= 0;
 			sBottom = 0;
@@ -757,6 +989,8 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			f = (0:(L/2))/(L/dx);
 			figure
 			plot(f,P1)
+			figure
+			plot(x,y)
 
 		end
 

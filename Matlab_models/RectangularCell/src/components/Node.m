@@ -35,6 +35,7 @@ classdef Node < matlab.mixin.SetGet
 			obj.y 	= y;
 
 			obj.position = [x,y];
+			
 			obj.id 	= id;
 
 		end
@@ -96,6 +97,15 @@ classdef Node < matlab.mixin.SetGet
 
 		end
 
+		function AdjustPosition(obj, pos)
+			% Used when modifying the position manually
+			obj.position = pos;
+
+			obj.x = pos(1);
+			obj.y = pos(2);
+
+		end
+
 		function MoveNode(obj, pos)
 			% This function is used to move the position due to time stepping
 			% so the force must be reset here
@@ -110,12 +120,22 @@ classdef Node < matlab.mixin.SetGet
 
 		function AddCell(obj, c)
 
+			% Need to add the cell, but also make sure that
+			% we only have the correct cells in the list
+			% This should be the best place to do it, but I haven't verified
+
 			Lidx = ~ismember(c,obj.cellList);
 			obj.cellList = [obj.cellList , c(Lidx)];
 
-			if length(obj.cellList) > 0
-				obj.isTopNode = (obj == obj.cellList(1).nodeTopLeft || obj == obj.cellList(1).nodeTopRight);
-			end
+			% delCell = Cell.empty;
+			% for i = 1:length(obj.cellList)
+			% 	if ~ismember(obj,obj.cellList(i).nodeList)
+			% 		delCell(end+1) = obj.cellList(i);
+			% 	end
+			% end
+			% Lidx = ismember(obj.cellList, delCell);
+			% obj.cellList(Lidx) = [];
+
 
 		end
 

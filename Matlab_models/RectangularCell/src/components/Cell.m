@@ -23,7 +23,7 @@ classdef Cell < matlab.mixin.SetGet
 
 		% Knowing the location of the nodes is extremely useful, but sometimes it's quicker
 		% to access a list
-		nodeList = []
+		nodeList
 
 		age = 0
 		cellArea
@@ -74,6 +74,8 @@ classdef Cell < matlab.mixin.SetGet
 			obj.elementBottom = elementList(2);
 			obj.elementLeft = elementList(3);
 			obj.elementRight = elementList(4);
+
+			obj.elementList = elementList;
 
 			obj.elementTop.AddCell(obj);
 			obj.elementBottom.AddCell(obj);
@@ -198,14 +200,17 @@ classdef Cell < matlab.mixin.SetGet
 			midTop 				= obj.elementTop.GetMidPoint;
 			midBottom 			= obj.elementBottom.GetMidPoint;
 
+			% Give -ve ids because id is a feature of the simulation
+			% and can't be assigned here. This is handled in AbstractCellSimulation
+
 			% Make the new nodes
-			nodeMiddleTop 		= Node(midTop(1),midTop(2),1);
-			nodeMiddleBottom 	= Node(midBottom(1), midBottom(2),2);
+			nodeMiddleTop 		= Node(midTop(1),midTop(2),-1);
+			nodeMiddleBottom 	= Node(midBottom(1), midBottom(2),-2);
 			
 			% Make the new elements,
-			newElementMiddle 	= Element(nodeMiddleTop, nodeMiddleBottom, 1);
-			newElementTop 		= Element(obj.nodeTopLeft, nodeMiddleTop, 1);
-			newElementBottom 	= Element(obj.nodeBottomLeft, nodeMiddleBottom, 1);
+			newElementMiddle 	= Element(nodeMiddleTop, nodeMiddleBottom, -1);
+			newElementTop 		= Element(obj.nodeTopLeft, nodeMiddleTop, -2);
+			newElementBottom 	= Element(obj.nodeBottomLeft, nodeMiddleBottom, -3);
 
 			% Duplicate the cell cycle model from the old cell
 			newCCM = obj.CellCycleModel.Duplicate();
@@ -228,8 +233,15 @@ classdef Cell < matlab.mixin.SetGet
 			obj.elementBottom.ReplaceNode(obj.nodeBottomLeft, nodeMiddleBottom);
 
 			% Fix the link to the top left and bottom left nodes
-			obj.nodeTopLeft 	= nodeMiddleTop;
-			obj.nodeBottomLeft 	= nodeMiddleBottom;
+			obj.nodeTopLeft.RemoveCell(obj);
+			obj.nodeBottomLeft.RemoveCell(obj);
+
+			nodeMiddleTop.AddCell(obj);
+			nodeMiddleBottom.AddCell(obj);
+
+			obj.nodeTopLeft = nodeMiddleTop;
+			obj.nodeBottomLeft = nodeMiddleBottom;
+
 
 			% Old top left nodes are now replaced.
 
@@ -249,8 +261,8 @@ classdef Cell < matlab.mixin.SetGet
 			obj.CellCycleModel.SetAge(0);
 
 			% Finally, reset the node list
-			obj.nodeList =  [obj.nodeTopLeft, obj.nodeTopRight, obj.nodeBottomLeft, obj.nodeBottomRight];
-
+			obj.nodeList = [obj.nodeTopLeft, obj.nodeTopRight, obj.nodeBottomRight, obj.nodeBottomLeft];
+			obj.elementList = [obj.elementTop, obj.elementBottom, obj.elementLeft, obj.elementRight];
 		end
 
 		function ready = IsReadyToDivide(obj)
@@ -355,7 +367,7 @@ classdef Cell < matlab.mixin.SetGet
 
 			% plot a line for each element
 
-			h = figure();
+			% h = figure();
 			hold on
 			elementList = [obj.elementTop, obj.elementBottom, obj.elementLeft, obj.elementRight];
 			for i = 1:length(elementList)
@@ -444,9 +456,13 @@ classdef Cell < matlab.mixin.SetGet
 			obj.nodeList = [obj.nodeTopLeft, obj.nodeTopRight, obj.nodeBottomRight, obj.nodeBottomLeft];
 			
 			obj.nodeTopLeft.AddCell(obj);
+			obj.nodeTopLeft.isTopNode = true;
 			obj.nodeTopRight.AddCell(obj);
+			obj.nodeTopRight.isTopNode = true;
 			obj.nodeBottomLeft.AddCell(obj);
+			obj.nodeBottomLeft.isTopNode = false;
 			obj.nodeBottomRight.AddCell(obj);
+			obj.nodeBottomRight.isTopNode = false;
 
 		end
 

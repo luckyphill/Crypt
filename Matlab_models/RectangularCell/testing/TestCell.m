@@ -117,10 +117,31 @@ classdef TestCell < matlab.unittest.TestCase
 			newl = d.elementLeft;
 			newr = d.elementRight;
 
+
+			%  o------o
+			%  |      |
+			%  |      |
+			%  |      |
+			%  |      |
+			%  |      |
+			%  o------o
+
+			% Becomes
+
+			%  o~~~x---o
+			%  |   l   |
+			%  |   l   |
+			%  |   l   |
+			%  |   l   |
+			%  |   l   |
+			%  o~~~x---o
+
 			% Check links with nodes
 			% This is where errors could occur
-			testCase.verifyTrue(ismember(c, newtl.cellList));
-			testCase.verifyTrue(ismember(c, newbl.cellList));
+			testCase.verifyTrue(ismember(c, newtr.cellList));
+			testCase.verifyTrue(ismember(c, newbr.cellList));
+			testCase.verifyFalse(ismember(c, newtl.cellList));
+			testCase.verifyFalse(ismember(c, newbl.cellList));
 			testCase.verifyEqual(c.nodeTopLeft, newtr);
 			testCase.verifyEqual(c.nodeBottomLeft, newbr);
 
