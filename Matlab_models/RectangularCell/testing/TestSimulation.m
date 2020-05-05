@@ -63,32 +63,45 @@ classdef TestSimulation < matlab.unittest.TestCase
 
 		end
 
-		% function TestLinksLong(testCase)
+		function TestProcessCollision(testCase)
 
-		% 	% This tests to make sure all the links between nodes, elements
-		% 	% and cells are maintained correctly as the simulation progresses
-		% 	t = CellGrowing(20,20,10,10,10,1,10);
-		% 	t.NTimeSteps(3000);
-		% 	% In testing at one point, the node->cell linking was incorrect here
+			% This tests that the elements and nodes move properly
+			% after a collision is detected and processed
 
-		% 	% This assumes boundary cell finding works correctly
-		% 	bcl = t.leftBoundaryCell;
-		% 	bcr = t.rightBoundaryCell;
-			
-		% 	% These specific node must be part of one cell only
-		% 	oneCellNodes = [bcl.nodeTopLeft, bcl.nodeBottomLeft, bcr.nodeTopRight, bcr.nodeBottomRight];
-		% 	for i=1:4
-		% 		testCase.verifyEqual(length(oneCellNodes(i).cellList), 1);
-		% 	end
+			% Need a concrete class instance to access the method
+			t = CellGrowing(1,20,10,10,10,1,10);
+			t.dt = 0.01;
+			t.eta = 1;
 
-		% 	% The remaining nodes must be part of two cells
-		% 	Lidx = ~ismember(t.nodeList, oneCellNodes);
-		% 	twoCellNodes = t.nodeList(Lidx);
-		% 	for i=1:length(twoCellNodes)
-		% 		testCase.verifyEqual(length(twoCellNodes(i).cellList), 2);
-		% 	end
+			n = Node(0.1,0.6,1);
 
-		% end
+			n1 = Node(0,0,2);
+			n2 = Node(0,1,3);
+			e = Element(n1,n2,1);
+
+			for i = 1:5
+				n.AddForceContribution([-1.3,0]);
+				n1.AddForceContribution([1,0]);
+				n2.AddForceContribution([1,0]);
+
+				n.UpdatePosition(t.dt/t.eta);
+				n1.UpdatePosition(t.dt/t.eta);
+				n2.UpdatePosition(t.dt/t.eta);
+			end
+
+			n.previousPosition
+			n1.previousPosition
+			n2.previousPosition
+
+			n.previousForce
+			n1.previousForce
+			n2.previousForce
+
+			t.MoveNodeAndElement(n, e);
+
+
+
+		end
 
 
 	end

@@ -24,6 +24,9 @@ classdef TestElement < matlab.unittest.TestCase
 
 			testCase.verifyEqual(e.GetLength(), 1);
 
+			testCase.verifyEqual(e.GetVector1to2(), [1, 0]);
+			testCase.verifyEqual(e.GetMidPoint(), [1.5,1]);
+
 		end
 
 		function TestReplaceNode(testCase)

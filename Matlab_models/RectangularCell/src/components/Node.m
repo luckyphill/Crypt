@@ -47,7 +47,7 @@ classdef Node < matlab.mixin.SetGet
 
 		function UpdatePosition(obj, dtEta)
 
-			% OBSOLETE: NOT LONGER USED
+			% NOT USED IN SIMULATIONS, ONLY USED IN TESTING
 			% Used primarily for testing to avoid making a cell population
 			newPosition = obj.position + dtEta * obj.force;
 

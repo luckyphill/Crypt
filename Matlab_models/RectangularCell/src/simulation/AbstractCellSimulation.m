@@ -455,7 +455,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			for i = 1:length(obj.collisions)
 				node = obj.collisions{i}{1};
 				element = obj.collisions{i}{2};
-				obj.MoveNodeToElement(node, element);
+				obj.MoveNodeAndElement(node, element);
 			end
 
 		end
@@ -724,67 +724,82 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			F3y = node.previousForce(2);
 
 			% To find the point of contact, we need to solve
-			% (X2 + tF2x) + (1-s)(X1 + tF1x) = X3 + tF3x
-			% (Y2 + tF2y) + (1-s)(Y1 + tF1y) = Y3 + tF3y
+			% s(X2 + hF2x - (X1 + hF1x)) + (X1 + hF1x) = X3 + hF3x
+			% s(Y2 + hF2y - (Y1 + hF1y)) + (Y1 + hF1y) = Y3 + hF3y
 			% to find the time and position of contact.
 			% Where Xi is the position of node i before moving
 			% Fix is the force before moving
 			% and the parameter 0<s<1 defines the location on the edge
-			% while 0<t<dt defines the time within the timestep interval
+			% while 0<h<dt/eta defines the time within the timestep interval
 			% when contact occurs
 
 			% Rearranging this pair of equations to solve for s and t is a bitch
 			% so we break the components up separately
 
-			% When solving for s and t we end up with quadratic equations
+			% When solving for s and h we end up with quadratic equations
 			% meaning there are a possibility of two solutions
 			% In the context of the model, only one of them is valid, so
 			% we need to carefully choose the correct one.
 
 			% The quadratic solving t ends up being
-			% At^2 + Bt + C = 0, where
+			% Ah^2 + Bh + C = 0, where
 			A = F1y*(F3x - F2x) - F1x*(F3y - F2y);
 			B = F1y*(X3 - X2) - F1x*(Y3 - Y2) + Y1*(F3x - F2x) - X1*(F3y - F2y);
 			C = Y1*(X3 - X2) - X1*(Y3 - Y2);
 
-			% The solutions for t are then
-			tplus = (-B + sqrt(B^2 - 4*A*C) ) / (2*A);
-			tminu = (-B - sqrt(B^2 - 4*A*C) ) / (2*A);
-
-			% The solutions for s are then
-			splus = 1 - ( (X3 - X2) + tplus * (F3x - F2x) ) / (X1 + tplus*F1x );
-			sminu = 1 - ( (X3 - X2) + tminu * (F3x - F2x) ) / (X1 + tminu*F1x );
-
-			% These equations can also be used to solve s, and they MUST give the same result
-			% splus = 1 - ( (Y3 - Y2) + tplus * (F3y - F2y) ) / (Y1 + tplus*F1y );
-			% sminu = 1 - ( (Y3 - Y2) + tminu * (F3y - F2y) ) / (Y1 + tminu*F1y );
-
-			% Both t and s must satisfy their range restrictions
-
-			s = nan;
-			t = nan;
-			satisfied = false;
-			if (0 <= splus && splus <=1) && (0 <= tplus && tplus <= obj.dt)
-				s = splus;
-				t = tplus;
-				satisfied = true;
-			end
-
-			if (0 <= sminu && sminu <=1) && (0 <= tminu && tminu <= obj.dt)
-				if satisfied == true
-					error('Both plus and minus solutions satisfy the constraints');
+			if A==0
+				% Sometimes A==0, and in that case we can get the solution directly
+				% If B==0 as well, then there is no solution
+				if B==0
+					error('A=0 and B=0, no solution exists')
 				end
-				s = sminu;
-				t = tminu;
+				h = -C/B
+
+				if ~(0 <= h && h <= obj.dt/obj.eta)
+					error('h falls outside the expected range')
+				end
+
+			else
+
+				% The solutions for t are then
+				hplus = (-B + sqrt(B^2 - 4*A*C) ) / (2*A);
+				hminu = (-B - sqrt(B^2 - 4*A*C) ) / (2*A);
+
+				% The solutions for s are then
+				splus = 1 - ( (X3 - X2) + hplus * (F3x - F2x) ) / (X1 + hplus*F1x );
+				sminu = 1 - ( (X3 - X2) + hminu * (F3x - F2x) ) / (X1 + hminu*F1x );
+
+				% These equations can also be used to solve s, and they MUST give the same result
+				% splus = 1 - ( (Y3 - Y2) + hplus * (F3y - F2y) ) / (Y1 + hplus*F1y );
+				% sminu = 1 - ( (Y3 - Y2) + hminu * (F3y - F2y) ) / (Y1 + hminu*F1y );
+
+				% Both t and s must satisfy their range restrictions
+
+				s = nan;
+				h = nan;
+				satisfied = false;
+				if (0 <= splus && splus <=1) && (0 <= hplus && hplus <= obj.dt/obj.eta)
+					s = splus;
+					h = hplus;
+					satisfied = true;
+				end
+
+				if (0 <= sminu && sminu <=1) && (0 <= hminu && hminu <= obj.dt/obj.eta)
+					if satisfied == true
+						error('Both plus and minus solutions satisfy the constraints');
+					end
+					s = sminu;
+					h = hminu;
+				end
+
+				if isnan(h)
+					error('Failed to find the collision point');
+				end
 			end
 
-			if isnan(t)
-				error('Failed to move node and edge after collision');
-			end
-
-			eN1Position = [X1 + t*F1x, Y1 + t*F1y];
-			eN2Position = [X2 + t*F2x, Y2 + t*F2y];
-			nPosition = [X3 + t*F3x, Y3 + t*F3y];
+			eN1Position = [X1 + h*F1x, Y1 + h*F1y];
+			eN2Position = [X2 + h*F2x, Y2 + h*F2y];
+			nPosition = [X3 + h*F3x, Y3 + h*F3y];
 
 			
 
@@ -792,7 +807,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			% we need to account for the 'left over force' and balance that
 			% out accoridingly in a rigid body approximation
 			% The left over movement will be determined by the unused time
-			% i.e. dt - t, multiplied by the force
+			% i.e. dt/eta - h, multiplied by the force
 
 
 			% Let u be the unit vector along the edge, and v the
@@ -821,9 +836,9 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			% and will probably cause issues when multiple nodes are in
 			% contact with the same edge
 
-			eN1Position = eN1Position + (obj.dt-t)/obj.eta * Fn1;
-			eN2Position = eN2Position + (obj.dt-t)/obj.eta * Fn2;
-			nPosition = nPosition + (obj.dt-t)/obj.eta * Fn3;
+			eN1Position = eN1Position + (obj.dt/obj.eta - h) * Fn1;
+			eN2Position = eN2Position + (obj.dt/obj.eta - h) * Fn2;
+			nPosition = nPosition + (obj.dt/obj.eta - h) * Fn3;
 
 			element.Node1.AdjustPosition(eN1Position);
 			element.Node2.AdjustPosition(eN2Position);

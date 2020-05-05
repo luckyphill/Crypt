@@ -65,7 +65,7 @@ classdef Element < matlab.mixin.SetGet
 		function direction1to2 = GetVector1to2(obj)
 
 			direction1to2 = obj.Node2.position - obj.Node1.position;
-			direction1to2 = obj.direction1to2 / norm(obj.direction1to2);
+			direction1to2 = direction1to2 / norm(direction1to2);
 
 		end
 
