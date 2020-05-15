@@ -24,6 +24,7 @@ classdef Element < matlab.mixin.SetGet
 
 		minimumLength = 0.2
 
+		nodeList
 		cellList
 		
 	end
@@ -35,6 +36,8 @@ classdef Element < matlab.mixin.SetGet
 
 			obj.Node1 = Node1;
 			obj.Node2 = Node2;
+
+			obj.nodeList = [Node1, Node2];
 
 			obj.id = id;
 

@@ -24,6 +24,10 @@ classdef Node < matlab.mixin.SetGet
 
 		isTopNode
 
+		% Each node stores it's local drag coefficient, so we can distinguish
+		% between different regions in a tissue more easily
+		eta = 1
+
 	end
 
 	methods
@@ -45,11 +49,11 @@ classdef Node < matlab.mixin.SetGet
 
 		end
 
-		function UpdatePosition(obj, dtEta)
+		function UpdatePosition(obj, dt)
 
 			% NOT USED IN SIMULATIONS, ONLY USED IN TESTING
 			% Used primarily for testing to avoid making a cell population
-			newPosition = obj.position + dtEta * obj.force;
+			newPosition = obj.position + dt/obj.eta * obj.force;
 
 			obj.NewPosition(newPosition);
 

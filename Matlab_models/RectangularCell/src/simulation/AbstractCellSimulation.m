@@ -25,7 +25,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		stopOnCollision = false
 
-		stochasticJiggle = true
+		stochasticJiggle = false
 
 		centreLine
 
@@ -306,6 +306,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 			for i = 1:length(obj.nodeList)
 
+				eta = obj.nodeList(i).eta;
 				force = obj.nodeList(i).force;
 				if obj.stochasticJiggle
 					% Add in a tiny amount of stochasticity to the force calculation
@@ -322,7 +323,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 				end
 				position = obj.nodeList(i).position;
 
-				newPosition = position + obj.dt/obj.eta * force;
+				newPosition = position + obj.dt/eta * force;
 
 				obj.nodeList(i).MoveNode(newPosition);
 			end
@@ -723,29 +724,56 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			F3x = node.previousForce(1);
 			F3y = node.previousForce(2);
 
+			% Divide through by eta to make the working clearer
+			F1xe = F1x/element.Node1.eta;
+			F2xe = F2x/element.Node2.eta;
+
+			F1ye = F1y/element.Node1.eta;
+			F2ye = F2y/element.Node2.eta;
+
+			F3xe = F3x/node.eta;
+			F3ye = F3y/node.eta;
+
 			% To find the point of contact, we need to solve
-			% s(X2 + hF2x - (X1 + hF1x)) + (X1 + hF1x) = X3 + hF3x
-			% s(Y2 + hF2y - (Y1 + hF1y)) + (Y1 + hF1y) = Y3 + hF3y
+			% s(X2 + h*F2xe - (X1 + h*F1xe)) + (X1 + h*F1xe) = X3 + h*F3xe
+			% s(Y2 + h*F2ye - (Y1 + h*F1ye)) + (Y1 + h*F1ye) = Y3 + h*F3ye
 			% to find the time and position of contact.
 			% Where Xi is the position of node i before moving
-			% Fix is the force before moving
+			% Fixe is the force before moving divided by etai
 			% and the parameter 0<s<1 defines the location on the edge
-			% while 0<h<dt/eta defines the time within the timestep interval
+			% while 0<h<dt defines the time within the timestep interval
 			% when contact occurs
 
-			% Rearranging this pair of equations to solve for s and t is a bitch
+			% Rearranging this pair of equations to solve for s and h is a bitch
 			% so we break the components up separately
 
 			% When solving for s and h we end up with quadratic equations
-			% meaning there are a possibility of two solutions
+			% meaning there are possibly two solutions
 			% In the context of the model, only one of them is valid, so
 			% we need to carefully choose the correct one.
 
 			% The quadratic solving t ends up being
 			% Ah^2 + Bh + C = 0, where
-			A = F1y*(F3x - F2x) - F1x*(F3y - F2y);
-			B = F1y*(X3 - X2) - F1x*(Y3 - Y2) + Y1*(F3x - F2x) - X1*(F3y - F2y);
-			C = Y1*(X3 - X2) - X1*(Y3 - Y2);
+			A = (F2ye - F1ye) * (F3xe - F2xe) - (F2xe - F1xe) * (F3ye - F2ye);
+			B = (F3xe - F1xe) * (Y2 - Y1) + (F2ye - F1ye) * (X3 - X1) - (F3ye - F1ye) * (X2 - X1) - (F2xe - F1xe) * (Y3 - Y1);
+			C = (X3 - X1) * (Y2 - Y1) - (X2 - X1) * (Y3 - Y1);
+
+			% Since we are doing many subtractions, there is a chance that we will
+			% subtract numbers that are almost, (but not quite) equal due to
+			% the way numbers are represented 
+			% In this instance, rounding/decimal approximation errors can dominate
+			% the result and cause the collision finding to fail.
+			% To remedy this, we will set the result manually to 0
+
+			if abs(   ((F2ye - F1ye) * (F3xe - F2xe)) / ((F2xe - F1xe) * (F3ye - F2ye)) - 1   ) < 1e-8
+				A = 0;
+			end
+
+			% B is a bit harder to handle since there are 3 addition/subtraction operations
+
+			if abs(   ((X3 - X1) * (Y2 - Y1)) / ((X2 - X1) * (Y3 - Y1)) - 1   ) < 1e-8
+				C = 0;
+			end
 
 			if A==0
 				% Sometimes A==0, and in that case we can get the solution directly
@@ -753,38 +781,43 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 				if B==0
 					error('A=0 and B=0, no solution exists')
 				end
-				h = -C/B
+				h = -C/B;
 
-				if ~(0 <= h && h <= obj.dt/obj.eta)
+				if ~(0 <= h && h <= obj.dt)
 					error('h falls outside the expected range')
 				end
 
 			else
 
-				% The solutions for t are then
-				hplus = (-B + sqrt(B^2 - 4*A*C) ) / (2*A);
-				hminu = (-B - sqrt(B^2 - 4*A*C) ) / (2*A);
+				% The solutions for h are then
+				if C==0
+					hplus = 0;
+					hminu = -B/A;
+				else
+					hplus = (-B + sqrt(B^2 - 4*A*C) ) / (2*A);
+					hminu = (-B - sqrt(B^2 - 4*A*C) ) / (2*A);
+				end
 
 				% The solutions for s are then
-				splus = 1 - ( (X3 - X2) + hplus * (F3x - F2x) ) / (X1 + hplus*F1x );
-				sminu = 1 - ( (X3 - X2) + hminu * (F3x - F2x) ) / (X1 + hminu*F1x );
+				splus = ( (X3 - X1) + hplus * (F3xe - F1xe) ) / ((X2 - X1) + hplus*(F2xe - F1xe) );
+				sminu = ( (X3 - X1) + hminu * (F3xe - F1xe) ) / ((X2 - X1) + hminu*(F2xe - F1xe) );
 
 				% These equations can also be used to solve s, and they MUST give the same result
-				% splus = 1 - ( (Y3 - Y2) + hplus * (F3y - F2y) ) / (Y1 + hplus*F1y );
-				% sminu = 1 - ( (Y3 - Y2) + hminu * (F3y - F2y) ) / (Y1 + hminu*F1y );
+				% splus = ( (Y3 - Y1) + hplus * (F3ye - F1ye) ) / ((Y2 - Y1) + hplus*(F2ye - F1ye) );
+				% sminu = ( (Y3 - Y1) + hminu * (F3ye - F1ye) ) / ((Y2 - Y1) + hminu*(F2ye - F1ye) );
 
 				% Both t and s must satisfy their range restrictions
 
 				s = nan;
 				h = nan;
 				satisfied = false;
-				if (0 <= splus && splus <=1) && (0 <= hplus && hplus <= obj.dt/obj.eta)
+				if (0 <= splus && splus <=1) && (0 <= hplus && hplus <= obj.dt)
 					s = splus;
 					h = hplus;
 					satisfied = true;
 				end
 
-				if (0 <= sminu && sminu <=1) && (0 <= hminu && hminu <= obj.dt/obj.eta)
+				if (0 <= sminu && sminu <=1) && (0 <= hminu && hminu <= obj.dt)
 					if satisfied == true
 						error('Both plus and minus solutions satisfy the constraints');
 					end
@@ -797,21 +830,28 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 				end
 			end
 
-			eN1Position = [X1 + h*F1x, Y1 + h*F1y];
-			eN2Position = [X2 + h*F2x, Y2 + h*F2y];
-			nPosition = [X3 + h*F3x, Y3 + h*F3y];
+			eN1Position = [X1 + h*F1xe, Y1 + h*F1ye];
+			eN2Position = [X2 + h*F2xe, Y2 + h*F2ye];
+			nPosition = [X3 + h*F3xe, Y3 + h*F3ye];
+
+			% element.Node1.AdjustPosition(eN1Position);
+			% element.Node2.AdjustPosition(eN2Position);
+			% node.AdjustPosition(nPosition);
 
 			
 
-			% Now that we have moved the node back to their collision point,
+			% Now that we have moved the nodes back to their collision point,
 			% we need to account for the 'left over force' and balance that
 			% out accoridingly in a rigid body approximation
 			% The left over movement will be determined by the unused time
 			% i.e. dt/eta - h, multiplied by the force
 
+			% This currently causes bouncing so is not appropriate 
+			% The signs of the components may not be correct
+
 
 			% Let u be the unit vector along the edge, and v the
-			% unit vector perpendicular. 
+			% unit vector perpendicular.
 
 			u = element.GetVector1to2();
 			v = [u(2), -u(1)];
@@ -820,29 +860,158 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			F2 = [F2x, F2y];
 			F3 = [F3x, F3y];
 
-			F1p = dot(F1, v);
-			F2p = dot(F2, v);
-			F3p = dot(F3, v);
+			% Perpendicular forces
+			Fp1 = dot(F1, v);
+			Fp2 = dot(F2, v);
+			Fp3 = dot(F3, v);
+
+			% Tangent forces
+			Ft1 = dot(F1, u);
+			Ft2 = dot(F2, u);
+			Ft3 = dot(F3, u); 
 
 			l = element.GetLength();
 			l1 = norm(eN1Position - nPosition);
 			l2 = norm(eN2Position - nPosition);
 
-			Fn1 = F1 - F2p * v * l2/l1 + F3p * v * l2/l;
-			Fn2 = F2 - F1p * v * l1/l2 + F3p * v * l1/l;
-			Fn3 = F3 + F1p * v * l/l2 + F2p * v * l/l1;
+			% Balanced out net perpendicular forces
+			Fn1 = Ft1 * u;
+			Fn2 = Ft2 * u;
+			Fn3 = Ft3 * u;
 
-			% Now we manually apply the forces. This is not the best method
+			% Now we manually apply the perpendicular forces. This is not the best method
 			% and will probably cause issues when multiple nodes are in
 			% contact with the same edge
 
-			eN1Position = eN1Position + (obj.dt/obj.eta - h) * Fn1;
-			eN2Position = eN2Position + (obj.dt/obj.eta - h) * Fn2;
-			nPosition = nPosition + (obj.dt/obj.eta - h) * Fn3;
+			eN1Position = eN1Position + (obj.dt - h) * Fn1 / element.Node1.eta;
+			eN2Position = eN2Position + (obj.dt - h) * Fn2 / element.Node2.eta;
+			nPosition = nPosition + (obj.dt - h) * Fn3 / node.eta;
+
+			% % Finally, we apply the parallel forces. This will result in the
+			% % contacting node to slide along the surface of the element
+			% eN1Position = eN1Position + (obj.dt - h) * Ft1 / element.Node1.eta;
+			% eN2Position = eN2Position + (obj.dt - h) * Ft2 / element.Node2.eta;
+			% nPosition = nPosition + (obj.dt - h) * Ft3 / node.eta;
 
 			element.Node1.AdjustPosition(eN1Position);
 			element.Node2.AdjustPosition(eN2Position);
 			node.AdjustPosition(nPosition);
+
+			
+		end
+
+		function TransmitForcesPair(obj,n,e)
+
+			% This takes a node-element pair where the node is on
+			% the element, and calculates the force transmission
+			% from one to the other
+			% It uses the drag dominated equations of motion I developed
+			% for a rigid body - see research diary
+
+			% To solve the motion, we need to account for linear
+			% movement and rotational movement. To do this, we solve
+			% the angular velocity of the element in its body
+			% system of coordinates. This requires a "moment of drag"
+			% for the element, based on its length and the drag
+			% coefficients of its nodes. We produce an angle that the
+			% element rotates through during the time step
+			% In addition to the rotation, we solve the linear motion
+			% of the element at its "centre of drag", again, determined
+			% by its length and the drag coefficients of its nodes. This
+			% produces a vector that the centre of drag moves along in
+			% the given time interval.
+			% Once we have both the angle and vector, the rotation is aplied
+			% first, moving the nodes to their rotated position assuming
+			% no linear movement, then the linear movement is applied to each
+			% node.
+
+			% As yet, this doesn't account for the motion if the element
+			% acting on the node
+
+			
+			% Grab the components we need so the code is cleaner
+			F1 = e.Node1.force';
+			F2 = e.Node2.force';
+			Fa = n.force';
+
+			eta1 = e.Node1.eta;
+			eta2 = e.Node2.eta;
+			etaA = n.eta;
+
+			rA = n.position';
+			r1 = e.Node1.position';
+			r2 = e.Node2.position';
+			
+			
+			% First, find the angle.
+			% To do this, we need the force from the node, in the elements
+			% body system of coordinates
+
+			u = e.GetVector1to2();
+			v = [u(2), -u(1)];
+
+			Fab = [dot(Fa, v) * v, dot(Fa, u) * u];
+
+			% Next, we determine the equivalent drag of the centre
+			% and the position of the centre of drag
+			etaD = eta1 + eta2;
+			rD = (eta1 * r1 + eta2 * r2) / etaD;
+
+			% We then need the vector from the centre of drag to
+			% both nodes (note, these are relative the fixed system of
+			% coordinates, not the body system of coordinates)
+			rDto1 = r1 - rD;
+			rDto2 = r2 - rD;
+
+			% These give us the moment of drag about the centre of drag
+			ID = eta1 * norm(rDto1)^2 + eta2 * norm(rDto2)^2;
+
+			% The moment created by the node is then force times
+			% perpendicular distance.  We must use the body system of
+			% coordinates in order to get the correct direction.
+			% (We could probably get away without the transform, 
+			% since we only need the length, but wed have to be
+			% careful about choosing the sign correctly)
+			
+			rDtoA = rA - rD;
+
+			rDtoAb = dot(rDtoA, v) * v  +  dot(rDtoA, u) * u;
+
+			% The moment is technically rDtoAby * Fabx - rDtoAbx * Faby
+			% but by definition, the y-axis aligns with the element,
+			% so all x components are 0
+			M = -rDtoAb(2) * Fab(1);
+
+			% Now we can find the change in angle in the given time step
+			a = obj.dt * M / ID;
+
+			% This angle can now be used in a rotation matrix to determine the new
+			% position of the nodes. We can apply it directly to rDto1 and rDto2
+			% since the angle is in the plane (a consequnce of 2D)
+
+			Rot = [cos(a), -sin(a); sin(a), cos(a)];
+
+			rDto1_new = Rot * rDto1;
+			rDto2_new = Rot * rDto2;
+			rDtoA_new = Rot * rDtoA;
+
+			% Finally, the new positions of the nodes in the fixed system
+			% of coordinates found by summing the vectors
+
+			r1f = rD + rDto1_new;
+			r2f = rD + rDto2_new;
+			rAf = rD + rDtoA_new;
+
+			% Hooray, weve done it! All that is left to do it translate
+			% the nodes with the linear motion
+			r1f = r1f + (obj.dt * Fa) / etaD;
+			r2f = r2f + (obj.dt * Fa) / etaD;
+			rAf = rAf + (obj.dt * Fa) / etaD;
+
+
+			e.Node1.MoveNode(r1f);
+			e.Node2.MoveNode(r2f);
+			n.MoveNode(rAf);
 
 		end
 
