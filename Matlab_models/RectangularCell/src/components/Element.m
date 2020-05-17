@@ -87,6 +87,16 @@ classdef Element < matlab.mixin.SetGet
 
 		end
 
+		function internal = IsElementInternal(obj)
+
+			internal = false;
+
+			if obj.cellList(1).elementLeft == obj || obj.cellList(1).elementRight == obj
+				internal = true;
+			end
+
+		end
+
 		function otherNode = GetOtherNode(obj, node)
 			% Since we don't know what order the nodes are in, we need a special way to grab the
 			% other node if we already know one of them

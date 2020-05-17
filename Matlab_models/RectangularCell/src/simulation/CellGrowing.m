@@ -42,7 +42,7 @@ classdef CellGrowing < AbstractCellSimulation
 
 			obj.AddElementBasedForce(EdgeSpringForce(@(n,l) 20 * exp(1-25 * l/n)));
 			
-			obj.collisionDetectionRequested = true;
+			% obj.collisionDetectionRequested = true;
 			% obj.collisionDetectionOn = true;
 
 			obj.cellList = Cell(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
@@ -76,6 +76,8 @@ classdef CellGrowing < AbstractCellSimulation
 			obj.leftBoundaryCell = obj.cellList(1);
 			obj.rightBoundaryCell = obj.cellList(end);
 
+			% The space partition in order to detect collisions
+			obj.boxes = SpacePartition(1, 1, obj);
 
 		end
 

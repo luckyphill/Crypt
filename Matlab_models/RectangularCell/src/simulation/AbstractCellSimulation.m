@@ -25,7 +25,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		stopOnCollision = false
 
-		stochasticJiggle = false
+		stochasticJiggle = true
 
 		centreLine
 
@@ -45,6 +45,8 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		cellBasedForces AbstractCellBasedForce
 		elementBasedForces AbstractElementBasedForce
+
+		boxes SpacePartition
 		
 	end
 
@@ -305,9 +307,11 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 		function MakeNodesMove(obj)
 
 			for i = 1:length(obj.nodeList)
+				
+				n = obj.nodeList(i);
 
-				eta = obj.nodeList(i).eta;
-				force = obj.nodeList(i).force;
+				eta = n.eta;
+				force = n.force;
 				if obj.stochasticJiggle
 					% Add in a tiny amount of stochasticity to the force calculation
 					% to nudge it out of unstable equilibria
@@ -321,11 +325,12 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 					force = force + v * norm(force) / 10000;
 
 				end
-				position = obj.nodeList(i).position;
 
-				newPosition = position + obj.dt/eta * force;
+				newPosition = n.position + obj.dt/eta * force;
 
-				obj.nodeList(i).MoveNode(newPosition);
+				n.MoveNode(newPosition);
+
+				obj.boxes.UpdateBoxForNode(n);
 			end
 
 		end
@@ -368,9 +373,14 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 				nc.id = obj.GetNextCellId();
 
 				for i = 1:4
+					% If the new nodes aren't already in the node list
+					% give them the next ID in sequence and add them to
+					% the space partition
 					if ~ismember(nc.nodeList(i),obj.nodeList)
 						nc.nodeList(i).id = obj.GetNextNodeId();
+						obj.boxes.PutNodeInBox(nc.nodeList(i));
 					end
+
 				end
 
 				for i = 1:4
@@ -954,17 +964,18 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 			% Next, we determine the equivalent drag of the centre
 			% and the position of the centre of drag
-			etaD = eta1 + eta2;
-			rD = (eta1 * r1 + eta2 * r2) / etaD;
+			etaD = eta1 + eta2 + etaA;
+			rD = (eta1 * r1 + eta2 * r2 + etaA * rA) / etaD;
 
 			% We then need the vector from the centre of drag to
 			% both nodes (note, these are relative the fixed system of
 			% coordinates, not the body system of coordinates)
 			rDto1 = r1 - rD;
 			rDto2 = r2 - rD;
+			rDtoA = rA - rD;
 
 			% These give us the moment of drag about the centre of drag
-			ID = eta1 * norm(rDto1)^2 + eta2 * norm(rDto2)^2;
+			ID = eta1 * norm(rDto1)^2 + eta2 * norm(rDto2)^2 + etaA * norm(rDtoA)^2;
 
 			% The moment created by the node is then force times
 			% perpendicular distance.  We must use the body system of
@@ -973,7 +984,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			% since we only need the length, but wed have to be
 			% careful about choosing the sign correctly)
 			
-			rDtoA = rA - rD;
+			
 
 			rDtoAb = dot(rDtoA, v) * v  +  dot(rDtoA, u) * u;
 
