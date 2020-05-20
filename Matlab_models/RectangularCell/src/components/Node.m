@@ -39,6 +39,9 @@ classdef Node < matlab.mixin.SetGet
 			obj.y 	= y;
 
 			obj.position = [x,y];
+			% Need to give the node a previous position so elements
+			% can move to a new nox on the very first time step
+			obj.previousPosition = [x,y];  
 			
 			obj.id 	= id;
 
@@ -140,6 +143,20 @@ classdef Node < matlab.mixin.SetGet
 			% Lidx = ismember(obj.cellList, delCell);
 			% obj.cellList(Lidx) = [];
 
+		end
+
+		function SetDragCoefficient(obj, eta)
+
+			% Use this to change the drag coefficient
+			% so that the associated elements have their
+			% properties updated
+			obj.eta = eta;
+
+			for i = 1:length(obj.elementList)
+
+				obj.elementList(i).UpdateTotalDrag();
+
+			end
 
 		end
 

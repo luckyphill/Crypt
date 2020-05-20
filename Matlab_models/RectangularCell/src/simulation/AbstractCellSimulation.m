@@ -45,8 +45,11 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		cellBasedForces AbstractCellBasedForce
 		elementBasedForces AbstractElementBasedForce
+		neighbourhoodBasedForces AbstractNeighbourhoodBasedForce
 
 		boxes SpacePartition
+
+		usingBoxes = true;
 		
 	end
 
@@ -222,6 +225,10 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			
 			obj.GenerateCellBasedForces();
 			obj.GenerateElementBasedForces();
+			% p = SpacePartition(1, 1, obj); % If we just regenerate the partition every step
+			if obj.usingBoxes
+				obj.GenerateNeighbourhoodBasedForces();
+			end
 
 			% Element forces must happen last because it contains the rigid body
 			% tweak to prevent element flipping. This is a dodgy way to do it,
@@ -304,6 +311,14 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		end
 
+		function GenerateNeighbourhoodBasedForces(obj)
+
+			for i = 1:length(obj.neighbourhoodBasedForces)
+				obj.neighbourhoodBasedForces(i).AddNeighbourhoodBasedForces(obj.nodeList, obj.boxes);
+			end
+
+		end
+
 		function MakeNodesMove(obj)
 
 			for i = 1:length(obj.nodeList)
@@ -330,8 +345,19 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 				n.MoveNode(newPosition);
 
-				obj.boxes.UpdateBoxForNode(n);
+				if obj.usingBoxes
+					obj.boxes.UpdateBoxForNode(n);
+				end
 			end
+
+			% Once the nodes have all moved, need to update the
+			% element boxes
+			% Reverting back to moving element boxes as nodes move
+			% if obj.usingBoxes
+			% 	for i = 1:length(obj.elementList)
+			% 		obj.boxes.UpdateBoxesForElement(obj.elementList(i));
+			% 	end
+			% end
 
 		end
 
@@ -378,7 +404,9 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 					% the space partition
 					if ~ismember(nc.nodeList(i),obj.nodeList)
 						nc.nodeList(i).id = obj.GetNextNodeId();
-						obj.boxes.PutNodeInBox(nc.nodeList(i));
+						if obj.usingBoxes
+							obj.boxes.PutNodeInBox(nc.nodeList(i));
+						end
 					end
 
 				end
@@ -386,6 +414,9 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 				for i = 1:4
 					if ~ismember(nc.elementList(i),obj.elementList)
 						nc.elementList(i).id = obj.GetNextElementId();
+						if ~nc.elementList(i).IsElementInternal()
+							obj.boxes.PutElementInBoxes(nc.elementList(i));
+						end
 					end
 				end
 
@@ -419,6 +450,16 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		end
 
+		function AddNeighbourhoodBasedForce(obj, f)
+
+			if isempty(obj.neighbourhoodBasedForces)
+				obj.neighbourhoodBasedForces = f;
+			else
+				obj.neighbourhoodBasedForces(end + 1) = f;
+			end
+
+		end
+
 		function numCells = GetNumCells(obj)
 
 			numCells = length(obj.cellList);
@@ -436,7 +477,6 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			numNodes = length(obj.nodeList);
 
 		end
-
 
 		function ProcessCollisions(obj)
 
@@ -906,8 +946,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			element.Node1.AdjustPosition(eN1Position);
 			element.Node2.AdjustPosition(eN2Position);
 			node.AdjustPosition(nPosition);
-
-			
+	
 		end
 
 		function TransmitForcesPair(obj,n,e)

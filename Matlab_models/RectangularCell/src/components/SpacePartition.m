@@ -74,9 +74,204 @@ classdef SpacePartition < matlab.mixin.SetGet
 				obj.PutNodeInBox(s.nodeList(i));
 			end
 
+			for i=1:length(s.elementList)
+				% If the element is an internal element, skip it
+				% because they don't interact with nodes
+				
+				e = s.elementList(i);
+				if ~e.IsElementInternal()
+					obj.PutElementInBoxes(e);
+				end
+			end
+
 		end
 
-		function N = GetNeighbours(obj, dr)
+		function neighbours = GetNeighbouringElements(obj, n, r)
+
+			% The pinacle of this piece of code
+			% A function that (hopefully) efficiently finds
+			% the set of elements that are within a distance r
+			% of the node n
+
+			% There are two stages
+			% 1. Get the candidate elements. This includes
+			% grabbing elements from adjacent boxes if the
+			% node is close to a box boundary
+			% 2. Calculate the distances to each candidate
+			% element. This involves making sure the node
+			% is within the range of the element
+
+			% The elements are assembled into a vector
+			% along with the actual distance calculated
+			% to save doubling effort
+
+			% First off, get the elements in the same box
+
+
+			b = obj.AssembleCandidateElements(n, r);
+
+			neighbours = Element.empty();
+
+			for i = 1:length(b)
+
+				e = b(i);
+
+				u = e.GetVector1to2();
+				v = [u(2), -u(1)];
+
+				% Make box around element
+				% determine if node is in that box
+
+				n1 = e.Node1;
+				n2 = e.Node2;
+
+				p1 = n1.position + v * r;
+				p2 = n1.position - v * r;
+				p3 = n2.position - v * r;
+				p4 = n2.position + v * r;
+
+				x = [p1(1), p2(1), p3(1), p4(1)];
+				y = [p1(2), p2(2), p3(2), p4(2)];
+
+				[inside, on] = inpolygon(n.x, n.y, x ,y);
+
+				if inside && on
+					inside = false;
+				end
+
+				if inside
+					neighbours(end+1) = e;
+				end
+
+			end
+			
+		end
+
+		function b = AssembleCandidateElements(obj, n, r)
+
+			b = obj.GetElementBoxFromNode(n);
+
+			% Then check if the node is near a boundary
+
+			[q,i,j] = obj.GetQuadrantAndIndices(n.x,n.y);
+
+			% Need to decide if the process of check is more effort than
+			% just taking the adjacent boxes always, even when the node is
+			% in the middle of its box
+
+			% A vector that matches q to the sign of x or y
+			sx = [1, 1, -1, -1];
+			sy = [1, -1, -1, 1];
+
+
+			% Check sides
+			if abs(n.x - sx(q) * i * obj.dx) - r < 0
+				% Close to left
+				b = [b, obj.GetAdjacentElementBoxFromNode(n, [-1, 0])];
+			end
+
+			if abs(n.x - sx(q) * i * obj.dx) + r > obj.dx
+				% Close to right
+				b = [b, obj.GetAdjacentElementBoxFromNode(n, [1, 0])];
+			end
+
+			if abs(n.y - sy(q) * j * obj.dy) - r < 0
+				% Close to bottom
+				b = [b, obj.GetAdjacentElementBoxFromNode(n, [0, -1])];
+			end
+
+			if abs(n.y - sy(q) * j * obj.dy) + r > obj.dy
+				% Close to top
+				b = [b, obj.GetAdjacentElementBoxFromNode(n, [0, 1])];
+			end
+
+			% Checking diagonally not needed for elements when box side length
+			% is about the same size as the maximum element length
+			% If the box size is much smaller than the max element length
+			% then it is most likely easier to not check at all, and just
+			% add the adjacent boxes
+
+
+			% Remove duplicates
+			% b = unique(b);
+			b = obj.QuickUnique(b);
+
+			% Remove nodes own elements
+			% Lidx = ismember(b,n.elementList);
+			% b(Lidx) = [];
+			for i = 1:length(n.elementList)
+				b(b==n.elementList(i)) = [];
+			end
+
+		end
+
+		function b = QuickUnique(obj, b)
+			% Test to see if I can do the unique check quicker without
+			% needing all the bells and whistles - it can by a factir of 2
+
+			% Is there a more efficient way when the most repetitions is 3?
+
+			b = sort(b);
+
+			% If there are repeated elements, they will be adjacent after sorting
+			Lidx = b(1:end-1) ~= b(2:end);
+			Lidx = [Lidx, true];
+			b = b(Lidx);
+
+		end
+
+		function b = AssembleCandidateNodes(obj, n, r)
+
+			b = obj.GetNodeBoxFromNode(n);
+
+			% Then check if the node is near a boundary
+
+			[q,i,j] = obj.GetQuadrantAndIndices(n.x,n.y);
+
+			% Check sides
+			if n.x - i * obj.dx - r < 0
+				% Close to left
+				b = [b, obj.GetAdjacentNodeBoxFromNode(n, [-1, 0])];
+			end
+
+			if n.x - i * obj.dx + r > obj.dx
+				% Close to right
+				b = [b, obj.GetAdjacentNodeBoxFromNode(n, [1, 0])];
+			end
+
+			if n.y - j * obj.dy - r < 0
+				% Close to bottom
+				b = [b, obj.GetAdjacentNodeBoxFromNode(n, [0, -1])];
+			end
+
+			if n.y - j * obj.dy + r > obj.dy
+				% Close to top
+				b = [b, obj.GetAdjacentNodeBoxFromNode(n, [0, 1])];
+			end
+
+			% Check corners
+
+			if (n.x - i * obj.dx - r < 0) && (n.y - j * obj.dy - r < 0)
+				% Close to left bottom
+				b = [b, obj.GetAdjacentNodeBoxFromNode(n, [-1, -1])];
+			end
+
+			if n.x - i * obj.dx + r > obj.dx && (n.y - j * obj.dy - r < 0)
+				% Close to right bottom
+				b = [b, obj.GetAdjacentNodeBoxFromNode(n, [1, -1])];
+			end
+
+			if (n.x - i * obj.dx - r < 0) && (n.y - j * obj.dy + r > obj.dy)
+				% Close to left top
+				b = [b, obj.GetAdjacentNodeBoxFromNode(n, [-1, 1])];
+			end
+
+			if n.x - i * obj.dx + r > obj.dx && (n.y - j * obj.dy + r > obj.dy)
+				% Close to right top
+				b = [b, obj.GetAdjacentNodeBoxFromNode(n, [1, 1])];
+			end
+
+			b(b==n) = [];
 
 		end
 
@@ -88,7 +283,31 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 		end
 
-		function b = GetAdjacentNodeBox(obj, q,i,j, dir)
+		function b = GetNodeBoxFromNode(obj, n)
+			% Returns the same box that n is in
+			[q,i,j] = obj.GetQuadrantAndIndices(n.x,n.y);
+
+			try
+				b = obj.nodesQ{q}{i,j};
+			catch
+				error('SP:GetNodeBoxFromNode:Missing','Node doesnt exist where expected in the partition');
+			end
+		
+		end
+
+		function b = GetElementBoxFromNode(obj, n)
+			% Returns the same box that n is in
+			[q,i,j] = obj.GetQuadrantAndIndices(n.x,n.y);
+
+			try
+				b = obj.elementsQ{q}{i,j};
+			catch
+				error('SP:GetElementBoxFromNode:Missing','Elements dont exist where expected in the partition');
+			end
+		
+		end
+
+		function b = GetAdjacentNodeBoxFromNode(obj, n, dir)
 
 			% Returns the node box adjacent to the one indicated
 			% specifying the direction
@@ -98,25 +317,34 @@ classdef SpacePartition < matlab.mixin.SetGet
 			% 1 indicates an increase in the global index etc.
 			% a is applied to I and b applied to J
 
-
+			b = [];
+			a = dir(1);
+			c = dir(2);
+			[q,i,j] = obj.GetQuadrantAndIndices(n.x,n.y);
 			[I, J] = obj.ConvertToGlobal(q,i,j);
 
 			I = I + a;
-			J = J + b;
+			J = J + c;
 
 			% This is needed because matlab doesn't index from 0!!!!!!!!!!!!!!!!!
 
 			if I == 0; I = a; end
-			if J == 0; J = b; end
+			if J == 0; J = c; end
 
-			[q,i,j] = obj.ConvertToQuadrant(I,J)
+			[q,i,j] = obj.ConvertToQuadrant(I,J);
 
 
-			b = obj.nodesQ{q}{i,j};
+			try
+				b = obj.nodesQ{q}{i,j};
+			catch ME
+				if ~strcmp(ME.identifier,'MATLAB:badsubscript')
+					error('SP:GetAdjacentNodeBox','Assignment didnt fail properly');
+				end
+			end
 
 		end
 
-		function b = GetAdjacentElementBox(obj, q,i,j, dir)
+		function b = GetAdjacentElementBoxFromNode(obj, n, dir)
 
 			% Returns the node box adjacent to the one indicated
 			% specifying the direction
@@ -125,22 +353,31 @@ classdef SpacePartition < matlab.mixin.SetGet
 			% where a,b = 1 or -1
 			% 1 indicates an increase in the global index etc.
 			% a is applied to I and b applied to J
-
-
+			a = dir(1);
+			c = dir(2);
+			b = [];
+			[q,i,j] = obj.GetQuadrantAndIndices(n.x,n.y);
 			[I, J] = obj.ConvertToGlobal(q,i,j);
 
 			I = I + a;
-			J = J + b;
+			J = J + c;
 
 			% This is needed because matlab doesn't index from 0!!!!!!!!!!!!!!!!!
 
 			if I == 0; I = a; end
-			if J == 0; J = b; end
+			if J == 0; J = c; end
 
-			[q,i,j] = obj.ConvertToQuadrant(I,J)
+			[q,i,j] = obj.ConvertToQuadrant(I,J);
 
 
-			b = obj.elementsQ{q}{i,j};
+			
+			try
+				b = obj.elementsQ{q}{i,j};
+			catch ME
+				if ~strcmp(ME.identifier,'MATLAB:badsubscript')
+					error('SP:GetAdjacentElementBox','Assignment didnt fail properly');
+				end
+			end
 
 		end
 
@@ -156,7 +393,7 @@ classdef SpacePartition < matlab.mixin.SetGet
 				% because they don't interact with nodes
 				
 				e = n1.elementList(i);
-				if ~e.IsInternalElement()
+				if ~e.IsElementInternal()
 
 					n2 = e.GetOtherNode(n1);
 
@@ -210,13 +447,19 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 		end
 
-		function [qp,ip,jp] = GetPreviousBoxIndicesBetweenNodes(obj, n1, n2)
+		function [qp,ip,jp] = GetBoxIndicesBetweenNodesPrevious(obj, n1, n2)
 
 			% Given two nodes, we want all the indices between them
 			% in order to determine which boxes an element needs to go in
 
+			% This function gets the box indices between nodes in the previous time step2
+
 			% qp,ip,jp are vectors (lists) of all the possible box indices where
 			% the element could pass through
+			if isempty(n1.previousPosition) || isempty(n2.previousPosition)
+				error('SP:GetBoxIndicesBetweenNodesPrevious:NoPrevious', 'There has not been a previous position');
+			end
+
 
 			[q1,i1,j1] = obj.GetQuadrantAndIndices(n1.previousPosition(1),n1.previousPosition(2));
 			[q2,i2,j2] = obj.GetQuadrantAndIndices(n2.previousPosition(1),n2.previousPosition(2));
@@ -225,7 +468,50 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 		end
 
+		function [qp,ip,jp] = GetBoxIndicesBetweenNodesPreviousCurrent(obj, n1, n2)
+
+			% Given two nodes, we want all the indices between them
+			% in order to determine which boxes an element needs to go in
+
+			% This function finds the previous boxes for the node that has just moved
+			% and the current indices for its associated element paired node
+
+			% qp,ip,jp are vectors (lists) of all the possible box indices where
+			% the element could pass through
+			if isempty(n1.previousPosition) || isempty(n2.previousPosition)
+				error('SP:GetBoxIndicesBetweenNodesPrevious:NoPrevious', 'There has not been a previous position');
+			end
+
+
+			[q1,i1,j1] = obj.GetQuadrantAndIndices(n1.previousPosition(1),n1.previousPosition(2));
+			[q2,i2,j2] = obj.GetQuadrantAndIndices(n2.x,n2.y);
+
+			[qp,ip,jp] = obj.MakeElementBoxList(q1,i1,j1,q2,i2,j2);
+
+		end
+
 		function [ql,il,jl] = MakeElementBoxList(obj,q1,i1,j1,q2,i2,j2)
+
+			% This method for finding the boxes that we should put the
+			% elements in is not exact.
+			% An exact method will get exactly the right boxes and no more
+			% but as a consequence, will need to be checked at every time
+			% step, which can slow things down. An exact method might be better
+			% when the box size is quite small in relation to the max
+			% element length.
+			% An exact method transverses the vector beteen the ttwo nodes
+			% and calculates the position where it crosses the box
+			% boundaries. It uses this to know which box to add the element to
+
+			% A non exact method will look at all the possible boxes the element 
+			% could pass through, given that we only know which boxes its end
+			% points are in. This will only need to be updated when
+			% a node moves to a new box.
+
+			% The non exact method used here is probably the greediest method
+			% and the least efficient in a small box case, but is quick, and
+			% arrives at the same answer when the boxes are the large, hence
+			% it is kept for now.
 
 			% To find the boxes that the element could pass through
 			% it is much simpler to convert to global indices, then
@@ -236,6 +522,11 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 			if I1<I2; Il = I1:I2; else; Il = I2:I1; end
 			if J1<J2; Jl = J1:J2; else; Jl = J2:J1; end
+
+			% Once again, I need to hack a solution because matlab
+			% decided to index from 1..........
+			Il(Il==0) = [];
+			Jl(Jl==0) = [];
 
 			% This method will always produce a rectangular grid
 			% of boxes which may be many times more than is needed
@@ -252,6 +543,10 @@ classdef SpacePartition < matlab.mixin.SetGet
 		end
 
 		function UpdateBoxForNode(obj, n)
+
+			if isempty(n.previousPosition)
+				error('SP:UpdateBoxForNode:NoPrevious', 'There has not been a previous position');
+			end
 
 			[qn,in,jn] = obj.GetQuadrantAndIndices(n.x,n.y);
 			[qo,io,jo] = obj.GetQuadrantAndIndices(n.previousPosition(1),n.previousPosition(2));
@@ -273,6 +568,21 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 		function UpdateBoxesForElementsUsingNode(obj, n1)
 
+			% This function will be used as each node is moved
+			% As such, we know the node n1 has _just_ moved therefore
+			% we need to look at the current position and the previous
+			% position to see which boxes need changing
+			% We know nothing about the other nodes of the elements
+			% so at this point we just assume they are in their final
+			% position. This will cause doubling up of effort if both
+			% nodes end up moving to a new box, but this should be
+			% fairly rare occurrance.
+
+			% Logic of processing:
+			% If the node n1 is the first one from an element to move
+			% boxes, then we use the current position for n2
+			% If node n1 is the second to move, then the current position
+			% for n2 will still be the correct to use
 
 			for i=1:length(n1.elementList)
 				% If the element is an internal element, skip it
@@ -284,7 +594,56 @@ classdef SpacePartition < matlab.mixin.SetGet
 					n2 = e.GetOtherNode(n1);
 
 					[ql,il,jl] = obj.GetBoxIndicesBetweenNodes(n1, n2);
-					[qp,ip,jp] = obj.GetPreviousBoxIndicesBetweenNodes(n1, n2);
+					[qp,ip,jp] = obj.GetBoxIndicesBetweenNodesPreviousCurrent(n1, n2);
+
+					% If the box appears in both, nothing needs to change
+					% If it only appears in previous, remove element
+					% If it only appears in current, add element
+
+					new = [ql,il,jl];
+					old = [qp,ip,jp];
+
+					% Get the unique new boxes
+					J = ~ismember(new,old,'rows');
+					% And get the indices to add
+					qa = ql(J);
+					ia = il(J);
+					ja = jl(J);
+					
+					for j = 1:length(qa)
+						obj.InsertElement(qa(j),ia(j),ja(j),e);
+					end
+
+					% Get the old boxes
+					J = ~ismember(old,new,'rows');
+					% ... and rhe indices to remove
+					qt = qp(J);
+					it = ip(J);
+					jt = jp(J);
+					for j = 1:length(qt)
+						obj.RemoveElement(qt(j),it(j),jt(j),e);
+					end
+
+				end
+
+			end
+
+		end
+
+		function UpdateBoxesForElement(obj, e)
+
+			% This function will be run in the simulation
+			% It will be done after all the nodes have moved
+
+			% This check should really be done in the simulation
+			% but this is the only good spot to do it
+			if ~e.IsElementInternal() 
+
+				n1 = e.Node1;
+				n2 = e.Node2;
+				if obj.IsNodeInNewBox(n1) || obj.IsNodeInNewBox(n2)
+					[ql,il,jl] = obj.GetBoxIndicesBetweenNodes(n1, n2);
+					[qp,ip,jp] = obj.GetBoxIndicesBetweenNodesPrevious(n1, n2);
 
 					% If the box appears in both, nothing needs to change
 					% If it only appears in previous, remove element
@@ -382,7 +741,8 @@ classdef SpacePartition < matlab.mixin.SetGet
 		function RemoveElement(obj,q,i,j,e)
 
 			% If it gets to this point, the element should be in
-			% the given box, so no need for checking
+			% the given box, so no need for error catching
+			% If it does in fact fail here, we want it to stop
 			obj.elementsQ{q}{i,j}( obj.elementsQ{q}{i,j}==e ) = [];
 
 		end
@@ -400,6 +760,10 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 			% Redundant now, but leaving for testing
 			new = false;
+
+			if isempty(n.previousPosition)
+				error('SP:IsNodeInNewBox:NoPrevious', 'There has not been a previous position');
+			end
 
 			[qn,in,jn] = obj.GetQuadrantAndIndices(n.x,n.y);
 			[qo,io,jo] = obj.GetQuadrantAndIndices(n.previousPosition(1),n.previousPosition(2));
@@ -483,36 +847,38 @@ classdef SpacePartition < matlab.mixin.SetGet
 			% 3: (-,-)
 			% 4: (-,+)
 
-			% Vectorising attempt
-			q = (sign(x)+1) + 3 * (sign(y)+1);
+			if length(x) > 1
+				% Vectorising attempt
+				q = (sign(x)+1) + 3 * (sign(y)+1);
 
-			% Magic numbers
-			% Basically, there are 8 situations to handle
-			% The equation above produces a unique value
-			% for each situation, which is processed below
-			q(q==1) = 2;
-			q(q==4) = 1;
-			q(q==3) = 4;
-			q(q==5) = 1;
-			q(q==7) = 1;
-			q(q==8) = 1;
-			q(q==6) = 4;
-			q(q==0) = 3;
-
-			% Brute force checking 
-			% if sign(x) >= 0 
-			% 	if sign(y) >= 0
-			% 		q = 1;
-			% 	else
-			% 		q = 2;
-			% 	end
-			% else
-			% 	if sign(y) < 0
-			% 		q = 3;
-			% 	else
-			% 		q = 4;
-			% 	end
-			% end	
+				% Magic numbers
+				% Basically, there are 8 situations to handle
+				% The equation above produces a unique value
+				% for each situation, which is processed below
+				q(q==1) = 2;
+				q(q==4) = 1;
+				q(q==3) = 4;
+				q(q==5) = 1;
+				q(q==7) = 1;
+				q(q==8) = 1;
+				q(q==6) = 4;
+				q(q==0) = 3;
+			else
+				% Brute force checking 
+				if sign(x) >= 0 
+					if sign(y) >= 0
+						q = 1;
+					else
+						q = 2;
+					end
+				else
+					if sign(y) < 0
+						q = 3;
+					else
+						q = 4;
+					end
+				end
+			end	
 
 		end
 

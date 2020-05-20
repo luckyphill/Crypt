@@ -65,6 +65,7 @@ classdef Cell < matlab.mixin.SetGet
 	end
 
 	methods
+		
 		function obj = Cell(Cycle, elementList, id)
 			% All the initilising
 			% A cell will always have 4 elements
@@ -263,6 +264,7 @@ classdef Cell < matlab.mixin.SetGet
 			% Finally, reset the node list
 			obj.nodeList = [obj.nodeTopLeft, obj.nodeTopRight, obj.nodeBottomRight, obj.nodeBottomLeft];
 			obj.elementList = [obj.elementTop, obj.elementBottom, obj.elementLeft, obj.elementRight];
+		
 		end
 
 		function ready = IsReadyToDivide(obj)
@@ -412,6 +414,7 @@ classdef Cell < matlab.mixin.SetGet
 	end
 
 	methods (Access = private)
+
 		function AddNodesInOrder(obj)
 			% Adds the nodes properly so we always know which node is where
 

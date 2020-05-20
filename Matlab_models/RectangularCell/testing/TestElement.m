@@ -6,6 +6,9 @@ classdef TestElement < matlab.unittest.TestCase
 			n1 = Node(1,1,1);
 			n2 = Node(2,1,2);
 
+			n1.SetDragCoefficient(1);
+			n2.SetDragCoefficient(1);
+
 			e = Element(n1,n2,1);
 
 			testCase.verifyEqual(e.id,1);

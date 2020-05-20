@@ -93,7 +93,6 @@ classdef TestForce < matlab.unittest.TestCase
 
 		end
 
-
 		function TestRigidBodyEdgeModifierForce(testCase)
 			
 			% Make an element that is shorter than the min length
@@ -240,6 +239,36 @@ classdef TestForce < matlab.unittest.TestCase
 
 		end
 
+		function TestNodeElementRepulsionForce(testCase)
+
+			% This force is special in that it acts at a distance
+			% since the nodes aren't all connected thorugh edges and cells
+			% we have to use the space partition to find the interactions
+
+			r = 0.1;
+			dt = 0.005;
+
+			n1 = Node(0,0,1);
+			n2 = Node(0,01,2);
+
+			e = Element(n1,n2,1);
+
+			n = Node(0.06,0.5,3);
+
+			f = NodeElementRepulsionForce(r, dt);
+
+			dr = r - n.x;
+			Fa = [-atanh(dr/r),0];
+			n1toA = [0, 0.5];
+
+			f.ApplyForcesToNodeAndElement(n,e,Fa,n1toA);
+
+			testCase.verifyEqual(n.force, -Fa, 'RelTol', 1e-8);
+			testCase.verifyEqual(n1.force, 0.5*Fa, 'RelTol', 1e-8);
+			testCase.verifyEqual(n2.force, 0.5*Fa, 'RelTol', 1e-8);
+
+
+		end
 
 
 	end

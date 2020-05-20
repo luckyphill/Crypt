@@ -316,20 +316,20 @@ classdef TestSimulation < matlab.unittest.TestCase
 
 			e.GetLength()
 
-			figure
-			hold on
+			% figure
+			% hold on
 
-			plot(n.x, n.y, 'ko');
-			plot(e.Node1.x, e.Node1.y, 'ko');
-			plot(e.Node2.x, e.Node2.y, 'ko');
+			% plot(n.x, n.y, 'ko');
+			% plot(e.Node1.x, e.Node1.y, 'ko');
+			% plot(e.Node2.x, e.Node2.y, 'ko');
 
-			plot([e.nodeList.x], [e.nodeList.y], 'k');
+			% plot([e.nodeList.x], [e.nodeList.y], 'k');
 
-			plot(n.previousPosition(1), n.previousPosition(2), 'r*');
-			plot(e.Node1.previousPosition(1), e.Node1.previousPosition(2), 'r*');
-			plot(e.Node2.previousPosition(1), e.Node2.previousPosition(2), 'r*');
+			% plot(n.previousPosition(1), n.previousPosition(2), 'r*');
+			% plot(e.Node1.previousPosition(1), e.Node1.previousPosition(2), 'r*');
+			% plot(e.Node2.previousPosition(1), e.Node2.previousPosition(2), 'r*');
 
-			plot([e.Node1.previousPosition(1),e.Node2.previousPosition(1)], [e.Node1.previousPosition(2),e.Node2.previousPosition(2)], 'r--');
+			% plot([e.Node1.previousPosition(1),e.Node2.previousPosition(1)], [e.Node1.previousPosition(2),e.Node2.previousPosition(2)], 'r--');
 
 
 

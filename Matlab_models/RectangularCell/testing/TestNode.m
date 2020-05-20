@@ -16,6 +16,9 @@ classdef TestNode < matlab.unittest.TestCase
 			testCase.verifyEmpty(n.elementList);
 			testCase.verifyEmpty(n.cellList);
 
+			n.SetDragCoefficient(2);
+			testCase.verifyEqual(n.eta, 2);
+
 		end
 
 		function TestMoveNode(testCase)

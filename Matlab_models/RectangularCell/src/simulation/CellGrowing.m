@@ -38,6 +38,12 @@ classdef CellGrowing < AbstractCellSimulation
 
 			obj.AddCellBasedForce(CornerForceCouple(0.1,pi/2));
 
+			%---------------------------------------------------
+			% Untested force between nodes and elements below
+			obj.AddNeighbourhoodBasedForce(NodeElementRepulsionForce(0.1, obj.dt));
+
+			%---------------------------------------------------
+
 			% obj.AddCellBasedForce(CornerForceFletcher(20,pi/2));
 
 			obj.AddElementBasedForce(EdgeSpringForce(@(n,l) 20 * exp(1-25 * l/n)));

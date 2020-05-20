@@ -2,8 +2,13 @@ classdef Element < matlab.mixin.SetGet
 	% A class specifying the details about nodes
 
 	properties
-		% Essential porperties of a node
+		% Essential porperties of an element
 		id
+
+		% The 'total drag' for the element at the centre of drag
+		% This will be constant for an element, unless the 
+		% coeficient of drag is changed for a node
+		etaD 
 
 		% This will be circular - each element will have two nodes
 		% each node can be part of multiple elements
@@ -12,15 +17,6 @@ classdef Element < matlab.mixin.SetGet
 
 		naturalLength = 1
 		stiffness = 20
-
-		len
-		dx
-		force
-
-		direction1to2
-		force1to2
-
-		edgeGradient
 
 		minimumLength = 0.2
 
@@ -43,6 +39,38 @@ classdef Element < matlab.mixin.SetGet
 
 			obj.Node1.AddElement(obj);
 			obj.Node2.AddElement(obj);
+
+			obj.UpdateTotalDrag();
+			
+
+		end
+
+		function UpdateTotalDrag(obj)
+			% Of the three important physical quantities
+			% total drag will only change if the drag coefficients
+			% are explicitly changed
+
+			obj.etaD = obj.Node1.eta + obj.Node2.eta;
+
+		end
+
+		function AddTorqueContribution(obj, torque)
+			obj.torque = obj.torque + torque;
+
+		end
+
+		function ID = GetMomentOfDrag(obj)
+			% The length of the element will change at every time
+			% step, so ID needs to be calculated every time
+			r1 = obj.Node1.position;
+			r2 = obj.Node2.position;
+
+			rD = (obj.Node1.eta * r1 + obj.Node2.eta * r2) / etaD;
+
+			rDto1 = r1 - rD;
+			rDto2 = r2 - rD;
+
+			ID = obj.Node1.eta * norm(rDto1)^2 + obj.Node2.eta * norm(rDto2)^2;
 
 		end
 
