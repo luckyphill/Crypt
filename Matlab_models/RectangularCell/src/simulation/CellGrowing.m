@@ -11,7 +11,7 @@ classdef CellGrowing < AbstractCellSimulation
 	end
 
 	methods
-		function obj = CellGrowing(nCells, p, g, areaEnergy, perimeterEnergy, adhesionEnergy, seed)
+		function obj = CellGrowing(nCells, p, g, areaEnergy, perimeterEnergy, adhesionEnergy, seed, varargin)
 			% All the initilising
 
 			% For the first cell, need to create 4 elements and 4 nodes
@@ -83,8 +83,11 @@ classdef CellGrowing < AbstractCellSimulation
 			obj.rightBoundaryCell = obj.cellList(end);
 
 			% The space partition in order to detect collisions
-			obj.boxes = SpacePartition(1, 1, obj);
-
+			if length(varargin) > 0
+				obj.boxes = SpacePartition(varargin{1}, varargin{2}, obj);
+			else
+				obj.boxes = SpacePartition(2, 2, obj);
+			end
 		end
 
 	end
