@@ -1,21 +1,17 @@
-classdef CellGrowing < AbstractCellSimulation
+classdef DifferentDrag < AbstractCellSimulation
 
-	% This simulation is the most basic - a simple row of cells growing on
-	% a plate. It allows us to choose the number of initial cells
-	% the force related parameters, and the cell cycle lengths
+	% This simulation tests the buckling behaviour when
+	% the top has a smaller drag coefficient to the bottom
 
 	properties
 
 		dt = 0.005
 		t = 0
-		eta = 1
-
-		timeLimit = 200
 
 	end
 
 	methods
-		function obj = CellGrowing(nCells, p, g, areaEnergy, perimeterEnergy, adhesionEnergy, seed, varargin)
+		function obj = DifferentDrag(nCells, bottomDrag, p, g, areaEnergy, perimeterEnergy, adhesionEnergy, seed, varargin)
 			% All the initilising
 			obj.SetRNGSeed(seed);
 
@@ -33,6 +29,9 @@ classdef CellGrowing < AbstractCellSimulation
 			nodeBottomLeft 	= Node(0,0,obj.GetNextNodeId());
 			nodeTopRight 	= Node(0.5,1,obj.GetNextNodeId());
 			nodeBottomRight	= Node(0.5,0,obj.GetNextNodeId());
+
+			nodeBottomLeft.SetDragCoefficient(bottomDrag);
+			nodeBottomRight.SetDragCoefficient(bottomDrag);
 
 			obj.AddNodesToList([nodeBottomLeft, nodeBottomRight, nodeTopRight, nodeTopLeft]);
 
@@ -62,6 +61,8 @@ classdef CellGrowing < AbstractCellSimulation
 				nodeTopLeft 	= nodeTopRight;
 				nodeTopRight 	= Node(i*0.5,1,obj.GetNextNodeId());
 				nodeBottomRight	= Node(i*0.5,0,obj.GetNextNodeId());
+
+				nodeBottomRight.SetDragCoefficient(bottomDrag);
 				
 
 				obj.AddNodesToList([nodeBottomRight, nodeTopRight]);
@@ -113,28 +114,6 @@ classdef CellGrowing < AbstractCellSimulation
 			%---------------------------------------------------
 			% All done. Ready to roll
 			%---------------------------------------------------
-		end
-
-
-		function RunToBuckle(obj)
-
-			% This function runs the simulation until just after buckling has occurred
-			% Buckling is defined by the wiggle ratio, i.e. epithelial length/domain width
-
-			while 1
-				obj.NextTimeStep();
-				obj.UpdateWiggleRatio()
-
-				if obj.wiggleRatio > 1.1
-					break;
-				end
-
-				if  obj.t > obj.timeLimit
-					break;
-				end
-
-			end
-
 		end
 
 	end

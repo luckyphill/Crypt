@@ -29,6 +29,8 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		centreLine
 
+		wiggleRatio = 1;
+
 		topWiggleRatio = 1;
 		bottomWiggleRatio = 1;
 		avgYDeviation
@@ -57,7 +59,6 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		dt
 		t
-		eta
 
 	end
 
@@ -293,6 +294,15 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 			end
 			
+		end
+
+		function RunToTime(obj, t)
+
+			% Given a time, run the simulation until we reach said time
+
+			n = ceil(t / obj.dt);
+			NTimeSteps(obj, n);
+
 		end
 		
 		function GenerateCellBasedForces(obj)
@@ -1167,6 +1177,22 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 			obj.centreLine = cL;
 
+		end
+
+		function UpdateWiggleRatio(obj)
+
+			obj.UpdateCentreLine();
+
+			l = 0;
+
+			for i = 1:length(obj.centreLine)-1
+				l = l + norm(obj.centreLine(i,:) - obj.centreLine(i+1,:));
+			end
+
+			w = obj.centreLine(end,1) - obj.centreLine(1,1);
+
+			obj.wiggleRatio = l / w;
+		
 		end
 
 		function CentreLineFFT(obj)

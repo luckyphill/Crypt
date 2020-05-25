@@ -64,6 +64,7 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 
 	methods
+		
 		function obj = SpacePartition(dx, dy, s)
 			% Need to pass in a cell simulation to initialise
 			obj.dx = dx;
@@ -542,6 +543,85 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 		end
 
+		function [ql,il,jl] = MakeExactElementBoxList(obj,q1,i1,j1,q2,i2,j2)
+
+			% DOESN'T WORK YET - There may be a fundamental flaw to do with
+			% the indexing
+
+			% This method for finding the boxes uses the exact algorithm
+			% to find the full range of boxes that an element could feasibly
+			% be found in. It avoids the overshoot of the rectangle method
+
+			% To find the boxes that the element could pass through
+			% it is much simpler to convert to global indices, then
+			% back to quadrants
+			[I1, J1] = obj.ConvertToGlobal(q1,i1,j1);
+			[I2, J2] = obj.ConvertToGlobal(q2,i2,j2);
+
+			if I1<I2; Is = I1; Ie = I2; else; Is = I2; Ie = I1; end
+			if J1<J2; Js = J1; Je = J2; else; Js = J2; Je = J1; end
+
+			% To get the exact boxes, get the vector from top corner to top corner
+			% If the upper box is to the right, take top left to top left
+			% and vice versa if the upper box is to the left
+
+			%      _    _
+			%    /|_|  |_|\
+			%   /          \
+			%  /            \
+			% /              \
+			%|_|            |_|
+			% 
+
+			if Js < Je
+				% Upper box is right
+
+				pl = [Is, (Js+1)];
+				pr = [Ie, (Je+1)];
+
+				% v = (pr - pl)s + pl
+				% For each vertical boundary that it crosses we need to solve
+				% vx = i
+				% Then use s to find the matching j
+				% Then vice versa for the horizontal boundaries
+
+				iI = Is:Ie;
+				jJ = Js:Je;
+
+				% Remove the 0 indices because matlab
+				iI(iI==0) = [];
+				jJ(jJ==0) = [];
+
+				sx = ( iI - pl(1) )./(pr(1) - pl(1))
+				sy = ( jJ - pl(2) )./(pr(2) - pl(2))
+
+				jI = round((pr(2) - pl(2)) * sx - pl(2))
+				iJ = round((pr(1) - pl(1)) * sy - pl(1))
+
+
+				Il = [iI';iJ']
+				Jl = [jI';jJ']
+
+				% Since this is for the upper line, we need to duplicate it
+				% for the lower line. This can be done by adding 1 to I and -1 to J
+
+				Il = [Il; Il+1];
+				Jl = [Jl; Jl-1];
+
+				% And once again, because matlab indexes from 1...
+				Il(Il==0) = 1;
+				Jl(Jl==0) = -1;
+
+
+			else
+				% Upper box is left or directly above
+
+			end
+
+			[ql,il,jl] = obj.ConvertToQuadrant(Il,Jl);
+
+		end
+
 		function UpdateBoxForNode(obj, n)
 
 			if isempty(n.previousPosition)
@@ -864,7 +944,7 @@ classdef SpacePartition < matlab.mixin.SetGet
 				q(q==6) = 4;
 				q(q==0) = 3;
 			else
-				% Brute force checking 
+				% Quick checking if x,y are scalars 
 				if sign(x) >= 0 
 					if sign(y) >= 0
 						q = 1;

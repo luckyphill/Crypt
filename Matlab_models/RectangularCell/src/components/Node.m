@@ -48,6 +48,7 @@ classdef Node < matlab.mixin.SetGet
 		end
 
 		function AddForceContribution(obj, force)
+			
 			obj.force = obj.force + force;
 
 		end
