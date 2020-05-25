@@ -30,8 +30,8 @@ done < BuckleTimeSweep.txt
 if [ $found = 1 ]; then
 	for seed in $(seq 1 1 10)
 	do
-		echo "matlab -nodisplay -nodesktop -r cd ../../; addpath(genpath(pwd)); RunCellGrowingBuckle(20, $p, $g, $Pa, $Pp, $Padh, $seed); quit()"
-	    matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); RunCellGrowingBuckle(20, $p, $g, $Pa, $Pp, $Padh, $seed); quit()"
+		echo "matlab -nodisplay -nodesktop -r cd ../../; addpath(genpath(pwd)); obj = RunCellGrowingBuckle(20, $p, $g, $Pa, $Pp, $Padh, $seed); obj.GenerateSimulationData(); quit()"
+	    matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); obj = RunCellGrowingBuckle(20, $p, $g, $Pa, $Pp, $Padh, $seed); obj.GenerateSimulationData(); quit()"
 	done
 else 
   echo "BuckleTimeSweep.txt  does not have enough parameters for $SLURM_ARRAY_TASK_ID index" 
