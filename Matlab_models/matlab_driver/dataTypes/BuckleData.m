@@ -2,9 +2,9 @@ classdef BuckleData < dataType
 	% This grabs the behaviour data for a healthy crypt simulation
 
 	properties (Constant = true)
-		name = 'buckleTime';
+		name = 'buckleData';
 
-		fileNames = 'buckleTime'
+		fileNames = 'buckleData'
 	end
 
 	methods
@@ -51,7 +51,7 @@ classdef BuckleData < dataType
 			% Implements the abstract method to process the output
 			% and put it in the expected location, in the expected format
 
-			data = sp.simObj.t;
+			data = [sp.simObj.t; sp.simObj.GetNumCells];
 
 			try
 				csvwrite(obj.getFullFileName(sp), data);
