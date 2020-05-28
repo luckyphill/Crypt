@@ -26,7 +26,8 @@ classdef NodeElementRepulsionForce < AbstractNeighbourhoodBasedForce
 
 			for i = 1:length(nodeList)
 				n = nodeList(i);
-				elementList = p.GetNeighbouringElements(n, obj.r);
+				% elementList = p.GetNeighbouringElements(n, obj.r);
+				[elementList, nList] = p.GetNeighbouringNodesAndElements(n, obj.r);
 
 				for j = 1:length(elementList)
 					e = elementList(j);
@@ -57,6 +58,30 @@ classdef NodeElementRepulsionForce < AbstractNeighbourhoodBasedForce
 
 					obj.ApplyForcesToNodeAndElement(n,e,Fa,n1toA);
 
+				end
+
+				% Now handle any node that we need to interact with
+				for i = 1:length(nList)
+
+					n1 = nList(i);
+
+					nton1 = n1.position - n.position;
+
+					d = norm(nton1);
+
+					v = nton1 / d;
+
+					% Encroaching amount
+					dr = obj.r - abs(d);
+
+					% v points at n1, so the resulting force
+					% has a positive sense towards n1
+					% hence to push the ndoes apart, the for is + ve
+					% for n1 and -ve for n2
+					Fa = v * atanh(dr/obj.r);
+
+					n.AddForceContribution(-Fa);
+					n1.AddForceContribution(Fa);
 
 				end
 

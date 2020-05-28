@@ -42,7 +42,7 @@ classdef SpacePartition < matlab.mixin.SetGet
 		% the actual box location.
 		% Each box is a cell vector of nodes or elements
 		% So, all in all they are cell vectors of cell arrays
-		% of cell vectors
+		% of vectors
 		nodesQ = {{},{},{},{}}
 		elementsQ = {{},{},{},{}}
 
@@ -103,8 +103,6 @@ classdef SpacePartition < matlab.mixin.SetGet
 			% is within the range of the element
 
 			% The elements are assembled into a vector
-			% along with the actual distance calculated
-			% to save doubling effort
 
 			% First off, get the elements in the same box
 
@@ -145,6 +143,110 @@ classdef SpacePartition < matlab.mixin.SetGet
 				end
 
 			end
+			
+		end
+
+		function neighbours = GetNeighbouringNodes(obj, n1, r)
+
+			% Given the node n and the radius r find all the nodes
+			% that are neighbours
+
+			b = obj.AssembleCandidateNodes(n1, r);
+
+			neighbours = Node.empty();
+
+			for i = 1:length(b)
+
+				n2 = b(i);
+
+				n1ton2 = n2.position - n1.position;
+
+				d = norm(n1ton2);
+
+				if d < r
+					neighbours(end + 1) = n2;
+				end
+
+			end
+
+		end
+
+		function [neighboursE, neighboursN] = GetNeighbouringNodesAndElements(obj, n, r)
+
+			% Finds the neighbouring nodes and elements at the same
+			% time, taking account of obtuse angled element pairs
+			% necessitating node-node interactions
+
+
+			b = obj.AssembleCandidateElements(n, r);
+
+			neighboursN = Node.empty();
+			neighboursE = Element.empty();
+
+			for i = 1:length(b)
+
+				e = b(i);
+
+				u = e.GetVector1to2();
+				v = [u(2), -u(1)];
+
+				% Make box around element
+				% determine if node is in that box
+
+				n1 = e.Node1;
+				n2 = e.Node2;
+
+				p1 = n1.position + v * r;
+				p2 = n1.position - v * r;
+				p3 = n2.position - v * r;
+				p4 = n2.position + v * r;
+
+				x = [p1(1), p2(1), p3(1), p4(1)];
+				y = [p1(2), p2(2), p3(2), p4(2)];
+
+				[inside, on] = inpolygon(n.x, n.y, x ,y);
+
+				if inside && on
+					inside = false;
+				end
+
+				if inside
+					neighboursE(end+1) = e;
+
+					% If the node is determined to interact with an element
+					% we need to make sure we remove any instances of it interacting
+					% with any of the elements end nodes.
+
+					neighboursN(neighboursN == e.Node1) = [];
+					neighboursN(neighboursN == e.Node2) = [];
+				else
+					% If the node is not inside the element interaction box
+					% then it might be in the node interaction wedge
+					% Need to determine if which (if any) of the elements
+					% nodes are in proximity to the node in question
+
+					n1 = e.Node1;
+					n2 = e.Node2;
+
+					nton1 = n1.position - n.position;
+					nton2 = n2.position - n.position;
+
+					d1 = norm(nton1);
+					d2 = norm(nton2);
+
+					if d1 < r
+						neighboursN(end + 1) = n1;
+					end
+
+					if d2 < r
+						neighboursN(end + 1) = n2;
+					end
+
+				end
+
+			end
+
+			neighboursN = obj.QuickUniqueEmpty(neighboursN);
 			
 		end
 
@@ -208,7 +310,7 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 		function b = QuickUnique(obj, b)
 			% Test to see if I can do the unique check quicker without
-			% needing all the bells and whistles - it can by a factir of 2
+			% needing all the bells and whistles - it can by a factor of 2
 
 			% Is there a more efficient way when the most repetitions is 3?
 
@@ -221,6 +323,15 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 		end
 
+		function b = QuickUniqueEmpty(obj, b)
+			
+			% Same a QuickUnique, but handles empty vectors
+			if ~isempty(b)
+				b = QuickUnique(obj, b);
+			end
+
+		end
+
 		function b = AssembleCandidateNodes(obj, n, r)
 
 			b = obj.GetNodeBoxFromNode(n);
@@ -230,44 +341,44 @@ classdef SpacePartition < matlab.mixin.SetGet
 			[q,i,j] = obj.GetQuadrantAndIndices(n.x,n.y);
 
 			% Check sides
-			if n.x - i * obj.dx - r < 0
+			if abs(n.x - i * obj.dx) - r < 0
 				% Close to left
 				b = [b, obj.GetAdjacentNodeBoxFromNode(n, [-1, 0])];
 			end
 
-			if n.x - i * obj.dx + r > obj.dx
+			if abs(n.x - i * obj.dx) + r > obj.dx
 				% Close to right
 				b = [b, obj.GetAdjacentNodeBoxFromNode(n, [1, 0])];
 			end
 
-			if n.y - j * obj.dy - r < 0
+			if abs(n.y - j * obj.dy) - r < 0
 				% Close to bottom
 				b = [b, obj.GetAdjacentNodeBoxFromNode(n, [0, -1])];
 			end
 
-			if n.y - j * obj.dy + r > obj.dy
+			if abs(n.y - j * obj.dy) + r > obj.dy
 				% Close to top
 				b = [b, obj.GetAdjacentNodeBoxFromNode(n, [0, 1])];
 			end
 
 			% Check corners
 
-			if (n.x - i * obj.dx - r < 0) && (n.y - j * obj.dy - r < 0)
+			if ( abs(n.x - i * obj.dx) - r < 0 ) && ( abs(n.y - j * obj.dy) - r < 0)
 				% Close to left bottom
 				b = [b, obj.GetAdjacentNodeBoxFromNode(n, [-1, -1])];
 			end
 
-			if n.x - i * obj.dx + r > obj.dx && (n.y - j * obj.dy - r < 0)
+			if ( abs(n.x - i * obj.dx) + r ) > obj.dx && ( abs(n.y - j * obj.dy) - r < 0)
 				% Close to right bottom
 				b = [b, obj.GetAdjacentNodeBoxFromNode(n, [1, -1])];
 			end
 
-			if (n.x - i * obj.dx - r < 0) && (n.y - j * obj.dy + r > obj.dy)
+			if ( abs(n.x - i * obj.dx) - r < 0 ) && ( abs(n.y - j * obj.dy) + r > obj.dy)
 				% Close to left top
 				b = [b, obj.GetAdjacentNodeBoxFromNode(n, [-1, 1])];
 			end
 
-			if n.x - i * obj.dx + r > obj.dx && (n.y - j * obj.dy + r > obj.dy)
+			if ( abs(n.x - i * obj.dx) + r > obj.dx ) && ( abs(n.y - j * obj.dy) + r > obj.dy) 
 				% Close to right top
 				b = [b, obj.GetAdjacentNodeBoxFromNode(n, [1, 1])];
 			end
