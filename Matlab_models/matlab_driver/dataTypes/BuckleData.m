@@ -50,8 +50,8 @@ classdef BuckleData < dataType
 		function processOutput(obj, sp)
 			% Implements the abstract method to process the output
 			% and put it in the expected location, in the expected format
-
-			data = [sp.simObj.t; sp.simObj.GetNumCells];
+			w = sp.simObj.centreLine(end,1) - sp.simObj.centreLine(1,1);
+			data = [sp.simObj.t; sp.simObj.GetNumCells; w];
 
 			try
 				csvwrite(obj.getFullFileName(sp), data);
