@@ -551,7 +551,6 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 			% ql,il,jl are vectors (lists) of all the possible box indices where
 			% the element could pass through
-
 			[q1,i1,j1] = obj.GetQuadrantAndIndices(n1.x,n1.y);
 			[q2,i2,j2] = obj.GetQuadrantAndIndices(n2.x,n2.y);
 
@@ -934,7 +933,35 @@ classdef SpacePartition < matlab.mixin.SetGet
 			% If it gets to this point, the element should be in
 			% the given box, so no need for error catching
 			% If it does in fact fail here, we want it to stop
-			obj.elementsQ{q}{i,j}( obj.elementsQ{q}{i,j}==e ) = [];
+			try
+				obj.elementsQ{q}{i,j}( obj.elementsQ{q}{i,j} == e ) = [];
+			catch
+				warning('Deleting the element from box (%d,%d,%d) failed for some reason', q,i,j);
+			end
+
+		end
+
+		function RemoveNodeFromPartition(obj, n)
+
+			% Used when cells die
+			[q,i,j] = obj.GetQuadrantAndIndices(n.x,n.y);
+
+			obj.nodesQ{q}{i,j}( obj.nodesQ{q}{i,j} == n ) = [];
+
+		end
+
+		function RemoveElementFromPartition(obj, e)
+
+			% Used when cells die
+
+			[ql,il,jl] = GetBoxIndicesBetweenNodes(obj, e.Node1, e.Node2);
+
+			for k = 1:length(ql)
+				q = ql(k);
+				i = il(k);
+				j = jl(k);
+				obj.RemoveElement(q,i,j,e);
+			end
 
 		end
 

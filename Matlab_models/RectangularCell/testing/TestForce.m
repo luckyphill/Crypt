@@ -249,7 +249,7 @@ classdef TestForce < matlab.unittest.TestCase
 			dt = 0.005;
 
 			n1 = Node(0,0,1);
-			n2 = Node(0,01,2);
+			n2 = Node(0,1,2);
 
 			e = Element(n1,n2,1);
 
@@ -266,6 +266,128 @@ classdef TestForce < matlab.unittest.TestCase
 			testCase.verifyEqual(n.force, -Fa, 'RelTol', 1e-8);
 			testCase.verifyEqual(n1.force, 0.5*Fa, 'RelTol', 1e-8);
 			testCase.verifyEqual(n2.force, 0.5*Fa, 'RelTol', 1e-8);
+
+
+
+			% Redo the test above, but this time using AddNeighbourhoodBasedForces
+			% need to make a partition and put the bits in it
+			clear e n n1 n2 f
+			t.nodeList = [];
+			t.elementList = [];
+			p = SpacePartition(1, 1, t);
+
+			n1 = Node(0,0,1);
+			n2 = Node(0,1,2);
+
+			e = Element(n1,n2,1);
+
+			n = Node(0.06,0.5,3);
+
+			f = NodeElementRepulsionForce(r, dt);
+
+			p.PutNodeInBox(n);
+			p.PutNodeInBox(n1);
+			p.PutNodeInBox(n2);
+
+			p.PutElementInBoxes(e);
+
+			f.AddNeighbourhoodBasedForces(n, p);
+
+			testCase.verifyEqual(n.force, -Fa, 'RelTol', 1e-8);
+			testCase.verifyEqual(n1.force, 0.5*Fa, 'RelTol', 1e-8);
+			testCase.verifyEqual(n2.force, 0.5*Fa, 'RelTol', 1e-8);
+
+
+			testCase.verifyTrue( n.force(1) > 0);
+			testCase.verifyTrue( e.Node1.force(1) < 0);
+			testCase.verifyTrue( e.Node2.force(1) < 0);
+
+
+			% This time the node is near the end of the edge
+			clear e n n1 n2 f
+			t.nodeList = [];
+			t.elementList = [];
+			p = SpacePartition(1, 1, t);
+
+			n1 = Node(0,0,1);
+			n2 = Node(0,1,2);
+
+			e = Element(n1,n2,1);
+
+			n = Node(0.06,0.1,3);
+
+			f = NodeElementRepulsionForce(r, dt);
+
+			p.PutNodeInBox(n);
+			p.PutNodeInBox(n1);
+			p.PutNodeInBox(n2);
+
+			p.PutElementInBoxes(e);
+
+			f.AddNeighbourhoodBasedForces(n, p);
+
+			testCase.verifyTrue( n.force(1) > 0);
+			testCase.verifyTrue( e.Node1.force(1) < 0);
+			% testCase.verifyTrue( e.Node2.force(1) > 0);
+
+
+			% % Test a specific case observed in the wild
+			clear e n n1 n2 f
+			load('nodePopThrough')
+
+			n = t.boxes.nodesQ{1}{16,6}(1);
+			e = t.boxes.elementsQ{1}{16,6}(3);
+
+			clear t
+			t.nodeList = [];
+			t.elementList = [];
+			p = SpacePartition(0.5, 0.5, t);
+
+			p.PutNodeInBox(n);
+			p.PutNodeInBox(e.Node1);
+			p.PutNodeInBox(e.Node2);
+
+			p.PutElementInBoxes(e);
+
+			% These two should push eachother apart
+			f = NodeElementRepulsionForce(r, dt);
+
+			f.AddNeighbourhoodBasedForces(n, p);
+
+			testCase.verifyTrue( n.force(1) < 0);
+			testCase.verifyTrue( e.Node1.force(1) > 0);
+
+			% Apply the wild case, but specify the nodes and elements directly
+			clear e n n1 n2 f
+			t.nodeList = [];
+			t.elementList = [];
+			p = SpacePartition(1, 1, t);
+
+			n1 = Node(7.522,2.397,1);
+			n2 = Node(7.737,2.894,2);
+
+			e = Element(n1,n2,1);
+
+			n = Node(7.704,2.86,3);
+
+			f = NodeElementRepulsionForce(r, dt);
+
+			p.PutNodeInBox(n);
+			p.PutNodeInBox(n1);
+			p.PutNodeInBox(n2);
+
+			p.PutElementInBoxes(e);
+
+			f.AddNeighbourhoodBasedForces(n, p);
+
+			testCase.verifyTrue( n.force(1) < 0);
+			testCase.verifyTrue( n2.force(1) > 0);
+			n.force
+			n.position
+			n1.force
+			n1.position
+			n2.force
+			n2.position
 
 
 		end

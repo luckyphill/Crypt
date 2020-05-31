@@ -61,14 +61,14 @@ classdef SimplePhaseBasedCellCycle < AbstractCellCycleModel
 
 			% Normally distributed, but clipped
 			wobble = normrnd(0,2);
-			if wobble < -3
-				wobble = -3;
-			end
-			if wobble > 3
-				wobble = 3;
+
+			p = pt + wobble;
+
+			if p < 1
+				p = 1;
 			end
 
-			obj.pausePhaseLength = pt + wobble;
+			obj.pausePhaseLength = p;
 
 		end
 
@@ -79,13 +79,14 @@ classdef SimplePhaseBasedCellCycle < AbstractCellCycleModel
 
 			% Normally distributed, but clipped
 			wobble = normrnd(0,2);
-			if wobble < -3
-				wobble = -3;
+
+			g = wt + wobble;
+
+			if g < 1
+				g = 1;
 			end
-			if wobble > 3
-				wobble = 3;
-			end
-			obj.growingPhaseLength = wt + wobble;
+
+			obj.growingPhaseLength = g;
 
 		end
 

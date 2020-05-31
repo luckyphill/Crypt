@@ -802,6 +802,9 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 
 		end
 
+		% This should be replaced by the previous two tests, but I'm
+		% keeping it because it fails when it shouldn't meaning it
+		% catches something the other tests don't
 		% function TestElementBoxes(testCase)
 			
 		% 	% Tests that elements get distributed to the correct boxes
@@ -985,6 +988,25 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 			testCase.verifyEqual(size(p.elementsQ{2}), [0, 0]);
 			testCase.verifyEqual(size(p.elementsQ{3}), [0, 0]);
 			testCase.verifyEqual(size(p.elementsQ{4}), [0, 0]);
+
+			% Form for testing all boxes, taken from FullTest below
+			% for q=1:4
+			% 	testCase.verifyEqual(size(p.nodesQ{q}), size(t.boxes.nodesQ{q}));
+			% 	testCase.verifyEqual(size(p.elementsQ{q}), size(t.boxes.elementsQ{q}));
+
+			% 	[il, jl] = size(p.nodesQ{q});
+
+			% 	% For every box, check they are identical
+			% 	for i = 1:il
+					
+			% 		for j = 1:jl
+			% 			testCase.verifyEqual(size(p.nodesQ{q}{i,j}), size(t.boxes.nodesQ{q}{i,j}));
+			% 			testCase.verifyEqual(size(p.elementsQ{q}{i,j}), size(t.boxes.elementsQ{q}{i,j}));
+			% 		end
+
+			% 	end
+
+			% end
 
 		end
 
@@ -1210,6 +1232,18 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 
 			testCase.verifyEqual(a, [1,2,3,4,5,6,7,8,9]);
 
+			a = [1];
+
+			a = p.QuickUnique(a);
+
+			testCase.verifyEqual(a, [1]);
+
+			a = [];
+
+			a = p.QuickUniqueEmpty(a);
+
+			testCase.verifyEqual(a, []);
+
 		end
 
 		% function TestWholePartitionFromTestState(testCase)
@@ -1255,6 +1289,146 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 
 		% end
 
+		function TestSpacePartitionAfterDivision(testCase)
+
+			t = CellGrowing(1,3,3,20,10,1,10);
+
+			% Set the only stochastic parts so it is completely
+			% reproducible
+			t.cellList.CellCycleModel.pausePhaseLength = 1.00001;
+			t.cellList.CellCycleModel.growingPhaseLength = 1;
+			t.cellList.CellCycleModel.age = 0;
+
+			t.RunToTime(2)
+			t.NTimeSteps(2);
+
+			% At this point the cell has just divided.
+
+			% Under the controlled conditions, the partition must
+			% be in this precise state:
+
+			testCase.verifyEqual(size(t.boxes.nodesQ{1}), [2, 3]);
+			testCase.verifyEqual(size(t.boxes.nodesQ{2}), [2, 1]);
+			testCase.verifyEqual(size(t.boxes.nodesQ{3}), [1, 1]);
+			testCase.verifyEqual(size(t.boxes.nodesQ{4}), [1, 3]);
+
+			testCase.verifyEqual(size(t.boxes.elementsQ{1}), [2, 3]);
+			testCase.verifyEqual(size(t.boxes.elementsQ{2}), [2, 1]);
+			testCase.verifyEqual(size(t.boxes.elementsQ{3}), [1, 1]);
+			testCase.verifyEqual(size(t.boxes.elementsQ{4}), [1, 3]);
+
+
+			% Check the sizes of the boxes
+			% Check node quadrants
+			testCase.verifyTrue(isempty(t.boxes.nodesQ{1}{1,1}));
+			testCase.verifyTrue(isempty(t.boxes.nodesQ{1}{1,2}));
+			testCase.verifyTrue(isempty(t.boxes.nodesQ{1}{2,1}));
+			testCase.verifyTrue(isempty(t.boxes.nodesQ{1}{2,2}));
+
+			testCase.verifyTrue(isempty(t.boxes.nodesQ{4}{1,1}));
+			testCase.verifyTrue(isempty(t.boxes.nodesQ{4}{1,2}));
+
+
+			% Check the sizes are correct
+			testCase.verifyEqual(size(t.boxes.nodesQ{1}{1,3}), [1, 1]);
+			testCase.verifyEqual(size(t.boxes.nodesQ{1}{2,3}), [1, 1]);
+
+			testCase.verifyEqual(size(t.boxes.nodesQ{2}{1,1}), [1, 1]);
+			testCase.verifyEqual(size(t.boxes.nodesQ{2}{2,1}), [1, 1]);
+
+			testCase.verifyEqual(size(t.boxes.nodesQ{3}{1,1}), [1, 1]);
+
+			testCase.verifyEqual(size(t.boxes.nodesQ{4}{1,3}), [1, 1]);
+
+			
+
+			% Check element quadrants
+			% Note that only top or bottom elements are placed in boxes
+			testCase.verifyTrue(isempty(t.boxes.elementsQ{1}{1,1})); % Empty
+			testCase.verifyTrue(isempty(t.boxes.elementsQ{1}{2,1})); % Empty
+			testCase.verifyTrue(isempty(t.boxes.elementsQ{1}{1,2})); % Empty
+			testCase.verifyTrue(isempty(t.boxes.elementsQ{1}{2,2})); % Empty
+
+			testCase.verifyTrue(isempty(t.boxes.elementsQ{4}{1,1})); % Empty
+			testCase.verifyTrue(isempty(t.boxes.elementsQ{4}{1,2})); % Empty
+
+
+			% Check the sizes are correct
+			testCase.verifyEqual(size(t.boxes.elementsQ{1}{1,3}), [1, 2]);
+			testCase.verifyEqual(size(t.boxes.elementsQ{1}{2,3}), [1, 1]);
+
+			testCase.verifyEqual(size(t.boxes.elementsQ{2}{1,1}), [1, 2]);
+			testCase.verifyEqual(size(t.boxes.elementsQ{2}{2,1}), [1, 1]);
+
+			testCase.verifyEqual(size(t.boxes.elementsQ{3}{1,1}), [1, 1]);
+
+			testCase.verifyEqual(size(t.boxes.elementsQ{4}{1,3}), [1, 1]);
+
+
+			% Check the contents of the node boxes
+
+			testCase.verifyEqual( t.boxes.nodesQ{1}{1,3}, [  t.cellList(1).nodeTopLeft ]);
+			testCase.verifyEqual( t.boxes.nodesQ{1}{1,3}, [  t.cellList(2).nodeTopRight ]);
+
+			testCase.verifyEqual( t.boxes.nodesQ{1}{2,3}, [  t.cellList(1).nodeTopRight ]);
+
+			testCase.verifyEqual( t.boxes.nodesQ{2}{1,1}, [  t.cellList(1).nodeBottomLeft ]);
+			testCase.verifyEqual( t.boxes.nodesQ{2}{1,1}, [  t.cellList(2).nodeBottomRight ]);
+
+			testCase.verifyEqual( t.boxes.nodesQ{2}{2,1}, [  t.cellList(1).nodeBottomRight ]);
+
+			testCase.verifyEqual( t.boxes.nodesQ{3}{1,1}, [  t.cellList(2).nodeBottomLeft ]);
+
+			testCase.verifyEqual( t.boxes.nodesQ{4}{1,3}, [  t.cellList(2).nodeTopLeft ]);
+
+			% Check the contents of the element boxes
+
+			testCase.verifyEqual(  t.boxes.elementsQ{1}{1,3}  ,  [ t.cellList(1).elementTop, t.cellList(2).elementTop ] );
+			testCase.verifyEqual(  t.boxes.elementsQ{1}{2,3}  ,  [ t.cellList(1).elementTop ] );
+
+			testCase.verifyEqual(  t.boxes.elementsQ{2}{1,1}  ,  [ t.cellList(1).elementBottom, t.cellList(2).elementBottom ] );
+			testCase.verifyEqual(  t.boxes.elementsQ{2}{2,1}  ,  [ t.cellList(1).elementBottom ] );
+
+			testCase.verifyEqual(  t.boxes.elementsQ{3}{1,1}  ,  [ t.cellList(2).elementBottom ] );
+
+			testCase.verifyEqual(  t.boxes.elementsQ{4}{1,3}  ,  [ t.cellList(2).elementTop ] );
+
+		end
+
+
+		function TestSpacePartitionAfterKillingBoundaryCell(testCase)
+
+			t = CellGrowing(1,3,3,20,10,1,10);
+
+			t.cellList.CellCycleModel.pausePhaseLength = 1;
+			t.cellList.CellCycleModel.growingPhaseLength = 1;
+			t.cellList.CellCycleModel.age = 0;
+
+			t.RunToTime(12.465);
+
+			% At this point the cell at the left boundary has just divided and
+			% been killed since it is passed the left boundary.
+			% There must be no record of this cell existing
+
+			testCase.verifyTrue(isempty(t.boxes.nodesQ{4}{2,1}));
+			testCase.verifyTrue(isempty(t.boxes.nodesQ{4}{2,2}));
+			testCase.verifyTrue(isempty(t.boxes.nodesQ{4}{2,3}));
+
+			testCase.verifyTrue(isempty(t.boxes.nodesQ{3}{2,1}));
+
+
+			testCase.verifyTrue(isempty(t.boxes.elementsQ{4}{2,1}));
+			testCase.verifyTrue(isempty(t.boxes.elementsQ{4}{2,2}));
+			testCase.verifyTrue(isempty(t.boxes.elementsQ{4}{2,3}));
+
+			testCase.verifyTrue(isempty(t.boxes.elementsQ{3}{2,1}));
+
+
+
+		end
+
+		
+
 		% function TestWholePartitionFromT0(testCase)
 
 		% 	% This tests that the continually updated partition
@@ -1262,7 +1436,7 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 		% 	% directly at a given time step. This obviously assumes
 		% 	% that producing the full partition is correct
 
-		% 	t = CellGrowing(20,20,10,10,10,1,10);
+		% 	t = CellGrowing(20,3,3,20,10,1,10);
 
 		% 	t.NTimeSteps(3000);
 
@@ -1270,11 +1444,11 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 
 		% 	% Need to now check that p is identical to t.boxes
 			
-		% 	testCase.verifyEqual(size(p.nodesQ), size(t.boxes.nodesQ));
-		% 	testCase.verifyEqual(size(p.nodesQ), size(t.boxes.nodesQ));
+		% 	testCase.verifyEqual(size(t.boxes.nodesQ), size(p.nodesQ));
+		% 	testCase.verifyEqual(size(t.boxes.nodesQ), size(p.nodesQ));
 		% 	for q=1:4
-		% 		testCase.verifyEqual(size(p.nodesQ{q}), size(t.boxes.nodesQ{q}));
-		% 		testCase.verifyEqual(size(p.elementsQ{q}), size(t.boxes.elementsQ{q}));
+		% 		testCase.verifyEqual(size(t.boxes.nodesQ{q}), size(p.nodesQ{q}));
+		% 		testCase.verifyEqual(size(t.boxes.elementsQ{q}), size(p.elementsQ{q}) );
 
 		% 		[il, jl] = size(p.nodesQ{q});
 
@@ -1282,8 +1456,8 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 		% 		for i = 1:il
 					
 		% 			for j = 1:jl
-		% 				testCase.verifyEqual(size(p.nodesQ{q}{i,j}), size(t.boxes.nodesQ{q}{i,j}));
-		% 				testCase.verifyEqual(size(p.elementsQ{q}{i,j}), size(t.boxes.elementsQ{q}{i,j}));
+		% 				testCase.verifyEqual(size(t.boxes.nodesQ{q}{i,j}), size(p.nodesQ{q}{i,j}));
+		% 				testCase.verifyEqual(size(t.boxes.elementsQ{q}{i,j}), size(p.elementsQ{q}{i,j}));
 		% 			end
 
 		% 		end

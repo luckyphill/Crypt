@@ -24,12 +24,12 @@ classdef TestCellCycles < matlab.unittest.TestCase
 			testCase.verifyEqual(ccm.GetGrowthPhaseFraction(), 0);
 
 			testCase.verifyEqual(ccm.meanPausePhaseLength, 20);
-			testCase.verifyGreaterThanOrEqual(ccm.pausePhaseLength, 17);
-			testCase.verifyLessThanOrEqual(ccm.pausePhaseLength, 23);
+			% testCase.verifyGreaterThanOrEqual(ccm.pausePhaseLength, 17);
+			% testCase.verifyLessThanOrEqual(ccm.pausePhaseLength, 23);
 
 			testCase.verifyEqual(ccm.meanGrowingPhaseLength, 10);
-			testCase.verifyGreaterThanOrEqual(ccm.growingPhaseLength, 7);
-			testCase.verifyLessThanOrEqual(ccm.growingPhaseLength, 13);
+			% testCase.verifyGreaterThanOrEqual(ccm.growingPhaseLength, 7);
+			% testCase.verifyLessThanOrEqual(ccm.growingPhaseLength, 13);
 
 			% At this age, cell is growing but is not ready to divide
 			ccm.SetAge(25);
@@ -54,12 +54,12 @@ classdef TestCellCycles < matlab.unittest.TestCase
 			testCase.verifyEqual(newCCM.GetGrowthPhaseFraction(), 0);
 
 			testCase.verifyEqual(newCCM.meanPausePhaseLength, 20);
-			testCase.verifyGreaterThanOrEqual(newCCM.pausePhaseLength, 17);
-			testCase.verifyLessThanOrEqual(newCCM.pausePhaseLength, 23);
+			% testCase.verifyGreaterThanOrEqual(newCCM.pausePhaseLength, 17);
+			% testCase.verifyLessThanOrEqual(newCCM.pausePhaseLength, 23);
 
 			testCase.verifyEqual(newCCM.meanGrowingPhaseLength, 10);
-			testCase.verifyGreaterThanOrEqual(newCCM.growingPhaseLength, 7);
-			testCase.verifyLessThanOrEqual(newCCM.growingPhaseLength, 13);
+			% testCase.verifyGreaterThanOrEqual(newCCM.growingPhaseLength, 7);
+			% testCase.verifyLessThanOrEqual(newCCM.growingPhaseLength, 13);
 
 
 

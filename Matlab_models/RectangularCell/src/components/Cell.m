@@ -91,6 +91,12 @@ classdef Cell < matlab.mixin.SetGet
 
 		end
 
+		function delete(obj)
+
+			clear obj;
+
+		end
+
 		function set.CellCycleModel( obj, v )
 			% This is to validate the object given to outputType in the constructor
 			if isa(v, 'AbstractCellCycleModel')

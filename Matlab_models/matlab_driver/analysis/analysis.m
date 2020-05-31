@@ -1,4 +1,4 @@
-classdef analysis < Abstract
+classdef (Abstract) Analysis < matlab.mixin.SetGet
 	% This is a class that controls all the details of a
 	% particular analysis. It handles the generation and gathering
 	% of data using the simpoint class, and collates it into useful
@@ -12,49 +12,50 @@ classdef analysis < Abstract
 	% A parameter sweep, that takes average data from a bunch of simulations
 	% and plots them in a grid
 
-	properties
-		
-		% SAVE THIS FILE UNTIL ABSTRACTION IS NEEDED
+	properties (Abstract)
 
-		chastePath
-		
-
+		analysisName
 
 	end
+
+	properties
+
+		saveLocation
+	end
+
 
 	methods
+		function SetSaveDetails(obj)
 
-		function visualiseCrypt(obj)
-			% Runs the java visualiser
-			pathToAnim = [obj.chastePath, 'Chaste/anim/'];
-			fprintf('Running Chaste java visualiser\n');
-			[failed, cmdout] = system(['cd ', pathToAnim, '; java Visualize2dCentreCells ', obj.simul.outputTypes{1}.getFullFilePath(obj.simul)], '-echo');
+			researchPath = getenv('HOME');
+			if isempty(researchPath)
+				error('HOME environment variable not set');
+			end
+			if ~strcmp(researchPath(end),'/')
+				researchPath(end+1) = '/';
+			end
 
-		end
+			obj.saveLocation = [researchPath, 'Research/Crypt/Images/Matlab/', obj.analysisName, '/'];
 
-	end
 
-	methods (Abstract)
-		% 
-		function generateData()
-			% A method to make the simpoints run their respective simulations 
-
-		end
-
-		function loadData()
-			% A method to collect existing data and put it into the analysis
-			% If the data doesn't exist, it ignores it
+			if exist(obj.saveLocation,'dir')~=7
+				mkdir(obj.saveLocation);
+			end
 
 		end
 
-		function processData()
-			% A method that uses the loaded data and puts it in a form to be plotted/observed
+		function SavePlot(obj, h, name)
+			% Necessary to save figures
+			obj.SetSaveDetails();
+			% Set the size of the output file
+			set(h,'Units','Inches');
+			pos = get(h,'Position');
+			set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)]);
+			
+			print([obj.saveLocation,name],'-dpdf')
+
 		end
 
-		function generatePlot()
-			% Takes the processed data, plots it and saves the plot
-
-		end
 
 	end
 

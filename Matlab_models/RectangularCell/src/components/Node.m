@@ -47,8 +47,17 @@ classdef Node < matlab.mixin.SetGet
 
 		end
 
+		function delete(obj)
+
+			clear obj;
+
+		end
+
 		function AddForceContribution(obj, force)
 			
+			if sum(isnan(force)) || sum(isinf(force))
+				error('Force is inf')
+			end
 			obj.force = obj.force + force;
 
 		end

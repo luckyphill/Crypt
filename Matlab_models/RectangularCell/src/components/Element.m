@@ -45,6 +45,12 @@ classdef Element < matlab.mixin.SetGet
 
 		end
 
+		function delete(obj)
+
+			clear obj;
+
+		end
+
 		function UpdateTotalDrag(obj)
 			% Of the three important physical quantities
 			% total drag will only change if the drag coefficients
@@ -94,7 +100,7 @@ classdef Element < matlab.mixin.SetGet
 		end
 
 		function direction1to2 = GetVector1to2(obj)
-
+			
 			direction1to2 = obj.Node2.position - obj.Node1.position;
 			direction1to2 = direction1to2 / norm(direction1to2);
 
@@ -171,22 +177,29 @@ classdef Element < matlab.mixin.SetGet
 			% To do this properly, we need fix all the links to nodes and cells
 			if oldNode == newNode
 				warning('e:sameNode', 'The old node is the same as the new node. This is probably not what you wanted to do')
-			end
+			else
 			
-			switch oldNode
-				case obj.Node1
-					% Remove link back to this element
-					obj.Node1.RemoveElement(obj);
-					obj.Node1 = newNode;
-					obj.Node1.AddElement(obj);
+				switch oldNode
+					case obj.Node1
+						% Remove link back to this element
+						obj.Node1.RemoveElement(obj);
+						obj.nodeList(obj.nodeList == obj.Node1) = [];
 
-				case obj.Node2
-					% Remove link back to this element
-					obj.Node2.RemoveElement(obj);
-					obj.Node2 = newNode;
-					obj.Node2.AddElement(obj);
-				otherwise
-					error('e:nodeNotFound','Node not in this element')
+						obj.Node1 = newNode;
+						obj.Node1.AddElement(obj);
+						obj.nodeList(end + 1) = obj.Node1;
+
+					case obj.Node2
+						% Remove link back to this element
+						obj.Node2.RemoveElement(obj);
+						obj.nodeList(obj.nodeList == obj.Node2) = [];
+
+						obj.Node2 = newNode;
+						obj.Node2.AddElement(obj);
+						obj.nodeList(end + 1) = obj.Node2;
+					otherwise
+						error('e:nodeNotFound','Node not in this element')
+				end
 			end
 
 		end

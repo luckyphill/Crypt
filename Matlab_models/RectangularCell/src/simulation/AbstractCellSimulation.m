@@ -22,8 +22,6 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		wiggleRatio = 1;
 
-		topWiggleRatio = 1;
-		bottomWiggleRatio = 1;
 		avgYDeviation
 		alphaWrinkleParameter
 
@@ -35,6 +33,9 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 		leftBoundaryCell
 		rightBoundaryCell
 
+		leftBoundary = -Inf;
+		rightBoundary = Inf;
+
 		cellBasedForces AbstractCellBasedForce
 		elementBasedForces AbstractElementBasedForce
 		neighbourhoodBasedForces AbstractNeighbourhoodBasedForce
@@ -42,6 +43,8 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 		boxes SpacePartition
 
 		usingBoxes = true;
+
+		limitedWidth = false;
 		
 	end
 
@@ -235,6 +238,10 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 			obj.UpdateBoundaryCells();
 
+			if obj.limitedWidth
+				obj.KillBoundaryCells();
+			end
+
 			obj.UpdateWiggleRatio();
 
 			obj.UpdateAverageYDeviation();
@@ -376,27 +383,68 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 				% global id numbers until we get to this point
 				nc.id = obj.GetNextCellId();
 
-				for i = 1:4
-					% If the new nodes aren't already in the node list
-					% give them the next ID in sequence and add them to
-					% the space partition
-					if ~ismember(nc.nodeList(i),obj.nodeList)
-						nc.nodeList(i).id = obj.GetNextNodeId();
-						if obj.usingBoxes
-							obj.boxes.PutNodeInBox(nc.nodeList(i));
-						end
-					end
+				% Writing the code without the loop since we know precisely which
+				% nodes and elements are new
+				nc.nodeTopRight.id = obj.GetNextNodeId();
+				nc.nodeBottomRight.id = obj.GetNextNodeId();
+				
+				obj.boxes.PutNodeInBox(nc.nodeTopRight);
+				obj.boxes.PutNodeInBox(nc.nodeBottomRight);
 
+				nc.elementTop.id = obj.GetNextElementId();
+				nc.elementRight.id = obj.GetNextElementId();
+				nc.elementBottom.id = obj.GetNextElementId();
+
+				obj.boxes.PutElementInBoxes(nc.elementTop);
+				obj.boxes.PutElementInBoxes(nc.elementBottom);
+
+				% Before division, the top and bottom elements for oc
+				% extended from nc.nodeTopLeft to oc.nodeTopRight
+				% so we need to remove the left half of the original
+				% top and bottom elements from the element space partition
+
+				oc = nc.elementRight.GetOtherCell(nc);
+
+				[ql,il,jl] = obj.boxes.GetBoxIndicesBetweenNodes(nc.nodeTopLeft, oc.nodeTopRight);
+				for i = 1:length(ql)
+					obj.boxes.RemoveElement(ql(i),il(i),jl(i),oc.elementTop);
 				end
 
-				for i = 1:4
-					if ~ismember(nc.elementList(i),obj.elementList)
-						nc.elementList(i).id = obj.GetNextElementId();
-						if ~nc.elementList(i).IsElementInternal()
-							obj.boxes.PutElementInBoxes(nc.elementList(i));
-						end
-					end
+				[ql,il,jl] = obj.boxes.GetBoxIndicesBetweenNodes(nc.nodeBottomLeft, oc.nodeBottomRight);
+				for i = 1:length(ql)
+					obj.boxes.RemoveElement(ql(i),il(i),jl(i),oc.elementBottom);
 				end
+
+				obj.boxes.PutElementInBoxes(oc.elementTop);
+				obj.boxes.PutElementInBoxes(oc.elementBottom);
+
+
+				% This loop is unecessary because for a new well
+				% we know it must be the right nodes that are new
+				% for i = 1:4
+				% 	% If the new nodes aren't already in the node list
+				% 	% give them the next ID in sequence and add them to
+				% 	% the space partition
+				% 	if ~ismember(nc.nodeList(i),obj.nodeList)
+				% 		nc.nodeList(i).id = obj.GetNextNodeId();
+				% 		if obj.usingBoxes
+				% 			obj.boxes.PutNodeInBox(nc.nodeList(i));
+				% 		end
+				% 	end
+
+				% end
+
+				% for i = 1:4
+				% 	if ~ismember(nc.elementList(i),obj.elementList)
+				% 		nc.elementList(i).id = obj.GetNextElementId();
+				% 		if obj.usingBoxes && ~nc.elementList(i).IsElementInternal()
+				% 			% Need to put the new elements in their correct boxes
+				% 			obj.boxes.PutElementInBoxes(nc.elementList(i));
+				% 			% This code doesn't account for removing the shortened
+				% 			% element from boxes it is not longer in
+				% 		end
+				% 	end
+				% end
 
 				obj.cellList(end + 1) = nc;
 
@@ -453,30 +501,6 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 		function numNodes = GetNumNodes(obj)
 
 			numNodes = length(obj.nodeList);
-
-		end
-
-		function UpdateSimpleWiggleRatio(obj)
-
-			% Compares the x range that cells cover to the
-			% path length that the top and bottom elements cover
-
-			sTop 	= 0;
-			sBottom = 0;
-
-			widthTop 	= obj.rightBoundaryCell.nodeTopRight.x 		- obj.leftBoundaryCell.nodeTopLeft.x;
-			widthBottom = obj.rightBoundaryCell.nodeBottomRight.x 	- obj.leftBoundaryCell.nodeBottomLeft.x;
-
-			% Traverse the top and bottom elements to get the path lengths
-			for i = 1:obj.GetNumCells()
-
-				sTop 	= sTop + obj.cellList(i).elementTop.GetLength();
-				sBottom = sBottom + obj.cellList(i).elementBottom.GetLength();
-
-			end
-
-			obj.topWiggleRatio = sTop / widthTop;
-			obj.bottomWiggleRatio = sBottom / widthBottom;
 
 		end
 
@@ -662,6 +686,199 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 				end
 
 			% end
+
+		end
+
+		function KillBoundaryCells(obj)
+
+			% Kills the cells at the boundary if requested
+			UpdateBoundaryCells(obj);
+
+			while obj.IsPastLeftBoundary(obj.leftBoundaryCell)
+
+				obj.RemoveLeftBoundaryCellFromSimulation();
+
+			end
+
+			while obj.IsPastRightBoundary(obj.rightBoundaryCell)
+
+				obj.RemoveRightBoundaryCellFromSimulation();
+
+			end
+
+		end
+
+		function past = IsPastLeftBoundary(obj, c)
+
+			past = false;
+			if c.nodeTopRight.x < obj.leftBoundary || c.nodeBottomRight.x < obj.leftBoundary
+				past = true;
+			end
+
+		end
+
+		function past = IsPastRightBoundary(obj, c)
+
+			past = false;
+			if c.nodeTopLeft.x > obj.rightBoundary || c.nodeBottomLeft.x > obj.rightBoundary
+				past = true;
+			end
+
+		end
+
+		function RemoveBoundaryCellFromSimulation(obj, c)
+
+			% This is used when a cell is removed on the boundary
+			% A different method is needed when the cell is internal
+
+			% Need to becareful to actually remove the nodes etc.
+			% rather than just lose the links
+
+			nodeRemoveList = Node.empty();
+			elementRemoveList = Element.empty();
+
+			for i = 1:length(c.nodeList)
+				
+				n = c.nodeList(i);
+				if length(n.cellList) == 1
+					% If the node is only part of the cell to be killed
+					% then we need to get rid of it
+					obj.nodeList(obj.nodeList == n) = [];
+					nodeRemoveList(end + 1) = n;
+				else
+					% If the node is still part of an existing cell
+					% we need to update its cell list (and element list too)
+					n.cellList(n.cellList == c) = [];
+				end
+
+			end
+
+			for i = 1:length(c.elementList)
+				
+				e = c.elementList(i);
+				if length(e.cellList) == 1
+					% If the node is only part of the cell to be killed
+					% then we need to get rid of it
+					obj.elementList(obj.elementList == e) = [];
+					e.nodeList(e.nodeList == e.Node1) = [];
+					e.nodeList(e.nodeList == e.Node2) = [];
+					elementRemoveList(end + 1) = e;
+				else
+					e.cellList(e.cellList == c) = [];
+				end
+
+			end
+
+			obj.cellList(obj.cellList == c) = [];
+			
+			for i = 1:length(nodeRemoveList)
+				nodeRemoveList(i).delete;
+			end
+
+			for i = 1:length(elementRemoveList)
+				elementRemoveList(i).delete;
+			end
+
+			c.delete;
+
+		end
+
+		function RemoveLeftBoundaryCellFromSimulation(obj)
+
+			% This is used when a cell is removed on the boundary
+			% A different method is needed when the cell is internal
+
+			% Need to becareful to actually remove the nodes etc.
+			% rather than just lose the links
+
+			c = obj.leftBoundaryCell;
+			obj.leftBoundaryCell = c.elementRight.GetOtherCell(c);
+
+			% Clean up elements
+
+			obj.elementList(obj.elementList == c.elementTop) = [];
+			obj.elementList(obj.elementList == c.elementLeft) = [];
+			obj.elementList(obj.elementList == c.elementBottom) = [];
+
+			c.nodeTopRight.elementList( c.nodeTopRight.elementList ==  c.elementTop ) = [];
+			c.nodeBottomRight.elementList( c.nodeBottomRight.elementList ==  c.elementBottom ) = [];
+
+			c.elementRight.cellList(c.elementRight.cellList == c) = [];
+
+			obj.boxes.RemoveElementFromPartition(c.elementTop);
+			obj.boxes.RemoveElementFromPartition(c.elementLeft);
+			obj.boxes.RemoveElementFromPartition(c.elementBottom);
+
+			c.elementTop.delete;
+			c.elementLeft.delete;
+			c.elementBottom.delete;
+
+			% Clean up nodes
+
+			obj.nodeList(obj.nodeList == c.nodeTopLeft) = [];
+			obj.nodeList(obj.nodeList == c.nodeBottomLeft) = [];
+
+			obj.boxes.RemoveNodeFromPartition(c.nodeTopLeft);
+			obj.boxes.RemoveNodeFromPartition(c.nodeBottomLeft);
+
+			c.nodeTopLeft.delete;
+			c.nodeBottomLeft.delete;
+
+			% Clean up cell
+
+			obj.cellList(obj.cellList == c) = [];
+
+			c.delete;
+
+		end
+
+		function RemoveRightBoundaryCellFromSimulation(obj)
+
+			% This is used when a cell is removed on the boundary
+			% A different method is needed when the cell is internal
+
+			% Need to becareful to actually remove the nodes etc.
+			% rather than just lose the links
+
+			c = obj.rightBoundaryCell;
+			obj.rightBoundaryCell = c.elementLeft.GetOtherCell(c);
+
+			
+			% Clean up elements
+
+			obj.elementList(obj.elementList == c.elementTop) = [];
+			obj.elementList(obj.elementList == c.elementRight) = [];
+			obj.elementList(obj.elementList == c.elementBottom) = [];
+
+			c.nodeTopLeft.elementList( c.nodeTopLeft.elementList ==  c.elementTop ) = [];
+			c.nodeBottomLeft.elementList( c.nodeBottomLeft.elementList ==  c.elementBottom ) = [];
+
+			c.elementLeft.cellList(c.elementLeft.cellList == c) = [];
+
+			obj.boxes.RemoveElementFromPartition(c.elementTop);
+			obj.boxes.RemoveElementFromPartition(c.elementRight);
+			obj.boxes.RemoveElementFromPartition(c.elementBottom);
+
+			c.elementTop.delete;
+			c.elementRight.delete;
+			c.elementBottom.delete;
+
+			% Clean up nodes 
+
+			obj.nodeList(obj.nodeList == c.nodeTopRight) = [];
+			obj.nodeList(obj.nodeList == c.nodeBottomRight) = [];
+
+			obj.boxes.RemoveNodeFromPartition(c.nodeTopRight);
+			obj.boxes.RemoveNodeFromPartition(c.nodeBottomRight);
+
+			c.nodeTopRight.delete;
+			c.nodeBottomRight.delete;
+
+			% Finally clean up cell
+
+			obj.cellList(obj.cellList == c) = [];
+
+			c.delete;
 
 		end
 
