@@ -382,12 +382,7 @@ classdef TestForce < matlab.unittest.TestCase
 
 			testCase.verifyTrue( n.force(1) < 0);
 			testCase.verifyTrue( n2.force(1) > 0);
-			n.force
-			n.position
-			n1.force
-			n1.position
-			n2.force
-			n2.position
+
 
 
 		end
