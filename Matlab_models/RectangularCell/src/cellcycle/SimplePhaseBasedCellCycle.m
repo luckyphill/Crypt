@@ -24,7 +24,7 @@ classdef SimplePhaseBasedCellCycle < AbstractCellCycleModel
 			obj.SetGrowingPhaseLength(g);
 
 			% Cell will start off in the pause phase
-			obj.SetAge(randi(p - 2));
+			obj.SetAge(randi(p - 1));
 
 		end
 
@@ -49,8 +49,10 @@ classdef SimplePhaseBasedCellCycle < AbstractCellCycleModel
 
 			if obj.age < obj.pausePhaseLength
 				fraction = 0;
+				obj.colour = obj.PAUSE;
 			else
 				fraction = (obj.age - obj.pausePhaseLength) / obj.growingPhaseLength;
+				obj.colour = obj.GROW;
 			end
 
 		end
@@ -91,6 +93,5 @@ classdef SimplePhaseBasedCellCycle < AbstractCellCycleModel
 		end
 
 	end
-
 
 end

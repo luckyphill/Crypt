@@ -51,7 +51,8 @@ classdef NodeElementRepulsionForce < AbstractNeighbourhoodBasedForce
 
 					% We still need a point on the element to apply the force
 
-					n1toA = u * dot(n1ton, u) - e.Node1.position;
+					% Taking this dot product projects n1ton onto the element
+					n1toA = u * dot(n1ton, u);
 
 					% The force points towards the element
 					Fa = -v * sign(d) * atanh(dr/obj.r);
@@ -78,7 +79,7 @@ classdef NodeElementRepulsionForce < AbstractNeighbourhoodBasedForce
 					% has a positive sense towards n1
 					% hence to push the ndoes apart, the for is + ve
 					% for n1 and -ve for n2
-					Fa = v * atanh(dr/obj.r);
+					Fa = 10 * v * atanh(dr/obj.r);
 
 					n.AddForceContribution(-Fa);
 					n1.AddForceContribution(Fa);
@@ -131,13 +132,13 @@ classdef NodeElementRepulsionForce < AbstractNeighbourhoodBasedForce
 			
 			
 			% First, find the angle.
-			% To do this, we need the force from the node, in the elements
+			% To do this, we need the force from the node, in the element's
 			% body system of coordinates
 
 			u = e.GetVector1to2();
 			v = [u(2), -u(1)];
 
-			Fab = [dot(Fa, v) * v, dot(Fa, u) * u];
+			Fab = [dot(Fa, v), dot(Fa, u)];
 
 			% Next, we determine the equivalent drag of the centre
 			% and the position of the centre of drag

@@ -57,7 +57,40 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 	methods
 
-		function VisualiseCellPopulation(obj)
+		function Visualise(obj)
+
+			h = figure();
+			hold on
+
+			% Intitialise the vector
+			fillObjects(length(obj.cellList)) = fill([1,1],[2,2],'r');
+
+			for i = 1:length(obj.cellList)
+				c = obj.cellList(i);
+				
+				x1 = c.nodeTopLeft.x;
+				x2 = c.nodeTopRight.x;
+				x3 = c.nodeBottomRight.x;
+				x4 = c.nodeBottomLeft.x;
+				x = [x1,x2,x3,x4];
+				y1 = c.nodeTopLeft.y;
+				y2 = c.nodeTopRight.y;
+				y3 = c.nodeBottomRight.y;
+				y4 = c.nodeBottomLeft.y;
+				y = [y1,y2,y3,y4];
+
+				fillObjects(i) = fill(x,y,c.GetColour());
+			end
+
+			axis equal
+
+			obj.UpdateCentreLine();
+			plot(obj.centreLine(:,1), obj.centreLine(:,2), 'k');
+
+
+		end
+
+		function VisualiseLine(obj)
 
 			% plot a line for each element
 
@@ -82,7 +115,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		end
 
-		function VisualisePrevious(obj)
+		function VisualiseLinePrevious(obj)
 
 			% plot a line for each element
 
@@ -159,7 +192,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		end
 
-		function AnimateNTimeSteps(obj, n, sm)
+		function AnimateLine(obj, n, sm)
 			% Since we aren't storing data at this point, the only way to animate is to
 			% calculate then plot
 
@@ -206,8 +239,84 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 					end
 				end
 
+				% Delete the line objects when there are too many
+				for j = length(lineObjects):-1:length(obj.elementList)+1
+					lineObjects(j).delete;
+					lineObjects(j) = [];
+				end
 				drawnow
 				title(sprintf('t=%g',obj.t));
+
+			end
+
+		end
+
+
+		function Animate(obj, n, sm)
+			% Since we aren't storing data at this point, the only way to animate is to
+			% calculate then plot
+
+			% Set up the line objects initially
+
+			% Initialise an array of line objects
+			h = figure();
+			hold on
+
+			fillObjects(length(obj.cellList)) = fill([1,1],[2,2],'r');
+
+			for i = 1:length(obj.cellList)
+				c = obj.cellList(i);
+				
+				x1 = c.nodeTopLeft.x;
+				x2 = c.nodeTopRight.x;
+				x3 = c.nodeBottomRight.x;
+				x4 = c.nodeBottomLeft.x;
+				x = [x1,x2,x3,x4];
+				y1 = c.nodeTopLeft.y;
+				y2 = c.nodeTopRight.y;
+				y3 = c.nodeBottomRight.y;
+				y4 = c.nodeBottomLeft.y;
+				y = [y1,y2,y3,y4];
+
+				fillObjects(i) = fill(x,y,c.GetColour());
+			end
+
+			totalSteps = 0;
+			while totalSteps < n && ~obj.edgeFlipDetected
+
+				obj.NTimeSteps(sm);
+				totalSteps = totalSteps + sm;
+
+				for j = 1:length(obj.cellList)
+					c = obj.cellList(j);
+
+					x1 = c.nodeTopLeft.x;
+					x2 = c.nodeTopRight.x;
+					x3 = c.nodeBottomRight.x;
+					x4 = c.nodeBottomLeft.x;
+					x = [x1,x2,x3,x4];
+					y1 = c.nodeTopLeft.y;
+					y2 = c.nodeTopRight.y;
+					y3 = c.nodeBottomRight.y;
+					y4 = c.nodeBottomLeft.y;
+					y = [y1,y2,y3,y4];
+
+					if j > length(fillObjects)
+						fillObjects(j) = fill(x,y,c.GetColour());
+					else
+						fillObjects(j).XData = x;
+						fillObjects(j).YData = y;
+						fillObjects(j).FaceColor = c.GetColour();
+					end
+				end
+
+				% Delete the line objects when there are too many
+				for j = length(fillObjects):-1:length(obj.cellList)+1
+					fillObjects(j).delete;
+					fillObjects(j) = [];
+				end
+				drawnow
+				title(sprintf('t=%g',obj.t),'Interpreter', 'latex');
 
 			end
 
@@ -244,9 +353,15 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 			obj.UpdateWiggleRatio();
 
-			obj.UpdateAverageYDeviation();
+			% obj.UpdateAverageYDeviation();
 
-			obj.UpdateAlphaWrinkleParameter
+			% obj.UpdateAlphaWrinkleParameter
+
+			% Store the relevant data
+			obj.storeWiggleRatio(end + 1) = obj.wiggleRatio;
+			% obj.storeNumCells(end + 1) = obj.GetNumCells();
+			% obj.storeAvgYDeviation(end + 1) = obj.avgYDeviation;
+			% obj.storeAlphaWrinkleParameter(end + 1) = obj.alphaWrinkleParameter;
 
 			obj.MakeCellsAge();
 
@@ -261,20 +376,15 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 				% Do all the calculations
 				obj.NextTimeStep();
 
-				% Store the relevant data
-				obj.storeWiggleRatio(end + 1) = obj.wiggleRatio;
-				obj.storeNumCells(end + 1) = obj.GetNumCells();
-				obj.storeAvgYDeviation(end + 1) = obj.avgYDeviation;
-				obj.storeAlphaWrinkleParameter(end + 1) = obj.alphaWrinkleParameter;
-
-				
 				% Make sure nothing has gone wrong
 				if obj.DetectEdgeFlip()
 					error('Edge flip detected. Stopped at t = %.2f\n',obj.t);
 					break;
 				end
 
-				
+				if mod(i, 1000) == 0
+					fprintf('Time = %3.3f, Steps = %6d\n',obj.t,i);
+				end
 
 			end
 			
@@ -283,9 +393,10 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 		function RunToTime(obj, t)
 
 			% Given a time, run the simulation until we reach said time
-
-			n = ceil(t / obj.dt);
-			NTimeSteps(obj, n);
+			if t > obj.t
+				n = ceil((t-obj.t) / obj.dt);
+				NTimeSteps(obj, n);
+			end
 
 		end
 		

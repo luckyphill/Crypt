@@ -49,18 +49,10 @@ classdef Cell < matlab.mixin.SetGet
 
 		CellCycleModel
 
-		areaGradientTopLeft
-		areaGradientTopRight
-		areaGradientBottomRight
-		areaGradientBottomLeft
-
-		perimeterGradientTopLeft
-		perimeterGradientTopRight
-		perimeterGradientBottomRight
-		perimeterGradientBottomLeft
-
 		deformationEnergyParameter = 10
 		surfaceEnergyParameter = 1
+
+
 		
 	end
 
@@ -415,6 +407,13 @@ classdef Cell < matlab.mixin.SetGet
 
 			axis equal
 
+		end
+
+		function colour = GetColour(obj)
+			% Used for animating/plotting only
+
+			colour = obj.CellCycleModel.GetColour();
+		
 		end
 
 	end

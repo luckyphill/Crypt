@@ -10,14 +10,29 @@ classdef FixedDomain < AbstractCellSimulation
 		t = 0
 		eta = 1
 
-		timeLimit = 200
+		timeLimit = 2000
 
 	end
 
 	methods
-		function obj = FixedDomain(nCells, p, g, areaEnergy, perimeterEnergy, adhesionEnergy, seed, w, varargin)
+		function obj = FixedDomain(nCells, p, g, w, seed, varargin)
 			% All the initilising
 			obj.SetRNGSeed(seed);
+
+						% We keep the option of diffent box sizes for efficiency reasons
+			if length(varargin) > 0
+				if length(varargin) == 3
+					areaEnergy = varargin{1};
+					perimeterEnergy = varargin{2};
+					adhesionEnergy = varargin{3};
+				else
+					error('Error using varargin, must have 3 args, areaEnergy, perimeterEnergy, and adhesionEnergy');
+				end
+			else
+				areaEnergy = 20;
+				perimeterEnergy = 10;
+				adhesionEnergy = 1;
+			end
 
 			% This simulation only allows cells to exist in a limited x domain
 
@@ -35,6 +50,9 @@ classdef FixedDomain < AbstractCellSimulation
 
 			obj.leftBoundary = -endPiece;
 			obj.rightBoundary = 0.5 * nCells + endPiece;
+
+			% This turns on the cell death at the ends
+			obj.limitedWidth = true;
 
 			%---------------------------------------------------
 			% Make all the cells
@@ -119,13 +137,9 @@ classdef FixedDomain < AbstractCellSimulation
 			%---------------------------------------------------
 			% Add space partition
 			%---------------------------------------------------
-			
-			% We keep the option of diffent box sizes for efficiency reasons
-			if length(varargin) > 0
-				obj.boxes = SpacePartition(varargin{1}, varargin{2}, obj);
-			else
-				obj.boxes = SpacePartition(0.5, 0.5, obj);
-			end
+			% In this simulation we are fixing the size of the boxes
+
+			obj.boxes = SpacePartition(0.5, 0.5, obj);
 
 			%---------------------------------------------------
 			% All done. Ready to roll

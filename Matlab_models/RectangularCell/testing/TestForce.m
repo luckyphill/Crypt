@@ -356,6 +356,12 @@ classdef TestForce < matlab.unittest.TestCase
 
 			testCase.verifyTrue( n.force(1) < 0);
 			testCase.verifyTrue( e.Node1.force(1) > 0);
+			n.force
+			n.position
+			e.Node1.force
+			e.Node1.position
+			e.Node2.force
+			e.Node2.position
 
 			% Apply the wild case, but specify the nodes and elements directly
 			clear e n n1 n2 f
@@ -370,6 +376,12 @@ classdef TestForce < matlab.unittest.TestCase
 
 			n = Node(7.704,2.86,3);
 
+			u = e.GetVector1to2();
+			v = [u(2), -u(1)];
+
+			n1ton = n.position - e.Node1.position;
+			d = dot(n1ton, v)
+
 			f = NodeElementRepulsionForce(r, dt);
 
 			p.PutNodeInBox(n);
@@ -382,7 +394,6 @@ classdef TestForce < matlab.unittest.TestCase
 
 			testCase.verifyTrue( n.force(1) < 0);
 			testCase.verifyTrue( n2.force(1) > 0);
-
 
 
 		end

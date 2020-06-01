@@ -1,62 +1,57 @@
-classdef BuckleAnalysisCellGrowing < Analysis
+classdef BuckleAnalysisFixedDomain < Analysis
 
 	properties
 
 		% These cannot be changed, since they relate to a specific
 		% set of data. If different values are needed, new data is needed
 		% and a new analysis class should be made
-		p = 5:50;
-		g = 5:50;
+		p = 11:40;
+		g = 11:40;
 
-		n = 20;
-		Pa = 20;
-		Pp = 10;
-		Padh = 1;
+		
+		w = 10:20;
+		n = 2 * w;
 
 		seed = 1:10;
 
-		timeGrid = nan(46,46);
-		widthGrid = nan(46,46);
-		nGrid = nan(46,46);
+		timeGrid = nan(30,30);
+		nGrid = nan(30,30);
 
-		analysisName = 'BuckleAnalysisCellGrowing';
+		analysisName = 'BuckleAnalysisFixedDomain';
 
 	end
 
 	methods
 
-		function obj = BuckleAnalysisCellGrowing()
+		function obj = BuckleAnalysisFixedDomain()
 
-			% Uses the data produced by BuckleSweepCellGrowing to produce
+			% Uses the data produced by BuckleSweepFixedDomain to produce
 			% a plot of the average time/number of cells/width at buckling
 
-			for p = 5:50
-				for g = 5:50
-					t = 0;
-					w = 0;
-					n = 0;
-					count = 0;
-					for seed = 1:10
-						try
-							% Sometimes the data might not exist
-							a = RunCellGrowingBuckle(obj.n, p, g, obj.Pa, obj.Pp, obj.Padh, seed);
-							a.LoadSimulationData();
+			for p = 11:40
+				for g = 11:40
+					for w = 10:20
+						
+						t = 0;
+						count = 0;
+						for seed = 1:10
+							try
+								% Sometimes the data might not exist
+								a = RunFixedDomainBuckle(obj.n, p, g, w, seed);
+								a.LoadSimulationData();
 
-							% Put entry 3 first to trigger an error if data is a nan
-							w = w + a.data.buckleData(3);
-							n = n + a.data.buckleData(2);
-							t = t + a.data.buckleData(1);
+								t = t + a.data.buckleData(1);
 
-							count = count + 1;
-						end
+								count = count + 1;
+							end
 
-                    end
+	                    end
 
-                    fprintf('Completed p = %d, g = %d\n',p,g);
-    
-					obj.timeGrid(p-4,g-4) = t / count;
-					obj.widthGrid(p-4,g-4) = w / count;
-					obj.nGrid(p-4,g-4) = n / count;
+	                    fprintf('Completed p = %d, g = %d, w = %d\n',p,g,w);
+	    
+						obj.timeGrid(p-4,g-4) = t / count;
+
+					end
 
 				end
 
@@ -107,42 +102,6 @@ classdef BuckleAnalysisCellGrowing < Analysis
 			
 			SavePlot(obj, h, 'Time')
 			%---------------------------------------------------------------------------------
-
-
-
-			%---------------------------------------------------------------------------------
-			% Plot width  at buckle:
-			%---------------------------------------------------------------------------------
-			h = figure;
-
-			subplot(2,2,1);
-			surf(P,G,obj.widthGrid,'EdgeColor', 'None');
-			xlabel('Pause','Interpreter', 'latex');ylabel('Growth','Interpreter', 'latex');
-			xlim([5 50]);ylim([5 50])
-			title(sprintf('Width at buckle'),'Interpreter', 'latex')
-			colorbar;view(0,90);
-
-			cct = 30;
-
-			subplot(2,2,2);
-			plot(P(G==cct), obj.widthGrid(G==cct), 'LineWidth', lw)
-			xlabel('Pause','Interpreter', 'latex');ylabel('Time','Interpreter', 'latex')
-			title(sprintf('Width at buckle: Growth = %d hr',cct),'Interpreter', 'latex')
-
-			subplot(2,2,3);
-			plot(G(P==cct), obj.widthGrid(P==cct), 'LineWidth', lw)
-			xlabel('Growth','Interpreter', 'latex');ylabel('Time','Interpreter', 'latex')
-			title(sprintf('Width at buckle: Pause = %d hr',cct),'Interpreter', 'latex')
-
-			subplot(2,2,4);
-			cct = 35;
-			plot(P(S==cct), obj.widthGrid(S==cct), 'LineWidth', lw)
-			xlabel('Pause','Interpreter', 'latex');ylabel('Time','Interpreter', 'latex')
-			title(sprintf('Width at buckle: Growth + Pause = %d hr',cct),'Interpreter', 'latex')
-
-			SavePlot(obj, h, 'Width')
-			%---------------------------------------------------------------------------------
-
 
 
 			%---------------------------------------------------------------------------------
