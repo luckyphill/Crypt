@@ -14,7 +14,9 @@ classdef AbstractStoppingCondition < matlab.mixin.Heterogeneous
 		% t is an AbstractCellSimulation
 		function stopped = CheckStoppingCondition(obj, t)
 
-			if HasStoppingConditionBeenMet(obj, t)
+			stopped = HasStoppingConditionBeenMet(obj, t);
+
+			if stopped
 				fprintf('Simulation stopped by %s\n', obj.name);
 			end
 

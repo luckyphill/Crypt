@@ -13,11 +13,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 		cellList
 		nextCellId = 1
 
-		centreLine = []
-
 		stochasticJiggle = true
-
-		storeNumCells = []
 
 		cellBasedForces AbstractCellBasedForce
 		elementBasedForces AbstractElementBasedForce
@@ -30,6 +26,17 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 		tissueLevelKillers AbstractTissueLevelCellKiller
 		cellKillers AbstractCellKiller
 
+		simulationModifiers AbstractSimulationModifier
+
+		% A collection of objects that store data over multiple time steps
+		% with also the potential to write to file
+		dataStores AbstractDataStore
+
+		% A collection objects for calculating data about the simulation
+		% stored in a map container so each type of data can be given a
+		% meaingful name
+		simData = containers.Map{}
+
 		boxes SpacePartition
 
 		usingBoxes = true;
@@ -40,14 +47,10 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		dt
 		t
+		step
 
 	end
 
-	methods (Abstract)
-
-		UpdateCentreLine()
-
-	end
 
 	methods
 
@@ -92,9 +95,14 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			% obj.storeAvgYDeviation(end + 1) = obj.avgYDeviation;
 			% obj.storeAlphaWrinkleParameter(end + 1) = obj.alphaWrinkleParameter;
 
+			obj.ModifySimulationState();
+
 			obj.MakeCellsAge();
 
 			obj.t = obj.t + obj.dt;
+			obj.step = obj.step + 1;
+
+			obj.StoreData();
 
 		end
 
@@ -155,12 +163,12 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 			axis equal
 
-			obj.UpdateCentreLine();
-			plot(obj.centreLine(:,1), obj.centreLine(:,2), 'k');
+			cL = obj.simData{'centreLine'}.GetData();
+			plot(cL(:,1), cL(:,2), 'k');
 
 		end
 
-		function VisualiseLine(obj)
+		function VisualiseWireFrame(obj)
 
 			% plot a line for each element
 
@@ -180,12 +188,12 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 			axis equal
 
-			obj.UpdateCentreLine();
-			plot(obj.centreLine(:,1), obj.centreLine(:,2), 'k');
+			cL = obj.simData{'centreLine'}.GetData();
+			plot(cL(:,1), cL(:,2), 'k');
 
 		end
 
-		function VisualiseLinePrevious(obj)
+		function VisualiseWireFramePrevious(obj)
 
 			% plot a line for each element
 
@@ -314,7 +322,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		end
 
-		function AnimateLine(obj, n, sm)
+		function AnimateWireFrame(obj, n, sm)
 			% Since we aren't storing data at this point, the only way to animate is to
 			% calculate then plot
 
@@ -568,6 +576,65 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 				obj.cellKillers = k;
 			else
 				obj.cellKillers(end + 1) = k;
+			end
+
+		end
+
+		function AddStoppingCondition(obj, s)
+
+			if isempty(obj.stoppingConditions)
+				obj.stoppingConditions = s;
+			else
+				obj.stoppingConditions(end + 1) = s;
+			end
+
+		end
+
+		function AddSimulationModifier(obj, m)
+
+			if isempty(obj.simulationModifiers)
+				obj.simulationModifiers = m;
+			else
+				obj.simulationModifiers(end + 1) = m;
+			end
+
+		end
+
+		function AddDataStore(obj, d)
+
+			if isempty(obj.dataStores)
+				obj.dataStores = d;
+			else
+				obj.dataStores(end + 1) = d;
+			end
+
+		end
+
+		function AddSimulationData(obj, d)
+
+			% Add the simulation data calculator to the map
+			% this will necessarily allow only one instance
+			% of a given type of SimulationData, since the 
+			% names are immutabl
+
+			% This is calculate-on-demand, so it does not have
+			% an associated 'use' method here
+			obj.simData{d.name} = d;
+
+		end
+
+		function StoreData(obj)
+
+			for i = 1:length(obj.dataStores)
+				obj.dataStores(i).StoreData(obj);
+			end
+
+		end
+
+		function ModifySimulationState(obj)
+
+			for i = 1:length(obj.simulationModifiers)
+				obj.simulationModifiers(i).ModifySimulation(obj);
 			end
 
 		end

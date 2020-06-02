@@ -123,19 +123,9 @@ classdef CellGrowing < AbstractLineSimulation
 			% This function runs the simulation until just after buckling has occurred
 			% Buckling is defined by the wiggle ratio, i.e. epithelial length/domain width
 
-			while 1
-				obj.NextTimeStep();
-				obj.UpdateWiggleRatio()
+			obj.AddStoppingCondition(BuckledStoppingCondition(1.1));
 
-				if obj.wiggleRatio > 1.1
-					break;
-				end
-
-				if  obj.t > obj.timeLimit
-					break;
-				end
-
-			end
+			obj.RunToTime(obj.timeLimit);
 
 		end
 

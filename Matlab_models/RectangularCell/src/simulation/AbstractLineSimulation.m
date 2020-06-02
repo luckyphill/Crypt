@@ -59,50 +59,6 @@ classdef (Abstract) AbstractLineSimulation < AbstractCellSimulation
 
 		end
 
-		function UpdateCentreLine(obj)
-
-			% Makes a sequence of points that defines the centre line of the cells
-			cL = [];
-
-			obj.UpdateBoundaryCells();
-
-			c = obj.leftBoundaryCell;
-
-			cL(end + 1, :) = c.elementLeft.GetMidPoint();
-			e = c.elementRight;
-
-			cL(end + 1, :) = e.GetMidPoint();
-
-			% Jump through the cells until we hit the right most cell
-			c = e.GetOtherCell(c);
-
-			while ~isempty(c) 
-
-				e = c.elementRight;
-				cL(end + 1, :) = e.GetMidPoint();
-				c = e.GetOtherCell(c);
-			end
-
-			obj.centreLine = cL;
-
-		end
-
-		function UpdateWiggleRatio(obj)
-
-			obj.UpdateCentreLine();
-
-			l = 0;
-
-			for i = 1:length(obj.centreLine)-1
-				l = l + norm(obj.centreLine(i,:) - obj.centreLine(i+1,:));
-			end
-
-			w = obj.centreLine(end,1) - obj.centreLine(1,1);
-
-			obj.wiggleRatio = l / w;
-		
-		end
-
 		function CentreLineFFT(obj)
 
 			obj.UpdateCentreLine();
@@ -198,6 +154,7 @@ classdef (Abstract) AbstractLineSimulation < AbstractCellSimulation
 			end
 
 		end
+
 	end
 
 
