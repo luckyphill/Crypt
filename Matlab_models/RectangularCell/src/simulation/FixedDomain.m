@@ -1,4 +1,4 @@
-classdef FixedDomain < AbstractCellSimulation
+classdef FixedDomain < AbstractLineSimulation
 
 	% This simulation is the most basic - a simple row of cells growing on
 	% a plate. It allows us to choose the number of initial cells
@@ -15,6 +15,7 @@ classdef FixedDomain < AbstractCellSimulation
 	end
 
 	methods
+		
 		function obj = FixedDomain(nCells, p, g, w, seed, varargin)
 			% All the initilising
 			obj.SetRNGSeed(seed);
@@ -48,11 +49,12 @@ classdef FixedDomain < AbstractCellSimulation
 
 			endPiece = (w - 0.5 * nCells) / 2;
 
-			obj.leftBoundary = -endPiece;
-			obj.rightBoundary = 0.5 * nCells + endPiece;
+			leftBoundary = -endPiece;
+			rightBoundary = 0.5 * nCells + endPiece;
 
-			% This turns on the cell death at the ends
-			obj.limitedWidth = true;
+			k = BoundaryCellKiller(leftBoundary, rightBoundary);
+
+			obj.AddTissueLevelKiller(k);
 
 			%---------------------------------------------------
 			% Make all the cells

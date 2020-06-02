@@ -1,4 +1,4 @@
-classdef DifferentDrag < AbstractCellSimulation
+classdef DifferentDrag < AbstractLineSimulation
 
 	% This simulation tests the buckling behaviour when
 	% the top has a smaller drag coefficient to the bottom

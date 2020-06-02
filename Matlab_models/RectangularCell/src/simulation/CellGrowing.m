@@ -1,4 +1,4 @@
-classdef CellGrowing < AbstractCellSimulation
+classdef CellGrowing < AbstractLineSimulation
 
 	% This simulation is the most basic - a simple row of cells growing on
 	% a plate. It allows us to choose the number of initial cells
@@ -15,6 +15,7 @@ classdef CellGrowing < AbstractCellSimulation
 	end
 
 	methods
+
 		function obj = CellGrowing(nCells, p, g, areaEnergy, perimeterEnergy, adhesionEnergy, seed, varargin)
 			% All the initilising
 			obj.SetRNGSeed(seed);
@@ -113,6 +114,7 @@ classdef CellGrowing < AbstractCellSimulation
 			%---------------------------------------------------
 			% All done. Ready to roll
 			%---------------------------------------------------
+			
 		end
 
 

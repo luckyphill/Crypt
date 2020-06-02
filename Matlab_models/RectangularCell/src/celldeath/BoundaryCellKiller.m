@@ -1,5 +1,6 @@
-classdef BoundaryCellKiller < AbstractCellKiller
-	% A cell cycle that does nothing except count the age of the cell
+classdef BoundaryCellKiller < AbstractTissueLevelCellKiller
+	% A class for killing Boundary cells.
+	% This only kills cells when they move past a certain position
 	properties
 
 		leftBoundary
@@ -10,7 +11,7 @@ classdef BoundaryCellKiller < AbstractCellKiller
 
 		function obj = BoundaryCellKiller(leftBoundary, rightBoundary)
 
-			if leftBoundary => rightBoundary
+			if leftBoundary >= rightBoundary
 				error('BCK:WrongOrder','Left boundary is further right than right boundary');
 			end
 			obj.leftBoundary = leftBoundary;
@@ -18,31 +19,147 @@ classdef BoundaryCellKiller < AbstractCellKiller
 
 		end
 
-		function killList = MakeKillList(obj, cellList)
+		function KillCells(obj, t)
 
-			% Implements abstract method from AbstractCellKiller
-			% If a cell is further left than the leftBoundary
-			% or further right than the rightBoundary, then it is killed
-			% immediately
-			killList = Cell.empty();
-			for i = 1:length(cellList)
-				c = cellList(i);
-				
-				% Kill left cells if they are entirely
-				% past the left boundary
-				if c.nodeTopRight.x < obj.leftBoundary || c.nodeBottomRight.x < obj.leftBoundary
-					killList(end+1) = c;
-				end
+			% Kills the cells at the boundary if requested
+			t.UpdateBoundaryCells();
 
-				% and if they are entirely past the right boundary
-				if c.nodeTopLeft.x < obj.rightBoundary || c.nodeBottomLeft.x < obj.rightBoundary
-					killList(end+1) = c;
-				end
+			while obj.IsPastLeftBoundary(t.leftBoundaryCell)
 
-				% Note: this does not check if the cell meets both criteria at once
-				% but this should be impossible as the left and right boundaries are
-				% checked for compliance at instantiation
+				obj.RemoveLeftBoundaryCellFromSimulation(t);
+
 			end
+
+			while obj.IsPastRightBoundary(t.rightBoundaryCell)
+
+				obj.RemoveRightBoundaryCellFromSimulation(t);
+
+			end
+
+		end
+
+		function past = IsPastLeftBoundary(obj, c)
+
+			past = false;
+			if c.nodeTopRight.x < obj.leftBoundary || c.nodeBottomRight.x < obj.leftBoundary
+				past = true;
+			end
+
+		end
+
+		function past = IsPastRightBoundary(obj, c)
+
+			past = false;
+			if c.nodeTopLeft.x > obj.rightBoundary || c.nodeBottomLeft.x > obj.rightBoundary
+				past = true;
+			end
+
+		end
+
+		function RemoveLeftBoundaryCellFromSimulation(obj, t)
+
+			% This is used when a cell is removed on the boundary
+			% A different method is needed when the cell is internal
+
+			% Need to becareful to actually remove the nodes etc.
+			% rather than just lose the links
+
+			c = t.leftBoundaryCell;
+			t.leftBoundaryCell = c.elementRight.GetOtherCell(c);
+
+			% Clean up elements
+
+			t.elementList(t.elementList == c.elementTop) = [];
+			t.elementList(t.elementList == c.elementLeft) = [];
+			t.elementList(t.elementList == c.elementBottom) = [];
+
+			c.nodeTopRight.elementList( c.nodeTopRight.elementList ==  c.elementTop ) = [];
+			c.nodeBottomRight.elementList( c.nodeBottomRight.elementList ==  c.elementBottom ) = [];
+
+			c.elementRight.cellList(c.elementRight.cellList == c) = [];
+
+			if t.usingBoxes
+				t.boxes.RemoveElementFromPartition(c.elementTop);
+				t.boxes.RemoveElementFromPartition(c.elementLeft);
+				t.boxes.RemoveElementFromPartition(c.elementBottom);
+			end
+
+			c.elementTop.delete;
+			c.elementLeft.delete;
+			c.elementBottom.delete;
+
+			% Clean up nodes
+
+			t.nodeList(t.nodeList == c.nodeTopLeft) = [];
+			t.nodeList(t.nodeList == c.nodeBottomLeft) = [];
+
+			if t.usingBoxes
+				t.boxes.RemoveNodeFromPartition(c.nodeTopLeft);
+				t.boxes.RemoveNodeFromPartition(c.nodeBottomLeft);
+			end
+
+			c.nodeTopLeft.delete;
+			c.nodeBottomLeft.delete;
+
+			% Clean up cell
+
+			t.cellList(t.cellList == c) = [];
+
+			c.delete;
+
+		end
+
+		function RemoveRightBoundaryCellFromSimulation(obj, t)
+
+			% This is used when a cell is removed on the boundary
+			% A different method is needed when the cell is internal
+
+			% Need to becareful to actually remove the nodes etc.
+			% rather than just lose the links
+
+			c = t.rightBoundaryCell;
+			t.rightBoundaryCell = c.elementLeft.GetOtherCell(c);
+
+			
+			% Clean up elements
+
+			t.elementList(t.elementList == c.elementTop) = [];
+			t.elementList(t.elementList == c.elementRight) = [];
+			t.elementList(t.elementList == c.elementBottom) = [];
+
+			c.nodeTopLeft.elementList( c.nodeTopLeft.elementList ==  c.elementTop ) = [];
+			c.nodeBottomLeft.elementList( c.nodeBottomLeft.elementList ==  c.elementBottom ) = [];
+
+			c.elementLeft.cellList(c.elementLeft.cellList == c) = [];
+
+			if t.usingBoxes
+				t.boxes.RemoveElementFromPartition(c.elementTop);
+				t.boxes.RemoveElementFromPartition(c.elementRight);
+				t.boxes.RemoveElementFromPartition(c.elementBottom);
+			end
+
+			c.elementTop.delete;
+			c.elementRight.delete;
+			c.elementBottom.delete;
+
+			% Clean up nodes 
+
+			t.nodeList(t.nodeList == c.nodeTopRight) = [];
+			t.nodeList(t.nodeList == c.nodeBottomRight) = [];
+
+			if t.usingBoxes
+				t.boxes.RemoveNodeFromPartition(c.nodeTopRight);
+				t.boxes.RemoveNodeFromPartition(c.nodeBottomRight);
+			end
+
+			c.nodeTopRight.delete;
+			c.nodeBottomRight.delete;
+
+			% Finally clean up cell
+
+			t.cellList(t.cellList == c) = [];
+
+			c.delete;
 
 		end
 

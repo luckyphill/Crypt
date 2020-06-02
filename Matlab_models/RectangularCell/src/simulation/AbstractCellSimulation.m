@@ -4,47 +4,35 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 	properties
 
-		cellList
-
 		nodeList
 		nextNodeId = 1
 
 		elementList
 		nextElementId = 1
 
+		cellList
 		nextCellId = 1
 
-		edgeFlipDetected = false
+		centreLine = []
 
 		stochasticJiggle = true
 
-		centreLine
-
-		wiggleRatio = 1;
-
-		avgYDeviation
-		alphaWrinkleParameter
-
-		storeWiggleRatio = []
 		storeNumCells = []
-		storeAvgYDeviation = []
-		storeAlphaWrinkleParameter = []
-
-		leftBoundaryCell
-		rightBoundaryCell
-
-		leftBoundary = -Inf;
-		rightBoundary = Inf;
 
 		cellBasedForces AbstractCellBasedForce
 		elementBasedForces AbstractElementBasedForce
 		neighbourhoodBasedForces AbstractNeighbourhoodBasedForce
 
+		stoppingConditions AbstractStoppingCondition
+
+		stopped = false
+
+		tissueLevelKillers AbstractTissueLevelCellKiller
+		cellKillers AbstractCellKiller
+
 		boxes SpacePartition
 
 		usingBoxes = true;
-
-		limitedWidth = false;
 		
 	end
 
@@ -55,7 +43,90 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 	end
 
+	methods (Abstract)
+
+		UpdateCentreLine()
+
+	end
+
 	methods
+
+		function SetRNGSeed(obj, seed)
+
+			rng(seed);
+
+		end
+
+		function NextTimeStep(obj)
+			% Updates all the forces and applies the movements
+			
+			obj.GenerateCellBasedForces();
+			obj.GenerateElementBasedForces();
+
+			if obj.usingBoxes
+				obj.GenerateNeighbourhoodBasedForces();
+			end
+
+
+			obj.MakeNodesMove();
+
+			obj.MakeCellsDivide();
+
+			obj.UpdateBoundaryCells();
+
+			obj.KillCells();
+
+			if obj.IsStoppingConditionMet()
+				obj.stopped = true;
+			end
+
+			obj.UpdateWiggleRatio();
+
+			% obj.UpdateAverageYDeviation();
+
+			% obj.UpdateAlphaWrinkleParameter
+
+			% Store the relevant data
+			obj.storeWiggleRatio(end + 1) = obj.wiggleRatio;
+			% obj.storeNumCells(end + 1) = obj.GetNumCells();
+			% obj.storeAvgYDeviation(end + 1) = obj.avgYDeviation;
+			% obj.storeAlphaWrinkleParameter(end + 1) = obj.alphaWrinkleParameter;
+
+			obj.MakeCellsAge();
+
+			obj.t = obj.t + obj.dt;
+
+		end
+
+		function NTimeSteps(obj, n)
+			% Advances a set number of time steps
+			
+			for i = 1:n
+				% Do all the calculations
+				obj.NextTimeStep();
+
+				if mod(obj.t, 10) < obj.dt
+					fprintf('Time = %3.3fhr\n',obj.t);
+				end
+
+				if obj.stopped
+					fprintf('Stopping condition met at t=%3.3f\n', obj.t);
+					break;
+				end
+
+			end
+			
+		end
+
+		function RunToTime(obj, t)
+
+			% Given a time, run the simulation until we reach said time
+			if t > obj.t
+				n = ceil((t-obj.t) / obj.dt);
+				NTimeSteps(obj, n);
+			end
+
+		end
 
 		function Visualise(obj)
 
@@ -173,84 +244,6 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		end
 
-		function PlotTimeSeriesData(obj)
-
-			% Plots all of the stored calculations
-
-			figure;
-			t = obj.dt:obj.dt:obj.t;
-
-			plot(t,obj.storeWiggleRatio, t, obj.storeAvgYDeviation, t, obj.storeAlphaWrinkleParameter);
-			legend({'Wiggle', 'YDev', 'alpha'});
-
-		end
-
-		function SetRNGSeed(obj, seed)
-
-			rng(seed);
-
-		end
-
-		function AnimateLine(obj, n, sm)
-			% Since we aren't storing data at this point, the only way to animate is to
-			% calculate then plot
-
-			% Set up the line objects initially
-
-			% Initialise an array of line objects
-			h = figure();
-			hold on
-
-			lineObjects(length(obj.elementList)) = line([1,1],[2,2]);
-
-			for i = 1:length(obj.elementList)
-				
-				x1 = obj.elementList(i).Node1.x;
-				x2 = obj.elementList(i).Node2.x;
-				x = [x1,x2];
-				y1 = obj.elementList(i).Node1.y;
-				y2 = obj.elementList(i).Node2.y;
-				y = [y1,y2];
-
-				lineObjects(i) = line(x,y);
-			end
-
-			totalSteps = 0;
-			while totalSteps < n && ~obj.edgeFlipDetected
-
-				obj.NTimeSteps(sm);
-				totalSteps = totalSteps + sm;
-
-				for j = 1:length(obj.elementList)
-				
-					x1 = obj.elementList(j).Node1.x;
-					x2 = obj.elementList(j).Node2.x;
-					x = [x1,x2];
-					y1 = obj.elementList(j).Node1.y;
-					y2 = obj.elementList(j).Node2.y;
-					y = [y1,y2];
-
-					if j > length(lineObjects)
-						lineObjects(j) = line(x,y);
-					else
-						lineObjects(j).XData = x;
-						lineObjects(j).YData = y;
-					end
-				end
-
-				% Delete the line objects when there are too many
-				for j = length(lineObjects):-1:length(obj.elementList)+1
-					lineObjects(j).delete;
-					lineObjects(j) = [];
-				end
-				drawnow
-				title(sprintf('t=%g',obj.t));
-
-			end
-
-		end
-
-
 		function Animate(obj, n, sm)
 			% Since we aren't storing data at this point, the only way to animate is to
 			% calculate then plot
@@ -281,7 +274,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			end
 
 			totalSteps = 0;
-			while totalSteps < n && ~obj.edgeFlipDetected
+			while totalSteps < n
 
 				obj.NTimeSteps(sm);
 				totalSteps = totalSteps + sm;
@@ -321,84 +314,65 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		end
 
-		function NextTimeStep(obj)
-			% Updates all the forces and applies the movements
-			
-			
-			obj.GenerateCellBasedForces();
-			obj.GenerateElementBasedForces();
+		function AnimateLine(obj, n, sm)
+			% Since we aren't storing data at this point, the only way to animate is to
+			% calculate then plot
 
-			if obj.usingBoxes
-				obj.GenerateNeighbourhoodBasedForces();
+			% Set up the line objects initially
+
+			% Initialise an array of line objects
+			h = figure();
+			hold on
+
+			lineObjects(length(obj.elementList)) = line([1,1],[2,2]);
+
+			for i = 1:length(obj.elementList)
+				
+				x1 = obj.elementList(i).Node1.x;
+				x2 = obj.elementList(i).Node2.x;
+				x = [x1,x2];
+				y1 = obj.elementList(i).Node1.y;
+				y2 = obj.elementList(i).Node2.y;
+				y = [y1,y2];
+
+				lineObjects(i) = line(x,y);
 			end
 
-			% Element forces must happen last because it contains the rigid body
-			% tweak to prevent element flipping. This is a dodgy way to do it,
-			% but I can't think of a better and quick solution
-			% 17042020 no longer necessary to have these in this order because not using
-			% that particular edge flipping stopper. Still ought to implement a 'modifier'
-			% stage in time stepping
-			
-			
-			obj.MakeNodesMove();
+			totalSteps = 0;
+			while totalSteps < n
 
-			obj.MakeCellsDivide();
+				obj.NTimeSteps(sm);
+				totalSteps = totalSteps + sm;
 
-			obj.UpdateBoundaryCells();
+				for j = 1:length(obj.elementList)
+				
+					x1 = obj.elementList(j).Node1.x;
+					x2 = obj.elementList(j).Node2.x;
+					x = [x1,x2];
+					y1 = obj.elementList(j).Node1.y;
+					y2 = obj.elementList(j).Node2.y;
+					y = [y1,y2];
 
-			if obj.limitedWidth
-				obj.KillBoundaryCells();
-			end
-
-			obj.UpdateWiggleRatio();
-
-			% obj.UpdateAverageYDeviation();
-
-			% obj.UpdateAlphaWrinkleParameter
-
-			% Store the relevant data
-			obj.storeWiggleRatio(end + 1) = obj.wiggleRatio;
-			% obj.storeNumCells(end + 1) = obj.GetNumCells();
-			% obj.storeAvgYDeviation(end + 1) = obj.avgYDeviation;
-			% obj.storeAlphaWrinkleParameter(end + 1) = obj.alphaWrinkleParameter;
-
-			obj.MakeCellsAge();
-
-			obj.t = obj.t + obj.dt;
-
-		end
-
-		function NTimeSteps(obj, n)
-			% Advances a set number of time steps
-			
-			for i = 1:n
-				% Do all the calculations
-				obj.NextTimeStep();
-
-				% Make sure nothing has gone wrong
-				if obj.DetectEdgeFlip()
-					error('Edge flip detected. Stopped at t = %.2f\n',obj.t);
-					break;
+					if j > length(lineObjects)
+						lineObjects(j) = line(x,y);
+					else
+						lineObjects(j).XData = x;
+						lineObjects(j).YData = y;
+					end
 				end
 
-				if mod(i, 1000) == 0
-					fprintf('Time = %3.3f, Steps = %6d\n',obj.t,i);
+				% Delete the line objects when there are too many
+				for j = length(lineObjects):-1:length(obj.elementList)+1
+					lineObjects(j).delete;
+					lineObjects(j) = [];
 				end
+				drawnow
+				title(sprintf('t=%g',obj.t));
 
-			end
-			
-		end
-
-		function RunToTime(obj, t)
-
-			% Given a time, run the simulation until we reach said time
-			if t > obj.t
-				n = ceil((t-obj.t) / obj.dt);
-				NTimeSteps(obj, n);
 			end
 
 		end
-		
+
 		function GenerateCellBasedForces(obj)
 			
 			for i = 1:length(obj.cellBasedForces)
@@ -416,6 +390,10 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 		end
 
 		function GenerateNeighbourhoodBasedForces(obj)
+			
+			if isempty(obj.boxes)
+				error('ACS:NoBoxes','Space partition required for NeighbourhoodForces, but none set');
+			end
 
 			for i = 1:length(obj.neighbourhoodBasedForces)
 				obj.neighbourhoodBasedForces(i).AddNeighbourhoodBasedForces(obj.nodeList, obj.boxes);
@@ -498,63 +476,41 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 				nc.nodeTopRight.id = obj.GetNextNodeId();
 				nc.nodeBottomRight.id = obj.GetNextNodeId();
 				
-				obj.boxes.PutNodeInBox(nc.nodeTopRight);
-				obj.boxes.PutNodeInBox(nc.nodeBottomRight);
-
 				nc.elementTop.id = obj.GetNextElementId();
 				nc.elementRight.id = obj.GetNextElementId();
 				nc.elementBottom.id = obj.GetNextElementId();
 
-				obj.boxes.PutElementInBoxes(nc.elementTop);
-				obj.boxes.PutElementInBoxes(nc.elementBottom);
 
-				% Before division, the top and bottom elements for oc
-				% extended from nc.nodeTopLeft to oc.nodeTopRight
-				% so we need to remove the left half of the original
-				% top and bottom elements from the element space partition
+				if obj.usingBoxes
 
-				oc = nc.elementRight.GetOtherCell(nc);
+					obj.boxes.PutNodeInBox(nc.nodeTopRight);
+					obj.boxes.PutNodeInBox(nc.nodeBottomRight);
 
-				[ql,il,jl] = obj.boxes.GetBoxIndicesBetweenNodes(nc.nodeTopLeft, oc.nodeTopRight);
-				for i = 1:length(ql)
-					obj.boxes.RemoveElement(ql(i),il(i),jl(i),oc.elementTop);
+					obj.boxes.PutElementInBoxes(nc.elementTop);
+					obj.boxes.PutElementInBoxes(nc.elementBottom);
+
+					% Before division, the top and bottom elements for oc
+					% extended from nc.nodeTopLeft to oc.nodeTopRight
+					% so we need to remove the left half of the original
+					% top and bottom elements from the element space partition
+
+					oc = nc.elementRight.GetOtherCell(nc);
+
+					[ql,il,jl] = obj.boxes.GetBoxIndicesBetweenNodes(nc.nodeTopLeft, oc.nodeTopRight);
+					for i = 1:length(ql)
+						obj.boxes.RemoveElement(ql(i),il(i),jl(i),oc.elementTop);
+					end
+
+					[ql,il,jl] = obj.boxes.GetBoxIndicesBetweenNodes(nc.nodeBottomLeft, oc.nodeBottomRight);
+					for i = 1:length(ql)
+						obj.boxes.RemoveElement(ql(i),il(i),jl(i),oc.elementBottom);
+					end
+
+					obj.boxes.PutElementInBoxes(oc.elementTop);
+					obj.boxes.PutElementInBoxes(oc.elementBottom);
+
 				end
 
-				[ql,il,jl] = obj.boxes.GetBoxIndicesBetweenNodes(nc.nodeBottomLeft, oc.nodeBottomRight);
-				for i = 1:length(ql)
-					obj.boxes.RemoveElement(ql(i),il(i),jl(i),oc.elementBottom);
-				end
-
-				obj.boxes.PutElementInBoxes(oc.elementTop);
-				obj.boxes.PutElementInBoxes(oc.elementBottom);
-
-
-				% This loop is unecessary because for a new well
-				% we know it must be the right nodes that are new
-				% for i = 1:4
-				% 	% If the new nodes aren't already in the node list
-				% 	% give them the next ID in sequence and add them to
-				% 	% the space partition
-				% 	if ~ismember(nc.nodeList(i),obj.nodeList)
-				% 		nc.nodeList(i).id = obj.GetNextNodeId();
-				% 		if obj.usingBoxes
-				% 			obj.boxes.PutNodeInBox(nc.nodeList(i));
-				% 		end
-				% 	end
-
-				% end
-
-				% for i = 1:4
-				% 	if ~ismember(nc.elementList(i),obj.elementList)
-				% 		nc.elementList(i).id = obj.GetNextElementId();
-				% 		if obj.usingBoxes && ~nc.elementList(i).IsElementInternal()
-				% 			% Need to put the new elements in their correct boxes
-				% 			obj.boxes.PutElementInBoxes(nc.elementList(i));
-				% 			% This code doesn't account for removing the shortened
-				% 			% element from boxes it is not longer in
-				% 		end
-				% 	end
-				% end
 
 				obj.cellList(end + 1) = nc;
 
@@ -596,6 +552,52 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		end
 
+		function AddTissueLevelKiller(obj, k)
+
+			if isempty(obj.tissueLevelKillers)
+				obj.tissueLevelKillers = k;
+			else
+				obj.tissueLevelKillers(end + 1) = k;
+			end
+
+		end
+
+		function AddCellKiller(obj, k)
+
+			if isempty(obj.cellKillers)
+				obj.cellKillers = k;
+			else
+				obj.cellKillers(end + 1) = k;
+			end
+
+		end
+
+		function KillCells(obj)
+
+			% Loop through the cell killers
+
+			for i = 1:length(obj.tissueLevelKillers)
+				obj.tissueLevelKillers(i).KillCells(obj);
+			end
+
+			for i = 1:length(obj.cellKillers)
+				obj.cellKillers(i).KillCells(obj.cellList);
+			end
+
+		end
+
+		function stopped = IsStoppingConditionMet(obj)
+
+			stopped = false;
+			for i = 1:length(obj.stoppingConditions)
+				if obj.stoppingConditions(i).CheckStoppingCondition(obj);
+					stopped = true;
+					break;
+				end
+			end
+
+		end
+
 		function numCells = GetNumCells(obj)
 
 			numCells = length(obj.cellList);
@@ -611,406 +613,6 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 		function numNodes = GetNumNodes(obj)
 
 			numNodes = length(obj.nodeList);
-
-		end
-
-		function UpdateAlphaWrinkleParameter(obj)
-
-			% Calculates the alpha wrinkliness parameter from Dunn 2011 eqn 10
-
-			r = 0;
-
-			for i = 1:obj.GetNumCells()
-
-				c = obj.cellList(i);
-
-				dy = c.elementTop.Node1.y - c.elementTop.Node2.y;
-				dx = c.elementTop.Node1.x - c.elementTop.Node2.x;
-
-				r = r + abs(dy/dx);
-
-			end
-
-			obj.alphaWrinkleParameter = r / obj.GetNumCells();
-
-		end
-
-		function UpdateAverageYDeviation(obj)
-
-			% Go through each cell along the top and calculate the average distance
-			% from the x axis
-
-			heightSum = abs(obj.cellList(1).nodeTopLeft.y) + abs(obj.cellList(1).nodeTopRight.y);
-
-			for i = 2:obj.GetNumCells()
-
-				heightSum = heightSum + abs(obj.cellList(i).nodeTopRight.y);
-
-			end
-
-			obj.avgYDeviation = heightSum / ( obj.GetNumCells() + 1 );
-
-		end
-
-		function UpdateCentreLine(obj)
-
-			% Makes a sequence of points that defines the centre line of the cells
-			cL = [];
-
-			obj.UpdateBoundaryCells();
-
-			c = obj.leftBoundaryCell;
-
-			cL(end + 1, :) = c.elementLeft.GetMidPoint();
-			e = c.elementRight;
-
-			cL(end + 1, :) = e.GetMidPoint();
-
-			% Jump through the cells until we hit the right most cell
-			c = e.GetOtherCell(c);
-
-			while ~isempty(c) 
-
-				e = c.elementRight;
-				cL(end + 1, :) = e.GetMidPoint();
-				c = e.GetOtherCell(c);
-			end
-
-			obj.centreLine = cL;
-
-		end
-
-		function UpdateWiggleRatio(obj)
-
-			obj.UpdateCentreLine();
-
-			l = 0;
-
-			for i = 1:length(obj.centreLine)-1
-				l = l + norm(obj.centreLine(i,:) - obj.centreLine(i+1,:));
-			end
-
-			w = obj.centreLine(end,1) - obj.centreLine(1,1);
-
-			obj.wiggleRatio = l / w;
-		
-		end
-
-		function CentreLineFFT(obj)
-
-			obj.UpdateCentreLine();
-
-			% To do a FFT, we need the space steps to be even,
-			% so we need to interpolate between points on the
-			% centre line to get the additional points
-
-
-			newPoints = [];
-
-			dx = obj.cellList(1).newCellTopLength / 10;
-
-			% Discretise the centre line in steps of dx between the endpoints
-			% This usually won't hit the exact end, but we don't care about a tiny piece at the end
-			x = obj.centreLine(1,1):dx:obj.centreLine(end,1);
-			y = zeros(size(x));
-
-			j = 1;
-			i = 1;
-			while j < length(obj.centreLine) && i <= length(x)
-
-				cl = obj.centreLine([j,j+1],:);
-					
-				m = (cl(2,2) - cl(1,2)) / (cl(2,1) - cl(1,1));
-				
-				c = cl(1,2) - m * cl(1,1);
-
-
-				f = @(x) m * x + c;
-
-				while i <= length(x) && x(i) < obj.centreLine(j+1,1)
-
-					y(i) = f(x(i));
-					newPoints(i,:) = [x(i), y(i)];
-
-					i = i + 1;
-				end
-
-				j = j + 1;
-
-
-			end
-
-			Y = fft(y);
-
-			L = ceil(- obj.centreLine(1,1) + obj.centreLine(end,1));
-			P2 = abs(Y/L);
-			P1 = P2(1:L/2+1);
-			P1(2:end-1) = 2*P1(2:end-1);
-
-			f = (0:(L/2))/(L/dx);
-			figure
-			plot(f,P1)
-			figure
-			plot(x,y)
-
-		end
-
-		function UpdateBoundaryCells(obj)
-
-			if isempty(obj.leftBoundaryCell)
-				% Probably the first time this has been run,
-				% so need to find the boundary cells first
-				% This won't work in general, but will be the case most of the time at this point
-				obj.leftBoundaryCell 	= obj.cellList(1);
-				obj.rightBoundaryCell 	= obj.cellList(end);
-			end
-
-			% if obj.leftBoundaryCell.GetAge() <= obj.dt
-				% Boundary cell has just divided, so need to check which of the new
-				% cells is the leftmost
-				if length(obj.leftBoundaryCell.elementLeft.cellList) > 1
-					% The left element of the cell is part of at least two cells
-					% So need to replace the leftBoundaryCell
-					if obj.leftBoundaryCell == obj.leftBoundaryCell.elementLeft.cellList(1)
-						obj.leftBoundaryCell = obj.leftBoundaryCell.elementLeft.cellList(2);
-					else
-						obj.leftBoundaryCell = obj.leftBoundaryCell.elementLeft.cellList(1);
-					end
-
-				end
-
-			% end
-
-			% if obj.rightBoundaryCell.GetAge() <= obj.dt
-				% Boundary cell has just divided, so need to check which of the new
-				% cells is the rightmost
-				if length(obj.rightBoundaryCell.elementRight.cellList) > 1
-					% The right element of the cell is part of at least two cells
-					% So need to replace the rightBoundaryCell
-					if obj.rightBoundaryCell == obj.rightBoundaryCell.elementRight.cellList(1)
-						obj.rightBoundaryCell = obj.rightBoundaryCell.elementRight.cellList(2);
-					else
-						obj.rightBoundaryCell = obj.rightBoundaryCell.elementRight.cellList(1);
-					end
-
-				end
-
-			% end
-
-		end
-
-		function KillBoundaryCells(obj)
-
-			% Kills the cells at the boundary if requested
-			UpdateBoundaryCells(obj);
-
-			while obj.IsPastLeftBoundary(obj.leftBoundaryCell)
-
-				obj.RemoveLeftBoundaryCellFromSimulation();
-
-			end
-
-			while obj.IsPastRightBoundary(obj.rightBoundaryCell)
-
-				obj.RemoveRightBoundaryCellFromSimulation();
-
-			end
-
-		end
-
-		function past = IsPastLeftBoundary(obj, c)
-
-			past = false;
-			if c.nodeTopRight.x < obj.leftBoundary || c.nodeBottomRight.x < obj.leftBoundary
-				past = true;
-			end
-
-		end
-
-		function past = IsPastRightBoundary(obj, c)
-
-			past = false;
-			if c.nodeTopLeft.x > obj.rightBoundary || c.nodeBottomLeft.x > obj.rightBoundary
-				past = true;
-			end
-
-		end
-
-		function RemoveBoundaryCellFromSimulation(obj, c)
-
-			% This is used when a cell is removed on the boundary
-			% A different method is needed when the cell is internal
-
-			% Need to becareful to actually remove the nodes etc.
-			% rather than just lose the links
-
-			nodeRemoveList = Node.empty();
-			elementRemoveList = Element.empty();
-
-			for i = 1:length(c.nodeList)
-				
-				n = c.nodeList(i);
-				if length(n.cellList) == 1
-					% If the node is only part of the cell to be killed
-					% then we need to get rid of it
-					obj.nodeList(obj.nodeList == n) = [];
-					nodeRemoveList(end + 1) = n;
-				else
-					% If the node is still part of an existing cell
-					% we need to update its cell list (and element list too)
-					n.cellList(n.cellList == c) = [];
-				end
-
-			end
-
-			for i = 1:length(c.elementList)
-				
-				e = c.elementList(i);
-				if length(e.cellList) == 1
-					% If the node is only part of the cell to be killed
-					% then we need to get rid of it
-					obj.elementList(obj.elementList == e) = [];
-					e.nodeList(e.nodeList == e.Node1) = [];
-					e.nodeList(e.nodeList == e.Node2) = [];
-					elementRemoveList(end + 1) = e;
-				else
-					e.cellList(e.cellList == c) = [];
-				end
-
-			end
-
-			obj.cellList(obj.cellList == c) = [];
-			
-			for i = 1:length(nodeRemoveList)
-				nodeRemoveList(i).delete;
-			end
-
-			for i = 1:length(elementRemoveList)
-				elementRemoveList(i).delete;
-			end
-
-			c.delete;
-
-		end
-
-		function RemoveLeftBoundaryCellFromSimulation(obj)
-
-			% This is used when a cell is removed on the boundary
-			% A different method is needed when the cell is internal
-
-			% Need to becareful to actually remove the nodes etc.
-			% rather than just lose the links
-
-			c = obj.leftBoundaryCell;
-			obj.leftBoundaryCell = c.elementRight.GetOtherCell(c);
-
-			% Clean up elements
-
-			obj.elementList(obj.elementList == c.elementTop) = [];
-			obj.elementList(obj.elementList == c.elementLeft) = [];
-			obj.elementList(obj.elementList == c.elementBottom) = [];
-
-			c.nodeTopRight.elementList( c.nodeTopRight.elementList ==  c.elementTop ) = [];
-			c.nodeBottomRight.elementList( c.nodeBottomRight.elementList ==  c.elementBottom ) = [];
-
-			c.elementRight.cellList(c.elementRight.cellList == c) = [];
-
-			obj.boxes.RemoveElementFromPartition(c.elementTop);
-			obj.boxes.RemoveElementFromPartition(c.elementLeft);
-			obj.boxes.RemoveElementFromPartition(c.elementBottom);
-
-			c.elementTop.delete;
-			c.elementLeft.delete;
-			c.elementBottom.delete;
-
-			% Clean up nodes
-
-			obj.nodeList(obj.nodeList == c.nodeTopLeft) = [];
-			obj.nodeList(obj.nodeList == c.nodeBottomLeft) = [];
-
-			obj.boxes.RemoveNodeFromPartition(c.nodeTopLeft);
-			obj.boxes.RemoveNodeFromPartition(c.nodeBottomLeft);
-
-			c.nodeTopLeft.delete;
-			c.nodeBottomLeft.delete;
-
-			% Clean up cell
-
-			obj.cellList(obj.cellList == c) = [];
-
-			c.delete;
-
-		end
-
-		function RemoveRightBoundaryCellFromSimulation(obj)
-
-			% This is used when a cell is removed on the boundary
-			% A different method is needed when the cell is internal
-
-			% Need to becareful to actually remove the nodes etc.
-			% rather than just lose the links
-
-			c = obj.rightBoundaryCell;
-			obj.rightBoundaryCell = c.elementLeft.GetOtherCell(c);
-
-			
-			% Clean up elements
-
-			obj.elementList(obj.elementList == c.elementTop) = [];
-			obj.elementList(obj.elementList == c.elementRight) = [];
-			obj.elementList(obj.elementList == c.elementBottom) = [];
-
-			c.nodeTopLeft.elementList( c.nodeTopLeft.elementList ==  c.elementTop ) = [];
-			c.nodeBottomLeft.elementList( c.nodeBottomLeft.elementList ==  c.elementBottom ) = [];
-
-			c.elementLeft.cellList(c.elementLeft.cellList == c) = [];
-
-			obj.boxes.RemoveElementFromPartition(c.elementTop);
-			obj.boxes.RemoveElementFromPartition(c.elementRight);
-			obj.boxes.RemoveElementFromPartition(c.elementBottom);
-
-			c.elementTop.delete;
-			c.elementRight.delete;
-			c.elementBottom.delete;
-
-			% Clean up nodes 
-
-			obj.nodeList(obj.nodeList == c.nodeTopRight) = [];
-			obj.nodeList(obj.nodeList == c.nodeBottomRight) = [];
-
-			obj.boxes.RemoveNodeFromPartition(c.nodeTopRight);
-			obj.boxes.RemoveNodeFromPartition(c.nodeBottomRight);
-
-			c.nodeTopRight.delete;
-			c.nodeBottomRight.delete;
-
-			% Finally clean up cell
-
-			obj.cellList(obj.cellList == c) = [];
-
-			c.delete;
-
-		end
-
-		function [detected, varargout] = DetectEdgeFlip(obj)
-
-			% If an edge has flipped, that means the cell is no longer a physical shape
-			% so we need to detect this and stop the simulation
-
-			detected = false;
-			i = 1;
-			while ~detected && i <= obj.GetNumCells()
-
-				detected = obj.cellList(i).HasEdgeFlipped();
-
-				i = i + 1;
-
-			end
-
-			if detected
-				obj.edgeFlipDetected = true;
-				varargout{1} = obj.cellList(i);
-			end
 
 		end
 

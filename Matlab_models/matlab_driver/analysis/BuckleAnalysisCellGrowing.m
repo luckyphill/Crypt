@@ -91,17 +91,20 @@ classdef BuckleAnalysisCellGrowing < Analysis
 
 			subplot(2,2,2);
 			plot(P(G==cct), obj.timeGrid(G==cct), 'LineWidth', lw)
+			xlim([5 50]);
 			xlabel('Pause','Interpreter', 'latex');ylabel('Time','Interpreter', 'latex')
 			title(sprintf('Time to buckle: Growth = %d hr',cct),'Interpreter', 'latex')
 			
 			subplot(2,2,3);
 			plot(G(P==cct), obj.timeGrid(P==cct), 'LineWidth', lw)
+			xlim([5 50]);
 			xlabel('Growth','Interpreter', 'latex');ylabel('Time','Interpreter', 'latex')
 			title(sprintf('Time to buckle: Pause = %d hr',cct),'Interpreter', 'latex')
 			
 			subplot(2,2,4);
 			cct = 35;
 			plot(P(S==cct), obj.timeGrid(S==cct), 'LineWidth', lw)
+			xlim([5 30]);
 			xlabel('Pause','Interpreter', 'latex');ylabel('Time','Interpreter', 'latex')
 			title(sprintf('Time to buckle: Growth + Pause = %d hr',cct),'Interpreter', 'latex')
 			
@@ -126,17 +129,20 @@ classdef BuckleAnalysisCellGrowing < Analysis
 
 			subplot(2,2,2);
 			plot(P(G==cct), obj.widthGrid(G==cct), 'LineWidth', lw)
+			xlim([5 50]);
 			xlabel('Pause','Interpreter', 'latex');ylabel('Time','Interpreter', 'latex')
 			title(sprintf('Width at buckle: Growth = %d hr',cct),'Interpreter', 'latex')
 
 			subplot(2,2,3);
 			plot(G(P==cct), obj.widthGrid(P==cct), 'LineWidth', lw)
+			xlim([5 50]);
 			xlabel('Growth','Interpreter', 'latex');ylabel('Time','Interpreter', 'latex')
 			title(sprintf('Width at buckle: Pause = %d hr',cct),'Interpreter', 'latex')
 
 			subplot(2,2,4);
 			cct = 35;
 			plot(P(S==cct), obj.widthGrid(S==cct), 'LineWidth', lw)
+			xlim([5 30]);
 			xlabel('Pause','Interpreter', 'latex');ylabel('Time','Interpreter', 'latex')
 			title(sprintf('Width at buckle: Growth + Pause = %d hr',cct),'Interpreter', 'latex')
 
@@ -161,17 +167,20 @@ classdef BuckleAnalysisCellGrowing < Analysis
 
 			subplot(2,2,2);
 			plot(P(G==cct), obj.nGrid(G==cct), 'LineWidth', lw)
+			xlim([5 50]);
 			xlabel('Pause','Interpreter', 'latex');ylabel('Time','Interpreter', 'latex')
 			title(sprintf('Cell count at buckle: Growth = %d hr',cct),'Interpreter', 'latex')
 			
 			subplot(2,2,3);
 			plot(G(P==cct), obj.nGrid(P==cct), 'LineWidth', lw)
+			xlim([5 50]);
 			xlabel('Growth','Interpreter', 'latex');ylabel('Time','Interpreter', 'latex')
 			title(sprintf('Cell count at buckle: Pause = %d hr',cct),'Interpreter', 'latex')
 
 			subplot(2,2,4);
 			cct = 35;
 			plot(P(S==cct), obj.nGrid(S==cct), 'LineWidth', lw)
+			xlim([5 30]);
 			xlabel('Pause','Interpreter', 'latex');ylabel('Time','Interpreter', 'latex')
 			title(sprintf('Cell count at buckle: Growth + Pause = %d hr',cct),'Interpreter', 'latex')
 			

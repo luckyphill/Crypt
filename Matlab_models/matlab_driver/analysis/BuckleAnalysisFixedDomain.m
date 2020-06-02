@@ -49,7 +49,7 @@ classdef BuckleAnalysisFixedDomain < Analysis
 
 	                    fprintf('Completed p = %d, g = %d, w = %d\n',p,g,w);
 	    
-						obj.timeGrid(p-4,g-4) = t / count;
+						obj.timeGrid(p-10,g-10,w-9) = t / count;
 
 					end
 

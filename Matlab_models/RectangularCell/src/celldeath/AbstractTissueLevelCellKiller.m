@@ -1,4 +1,4 @@
-classdef AbstractCellKiller < matlab.mixin.Heterogeneous
+classdef AbstractTissueLevelCellKiller <  matlab.mixin.Heterogeneous
 	% An abstract class for killing cells instantly
 	% This is only useful for keeping the ends trimmed
 	% so to speak, it will cause issues if it is used
@@ -13,8 +13,8 @@ classdef AbstractCellKiller < matlab.mixin.Heterogeneous
 
 	methods (Abstract)
 
-		% List of cells to kill
-		killList = MakeKillList(obj, cellList);
+		% Kill the relevant cells
+		KillCells(obj, t);
 
 	end
 

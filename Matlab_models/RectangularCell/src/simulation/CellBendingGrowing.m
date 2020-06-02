@@ -1,4 +1,4 @@
-classdef CellBendingGrowing < AbstractCellSimulation
+classdef CellBendingGrowing < AbstractLineSimulation
 
 	% This class tests the tissue level behaviour for a handful off cells
 	% that have differing cell adhesion parameters at the top and bottom
