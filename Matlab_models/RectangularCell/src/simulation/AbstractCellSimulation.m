@@ -87,7 +87,6 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			obj.UpdateCentreLine();
 			plot(obj.centreLine(:,1), obj.centreLine(:,2), 'k');
 
-
 		end
 
 		function VisualiseLine(obj)
