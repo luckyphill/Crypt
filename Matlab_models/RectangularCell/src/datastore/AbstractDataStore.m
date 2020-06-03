@@ -1,4 +1,4 @@
-classdef AbstractDataStore < matlab.mixin.Heterogeneous
+classdef AbstractDataStore < handle & matlab.mixin.Heterogeneous
 	% This class sets out the required functions for storing
 	% data about the simulation over time
 
@@ -9,19 +9,15 @@ classdef AbstractDataStore < matlab.mixin.Heterogeneous
 
 	% This will often be closely linked to a SimulationData object
 
-	properties (Abstract)
-
-		% How many steps between each data point
-		samplingMultiple
-
-	end
-
 	properties
 		% A structure that holds the data
 		data
 
-		% The corresponding time point
-		tPoints
+		% The corresponding time points
+		tPoints = []
+
+		% How many steps between each data point
+		samplingMultiple
 
 	end
 
@@ -35,9 +31,11 @@ classdef AbstractDataStore < matlab.mixin.Heterogeneous
 
 		function StoreData(obj, t)
 
-			if mod(t.steps, obj.samplingMultiple) == 0
+			if mod(t.step, obj.samplingMultiple) == 0
 
 				obj.GatherData(t);
+
+				obj.tPoints(end + 1) = t.t;
 
 			end
 

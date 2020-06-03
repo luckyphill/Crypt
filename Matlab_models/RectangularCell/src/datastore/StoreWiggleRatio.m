@@ -12,6 +12,7 @@ classdef StoreWiggleRatio < AbstractDataStore
 		function obj = StoreWiggleRatio(sm)
 
 			obj.samplingMultiple = sm;
+			obj.data = [];
 
 		end
 
@@ -22,11 +23,7 @@ classdef StoreWiggleRatio < AbstractDataStore
 
 			% Update the wiggle ratio data object
 
-			if isempty(obj.data)
-				obj.data = t.simData{'wiggleRatio'}.GetData();
-			else
-				obj.data(end + 1) = t.simData{'wiggleRatio'}.GetData();
-			end
+			obj.data(end + 1) = t.simData('wiggleRatio').GetData(t);
 
 		end
 		

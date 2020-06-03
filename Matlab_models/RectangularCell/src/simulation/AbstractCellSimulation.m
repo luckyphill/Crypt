@@ -427,6 +427,25 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		end
 
+		function AdjustNodePosition(obj, n, newPos)
+
+			% Only used by modifiers. Do not use to
+			% progress the simulation
+
+			% This will move a node to a given position regardless
+			% of forces, but after all force movement has happened
+
+			% Previous position and previous force are not modified
+
+			% Make sure the node and elements are in the correct boxes
+			if obj.usingBoxes
+				obj.boxes.UpdateBoxForNodeModifier(n, newPos);
+			end
+
+			n.AdjustPosition(newPos);
+
+		end
+
 		function MakeCellsDivide(obj)
 
 			% Call the divide process, and update the lists

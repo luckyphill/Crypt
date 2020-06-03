@@ -12,6 +12,4 @@ classdef AbstractSimulationModifier < matlab.mixin.Heterogeneous
 		
 	end
 
-
-
 end

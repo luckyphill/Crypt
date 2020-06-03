@@ -12,8 +12,7 @@ classdef ShiftBoundaryCells < AbstractSimulationModifier
 
 	methods
 
-
-		function ShiftBoundaryCells()
+		function obj = ShiftBoundaryCells()
 
 			% No special initialisation
 
@@ -25,10 +24,34 @@ classdef ShiftBoundaryCells < AbstractSimulationModifier
 			% Shift the left mosta nd right most nodes to the
 			% same y position, which should be the average of
 			% the two original positioons
+
+			bcs = t.simData('boundaryCells').GetData(t);
+
+			left = bcs('left');
+			right = bcs('right');
+
+			ytl = left.nodeTopLeft.y;
+			ybl = left.nodeBottomLeft.y;
+
+			ytr = right.nodeTopRight.y;
+			ybr = right.nodeBottomRight.y;
+
+			yt = (ytl + ytr) / 2;
+			yb = (ybl + ybr) / 2;
+
+			ptl = [left.nodeTopLeft.x, yt];
+			pbl = [left.nodeBottomLeft.x, yb];
+
+			ptr = [right.nodeTopRight.x, yt];
+			pbr = [right.nodeBottomRight.x, yb];
+
+			t.AdjustNodePosition(left.nodeTopLeft, ptl);
+			t.AdjustNodePosition(left.nodeBottomLeft, pbl);
+			t.AdjustNodePosition(right.nodeTopRight, ptr);
+			t.AdjustNodePosition(right.nodeBottomRight, pbr);
+			
 		end
-		
+
 	end
-
-
 
 end

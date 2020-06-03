@@ -144,6 +144,12 @@ classdef FixedDomain < LineSimulation
 			obj.boxes = SpacePartition(0.5, 0.5, obj);
 
 			%---------------------------------------------------
+			% Add the data we'd like to store
+			%---------------------------------------------------
+
+			obj.AddDataStore(StoreWiggleRatio(10));
+
+			%---------------------------------------------------
 			% All done. Ready to roll
 			%---------------------------------------------------
 

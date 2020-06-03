@@ -1,8 +1,10 @@
-classdef CellGrowing < LineSimulation
+classdef LinkedBoundariesY < LineSimulation
 
-	% This simulation is the most basic - a simple row of cells growing on
-	% a plate. It allows us to choose the number of initial cells
-	% the force related parameters, and the cell cycle lengths
+	% This is a line simulation, with a fixed domain.
+	% It controls to y position of the boundary cells
+	% to keep them at the same height
+	% This is a bit of a hack to approximate periodic boundaries
+	% i.e. simulating on the surface of a cylinder
 
 	properties
 
@@ -10,15 +12,51 @@ classdef CellGrowing < LineSimulation
 		t = 0
 		eta = 1
 
-		timeLimit = 200
+		timeLimit = 2000
 
 	end
 
 	methods
 
-		function obj = CellGrowing(nCells, p, g, areaEnergy, perimeterEnergy, adhesionEnergy, seed, varargin)
+		function obj = LinkedBoundariesY(nCells, p, g, w, seed, varargin)
 			% All the initilising
 			obj.SetRNGSeed(seed);
+
+						% We keep the option of diffent box sizes for efficiency reasons
+			if length(varargin) > 0
+				if length(varargin) == 3
+					areaEnergy = varargin{1};
+					perimeterEnergy = varargin{2};
+					adhesionEnergy = varargin{3};
+				else
+					error('Error using varargin, must have 3 args, areaEnergy, perimeterEnergy, and adhesionEnergy');
+				end
+			else
+				areaEnergy = 20;
+				perimeterEnergy = 10;
+				adhesionEnergy = 1;
+			end
+
+			% This simulation only allows cells to exist in a limited x domain
+
+			% Cells are set to be 0.5 units wide, so total starting width is
+			% 0.5*n. In order to keep things symmetric as much as possible, we
+			% will set the boundaries so the row of cells starts in the middle
+			% We will also check that the width is greater than the row of cells
+			% While the death process probably could handle this, I don't want to push it
+
+			if 0.5 * nCells > w
+				error('Make the width larger than the initial number of cells')
+			end
+
+			endPiece = (w - 0.5 * nCells) / 2;
+
+			leftBoundary = -endPiece;
+			rightBoundary = 0.5 * nCells + endPiece;
+
+			k = BoundaryCellKiller(leftBoundary, rightBoundary);
+
+			obj.AddTissueLevelKiller(k);
 
 			%---------------------------------------------------
 			% Make all the cells
@@ -80,8 +118,8 @@ classdef CellGrowing < LineSimulation
 
 			end
 
-			% obj.leftBoundaryCell = obj.cellList(1);
-			% obj.rightBoundaryCell = obj.cellList(end);
+			obj.leftBoundaryCell = obj.cellList(1);
+			obj.rightBoundaryCell = obj.cellList(end);
 
 			%---------------------------------------------------
 			% Add in the forces
@@ -103,19 +141,23 @@ classdef CellGrowing < LineSimulation
 			%---------------------------------------------------
 			% Add space partition
 			%---------------------------------------------------
-			
-			% We keep the option of diffent box sizes for efficiency reasons
-			if length(varargin) > 0
-				obj.boxes = SpacePartition(varargin{1}, varargin{2}, obj);
-			else
-				obj.boxes = SpacePartition(0.5, 0.5, obj);
-			end
+			% In this simulation we are fixing the size of the boxes
+
+			obj.boxes = SpacePartition(0.5, 0.5, obj);
 
 			%---------------------------------------------------
 			% Add the data we'd like to store
 			%---------------------------------------------------
 
 			obj.AddDataStore(StoreWiggleRatio(10));
+
+
+			%---------------------------------------------------
+			% Add the modfier to keep the boundary cells at the
+			% same vertical position
+			%---------------------------------------------------
+			
+			obj.AddSimulationModifier(ShiftBoundaryCells());
 
 			%---------------------------------------------------
 			% All done. Ready to roll

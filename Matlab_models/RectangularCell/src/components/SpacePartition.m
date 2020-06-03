@@ -601,6 +601,19 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 		end
 
+		function [qp,ip,jp] = GetBoxIndicesBetweenNodesProposedCurrent(obj, newPos, n2)
+
+			% Same function as other methods of the same form, but finds the boxes
+			% for the element when a node is moved by a modifier
+
+
+			[q1,i1,j1] = obj.GetQuadrantAndIndices(newPos(1),newPos(2));
+			[q2,i2,j2] = obj.GetQuadrantAndIndices(n2.x,n2.y);
+
+			[qp,ip,jp] = obj.MakeElementBoxList(q1,i1,j1,q2,i2,j2);
+
+		end
+
 		function [ql,il,jl] = MakeElementBoxList(obj,q1,i1,j1,q2,i2,j2)
 
 			% This method for finding the boxes that we should put the
@@ -756,6 +769,30 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 		end
 
+		function UpdateBoxForNodeModifier(obj, n, newPos)
+
+			% Used when manually moving a node to a new position
+			% a special method is needed since previousPosition is
+			% not changed in this propcess
+
+			[qn,in,jn] = obj.GetQuadrantAndIndices(newPos(1),newPos(2));
+			[qo,io,jo] = obj.GetQuadrantAndIndices(n.x,n.y);
+
+			if ~prod([qn,in,jn] == [qo,io,jo])
+				% The given node is in a different box compared to
+				% the previous timestep/position, so need to do some adjusting
+
+				obj.InsertNode(qn,in,jn,n);
+
+				obj.nodesQ{qo}{io,jo}( obj.nodesQ{qo}{io,jo} == n ) = [];
+
+				% Also need to adjust the elements
+				obj.UpdateBoxesForElementsUsingNodeModifier(n, newPos);
+
+			end
+
+		end
+
 		function UpdateBoxesForElementsUsingNode(obj, n1)
 
 			% This function will be used as each node is moved
@@ -806,7 +843,59 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 					% Get the old boxes
 					J = ~ismember(old,new,'rows');
-					% ... and rhe indices to remove
+					% ... and the indices to remove
+					qt = qp(J);
+					it = ip(J);
+					jt = jp(J);
+					for j = 1:length(qt)
+						obj.RemoveElement(qt(j),it(j),jt(j),e);
+					end
+
+				end
+
+			end
+
+		end
+
+		function UpdateBoxesForElementsUsingNodeModifier(obj, n1, newPos)
+
+			% This function does the same as UpdateBoxesForElementsUsingNode
+			% when the given node is moved by a modifier
+
+			for i=1:length(n1.elementList)
+				% If the element is an internal element, skip it
+				% because they don't interact with nodes
+				
+				e = n1.elementList(i);
+				if ~e.IsElementInternal()
+
+					n2 = e.GetOtherNode(n1);
+
+					[ql,il,jl] = obj.GetBoxIndicesBetweenNodesProposedCurrent(newPos, n2);
+					[qp,ip,jp] = obj.GetBoxIndicesBetweenNodes(n1, n2);
+					
+
+					% If the box appears in both, nothing needs to change
+					% If it only appears in previous, remove element
+					% If it only appears in current, add element
+
+					new = [ql,il,jl];
+					old = [qp,ip,jp];
+
+					% Get the unique new boxes
+					J = ~ismember(new,old,'rows');
+					% And get the indices to add
+					qa = ql(J);
+					ia = il(J);
+					ja = jl(J);
+					
+					for j = 1:length(qa)
+						obj.InsertElement(qa(j),ia(j),ja(j),e);
+					end
+
+					% Get the old boxes
+					J = ~ismember(old,new,'rows');
+					% ... and the indices to remove
 					qt = qp(J);
 					it = ip(J);
 					jt = jp(J);
