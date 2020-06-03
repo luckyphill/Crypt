@@ -1412,16 +1412,16 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 
 			testCase.verifyTrue(isempty(t.boxes.nodesQ{4}{2,1}));
 			testCase.verifyTrue(isempty(t.boxes.nodesQ{4}{2,2}));
-			testCase.verifyTrue(isempty(t.boxes.nodesQ{4}{2,3}));
+			testCase.verifyTrue(isempty(t.boxes.nodesQ{4}{2,3})); % << Fails
 
-			testCase.verifyTrue(isempty(t.boxes.nodesQ{3}{2,1}));
+			testCase.verifyTrue(isempty(t.boxes.nodesQ{3}{2,1})); % << Fails
 
 
 			testCase.verifyTrue(isempty(t.boxes.elementsQ{4}{2,1}));
 			testCase.verifyTrue(isempty(t.boxes.elementsQ{4}{2,2}));
-			testCase.verifyTrue(isempty(t.boxes.elementsQ{4}{2,3}));
+			testCase.verifyTrue(isempty(t.boxes.elementsQ{4}{2,3})); % << Fails
 
-			testCase.verifyTrue(isempty(t.boxes.elementsQ{3}{2,1}));
+			testCase.verifyTrue(isempty(t.boxes.elementsQ{3}{2,1})); % << Fails
 
 
 

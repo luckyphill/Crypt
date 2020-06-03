@@ -356,12 +356,6 @@ classdef TestForce < matlab.unittest.TestCase
 
 			testCase.verifyTrue( n.force(1) < 0);
 			testCase.verifyTrue( e.Node1.force(1) > 0);
-			n.force
-			n.position
-			e.Node1.force
-			e.Node1.position
-			e.Node2.force
-			e.Node2.position
 
 			% Apply the wild case, but specify the nodes and elements directly
 			clear e n n1 n2 f

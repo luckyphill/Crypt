@@ -21,7 +21,9 @@ classdef BuckledStoppingCondition < AbstractStoppingCondition
 
 			stopped = false;
 
-			if t.wiggleRatio > obj.ratio
+			w = t.simData('wiggleRatio');
+
+			if w.GetData(t) > obj.ratio
 				
 				stopped = true;
 			

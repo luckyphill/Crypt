@@ -7,14 +7,13 @@ classdef StartCell < AbstractSimulationData
 	properties 
 
 		name = 'startCell'
-
+		data = []
 	end
 
 	methods
 
 		function obj = CentreLine
 			% No special initialisation
-			obj.data = [];
 		end
 
 		function CalculateData(obj, t)

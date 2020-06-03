@@ -22,18 +22,21 @@ classdef BoundaryCellKiller < AbstractTissueLevelCellKiller
 		function KillCells(obj, t)
 
 			% Kills the cells at the boundary if requested
-			t.UpdateBoundaryCells();
+			bcs = t.simData('boundaryCells').GetData(t);
+			leftCell = bcs('left');
+			rightCell = bcs('right');
 
-			while obj.IsPastLeftBoundary(t.leftBoundaryCell)
+			while obj.IsPastLeftBoundary(leftCell)
 
 				obj.RemoveLeftBoundaryCellFromSimulation(t);
+                leftCell = bcs('left');
 
 			end
 
-			while obj.IsPastRightBoundary(t.rightBoundaryCell)
+			while obj.IsPastRightBoundary(rightCell)
 
 				obj.RemoveRightBoundaryCellFromSimulation(t);
-
+                rightCell = bcs('right');
 			end
 
 		end
@@ -63,10 +66,14 @@ classdef BoundaryCellKiller < AbstractTissueLevelCellKiller
 
 			% Need to becareful to actually remove the nodes etc.
 			% rather than just lose the links
+			bcs = t.simData('boundaryCells').GetData(t);
+			c = bcs('left');
 
-			c = t.leftBoundaryCell;
-			t.leftBoundaryCell = c.elementRight.GetOtherCell(c);
-
+			% bcs is the container.Map from BoundaryCells
+			% apparently, this is actually a handle, so
+			% changing it here modifies the value
+			bcs('left') = c.elementRight.GetOtherCell(c);
+			% t.simData('boundaryCells').SetData(bcs);
 			% Clean up elements
 
 			t.elementList(t.elementList == c.elementTop) = [];
@@ -117,9 +124,14 @@ classdef BoundaryCellKiller < AbstractTissueLevelCellKiller
 			% Need to becareful to actually remove the nodes etc.
 			% rather than just lose the links
 
-			c = t.rightBoundaryCell;
-			t.rightBoundaryCell = c.elementLeft.GetOtherCell(c);
+			bcs = t.simData('boundaryCells').GetData(t);
+			c = bcs('right');
 
+			% bcs is the container.Map from BoundaryCells
+			% apparently, this is actually a handle, so
+			% changing it here modifies the value
+			bcs('right') = c.elementLeft.GetOtherCell(c);
+			% t.simData('boundaryCells').SetData(bcs);
 			
 			% Clean up elements
 

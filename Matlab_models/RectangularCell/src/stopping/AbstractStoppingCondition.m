@@ -1,4 +1,4 @@
-classdef AbstractStoppingCondition < matlab.mixin.Heterogeneous
+classdef AbstractStoppingCondition < handle & matlab.mixin.Heterogeneous
 	% This class gives the details for how stopping conditions
 	% must be implemented
 
@@ -14,7 +14,7 @@ classdef AbstractStoppingCondition < matlab.mixin.Heterogeneous
 		% t is an AbstractCellSimulation
 		function stopped = CheckStoppingCondition(obj, t)
 
-			stopped = HasStoppingConditionBeenMet(obj, t);
+			stopped = obj.HasStoppingConditionBeenMet(t);
 
 			if stopped
 				fprintf('Simulation stopped by %s\n', obj.name);

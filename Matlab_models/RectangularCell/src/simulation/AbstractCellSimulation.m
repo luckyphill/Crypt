@@ -35,7 +35,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 		% A collection objects for calculating data about the simulation
 		% stored in a map container so each type of data can be given a
 		% meaingful name
-		simData = containers.Map{}
+		simData = containers.Map
 
 		boxes SpacePartition
 
@@ -62,7 +62,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		function NextTimeStep(obj)
 			% Updates all the forces and applies the movements
-			
+
 			obj.GenerateCellBasedForces();
 			obj.GenerateElementBasedForces();
 
@@ -70,39 +70,24 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 				obj.GenerateNeighbourhoodBasedForces();
 			end
 
-
 			obj.MakeNodesMove();
 
 			obj.MakeCellsDivide();
 
-			obj.UpdateBoundaryCells();
-
 			obj.KillCells();
 
-			if obj.IsStoppingConditionMet()
-				obj.stopped = true;
-			end
-
-			obj.UpdateWiggleRatio();
-
-			% obj.UpdateAverageYDeviation();
-
-			% obj.UpdateAlphaWrinkleParameter
-
-			% Store the relevant data
-			obj.storeWiggleRatio(end + 1) = obj.wiggleRatio;
-			% obj.storeNumCells(end + 1) = obj.GetNumCells();
-			% obj.storeAvgYDeviation(end + 1) = obj.avgYDeviation;
-			% obj.storeAlphaWrinkleParameter(end + 1) = obj.alphaWrinkleParameter;
-
 			obj.ModifySimulationState();
-
-			obj.MakeCellsAge();
 
 			obj.t = obj.t + obj.dt;
 			obj.step = obj.step + 1;
 
+			obj.MakeCellsAge();
+
 			obj.StoreData();
+
+			if obj.IsStoppingConditionMet()
+				obj.stopped = true;
+			end
 
 		end
 
@@ -113,7 +98,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 				% Do all the calculations
 				obj.NextTimeStep();
 
-				if mod(obj.t, 10) < obj.dt
+				if mod(obj.step, 1000) == 0
 					fprintf('Time = %3.3fhr\n',obj.t);
 				end
 
@@ -163,7 +148,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 			axis equal
 
-			cL = obj.simData{'centreLine'}.GetData();
+			cL = obj.simData('centreLine').GetData(obj);
 			plot(cL(:,1), cL(:,2), 'k');
 
 		end
@@ -188,7 +173,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 			axis equal
 
-			cL = obj.simData{'centreLine'}.GetData();
+			cL = obj.simData('centreLine').GetData(obj);
 			plot(cL(:,1), cL(:,2), 'k');
 
 		end
@@ -615,11 +600,11 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			% Add the simulation data calculator to the map
 			% this will necessarily allow only one instance
 			% of a given type of SimulationData, since the 
-			% names are immutabl
+			% names are immutable
 
 			% This is calculate-on-demand, so it does not have
 			% an associated 'use' method here
-			obj.simData{d.name} = d;
+			obj.simData(d.name) = d;
 
 		end
 

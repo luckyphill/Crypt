@@ -1,4 +1,4 @@
-classdef AbstractSimulationData < matlab.mixin.Heterogeneous
+classdef AbstractSimulationData < handle
 	% This class sets out the required functions for working
 	% out various types of data that can be extracted from the 
 	% simulation
@@ -30,36 +30,58 @@ classdef AbstractSimulationData < matlab.mixin.Heterogeneous
 		% instead of an index
 		name
 
+		% A structure that holds the data within a timestep
+		data
+
 	end
 
 	properties
 
-		% A structure that holds the data
-		data
-
 		% The last time point when the data was calculated
 		% saves calculating repeatedly in a single time step
-		timeStamp
+		timeStamp = -1
+
+		
 
 	end
 
+
 	methods (Abstract)
 
+		% This method must return data
 		CalculateData(obj, t)
 		
 	end
 
 	methods
 
-		function data = GetData(obj, t)
+		function val = GetData(obj, t)
 
 			if obj.timeStamp == t.t
-				data = obj.data;
+				val = obj.data;
 			else
 				obj.timeStamp = t.t;
 				obj.CalculateData(t);
-				data = obj.data;
+				val = obj.data;
 			end
+
+		end
+
+		function SetData(obj, d)
+			% If the data needs to be directly modified
+			if obj.VerifyData(d)
+				obj.data = d;
+			else
+				error('ASD:WrongData', 'Data in unexpected format');
+			end
+			
+		end
+
+		function correct = VerifyData(obj, d)
+
+			% Not always needed, default to true so it doesn't
+			% need to be implemented in every case
+			correct = true;
 
 		end
 

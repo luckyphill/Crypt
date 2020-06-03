@@ -1,4 +1,4 @@
-classdef FixedDomain < AbstractLineSimulation
+classdef FixedDomain < LineSimulation
 
 	% This simulation is the most basic - a simple row of cells growing on
 	% a plate. It allows us to choose the number of initial cells

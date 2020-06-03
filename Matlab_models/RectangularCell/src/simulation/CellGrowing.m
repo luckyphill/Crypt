@@ -1,4 +1,4 @@
-classdef CellGrowing < AbstractLineSimulation
+classdef CellGrowing < LineSimulation
 
 	% This simulation is the most basic - a simple row of cells growing on
 	% a plate. It allows us to choose the number of initial cells
@@ -80,8 +80,8 @@ classdef CellGrowing < AbstractLineSimulation
 
 			end
 
-			obj.leftBoundaryCell = obj.cellList(1);
-			obj.rightBoundaryCell = obj.cellList(end);
+			% obj.leftBoundaryCell = obj.cellList(1);
+			% obj.rightBoundaryCell = obj.cellList(end);
 
 			%---------------------------------------------------
 			% Add in the forces
@@ -114,7 +114,7 @@ classdef CellGrowing < AbstractLineSimulation
 			%---------------------------------------------------
 			% All done. Ready to roll
 			%---------------------------------------------------
-			
+
 		end
 
 

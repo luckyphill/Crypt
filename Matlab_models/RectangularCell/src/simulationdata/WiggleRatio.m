@@ -4,6 +4,7 @@ classdef WiggleRatio < AbstractSimulationData
 	properties 
 
 		name = 'wiggleRatio'
+		data = 1;
 
 	end
 
@@ -11,12 +12,13 @@ classdef WiggleRatio < AbstractSimulationData
 
 		function obj = WiggleRatio
 			% No special initialisation
-			obj.data = 1;
+			
 		end
 
 		function CalculateData(obj, t)
 
-			cl = t.simData{'centreLine'}.GetData();
+			sd = t.simData('centreLine');
+			cl = sd.GetData(t);
 
 			l = 0;
 

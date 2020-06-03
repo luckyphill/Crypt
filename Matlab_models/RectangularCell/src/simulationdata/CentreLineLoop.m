@@ -7,6 +7,7 @@ classdef CentreLineLoop < AbstractSimulationData
 		% base functions get the right one no matter
 		% the simulation type
 		name = 'centreLine'
+		data = []
 
 	end
 

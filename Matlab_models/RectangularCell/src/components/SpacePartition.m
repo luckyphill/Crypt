@@ -936,7 +936,7 @@ classdef SpacePartition < matlab.mixin.SetGet
 			try
 				obj.elementsQ{q}{i,j}( obj.elementsQ{q}{i,j} == e ) = [];
 			catch
-				warning('Deleting the element from box (%d,%d,%d) failed for some reason', q,i,j);
+				warning('Deleting element %d from box (%d,%d,%d) failed for some reason', e.id,q,i,j);
 			end
 
 		end

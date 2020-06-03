@@ -20,8 +20,8 @@ classdef TestSimulation < matlab.unittest.TestCase
 			t = CellGrowing(3,20,10,10,10,1,10);
 
 			% This assumes boundary cell finding works correctly
-			bcl = t.leftBoundaryCell;
-			bcr = t.rightBoundaryCell;
+			bcl = t.simData('boundaryCells').GetData(t)('left');
+			bcr = t.simData('boundaryCells').GetData(t)('right');
 			
 			% These specific node must be part of one cell only
 			oneCellNodes = [bcl.nodeTopLeft, bcl.nodeBottomLeft, bcr.nodeTopRight, bcr.nodeBottomRight];
@@ -44,8 +44,8 @@ classdef TestSimulation < matlab.unittest.TestCase
 
 
 			% This assumes boundary cell finding works correctly
-			bcl = t.leftBoundaryCell;
-			bcr = t.rightBoundaryCell;
+			bcl = t.simData('boundaryCells').GetData(t)('left');
+			bcr = t.simData('boundaryCells').GetData(t)('right');
 			
 			% These specific node must be part of one cell only
 			oneCellNodes = [bcl.nodeTopLeft, bcl.nodeBottomLeft, bcr.nodeTopRight, bcr.nodeBottomRight];

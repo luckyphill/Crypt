@@ -4,6 +4,7 @@ classdef CentreLine < AbstractSimulationData
 	properties 
 
 		name = 'centreLine'
+		data = []
 
 	end
 
@@ -11,7 +12,7 @@ classdef CentreLine < AbstractSimulationData
 
 		function obj = CentreLine
 			% No special initialisation
-			obj.data = [];
+			
 		end
 
 		function CalculateData(obj, t)
@@ -19,7 +20,9 @@ classdef CentreLine < AbstractSimulationData
 			% Makes a sequence of points that defines the centre line of the cells
 			cL = [];
 
-			c = t.simData{'boundaryCells'}.GetData(){'left'};
+			sd = t.simData('boundaryCells');
+			bcs = sd.GetData(t);
+			c = bcs('left');
 
 			cL(end + 1, :) = c.elementLeft.GetMidPoint();
 			e = c.elementRight;
