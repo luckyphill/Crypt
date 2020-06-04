@@ -125,7 +125,7 @@ classdef Element < matlab.mixin.SetGet
 
 			internal = false;
 
-			if obj.cellList(1).elementLeft == obj || obj.cellList(1).elementRight == obj
+			if (obj.cellList(1).elementLeft == obj || obj.cellList(1).elementRight == obj) && length(obj.cellList) > 1
 				internal = true;
 			end
 

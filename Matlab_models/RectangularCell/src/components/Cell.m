@@ -52,13 +52,24 @@ classdef Cell < matlab.mixin.SetGet
 		deformationEnergyParameter = 10
 		surfaceEnergyParameter = 1
 
+		% Determines if we are using a free or joined cell model
+		freeCell = false
+		newFreeCellSeparation = 0.5
 
+		% A cell divides in 2, this will store the sister
+		% cell after division
+		sisterCell = Cell.empty();
+
+		% Stores the id of the cell that was in the 
+		% initial configuration. Only can store the id
+		% because the cell can be deleted from the simulation
+		ancestorId
 		
 	end
 
 	methods
 		
-		function obj = Cell(Cycle, elementList, id)
+		function obj = Cell(Cycle, elementList, id, varargin)
 			% All the initilising
 			% A cell will always have 4 elements
 			% elementList must have 4 elements in the order [ElementTop, ElementBottom, ElementLeft, ElementRight]
@@ -80,6 +91,13 @@ classdef Cell < matlab.mixin.SetGet
 			obj.AddNodesInOrder();
 
 			obj.id = id;
+
+			obj.ancestorId = id;
+
+			if length(varargin) == 1
+				% A flag setting the free cell status
+				obj.freeCell = true;
+			end
 
 		end
 
@@ -153,18 +171,38 @@ classdef Cell < matlab.mixin.SetGet
 		end
 
 		function cellLeft = GetAdjacentCellLeft(obj)
-
-			cellLeft = obj.elementLeft.GetOtherCell(obj);
-
+			cellLeft = [];
+			if ~obj.freeCell
+				cellLeft = obj.elementLeft.GetOtherCell(obj);
+			end
 		end
 
 		function cellRight = GetAdjacentCellRight(obj)
-
-			cellRight = obj.elementRight.GetOtherCell(obj);
-
+			cellRight = [];
+			if ~obj.freeCell
+				cellRight = obj.elementRight.GetOtherCell(obj);
+			end
 		end
 
 		function newCell = Divide(obj)
+
+			if obj.freeCell
+				newCell = DivideFree(obj);
+			else
+				newCell = DivideJoined(obj)
+			end
+
+			% Update the sister cells
+			newCell.sisterCell = obj;
+			obj.sisterCell = newCell;
+			% ...and ancestorId
+			newCell.ancestorId = obj.id;
+
+		end
+
+		function newCell = DivideJoined(obj)
+			% Divide a cell in a simulation where cells are joined
+			% in a monolayer
 			% To divide, split the top and bottom elements in half
 			% add an element in the middle
 
@@ -253,6 +291,133 @@ classdef Cell < matlab.mixin.SetGet
 			obj.elementLeft = newElementMiddle;
 
 			newElementMiddle.AddCell(obj);
+						
+
+			% Old cell should be completely remodelled by this point, adjust the age back to zero
+
+			obj.CellCycleModel.SetAge(0);
+
+			% Finally, reset the node list
+			obj.nodeList = [obj.nodeTopLeft, obj.nodeTopRight, obj.nodeBottomRight, obj.nodeBottomLeft];
+			obj.elementList = [obj.elementTop, obj.elementBottom, obj.elementLeft, obj.elementRight];
+		
+		end
+
+		function newCell = DivideFree(obj)
+			% Divide cell when simulation is made of free cells
+			% that are not constrained to be adjacent to others
+			% To divide, split the top and bottom elements in half
+			% add an element in the middle
+
+			% This process needs to be done carefully to update all the new
+			% links between node, element and cell
+
+			%  o----------o
+			%  |          |
+			%  |          |
+			%  |     1    |
+			%  |          |
+			%  |          |
+			%  o----------o
+
+			% Becomes
+
+			%  o~~~~~x x-----o
+			%  |     l l     |
+			%  |     l l     |
+			%  |  2  l l  1  |
+			%  |     l l     |
+			%  |     l l     |
+			%  o~~~~~x x-----o
+
+			% Links for everything in new cell will automatically be correct
+			% but need to update links for old centre nodes and old centre edge
+			% because they will point to the original cell
+
+
+			% Find the new points for the nodes
+
+			midTop 				= obj.elementTop.GetMidPoint;
+			midBottom 			= obj.elementBottom.GetMidPoint;
+
+			% The free cells will need to be separated by a set margin
+			% but we don't want to make it so large that it will cause large forces
+			% due to the new cells being smaller than their target area
+			% This will be a balancing act between the neighbourhood interaction force
+			% and the area + perimeter forces
+
+			% Place the new nodes so they lie on the old top or bottom elements
+			% Vectors point from cell 1 to cell 2
+
+			topV = (obj.nodeTopLeft.position - obj.nodeTopRight.position) / obj.elementTop.GetLength();
+			bottomV = obj.nodeBottomLeft.position - obj.nodeBottomRight.position / obj.elementBottom.GetLength();
+
+			top1 = midTop - topV * obj.newFreeCellSeparation / 2;
+			top2 = midTop + topV * obj.newFreeCellSeparation / 2;
+
+			bottom1 = midBottom - bottomV * obj.newFreeCellSeparation / 2;
+			bottom2 = midBottom + bottomV * obj.newFreeCellSeparation / 2;
+
+
+			% Give -ve ids because id is a feature of the simulation
+			% and can't be assigned here. This is handled in AbstractCellSimulation
+
+			% Make the new nodes
+			nodeTop1 		= Node(top1(1),top1(2),-1);
+			nodeBottom1 	= Node(bottom1(1), bottom1(2),-2);
+
+			nodeTop2 		= Node(top2(1),top2(2),-3);
+			nodeBottom2 	= Node(bottom2(1), bottom2(2),-4);
+			
+			% Make the new elements,
+			newLeft1		 	= Element(nodeTop1, nodeBottom1, -1);
+			newRight2	 		= Element(nodeTop2, nodeBottom2, -2);
+			newTop2			 	= Element(obj.nodeTopLeft, nodeTop2, -3);
+			newBottom2		 	= Element(obj.nodeBottomLeft, nodeBottom2, -4);
+
+			% Duplicate the cell cycle model from the old cell
+			newCCM = obj.CellCycleModel.Duplicate();
+
+			% Now we have all the parts we need to build the new cell in its correct position
+			% The new cell will have the correct links with its constituent elements and nodes
+			newCell = Cell(newCCM, [newTop2, newBottom2, obj.elementLeft, newRight2], -1, true);
+
+			% Now we need to remodel the old cell and fix all the links
+
+			% The old cell needs to change the links to the top left and bottom left nodes
+			% and the left element
+			% The old left element needs it's link to old cell (it already has a link to new cell)
+
+			% The top and bottom elements stay with the old cell, but we need to replace the
+			% left nodes with the new middle nodes. This function repairs the links from node
+			% to cell
+			obj.elementTop.ReplaceNode(obj.nodeTopLeft, nodeTop1);
+			obj.elementBottom.ReplaceNode(obj.nodeBottomLeft, nodeBottom1);
+
+			% Fix the link to the top left and bottom left nodes
+			obj.nodeTopLeft.RemoveCell(obj);
+			obj.nodeBottomLeft.RemoveCell(obj);
+
+			% Theses process would be done automatically in a new cell
+			% but need to be done manually here
+			nodeTop1.AddCell(obj);
+			nodeBottom1.AddCell(obj);
+
+			obj.nodeTopLeft = nodeTop1;
+			obj.nodeBottomLeft = nodeBottom1;
+
+
+			% Old top left nodes are now replaced.
+
+			% Now to fix the links with the new left element and old left element
+
+			% At this point, old left element still links to old cell (and vice versa), and new left element
+			% only links to new cell.
+
+			obj.elementLeft.RemoveCell(obj);
+			obj.elementLeft = newLeft1;
+
+			newLeft1.AddCell(obj);
 						
 
 			% Old cell should be completely remodelled by this point, adjust the age back to zero
