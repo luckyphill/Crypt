@@ -67,24 +67,6 @@ classdef AbstractSimulationData < handle
 
 		end
 
-		function SetData(obj, d)
-			% If the data needs to be directly modified
-			if obj.VerifyData(d)
-				obj.data = d;
-			else
-				error('ASD:WrongData', 'Data in unexpected format');
-			end
-			
-		end
-
-		function correct = VerifyData(obj, d)
-
-			% Not always needed, default to true so it doesn't
-			% need to be implemented in every case
-			correct = true;
-
-		end
-
 	end
 
 end

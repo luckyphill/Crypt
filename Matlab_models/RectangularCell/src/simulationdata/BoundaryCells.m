@@ -51,7 +51,7 @@ classdef BoundaryCells < AbstractModifiableSimulationData
 
 		end
 
-		function correct = VerifyData(obj, d)
+		function correct = DataIsValid(obj, d)
 
 			correct = false;
 			if isa(d, 'containers.Map') && d.Count == 2

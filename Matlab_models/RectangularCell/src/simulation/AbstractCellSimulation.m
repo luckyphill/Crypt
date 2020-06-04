@@ -51,7 +51,6 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 	end
 
-
 	methods
 
 		function SetRNGSeed(obj, seed)
@@ -78,12 +77,12 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 			obj.ModifySimulationState();
 
-			obj.t = obj.t + obj.dt;
-			obj.step = obj.step + 1;
-
 			obj.MakeCellsAge();
 
 			obj.StoreData();
+
+			obj.t = obj.t + obj.dt;
+			obj.step = obj.step + 1;
 
 			if obj.IsStoppingConditionMet()
 				obj.stopped = true;

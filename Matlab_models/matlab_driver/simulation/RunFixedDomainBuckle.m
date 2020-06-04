@@ -50,7 +50,7 @@ classdef RunFixedDomainBuckle < MatlabSimulation
 			obj.n 		= n;
 			obj.p 		= p;
 			obj.g 		= g;
-			obj.w		= w
+			obj.w		= w;
 			obj.rngSeed = seed;
 
 			obj.researchPath = getenv('HOME');

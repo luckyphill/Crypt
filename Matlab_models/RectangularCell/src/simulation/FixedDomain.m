@@ -116,9 +116,6 @@ classdef FixedDomain < LineSimulation
 
 			end
 
-			obj.leftBoundaryCell = obj.cellList(1);
-			obj.rightBoundaryCell = obj.cellList(end);
-
 			%---------------------------------------------------
 			% Add in the forces
 			%---------------------------------------------------
