@@ -15,6 +15,14 @@ classdef Element < matlab.mixin.SetGet
 		Node1
 		Node2
 
+		% Used only when an element is modified during cell
+		% division. Keep track of the old node to help with
+		% adjusting the element boxes
+		oldNode1
+		oldNode2
+
+		modified = false
+
 		naturalLength = 1
 		stiffness = 20
 
@@ -189,6 +197,9 @@ classdef Element < matlab.mixin.SetGet
 						obj.Node1.AddElement(obj);
 						obj.nodeList(end + 1) = obj.Node1;
 
+						modified = true;
+						obj.oldNode1 = oldNode;
+
 					case obj.Node2
 						% Remove link back to this element
 						obj.Node2.RemoveElement(obj);
@@ -197,6 +208,10 @@ classdef Element < matlab.mixin.SetGet
 						obj.Node2 = newNode;
 						obj.Node2.AddElement(obj);
 						obj.nodeList(end + 1) = obj.Node2;
+
+						modified = true;
+						obj.oldNode2 = oldNode;
+						
 					otherwise
 						error('e:nodeNotFound','Node not in this element')
 				end

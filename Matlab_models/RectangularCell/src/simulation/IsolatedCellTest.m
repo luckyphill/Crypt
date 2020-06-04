@@ -176,8 +176,7 @@ classdef IsolatedCellTest < LineSimulation
 			%---------------------------------------------------
 			% This will only work when element box handling works for free cells
 
-			% obj.boxes = SpacePartition(0.5, 0.5, obj);
-			obj.usingBoxes = false;
+			obj.boxes = SpacePartition(0.5, 0.5, obj);
 
 			%---------------------------------------------------
 			% All done. Ready to roll

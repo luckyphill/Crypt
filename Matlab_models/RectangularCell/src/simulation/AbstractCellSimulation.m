@@ -71,6 +71,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 			obj.MakeNodesMove();
 
+			% Division must occur after movement
 			obj.MakeCellsDivide();
 
 			obj.KillCells();
@@ -448,15 +449,20 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 		function MakeCellsDivide(obj)
 
 			% Call the divide process, and update the lists
-			newCells = Cell.empty;
+			newCells 	= Cell.empty;
+			newElements = Element.empty();
+			newNodes 	= Node.empty();
 			for i = 1:length(obj.cellList)
 				c = obj.cellList(i);
 				if c.IsReadyToDivide()
-					newCells(end + 1) = c.Divide();
+					[newCellList, newNodeList, newElementList] = c.Divide();
+					newCells = [newCells, newCellList];
+					newElements = [newElements, newElementList];
+					newNodes = [newNodes, newNodeList];
 				end
 			end
 
-			obj.AddNewCells(newCells);
+			obj.AddNewCells(newCells, newElements, newNodes);
 
 		end
 
@@ -468,68 +474,93 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		end
 
-		function AddNewCells(obj, newCellList)
+		function AddNewCells(obj, newCells, newElements, newNodes)
 			% When a cell divides, need to make sure the new cell object
 			% as well as the new elements and nodes are correctly added to
-			% their respective lists
+			% their respective lists and boxes if relevant
 
-			for i = 1:length(newCellList)
-				% If we get to this point, the cell should definitely be new
-				% so don't have to worry about checking
-				nc = newCellList(i);
-
-				% Since the new cell is made by the old cell, we don't know the
-				% global id numbers until we get to this point
+			for i = 1:length(newCells)
+				
+				nc = newCells(i);
 				nc.id = obj.GetNextCellId();
 
-				% Writing the code without the loop since we know precisely which
-				% nodes and elements are new
-				nc.nodeTopRight.id = obj.GetNextNodeId();
-				nc.nodeBottomRight.id = obj.GetNextNodeId();
-				
-				nc.elementTop.id = obj.GetNextElementId();
-				nc.elementRight.id = obj.GetNextElementId();
-				nc.elementBottom.id = obj.GetNextElementId();
-
-
 				if obj.usingBoxes
+					% When a division occurs, the elements of the sister cell
+					% (which was also the parent cell before division), may
+					% have been modified to have a different node. This screws
+					% with the space partition, so we have to fix it
+					oc = nc.sisterCell;
 
-					obj.boxes.PutNodeInBox(nc.nodeTopRight);
-					obj.boxes.PutNodeInBox(nc.nodeBottomRight);
+					for j = 1:length(oc.elementList)
+						e = oc.elementList(j);
+						if e.modified
+							% One or both of the nodes has been
+							% modified, so we need to fix the boxes
+							if ~isempty(e.oldNode1)
+								old1 = e.oldNode1;
+							else
+								old1 = e.Node1;
+							end
 
-					obj.boxes.PutElementInBoxes(nc.elementTop);
-					obj.boxes.PutElementInBoxes(nc.elementBottom);
+							if ~isempty(e.oldNode2)
+								old2 = e.oldNode2;
+							else
+								old2 = e.Node2;
+							end
 
-					% Before division, the top and bottom elements for oc
-					% extended from nc.nodeTopLeft to oc.nodeTopRight
-					% so we need to remove the left half of the original
-					% top and bottom elements from the element space partition
+							if old1 == e.Node1 && old2 == e.Node2
+								warning('ACS:AddNewCells:BothOldAreNotOld','Both old nodes match the current nodes. The modified flag was set incorrectly for element %d', e.id);
+							else
 
-					oc = nc.elementRight.GetOtherCell(nc);
+								[ql,il,jl] = obj.boxes.GetBoxIndicesBetweenNodes(old1, old2);
+								for k = 1:length(ql)
+									obj.boxes.RemoveElement(ql(k),il(k),jl(k),e);
+								end
 
-					[ql,il,jl] = obj.boxes.GetBoxIndicesBetweenNodes(nc.nodeTopLeft, oc.nodeTopRight);
-					for i = 1:length(ql)
-						obj.boxes.RemoveElement(ql(i),il(i),jl(i),oc.elementTop);
+								[ql,il,jl] = obj.boxes.GetBoxIndicesBetweenNodes(e.Node1, e.Node2);
+								for k = 1:length(ql)
+									obj.boxes.RemoveElement(ql(k),il(k),jl(k),e);
+								end
+
+							end
+
+							modified = false;
+							e.oldNode1 = [];
+							e.oldNode2 = [];
+
+						end
+
 					end
-
-					[ql,il,jl] = obj.boxes.GetBoxIndicesBetweenNodes(nc.nodeBottomLeft, oc.nodeBottomRight);
-					for i = 1:length(ql)
-						obj.boxes.RemoveElement(ql(i),il(i),jl(i),oc.elementBottom);
-					end
-
-					obj.boxes.PutElementInBoxes(oc.elementTop);
-					obj.boxes.PutElementInBoxes(oc.elementBottom);
 
 				end
 
+			end
 
-				obj.cellList(end + 1) = nc;
+			for i = 1:length(newElements)
 
-				obj.AddNodesToList([nc.nodeTopLeft, nc.nodeTopRight, nc.nodeBottomLeft, nc.nodeBottomRight]);
-
-				obj.AddElementsToList([nc.elementRight, nc.elementLeft, nc.elementTop, nc.elementBottom]);
+				e = newElements(i);
+				e.id = obj.GetNextElementId();
+				if obj.usingBoxes
+					obj.boxes.PutElementInBoxes(e);
+				end
 
 			end
+
+			for i = 1:length(newNodes)
+
+				n = newNodes(i);
+				n.id = obj.GetNextNodeId();
+				if obj.usingBoxes
+					obj.boxes.PutNodeInBox(n);
+				end
+
+			end
+
+			obj.cellList = [obj.cellList, newCells];
+
+			obj.elementList = [obj.elementList, newElements];
+
+			obj.nodeList = [obj.nodeList, newNodes];
 
 		end
 

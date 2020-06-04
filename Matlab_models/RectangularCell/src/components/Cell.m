@@ -54,7 +54,7 @@ classdef Cell < matlab.mixin.SetGet
 
 		% Determines if we are using a free or joined cell model
 		freeCell = false
-		newFreeCellSeparation = 0.5
+		newFreeCellSeparation = 0.1
 
 		% A cell divides in 2, this will store the sister
 		% cell after division
@@ -184,12 +184,12 @@ classdef Cell < matlab.mixin.SetGet
 			end
 		end
 
-		function newCell = Divide(obj)
+		function [newCell, newNodeList, newElementList] = Divide(obj)
 
 			if obj.freeCell
-				newCell = DivideFree(obj);
+				[newCell, newNodeList, newElementList] = DivideFree(obj);
 			else
-				newCell = DivideJoined(obj)
+				[newCell, newNodeList, newElementList] = DivideJoined(obj)
 			end
 
 			% Update the sister cells
@@ -200,7 +200,7 @@ classdef Cell < matlab.mixin.SetGet
 
 		end
 
-		function newCell = DivideJoined(obj)
+		function [newCell, newNodeList, newElementList] = DivideJoined(obj)
 			% Divide a cell in a simulation where cells are joined
 			% in a monolayer
 			% To divide, split the top and bottom elements in half
@@ -297,13 +297,17 @@ classdef Cell < matlab.mixin.SetGet
 
 			obj.CellCycleModel.SetAge(0);
 
-			% Finally, reset the node list
+			% Reset the node list
 			obj.nodeList = [obj.nodeTopLeft, obj.nodeTopRight, obj.nodeBottomRight, obj.nodeBottomLeft];
 			obj.elementList = [obj.elementTop, obj.elementBottom, obj.elementLeft, obj.elementRight];
+
+			% Make a list of new nodes and elements
+			newNodeList 	= [nodeMiddleTop, nodeMiddleBottom];
+			newElementList	= [newElementMiddle, newElementTop, newElementBottom];
 		
 		end
 
-		function newCell = DivideFree(obj)
+		function [newCell, newNodeList, newElementList] = DivideFree(obj)
 			% Divide cell when simulation is made of free cells
 			% that are not constrained to be adjacent to others
 			% To divide, split the top and bottom elements in half
@@ -424,9 +428,13 @@ classdef Cell < matlab.mixin.SetGet
 
 			obj.CellCycleModel.SetAge(0);
 
-			% Finally, reset the node list
-			obj.nodeList = [obj.nodeTopLeft, obj.nodeTopRight, obj.nodeBottomRight, obj.nodeBottomLeft];
+			% Reset the node list for this cell
+			obj.nodeList 	= [obj.nodeTopLeft, obj.nodeTopRight, obj.nodeBottomRight, obj.nodeBottomLeft];
 			obj.elementList = [obj.elementTop, obj.elementBottom, obj.elementLeft, obj.elementRight];
+
+			% Make a list of new nodes and elements
+			newNodeList 	= [nodeTop1, nodeTop2, nodeBottom1, nodeBottom2];
+			newElementList	= [newLeft1, newRight2, newTop2, newBottom2];
 		
 		end
 
