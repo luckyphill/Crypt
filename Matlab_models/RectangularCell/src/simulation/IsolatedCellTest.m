@@ -71,7 +71,7 @@ classdef IsolatedCellTest < LineSimulation
 
 			% Assemble the cell
 
-			obj.cellList = Cell(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId(), true);
+			obj.cellList = SquareCellFree(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
 
 			%---------------------------------------------------
 			% Cell 2
@@ -98,7 +98,7 @@ classdef IsolatedCellTest < LineSimulation
 
 			% Assemble the cell
 
-			obj.cellList(2) = Cell(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId(), true);
+			obj.cellList(2) = SquareCellFree(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
 
 			%---------------------------------------------------
 			% Cell 3
@@ -125,7 +125,7 @@ classdef IsolatedCellTest < LineSimulation
 
 			% Assemble the cell
 
-			obj.cellList(3) = Cell(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId(), true);
+			obj.cellList(3) = SquareCellFree(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
 
 			%---------------------------------------------------
 			% Cell 4
@@ -152,7 +152,7 @@ classdef IsolatedCellTest < LineSimulation
 
 			% Assemble the cell
 
-			obj.cellList(4) = Cell(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId(), true);
+			obj.cellList(4) = SquareCellFree(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
 
 			%---------------------------------------------------
 			% Add in the forces

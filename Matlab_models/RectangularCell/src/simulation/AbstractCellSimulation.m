@@ -80,10 +80,10 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 			obj.MakeCellsAge();
 
-			obj.StoreData();
-
 			obj.t = obj.t + obj.dt;
 			obj.step = obj.step + 1;
+
+			obj.StoreData();
 
 			if obj.IsStoppingConditionMet()
 				obj.stopped = true;
@@ -449,7 +449,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 		function MakeCellsDivide(obj)
 
 			% Call the divide process, and update the lists
-			newCells 	= Cell.empty;
+			newCells 	= AbstractCell.empty();
 			newElements = Element.empty();
 			newNodes 	= Node.empty();
 			for i = 1:length(obj.cellList)
@@ -493,7 +493,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 					for j = 1:length(oc.elementList)
 						e = oc.elementList(j);
-						if e.modified
+						if e.modifiedInDivision
 							% One or both of the nodes has been
 							% modified, so we need to fix the boxes
 							if ~isempty(e.oldNode1)
@@ -524,7 +524,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 							end
 
-							modified = false;
+							modifiedInDivision = false;
 							e.oldNode1 = [];
 							e.oldNode2 = [];
 

@@ -36,7 +36,6 @@ classdef TestCell < matlab.unittest.TestCase
 
 		end
 
-
 		function TestArea(testCase)
 
 			n1 = Node(0,0,1);
@@ -93,7 +92,7 @@ classdef TestCell < matlab.unittest.TestCase
 			% TODO: Make this work with arbitrary order of elements
 			c = Cell(NoCellCycle, [et,eb,el,er], 1);
 
-			d = c.Divide();
+			[d, ~, ~] = c.Divide();
 
 			% Check the nodes are in the correct position
 			testCase.verifyEqual(c.nodeTopLeft.position,[0.5, 1]);
@@ -157,7 +156,6 @@ classdef TestCell < matlab.unittest.TestCase
 			testCase.verifyTrue(ismember(c, newr.cellList));
 			testCase.verifyFalse(ismember(c, newl.cellList));
 			testCase.verifyEqual(c.elementLeft, newr);
-
 
 		end
 

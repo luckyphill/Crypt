@@ -17,6 +17,7 @@ classdef NagaiHondaForce < AbstractCellBasedForce
 			obj.areaEnergyParameter 	= areaP;
 			obj.surfaceEnergyParameter 	= surfaceP;
 			obj.edgeAdhesionParameter 	= adhesionP;
+			
 		end
 
 		function AddCellBasedForces(obj, cellList)

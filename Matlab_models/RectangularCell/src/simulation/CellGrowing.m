@@ -25,7 +25,7 @@ classdef CellGrowing < LineSimulation
 			%---------------------------------------------------
 
 			% The first cell needs all elements and nodes created
-			% subsquent cells will have nodes and elements from their
+			% subsequent cells will have nodes and elements from their
 			% neighbours
 
 			% Make the nodes
@@ -52,7 +52,7 @@ classdef CellGrowing < LineSimulation
 
 			% Assemble the cell
 
-			obj.cellList = Cell(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
+			obj.cellList = SquareCellJoined(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
 
 
 			for i = 2:nCells
@@ -76,12 +76,9 @@ classdef CellGrowing < LineSimulation
 
 				ccm = SimplePhaseBasedCellCycle(p, g);
 
-				obj.cellList(i) = Cell(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
+				obj.cellList(i) = SquareCellJoined(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
 
 			end
-
-			% obj.leftBoundaryCell = obj.cellList(1);
-			% obj.rightBoundaryCell = obj.cellList(end);
 
 			%---------------------------------------------------
 			% Add in the forces

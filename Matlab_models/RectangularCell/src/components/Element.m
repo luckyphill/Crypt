@@ -21,7 +21,7 @@ classdef Element < matlab.mixin.SetGet
 		oldNode1
 		oldNode2
 
-		modified = false
+		modifiedInDivision = false
 
 		naturalLength = 1
 		stiffness = 20
@@ -34,9 +34,31 @@ classdef Element < matlab.mixin.SetGet
 	end
 
 	methods
+		
 		function obj = Element(Node1, Node2, id)
 			% All the initilising
 			% An element will always have a pair of nodes
+
+			% This ordering is important, because it defines the
+			% orientation of the element. If the element is 
+			% completely free in space, then the orientation is
+			% arbitrary, but as soon as it is part of a cell (or membrane
+			% if I end up developing one), then 1 to 2 must be chosen
+			% so that if u = (Node2.position - Node1.position) / length,
+			% then the unit vector v = [u(2), -u(1)] points out of the tissue.
+			% Then, v will point to the right if forward is 1 to 2.
+			% Due to the choice of v, travelling 1 to 2 will go
+			% anticlockwise around the perimeter of the cell 
+
+			% Note: v should be perpendicular, but I can't do that in ASCII art
+			%        2 o
+			%         /
+			%        /
+			%       /\
+			%      /  \v
+			%    u/    \
+			%    /      
+			% 1 o
 
 			obj.Node1 = Node1;
 			obj.Node2 = Node2;
@@ -65,11 +87,6 @@ classdef Element < matlab.mixin.SetGet
 			% are explicitly changed
 
 			obj.etaD = obj.Node1.eta + obj.Node2.eta;
-
-		end
-
-		function AddTorqueContribution(obj, torque)
-			obj.torque = obj.torque + torque;
 
 		end
 
@@ -114,14 +131,20 @@ classdef Element < matlab.mixin.SetGet
 
 		end
 
+		function outward = GetOutwardNormal(obj)
+			% See constructor for discussion about why this is the outward
+			% normal
+			u = obj.GetVector1to2();
+			outward = [u(2), -u(1)];
+
+		end
+
 		function midPoint = GetMidPoint(obj)
 
 			direction1to2 = obj.Node2.position - obj.Node1.position;
 			midPoint = obj.Node1.position + 0.5 * direction1to2;
 
-
 		end
-
 
 		function AddCell(obj, c)
 
@@ -133,26 +156,27 @@ classdef Element < matlab.mixin.SetGet
 
 			internal = false;
 
-			if (obj.cellList(1).elementLeft == obj || obj.cellList(1).elementRight == obj) && length(obj.cellList) > 1
+			if length(obj.cellList) > 1
 				internal = true;
 			end
 
 		end
 
 		function otherNode = GetOtherNode(obj, node)
-			% Since we don't know what order the nodes are in, we need a special way to grab the
-			% other node if we already know one of them
 
 			if node == obj.Node1
+
 				otherNode = obj.Node2;
+
 			else
+
 				if node == obj.Node2
 					otherNode = obj.Node1;
 				else
 					error('Node not in this element');
 				end
-			end
 
+			end
 
 		end
 
@@ -164,17 +188,22 @@ classdef Element < matlab.mixin.SetGet
 			otherCell = [];
 
 			if length(obj.cellList) == 2
+
 				if c == obj.cellList(1)
+
 					otherCell = obj.cellList(2);
+
 				else
+
 					if c == obj.cellList(2)
 						otherCell = obj.cellList(1);
 					else
 						error('Cell doesnt contain this element');
 					end
-				end
-			end
 
+				end
+
+			end
 
 		end
 
@@ -239,6 +268,7 @@ classdef Element < matlab.mixin.SetGet
 		function RemoveCell(obj, c)
 			% No error checking that cell is actually part of the list
 			obj.cellList(obj.cellList == c) = [];
+
 		end
 
 	end

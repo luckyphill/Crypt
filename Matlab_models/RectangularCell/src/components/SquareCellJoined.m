@@ -1,9 +1,7 @@
-classdef Cell < matlab.mixin.SetGet
-	% A class specifying the details about nodes
+classdef SquareCellJoined < AbstractCell
+	% A square cell that is joined to its neighbours
 
 	properties
-		% Essential porperties of a node
-		id
 
 		% This will be circular - each element will have two nodes
 		% each node can be part of multiple elements
@@ -12,74 +10,33 @@ classdef Cell < matlab.mixin.SetGet
 		elementLeft
 		elementRight
 
-		elementList
-
 		% Can't know for certain which order the nodes will be placed into the element
 		% so need to determine these carefully when initialising
 		nodeTopLeft
 		nodeTopRight
 		nodeBottomLeft
 		nodeBottomRight
-
-		% Knowing the location of the nodes is extremely useful, but sometimes it's quicker
-		% to access a list
-		nodeList
-
-		age = 0
-		cellArea
-		cellPerimeter
-
-		newCellTargetArea = 0.5
-		grownCellTargetArea = 1
-		currentCellTargetArea = 1
-
-		newCellTargetPerimeter = 3
-		grownCellTargetPerimeter = 4
-		currentCellTargetPerimeter = 4
-
-		% The natural length of the top and bottom elements
-		% used to make cells trapezoidal shaped
-		newCellTopLength = 0.5
-		grownCellTopLength = 1
-		currentCellTopLength = 1
-
-		newCellBottomLength = 0.5
-		grownCellBottomLength = 1
-		currentCellBottomLength = 1
-
-		CellCycleModel
-
-		deformationEnergyParameter = 10
-		surfaceEnergyParameter = 1
-
-		% Determines if we are using a free or joined cell model
-		freeCell = false
-		newFreeCellSeparation = 0.1
-
-		% A cell divides in 2, this will store the sister
-		% cell after division
-		sisterCell = Cell.empty();
-
-		% Stores the id of the cell that was in the 
-		% initial configuration. Only can store the id
-		% because the cell can be deleted from the simulation
-		ancestorId
 		
 	end
 
 	methods
 		
-		function obj = Cell(Cycle, elementList, id, varargin)
-			% All the initilising
-			% A cell will always have 4 elements
+		function obj = SquareCellJoined(Cycle, elementList, id)
+			% All the initialising
+			% A square cell will always have 4 elements
 			% elementList must have 4 elements in the order [ElementTop, ElementBottom, ElementLeft, ElementRight]
 
-			obj.elementTop = elementList(1);
-			obj.elementBottom = elementList(2);
-			obj.elementLeft = elementList(3);
-			obj.elementRight = elementList(4);
+			% Since these are joined cells, one of the left or right
+			% elements will be shared with another cell (assuming there is more
+			% than one cell in the simulation). Hence, we need to carefully
+			% assign the elements to acknowledge this.
 
-			obj.elementList = elementList;
+			obj.elementTop 		= elementList(1);
+			obj.elementBottom 	= elementList(2);
+			obj.elementLeft 	= elementList(3);
+			obj.elementRight 	= elementList(4);
+
+			obj.elementList 	= elementList;
 
 			obj.elementTop.AddCell(obj);
 			obj.elementBottom.AddCell(obj);
@@ -94,81 +51,17 @@ classdef Cell < matlab.mixin.SetGet
 
 			obj.ancestorId = id;
 
-			if length(varargin) == 1
-				% A flag setting the free cell status
-				obj.freeCell = true;
-			end
+			obj.AddCellData(CellAreaSquare());
+			obj.AddCellData(CellPerimeter());
+			obj.AddCellData(TargetPerimeterSquare());
+			obj.AddCellData(TargetArea());
+
+			obj.newCellTargetPerimeter = 3
+			obj.grownCellTargetPerimeter = 4
+			obj.currentCellTargetPerimeter = 4
 
 		end
 
-		function delete(obj)
-
-			clear obj;
-
-		end
-
-		function set.CellCycleModel( obj, v )
-			% This is to validate the object given to outputType in the constructor
-			if isa(v, 'AbstractCellCycleModel')
-            	validateattributes(v, {'AbstractCellCycleModel'}, {});
-            	obj.CellCycleModel = v;
-            else
-            	error('C:NotValidCCM','Not a valid cell cycle');
-            end
-
-        end
-
-		function UpdateCellArea(obj)
-			% Use the shoelace formula to calculate the cellArea of the cell
-			% See: https://en.wikipedia.org/wiki/Shoelace_formula
-
-			tl = obj.nodeTopLeft.position;
-			tr = obj.nodeTopRight.position;
-			br = obj.nodeBottomRight.position;
-			bl = obj.nodeBottomLeft.position;
-			
-
-			obj.cellArea = 0.5 * abs( tl(1) * tr(2) + tr(1) * br(2) + br(1) * bl(2) + bl(1) * tl(2)...
-								-  tl(2) * tr(1) - tr(2) * br(1) - br(2) * bl(1) - bl(2) * tl(1));
-
-		end
-
-		function UpdateCellPerimeter(obj)
-
-			obj.cellPerimeter = obj.elementTop.GetLength() + obj.elementRight.GetLength() + obj.elementBottom.GetLength() + obj.elementLeft.GetLength();
-
-		end
-
-		function targetArea = GetCellTargetArea(obj)
-			% This is so the target area can be a function of cell age
-
-			fraction = obj.CellCycleModel.GetGrowthPhaseFraction();
-
-			targetArea = obj.newCellTargetArea + fraction * (obj.grownCellTargetArea - obj.newCellTargetArea);
-
-		end
-
-		function currentArea = GetCellArea(obj)
-
-			obj.UpdateCellArea();
-
-			currentArea = obj.cellArea;
-
-		end
-
-		function targetPerimeter = GetCellTargetPerimeter(obj)
-			% This is so the target Perimeter can be a function of cell age
-			targetArea = obj.GetCellTargetArea();	
-			targetPerimeter = 2 * (1 + targetArea);
-
-		end
-
-		function currentPerimeter = GetCellPerimeter(obj)
-
-			obj.UpdateCellPerimeter();
-			currentPerimeter = obj.cellPerimeter;
-
-		end
 
 		function cellLeft = GetAdjacentCellLeft(obj)
 			
@@ -189,22 +82,6 @@ classdef Cell < matlab.mixin.SetGet
 		end
 
 		function [newCell, newNodeList, newElementList] = Divide(obj)
-
-			if obj.freeCell
-				[newCell, newNodeList, newElementList] = DivideFree(obj);
-			else
-				[newCell, newNodeList, newElementList] = DivideJoined(obj)
-			end
-
-			% Update the sister cells
-			newCell.sisterCell = obj;
-			obj.sisterCell = newCell;
-			% ...and ancestorId
-			newCell.ancestorId = obj.id;
-
-		end
-
-		function [newCell, newNodeList, newElementList] = DivideJoined(obj)
 			% Divide a cell in a simulation where cells are joined
 			% in a monolayer
 			% To divide, split the top and bottom elements in half
@@ -258,7 +135,7 @@ classdef Cell < matlab.mixin.SetGet
 
 			% Now we have all the parts we need to build the new cell in its correct position
 			% The new cell will have the correct links with its constituent elements and nodes
-			newCell = Cell(newCCM, [newElementTop, newElementBottom, obj.elementLeft, newElementMiddle], 1);
+			newCell = SquareCellJoined(newCCM, [newElementTop, newElementBottom, obj.elementLeft, newElementMiddle], -1);
 
 
 			% Now we need to remodel the old cell and fix all the links
@@ -308,158 +185,13 @@ classdef Cell < matlab.mixin.SetGet
 			% Make a list of new nodes and elements
 			newNodeList 	= [nodeMiddleTop, nodeMiddleBottom];
 			newElementList	= [newElementMiddle, newElementTop, newElementBottom];
+
+			% Update the sister cells
+			newCell.sisterCell = obj;
+			obj.sisterCell = newCell;
+			% ...and ancestorId
+			newCell.ancestorId = obj.id;
 		
-		end
-
-		function [newCell, newNodeList, newElementList] = DivideFree(obj)
-			% Divide cell when simulation is made of free cells
-			% that are not constrained to be adjacent to others
-			% To divide, split the top and bottom elements in half
-			% add an element in the middle
-
-			% This process needs to be done carefully to update all the new
-			% links between node, element and cell
-
-			%  o----------o
-			%  |          |
-			%  |          |
-			%  |     1    |
-			%  |          |
-			%  |          |
-			%  o----------o
-
-			% Becomes
-
-			%  o~~~~~x x-----o
-			%  |     l l     |
-			%  |     l l     |
-			%  |  2  l l  1  |
-			%  |     l l     |
-			%  |     l l     |
-			%  o~~~~~x x-----o
-
-			% Links for everything in new cell will automatically be correct
-			% but need to update links for old centre nodes and old centre edge
-			% because they will point to the original cell
-
-
-			% Find the new points for the nodes
-
-			midTop 				= obj.elementTop.GetMidPoint;
-			midBottom 			= obj.elementBottom.GetMidPoint;
-
-			% The free cells will need to be separated by a set margin
-			% but we don't want to make it so large that it will cause large forces
-			% due to the new cells being smaller than their target area
-			% This will be a balancing act between the neighbourhood interaction force
-			% and the area + perimeter forces
-
-			% Place the new nodes so they lie on the old top or bottom elements
-			% Vectors point from cell 1 to cell 2
-
-			topV = (obj.nodeTopLeft.position - obj.nodeTopRight.position) / obj.elementTop.GetLength();
-			bottomV = obj.nodeBottomLeft.position - obj.nodeBottomRight.position / obj.elementBottom.GetLength();
-
-			top1 = midTop - topV * obj.newFreeCellSeparation / 2;
-			top2 = midTop + topV * obj.newFreeCellSeparation / 2;
-
-			bottom1 = midBottom - bottomV * obj.newFreeCellSeparation / 2;
-			bottom2 = midBottom + bottomV * obj.newFreeCellSeparation / 2;
-
-
-			% Give -ve ids because id is a feature of the simulation
-			% and can't be assigned here. This is handled in AbstractCellSimulation
-
-			% Make the new nodes
-			nodeTop1 		= Node(top1(1),top1(2),-1);
-			nodeBottom1 	= Node(bottom1(1), bottom1(2),-2);
-
-			nodeTop2 		= Node(top2(1),top2(2),-3);
-			nodeBottom2 	= Node(bottom2(1), bottom2(2),-4);
-			
-			% Make the new elements,
-			newLeft1		 	= Element(nodeTop1, nodeBottom1, -1);
-			newRight2	 		= Element(nodeTop2, nodeBottom2, -2);
-			newTop2			 	= Element(obj.nodeTopLeft, nodeTop2, -3);
-			newBottom2		 	= Element(obj.nodeBottomLeft, nodeBottom2, -4);
-
-			% Duplicate the cell cycle model from the old cell
-			newCCM = obj.CellCycleModel.Duplicate();
-
-			% Now we have all the parts we need to build the new cell in its correct position
-			% The new cell will have the correct links with its constituent elements and nodes
-			newCell = Cell(newCCM, [newTop2, newBottom2, obj.elementLeft, newRight2], -1, true);
-
-			% Now we need to remodel the old cell and fix all the links
-
-			% The old cell needs to change the links to the top left and bottom left nodes
-			% and the left element
-			% The old left element needs it's link to old cell (it already has a link to new cell)
-
-			% The top and bottom elements stay with the old cell, but we need to replace the
-			% left nodes with the new middle nodes. This function repairs the links from node
-			% to cell
-			obj.elementTop.ReplaceNode(obj.nodeTopLeft, nodeTop1);
-			obj.elementBottom.ReplaceNode(obj.nodeBottomLeft, nodeBottom1);
-
-			% Fix the link to the top left and bottom left nodes
-			obj.nodeTopLeft.RemoveCell(obj);
-			obj.nodeBottomLeft.RemoveCell(obj);
-
-			% Theses process would be done automatically in a new cell
-			% but need to be done manually here
-			nodeTop1.AddCell(obj);
-			nodeBottom1.AddCell(obj);
-
-			obj.nodeTopLeft = nodeTop1;
-			obj.nodeBottomLeft = nodeBottom1;
-
-
-			% Old top left nodes are now replaced.
-
-			% Now to fix the links with the new left element and old left element
-
-			% At this point, old left element still links to old cell (and vice versa), and new left element
-			% only links to new cell.
-
-			obj.elementLeft.RemoveCell(obj);
-			obj.elementLeft = newLeft1;
-
-			newLeft1.AddCell(obj);
-						
-
-			% Old cell should be completely remodelled by this point, adjust the age back to zero
-
-			obj.CellCycleModel.SetAge(0);
-
-			% Reset the node list for this cell
-			obj.nodeList 	= [obj.nodeTopLeft, obj.nodeTopRight, obj.nodeBottomRight, obj.nodeBottomLeft];
-			obj.elementList = [obj.elementTop, obj.elementBottom, obj.elementLeft, obj.elementRight];
-
-			% Make a list of new nodes and elements
-			newNodeList 	= [nodeTop1, nodeTop2, nodeBottom1, nodeBottom2];
-			newElementList	= [newLeft1, newRight2, newTop2, newBottom2];
-		
-		end
-
-		function ready = IsReadyToDivide(obj)
-
-			ready = obj.CellCycleModel.IsReadyToDivide();
-
-		end
-
-		function AgeCell(obj, dt)
-
-			% This will be done at the end of the time step
-			obj.age = obj.age + dt;
-			obj.CellCycleModel.AgeCellCycle(dt);
-
-		end
-
-		function age = GetAge(obj)
-
-			age = obj.CellCycleModel.GetAge();
-			
 		end
 
 		function inside = IsPointInsideCell(obj, point)
@@ -583,13 +315,6 @@ classdef Cell < matlab.mixin.SetGet
 
 			axis equal
 
-		end
-
-		function colour = GetColour(obj)
-			% Used for animating/plotting only
-
-			colour = obj.CellCycleModel.GetColour();
-		
 		end
 
 	end

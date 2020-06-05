@@ -1,6 +1,7 @@
 classdef BoundaryCellKiller < AbstractTissueLevelCellKiller
 	% A class for killing Boundary cells.
 	% This only kills cells when they move past a certain position
+	% Can only be used in a LineSimulation
 	properties
 
 		leftBoundary
@@ -44,7 +45,7 @@ classdef BoundaryCellKiller < AbstractTissueLevelCellKiller
 		function past = IsPastLeftBoundary(obj, c)
 
 			past = false;
-			if c.nodeTopRight.x < obj.leftBoundary || c.nodeBottomRight.x < obj.leftBoundary
+			if c.nodeTopRight.x < obj.leftBoundary && c.nodeBottomRight.x < obj.leftBoundary
 				past = true;
 			end
 
@@ -53,7 +54,7 @@ classdef BoundaryCellKiller < AbstractTissueLevelCellKiller
 		function past = IsPastRightBoundary(obj, c)
 
 			past = false;
-			if c.nodeTopLeft.x > obj.rightBoundary || c.nodeBottomLeft.x > obj.rightBoundary
+			if c.nodeTopLeft.x > obj.rightBoundary && c.nodeBottomLeft.x > obj.rightBoundary
 				past = true;
 			end
 
