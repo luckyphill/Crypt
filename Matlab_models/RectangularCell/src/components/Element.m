@@ -30,6 +30,8 @@ classdef Element < matlab.mixin.SetGet
 
 		nodeList
 		cellList
+
+		internal = false
 		
 	end
 
@@ -72,7 +74,6 @@ classdef Element < matlab.mixin.SetGet
 
 			obj.UpdateTotalDrag();
 			
-
 		end
 
 		function delete(obj)
@@ -154,11 +155,7 @@ classdef Element < matlab.mixin.SetGet
 
 		function internal = IsElementInternal(obj)
 
-			internal = false;
-
-			if length(obj.cellList) > 1
-				internal = true;
-			end
+			internal = obj.internal;
 
 		end
 

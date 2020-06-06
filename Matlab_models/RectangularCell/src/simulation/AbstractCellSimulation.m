@@ -121,6 +121,357 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		end
 
+		function GenerateCellBasedForces(obj)
+			
+			for i = 1:length(obj.cellBasedForces)
+				obj.cellBasedForces(i).AddCellBasedForces(obj.cellList);
+			end
+
+		end
+
+		function GenerateElementBasedForces(obj)
+
+			for i = 1:length(obj.elementBasedForces)
+				obj.elementBasedForces(i).AddElementBasedForces(obj.elementList);
+			end
+
+		end
+
+		function GenerateNeighbourhoodBasedForces(obj)
+			
+			if isempty(obj.boxes)
+				error('ACS:NoBoxes','Space partition required for NeighbourhoodForces, but none set');
+			end
+
+			for i = 1:length(obj.neighbourhoodBasedForces)
+				obj.neighbourhoodBasedForces(i).AddNeighbourhoodBasedForces(obj.nodeList, obj.boxes);
+			end
+
+		end
+
+		function MakeNodesMove(obj)
+
+			for i = 1:length(obj.nodeList)
+				
+				n = obj.nodeList(i);
+
+				eta = n.eta;
+				force = n.force;
+				if obj.stochasticJiggle
+					% Add in a tiny amount of stochasticity to the force calculation
+					% to nudge it out of unstable equilibria
+
+					% Make a random direction vector
+					v = [rand-0.5,rand-0.5];
+					v = v/norm(v);
+
+					% Add the random vector, and make sure it is orders of magnitude
+					% smaller than the actual force
+					force = force + v * norm(force) / 10000;
+
+				end
+
+				newPosition = n.position + obj.dt/eta * force;
+
+				n.MoveNode(newPosition);
+
+				if obj.usingBoxes
+					obj.boxes.UpdateBoxForNode(n);
+				end
+			end
+
+		end
+
+		function AdjustNodePosition(obj, n, newPos)
+
+			% Only used by modifiers. Do not use to
+			% progress the simulation
+
+			% This will move a node to a given position regardless
+			% of forces, but after all force movement has happened
+
+			% Previous position and previous force are not modified
+
+			% Make sure the node and elements are in the correct boxes
+			if obj.usingBoxes
+				obj.boxes.UpdateBoxForNodeModifier(n, newPos);
+			end
+
+			n.AdjustPosition(newPos);
+
+		end
+
+		function MakeCellsDivide(obj)
+
+			% Call the divide process, and update the lists
+			newCells 	= AbstractCell.empty();
+			newElements = Element.empty();
+			newNodes 	= Node.empty();
+			for i = 1:length(obj.cellList)
+				c = obj.cellList(i);
+				if c.IsReadyToDivide()
+					[newCellList, newNodeList, newElementList] = c.Divide();
+					newCells = [newCells, newCellList];
+					newElements = [newElements, newElementList];
+					newNodes = [newNodes, newNodeList];
+				end
+			end
+
+			obj.AddNewCells(newCells, newElements, newNodes);
+
+		end
+
+		function AddNewCells(obj, newCells, newElements, newNodes)
+			% When a cell divides, need to make sure the new cell object
+			% as well as the new elements and nodes are correctly added to
+			% their respective lists and boxes if relevant
+
+			for i = 1:length(newCells)
+				
+				nc = newCells(i);
+				nc.id = obj.GetNextCellId();
+
+				if obj.usingBoxes
+					% When a division occurs, the elements of the sister cell
+					% (which was also the parent cell before division), may
+					% have been modified to have a different node. This screws
+					% with the space partition, so we have to fix it
+					oc = nc.sisterCell;
+
+					for j = 1:length(oc.elementList)
+						e = oc.elementList(j);
+						if e.modifiedInDivision
+							% One or both of the nodes has been
+							% modified, so we need to fix the boxes
+							if ~isempty(e.oldNode1)
+								old1 = e.oldNode1;
+							else
+								old1 = e.Node1;
+							end
+
+							if ~isempty(e.oldNode2)
+								old2 = e.oldNode2;
+							else
+								old2 = e.Node2;
+							end
+
+							if old1 == e.Node1 && old2 == e.Node2
+								warning('ACS:AddNewCells:BothOldAreNotOld','Both old nodes match the current nodes. The modified flag was set incorrectly for element %d', e.id);
+							else
+
+								[ql,il,jl] = obj.boxes.GetBoxIndicesBetweenNodes(old1, old2);
+								for k = 1:length(ql)
+									obj.boxes.RemoveElement(ql(k),il(k),jl(k),e);
+								end
+
+								[ql,il,jl] = obj.boxes.GetBoxIndicesBetweenNodes(e.Node1, e.Node2);
+								for k = 1:length(ql)
+									obj.boxes.RemoveElement(ql(k),il(k),jl(k),e);
+								end
+
+							end
+
+							modifiedInDivision = false;
+							e.oldNode1 = [];
+							e.oldNode2 = [];
+
+						end
+
+					end
+
+				end
+
+			end
+
+			for i = 1:length(newElements)
+
+				e = newElements(i);
+				e.id = obj.GetNextElementId();
+				if obj.usingBoxes
+					obj.boxes.PutElementInBoxes(e);
+				end
+
+			end
+
+			for i = 1:length(newNodes)
+
+				n = newNodes(i);
+				n.id = obj.GetNextNodeId();
+				if obj.usingBoxes
+					obj.boxes.PutNodeInBox(n);
+				end
+
+			end
+
+			obj.cellList = [obj.cellList, newCells];
+
+			obj.elementList = [obj.elementList, newElements];
+
+			obj.nodeList = [obj.nodeList, newNodes];
+
+		end
+
+		function MakeCellsAge(obj)
+
+			for i = 1:length(obj.cellList)
+				obj.cellList(i).AgeCell(obj.dt);
+			end
+
+		end
+
+		function AddCellBasedForce(obj, f)
+
+			if isempty(obj.cellBasedForces)
+				obj.cellBasedForces = f;
+			else
+				obj.cellBasedForces(end + 1) = f;
+			end
+
+		end
+
+		function AddElementBasedForce(obj, f)
+
+			if isempty(obj.elementBasedForces)
+				obj.elementBasedForces = f;
+			else
+				obj.elementBasedForces(end + 1) = f;
+			end
+
+		end
+
+		function AddNeighbourhoodBasedForce(obj, f)
+
+			if isempty(obj.neighbourhoodBasedForces)
+				obj.neighbourhoodBasedForces = f;
+			else
+				obj.neighbourhoodBasedForces(end + 1) = f;
+			end
+
+		end
+
+		function AddTissueLevelKiller(obj, k)
+
+			if isempty(obj.tissueLevelKillers)
+				obj.tissueLevelKillers = k;
+			else
+				obj.tissueLevelKillers(end + 1) = k;
+			end
+
+		end
+
+		function AddCellKiller(obj, k)
+
+			if isempty(obj.cellKillers)
+				obj.cellKillers = k;
+			else
+				obj.cellKillers(end + 1) = k;
+			end
+
+		end
+
+		function AddStoppingCondition(obj, s)
+
+			if isempty(obj.stoppingConditions)
+				obj.stoppingConditions = s;
+			else
+				obj.stoppingConditions(end + 1) = s;
+			end
+
+		end
+
+		function AddSimulationModifier(obj, m)
+
+			if isempty(obj.simulationModifiers)
+				obj.simulationModifiers = m;
+			else
+				obj.simulationModifiers(end + 1) = m;
+			end
+
+		end
+
+		function AddDataStore(obj, d)
+
+			if isempty(obj.dataStores)
+				obj.dataStores = d;
+			else
+				obj.dataStores(end + 1) = d;
+			end
+
+		end
+
+		function AddSimulationData(obj, d)
+
+			% Add the simulation data calculator to the map
+			% this will necessarily allow only one instance
+			% of a given type of SimulationData, since the 
+			% names are immutable
+
+			% This is calculate-on-demand, so it does not have
+			% an associated 'use' method here
+			obj.simData(d.name) = d;
+
+		end
+
+		function StoreData(obj)
+
+			for i = 1:length(obj.dataStores)
+				obj.dataStores(i).StoreData(obj);
+			end
+
+		end
+
+		function ModifySimulationState(obj)
+
+			for i = 1:length(obj.simulationModifiers)
+				obj.simulationModifiers(i).ModifySimulation(obj);
+			end
+
+		end
+
+		function KillCells(obj)
+
+			% Loop through the cell killers
+
+			for i = 1:length(obj.tissueLevelKillers)
+				obj.tissueLevelKillers(i).KillCells(obj);
+			end
+
+			for i = 1:length(obj.cellKillers)
+				obj.cellKillers(i).KillCells(obj.cellList);
+			end
+
+		end
+
+		function stopped = IsStoppingConditionMet(obj)
+
+			stopped = false;
+			for i = 1:length(obj.stoppingConditions)
+				if obj.stoppingConditions(i).CheckStoppingCondition(obj);
+					stopped = true;
+					break;
+				end
+			end
+
+		end
+
+		function numCells = GetNumCells(obj)
+
+			numCells = length(obj.cellList);
+
+		end
+
+		function numElements = GetNumElements(obj)
+
+			numElements = length(obj.elementList);
+
+		end
+
+		function numNodes = GetNumNodes(obj)
+
+			numNodes = length(obj.nodeList);
+
+		end
+
 		function Visualise(obj)
 
 			h = figure();
@@ -363,357 +714,6 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 				title(sprintf('t=%g',obj.t));
 
 			end
-
-		end
-
-		function GenerateCellBasedForces(obj)
-			
-			for i = 1:length(obj.cellBasedForces)
-				obj.cellBasedForces(i).AddCellBasedForces(obj.cellList);
-			end
-
-		end
-
-		function GenerateElementBasedForces(obj)
-
-			for i = 1:length(obj.elementBasedForces)
-				obj.elementBasedForces(i).AddElementBasedForces(obj.elementList);
-			end
-
-		end
-
-		function GenerateNeighbourhoodBasedForces(obj)
-			
-			if isempty(obj.boxes)
-				error('ACS:NoBoxes','Space partition required for NeighbourhoodForces, but none set');
-			end
-
-			for i = 1:length(obj.neighbourhoodBasedForces)
-				obj.neighbourhoodBasedForces(i).AddNeighbourhoodBasedForces(obj.nodeList, obj.boxes);
-			end
-
-		end
-
-		function MakeNodesMove(obj)
-
-			for i = 1:length(obj.nodeList)
-				
-				n = obj.nodeList(i);
-
-				eta = n.eta;
-				force = n.force;
-				if obj.stochasticJiggle
-					% Add in a tiny amount of stochasticity to the force calculation
-					% to nudge it out of unstable equilibria
-
-					% Make a random direction vector
-					v = [rand-0.5,rand-0.5];
-					v = v/norm(v);
-
-					% Add the random vector, and make sure it is orders of magnitude
-					% smaller than the actual force
-					force = force + v * norm(force) / 10000;
-
-				end
-
-				newPosition = n.position + obj.dt/eta * force;
-
-				n.MoveNode(newPosition);
-
-				if obj.usingBoxes
-					obj.boxes.UpdateBoxForNode(n);
-				end
-			end
-
-		end
-
-		function AdjustNodePosition(obj, n, newPos)
-
-			% Only used by modifiers. Do not use to
-			% progress the simulation
-
-			% This will move a node to a given position regardless
-			% of forces, but after all force movement has happened
-
-			% Previous position and previous force are not modified
-
-			% Make sure the node and elements are in the correct boxes
-			if obj.usingBoxes
-				obj.boxes.UpdateBoxForNodeModifier(n, newPos);
-			end
-
-			n.AdjustPosition(newPos);
-
-		end
-
-		function MakeCellsDivide(obj)
-
-			% Call the divide process, and update the lists
-			newCells 	= AbstractCell.empty();
-			newElements = Element.empty();
-			newNodes 	= Node.empty();
-			for i = 1:length(obj.cellList)
-				c = obj.cellList(i);
-				if c.IsReadyToDivide()
-					[newCellList, newNodeList, newElementList] = c.Divide();
-					newCells = [newCells, newCellList];
-					newElements = [newElements, newElementList];
-					newNodes = [newNodes, newNodeList];
-				end
-			end
-
-			obj.AddNewCells(newCells, newElements, newNodes);
-
-		end
-
-		function MakeCellsAge(obj)
-
-			for i = 1:length(obj.cellList)
-				obj.cellList(i).AgeCell(obj.dt);
-			end
-
-		end
-
-		function AddNewCells(obj, newCells, newElements, newNodes)
-			% When a cell divides, need to make sure the new cell object
-			% as well as the new elements and nodes are correctly added to
-			% their respective lists and boxes if relevant
-
-			for i = 1:length(newCells)
-				
-				nc = newCells(i);
-				nc.id = obj.GetNextCellId();
-
-				if obj.usingBoxes
-					% When a division occurs, the elements of the sister cell
-					% (which was also the parent cell before division), may
-					% have been modified to have a different node. This screws
-					% with the space partition, so we have to fix it
-					oc = nc.sisterCell;
-
-					for j = 1:length(oc.elementList)
-						e = oc.elementList(j);
-						if e.modifiedInDivision
-							% One or both of the nodes has been
-							% modified, so we need to fix the boxes
-							if ~isempty(e.oldNode1)
-								old1 = e.oldNode1;
-							else
-								old1 = e.Node1;
-							end
-
-							if ~isempty(e.oldNode2)
-								old2 = e.oldNode2;
-							else
-								old2 = e.Node2;
-							end
-
-							if old1 == e.Node1 && old2 == e.Node2
-								warning('ACS:AddNewCells:BothOldAreNotOld','Both old nodes match the current nodes. The modified flag was set incorrectly for element %d', e.id);
-							else
-
-								[ql,il,jl] = obj.boxes.GetBoxIndicesBetweenNodes(old1, old2);
-								for k = 1:length(ql)
-									obj.boxes.RemoveElement(ql(k),il(k),jl(k),e);
-								end
-
-								[ql,il,jl] = obj.boxes.GetBoxIndicesBetweenNodes(e.Node1, e.Node2);
-								for k = 1:length(ql)
-									obj.boxes.RemoveElement(ql(k),il(k),jl(k),e);
-								end
-
-							end
-
-							modifiedInDivision = false;
-							e.oldNode1 = [];
-							e.oldNode2 = [];
-
-						end
-
-					end
-
-				end
-
-			end
-
-			for i = 1:length(newElements)
-
-				e = newElements(i);
-				e.id = obj.GetNextElementId();
-				if obj.usingBoxes
-					obj.boxes.PutElementInBoxes(e);
-				end
-
-			end
-
-			for i = 1:length(newNodes)
-
-				n = newNodes(i);
-				n.id = obj.GetNextNodeId();
-				if obj.usingBoxes
-					obj.boxes.PutNodeInBox(n);
-				end
-
-			end
-
-			obj.cellList = [obj.cellList, newCells];
-
-			obj.elementList = [obj.elementList, newElements];
-
-			obj.nodeList = [obj.nodeList, newNodes];
-
-		end
-
-		function AddCellBasedForce(obj, f)
-
-			if isempty(obj.cellBasedForces)
-				obj.cellBasedForces = f;
-			else
-				obj.cellBasedForces(end + 1) = f;
-			end
-
-		end
-
-		function AddElementBasedForce(obj, f)
-
-			if isempty(obj.elementBasedForces)
-				obj.elementBasedForces = f;
-			else
-				obj.elementBasedForces(end + 1) = f;
-			end
-
-		end
-
-		function AddNeighbourhoodBasedForce(obj, f)
-
-			if isempty(obj.neighbourhoodBasedForces)
-				obj.neighbourhoodBasedForces = f;
-			else
-				obj.neighbourhoodBasedForces(end + 1) = f;
-			end
-
-		end
-
-		function AddTissueLevelKiller(obj, k)
-
-			if isempty(obj.tissueLevelKillers)
-				obj.tissueLevelKillers = k;
-			else
-				obj.tissueLevelKillers(end + 1) = k;
-			end
-
-		end
-
-		function AddCellKiller(obj, k)
-
-			if isempty(obj.cellKillers)
-				obj.cellKillers = k;
-			else
-				obj.cellKillers(end + 1) = k;
-			end
-
-		end
-
-		function AddStoppingCondition(obj, s)
-
-			if isempty(obj.stoppingConditions)
-				obj.stoppingConditions = s;
-			else
-				obj.stoppingConditions(end + 1) = s;
-			end
-
-		end
-
-		function AddSimulationModifier(obj, m)
-
-			if isempty(obj.simulationModifiers)
-				obj.simulationModifiers = m;
-			else
-				obj.simulationModifiers(end + 1) = m;
-			end
-
-		end
-
-		function AddDataStore(obj, d)
-
-			if isempty(obj.dataStores)
-				obj.dataStores = d;
-			else
-				obj.dataStores(end + 1) = d;
-			end
-
-		end
-
-		function AddSimulationData(obj, d)
-
-			% Add the simulation data calculator to the map
-			% this will necessarily allow only one instance
-			% of a given type of SimulationData, since the 
-			% names are immutable
-
-			% This is calculate-on-demand, so it does not have
-			% an associated 'use' method here
-			obj.simData(d.name) = d;
-
-		end
-
-		function StoreData(obj)
-
-			for i = 1:length(obj.dataStores)
-				obj.dataStores(i).StoreData(obj);
-			end
-
-		end
-
-		function ModifySimulationState(obj)
-
-			for i = 1:length(obj.simulationModifiers)
-				obj.simulationModifiers(i).ModifySimulation(obj);
-			end
-
-		end
-
-		function KillCells(obj)
-
-			% Loop through the cell killers
-
-			for i = 1:length(obj.tissueLevelKillers)
-				obj.tissueLevelKillers(i).KillCells(obj);
-			end
-
-			for i = 1:length(obj.cellKillers)
-				obj.cellKillers(i).KillCells(obj.cellList);
-			end
-
-		end
-
-		function stopped = IsStoppingConditionMet(obj)
-
-			stopped = false;
-			for i = 1:length(obj.stoppingConditions)
-				if obj.stoppingConditions(i).CheckStoppingCondition(obj);
-					stopped = true;
-					break;
-				end
-			end
-
-		end
-
-		function numCells = GetNumCells(obj)
-
-			numCells = length(obj.cellList);
-
-		end
-
-		function numElements = GetNumElements(obj)
-
-			numElements = length(obj.elementList);
-
-		end
-
-		function numNodes = GetNumNodes(obj)
-
-			numNodes = length(obj.nodeList);
 
 		end
 
