@@ -56,9 +56,9 @@ classdef SquareCellJoined < AbstractCell
 			obj.AddCellData(TargetPerimeterSquare());
 			obj.AddCellData(TargetArea());
 
-			obj.newCellTargetPerimeter = 3
-			obj.grownCellTargetPerimeter = 4
-			obj.currentCellTargetPerimeter = 4
+			obj.newCellTargetPerimeter = 3;
+			obj.grownCellTargetPerimeter = 4;
+			obj.currentCellTargetPerimeter = 4;
 
 		end
 

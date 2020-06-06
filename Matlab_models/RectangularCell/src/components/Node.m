@@ -77,10 +77,8 @@ classdef Node < matlab.mixin.SetGet
 		end
 
 		function AddElement(obj, ele)
+
 			obj.elementList = [obj.elementList , ele];
-			% Technically should add each cell at a time
-			% but the cellLists work the same way, so we can get away with it
-			% obj.AddCell(ele.cellList);
 			
 		end
 
@@ -116,6 +114,7 @@ classdef Node < matlab.mixin.SetGet
 
 		function AdjustPosition(obj, pos)
 			% Used when modifying the position manually
+			% Doesn't affect previous position, or reset the force
 			obj.position = pos;
 
 			obj.x = pos(1);
@@ -152,6 +151,16 @@ classdef Node < matlab.mixin.SetGet
 			% end
 			% Lidx = ismember(obj.cellList, delCell);
 			% obj.cellList(Lidx) = [];
+
+		end
+
+		function ReplaceCellList(obj, c)
+
+			% Used for CellFree to overwrite the existing cell
+			% Does not modify any links in the cell, it assumes
+			% they are handled in the division or creation process
+
+			obj.cellList = c;
 
 		end
 

@@ -805,160 +805,160 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 		% This should be replaced by the previous two tests, but I'm
 		% keeping it because it fails when it shouldn't meaning it
 		% catches something the other tests don't
-		% function TestElementBoxes(testCase)
+		function TestElementBoxes(testCase)
 			
-		% 	% Tests that elements get distributed to the correct boxes
-		% 	% currently doesn't look at every possible combination
+			% Tests that elements get distributed to the correct boxes
+			% currently doesn't look at every possible combination
 
-		% 	t = CellGrowing(3,20,10,10,10,1,10);
-		% 	p = SpacePartition(1, 1, t);
+			t = CellGrowing(3,20,10,10,10,1,10);
+			p = SpacePartition(1, 1, t);
 
-		% 	n1 = Node(0.1,0.1,1);
-		% 	n2 = Node(4.1,4.1,2);
+			n1 = Node(0.1,0.1,1);
+			n2 = Node(4.1,4.1,2);
 
-		% 	p.PutNodeInBox(n1);
-		% 	p.PutNodeInBox(n2);
+			p.PutNodeInBox(n1);
+			p.PutNodeInBox(n2);
 
-		% 	[ql,il,jl] = p.GetBoxIndicesBetweenNodes(n1, n2);
+			[ql,il,jl] = p.GetBoxIndicesBetweenNodes(n1, n2);
 
-		% 	% This test assumes we get a rectangular grid
-		% 	% If this method is optimised, it will be smaller
-		% 	% so these tests will fail
-		% 	testCase.verifyEqual(ql, ones(25,1));
-		% 	testCase.verifyEqual(il, [ones(5,1);2*ones(5,1);3*ones(5,1);4*ones(5,1);5*ones(5,1)]);
-		% 	testCase.verifyEqual(jl, repmat([1,2,3,4,5]',5,1));
+			% This test assumes we get a rectangular grid
+			% If this method is optimised, it will be smaller
+			% so these tests will fail
+			testCase.verifyEqual(ql, ones(25,1));
+			testCase.verifyEqual(il, [ones(5,1);2*ones(5,1);3*ones(5,1);4*ones(5,1);5*ones(5,1)]);
+			testCase.verifyEqual(jl, repmat([1,2,3,4,5]',5,1));
 
-		% 	e = Element(n1,n2,1);
+			e = Element(n1,n2,1);
 
-		% 	p.PutElementInBoxes(e);
+			p.PutElementInBoxes(e);
 
-		% 	testCase.verifyEqual(size(p.elementsQ{1}), [5 5]);
+			testCase.verifyEqual(size(p.elementsQ{1}), [5 5]);
 			
-		% 	for i=1:5
-		% 		for j=1:5
-		% 			b = p.elementsQ{1}{i,j};
-		% 			testCase.verifyTrue(ismember(e,b));
-		% 		end
-		% 	end
+			for i=1:5
+				for j=1:5
+					b = p.elementsQ{1}{i,j};
+					testCase.verifyTrue(ismember(e,b));
+				end
+			end
 
-		% 	% Test checking previous boxes directly
-		% 	n1.MoveNode([1.1,0.1]);
-		% 	n2.MoveNode([4.1,4.2]);
+			% Test checking previous boxes directly
+			n1.MoveNode([1.1,0.1]);
+			n2.MoveNode([4.1,4.2]);
 
-		% 	[ql,il,jl] = p.GetBoxIndicesBetweenNodes(n1, n2);
-		% 	[qp,ip,jp] = p.GetBoxIndicesBetweenNodesPrevious(n1, n2);
+			[ql,il,jl] = p.GetBoxIndicesBetweenNodes(n1, n2);
+			[qp,ip,jp] = p.GetBoxIndicesBetweenNodesPrevious(n1, n2);
 
-		% 	testCase.verifyNotEqual([ql,il,jl], [qp,ip,jp]);
+			testCase.verifyNotEqual([ql,il,jl], [qp,ip,jp]);
 
-		% 	p = SpacePartition(1, 1, t);
-		% 	% Need element to be in a cell for the final bit to work
-		% 	n1 = Node(0.1,0.1,1);
-		% 	n2 = Node(4.1,4.1,2);
-		% 	n3 = Node(4.1,0.1,3);
-		% 	n4 = Node(0.1,-3,4);
+			p = SpacePartition(1, 1, t);
+			% Need element to be in a cell for the final bit to work
+			n1 = Node(0.1,0.1,1);
+			n2 = Node(4.1,4.1,2);
+			n3 = Node(4.1,0.1,3);
+			n4 = Node(0.1,-3,4);
 
-		% 	el = Element(n4,n1,1);
-		% 	eb = Element(n3,n4,2);
-		% 	et = Element(n1,n2,3);
-		% 	er = Element(n2,n3,4);
+			el = Element(n4,n1,1);
+			eb = Element(n3,n4,2);
+			et = Element(n1,n2,3);
+			er = Element(n2,n3,4);
 
-		% 	c = Cell(NoCellCycle, [et,eb,el,er], 1);
+			c = Cell(NoCellCycle, [et,eb,el,er], 1);
 
-		% 	p.PutNodeInBox(n1);
-		% 	p.PutNodeInBox(n2);
+			p.PutNodeInBox(n1);
+			p.PutNodeInBox(n2);
 
-		% 	p.PutElementInBoxes(et);
-		% 	p.PutElementInBoxes(eb);
-		% 	p.PutElementInBoxes(el);
-		% 	p.PutElementInBoxes(er);
+			p.PutElementInBoxes(et);
+			p.PutElementInBoxes(eb);
+			p.PutElementInBoxes(el);
+			p.PutElementInBoxes(er);
 
-		% 	n1.MoveNode([1.1,0.1]);
-		% 	n2.MoveNode([4.1,4.2]);
+			n1.MoveNode([1.1,0.1]);
+			n2.MoveNode([4.1,4.2]);
 
-		% 	p.UpdateBoxForNode(n1);
-		% 	p.UpdateBoxForNode(n2);
+			p.UpdateBoxForNode(n1);
+			p.UpdateBoxForNode(n2);
 
-		% 	testCase.verifyFalse(et.IsElementInternal);
+			testCase.verifyFalse(et.IsElementInternal);
 
-		% 	% This should leave no elements in the first column of
-		% 	% quadrant 1, with the remaining being identical to before
+			% This should leave no elements in the first column of
+			% quadrant 1, with the remaining being identical to before
 
-		% 	% The element box quadrant will still be the same size...
-		% 	testCase.verifyEqual(size(p.elementsQ{1}), [5 5]);
+			% The element box quadrant will still be the same size...
+			testCase.verifyEqual(size(p.elementsQ{1}), [5 5]);
 
-		% 	% ... but the first column will have no entries...
-		% 	for j=1:5
-		% 		b = p.elementsQ{1}{1,j};
-		% 		testCase.verifyTrue(~ismember(et,b));
-		% 	end
+			% ... but the first column will have no entries...
+			for j=1:5
+				b = p.elementsQ{1}{1,j};
+				testCase.verifyTrue(~ismember(et,b));
+			end
 
-		% 	% ... while the rest will not have changed
-		% 	for i=2:5
-		% 		for j=1:5
-		% 			b = p.elementsQ{1}{i,j};
-		% 			testCase.verifyTrue(ismember(et,b));
-		% 		end
-		% 	end
+			% ... while the rest will not have changed
+			for i=2:5
+				for j=1:5
+					b = p.elementsQ{1}{i,j};
+					testCase.verifyTrue(ismember(et,b));
+				end
+			end
 
-		% 	% We also need to test between quadrants
-		% 	% Tecchnically, this should test every combination,
-		% 	% but I have enough faith in the previous testing
-		% 	% that it should hold true for any quadrant (fingers crossed!)
+			% We also need to test between quadrants
+			% Tecchnically, this should test every combination,
+			% but I have enough faith in the previous testing
+			% that it should hold true for any quadrant (fingers crossed!)
 
-		% 	p = SpacePartition(1, 1, t);
+			p = SpacePartition(1, 1, t);
 
-		% 	p.PutNodeInBox(n3);
-		% 	p.PutNodeInBox(n4);
+			p.PutNodeInBox(n3);
+			p.PutNodeInBox(n4);
 
-		% 	p.PutElementInBoxes(et);
-		% 	p.PutElementInBoxes(eb);
-		% 	p.PutElementInBoxes(el);
-		% 	p.PutElementInBoxes(er);
+			p.PutElementInBoxes(et);
+			p.PutElementInBoxes(eb);
+			p.PutElementInBoxes(el);
+			p.PutElementInBoxes(er);
 
-		% 	% Test that quadrant 1 and 2 have boxes with eb
-		% 	testCase.verifyEqual(size(p.elementsQ{1}), [5 5]); % Because of the initial cell pop
-		% 	testCase.verifyEqual(size(p.elementsQ{2}), [5 4]);
+			% Test that quadrant 1 and 2 have boxes with eb
+			testCase.verifyEqual(size(p.elementsQ{1}), [5 5]); % Because of the initial cell pop
+			testCase.verifyEqual(size(p.elementsQ{2}), [5 4]);
 
-		% 	for j=1:5
-		% 		b = p.elementsQ{1}{j,1};
-		% 		testCase.verifyTrue(ismember(eb,b));
-		% 	end
-		% 	for i=1:5
-		% 		for j=1:4
-		% 			b = p.elementsQ{2}{i,j};
-		% 			testCase.verifyTrue(ismember(eb,b));
-		% 		end
-		% 	end
+			for j=1:5
+				b = p.elementsQ{1}{j,1};
+				testCase.verifyTrue(ismember(eb,b));
+			end
+			for i=1:5
+				for j=1:4
+					b = p.elementsQ{2}{i,j};
+					testCase.verifyTrue(ismember(eb,b));
+				end
+			end
 
-		% 	% Move the nodes to another quadrant and it should hold up
-		% 	n3.MoveNode([4.1,-0.1]);
-		% 	n4.MoveNode([-0.1,-3]);
+			% Move the nodes to another quadrant and it should hold up
+			n3.MoveNode([4.1,-0.1]);
+			n4.MoveNode([-0.1,-3]);
 
-		% 	p.UpdateBoxForNode(n3);
-		% 	p.UpdateBoxForNode(n4);
+			p.UpdateBoxForNode(n3);
+			p.UpdateBoxForNode(n4);
 
-		% 	testCase.verifyEqual(size(p.elementsQ{1}), [5 2]); % Because of t
-		% 	testCase.verifyEqual(size(p.elementsQ{2}), [5 4]);
-		% 	testCase.verifyEqual(size(p.elementsQ{3}), [1 4]);
+			testCase.verifyEqual(size(p.elementsQ{1}), [5 2]); % Because of t
+			testCase.verifyEqual(size(p.elementsQ{2}), [5 4]);
+			testCase.verifyEqual(size(p.elementsQ{3}), [1 4]);
 
-		% 	for j=1:5
-		% 		b = p.elementsQ{1}{j,1};
-		% 		testCase.verifyTrue(~ismember(eb,b));
-		% 	end
+			for j=1:5
+				b = p.elementsQ{1}{j,1};
+				testCase.verifyTrue(~ismember(eb,b));
+			end
 
-		% 	for i=1:5
-		% 		for j=1:4
-		% 			b = p.elementsQ{2}{i,j};
-		% 			testCase.verifyTrue(ismember(eb,b));
-		% 		end
-		% 	end
+			for i=1:5
+				for j=1:4
+					b = p.elementsQ{2}{i,j};
+					testCase.verifyTrue(ismember(eb,b));
+				end
+			end
 
-		% 	for j=1:4
-		% 		b = p.elementsQ{3}{1,j};
-		% 		testCase.verifyTrue(ismember(eb,b));
-		% 	end
+			for j=1:4
+				b = p.elementsQ{3}{1,j};
+				testCase.verifyTrue(ismember(eb,b));
+			end
 
-		% end
+		end
 
 		function TestInitialise(testCase)
 
@@ -1399,6 +1399,10 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 		function TestSpacePartitionAfterKillingBoundaryCell(testCase)
 
 			t = CellGrowing(1,3,3,20,10,1,10);
+
+			k = BoundaryCellKiller(0, 10);
+
+			t.AddTissueLevelKiller(k);
 
 			t.cellList.CellCycleModel.pausePhaseLength = 1;
 			t.cellList.CellCycleModel.growingPhaseLength = 1;

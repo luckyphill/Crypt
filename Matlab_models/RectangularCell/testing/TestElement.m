@@ -47,9 +47,13 @@ classdef TestElement < matlab.unittest.TestCase
 
 			testCase.verifyEqual(e.Node1, n1);
 			testCase.verifyEqual(e.Node2, n3);
+			testCase.verifyTrue(ismember(e, n3.elementList));
+			testCase.verifyFalse(ismember(e, n2.elementList));
 
 			e.ReplaceNode(n1, n2);
 			testCase.verifyEqual(e.Node1, n2);
+			testCase.verifyTrue(ismember(e, n2.elementList));
+			testCase.verifyFalse(ismember(e, n1.elementList));
 
 			testCase.verifyWarning(@()e.ReplaceNode(n2,n2), 'e:sameNode', 'no warning from replace node');
 

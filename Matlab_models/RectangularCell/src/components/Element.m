@@ -34,7 +34,7 @@ classdef Element < matlab.mixin.SetGet
 	end
 
 	methods
-		
+
 		function obj = Element(Node1, Node2, id)
 			% All the initilising
 			% An element will always have a pair of nodes
@@ -226,6 +226,8 @@ classdef Element < matlab.mixin.SetGet
 						obj.Node1.AddElement(obj);
 						obj.nodeList(end + 1) = obj.Node1;
 
+						oldNode.elementList(oldNode.elementList == obj) = [];
+
 						modified = true;
 						obj.oldNode1 = oldNode;
 
@@ -237,6 +239,8 @@ classdef Element < matlab.mixin.SetGet
 						obj.Node2 = newNode;
 						obj.Node2.AddElement(obj);
 						obj.nodeList(end + 1) = obj.Node2;
+
+						oldNode.elementList(oldNode.elementList == obj) = [];
 
 						modified = true;
 						obj.oldNode2 = oldNode;
@@ -251,8 +255,9 @@ classdef Element < matlab.mixin.SetGet
 		function ReplaceCell(obj, oldC, newC)
 
 			% Currently the cell list has at most two entries
+
 			if obj.cellList(1) == oldC
-				obj.cellList(1) == newC;
+				obj.cellList(1) = newC;
 			else
 				if length(obj.cellList) == 2
 					if obj.cellList(2) == oldC
@@ -263,6 +268,12 @@ classdef Element < matlab.mixin.SetGet
 				end
 			end
 
+		end
+
+		function ReplaceCellList(obj, cellList)
+
+			obj.cellList = cellList;
+			
 		end
 
 		function RemoveCell(obj, c)
