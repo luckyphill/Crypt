@@ -1025,7 +1025,7 @@ classdef SpacePartition < matlab.mixin.SetGet
 			try
 				obj.elementsQ{q}{i,j}( obj.elementsQ{q}{i,j} == e ) = [];
 			catch
-				warning('Deleting element %d from box (%d,%d,%d) failed for some reason', e.id,q,i,j);
+				warning('SP:RemoveElement:DeleteFail','Deleting element %d from box (%d,%d,%d) failed for some reason', e.id,q,i,j);
 			end
 
 		end
@@ -1051,6 +1051,42 @@ classdef SpacePartition < matlab.mixin.SetGet
 				j = jl(k);
 				obj.RemoveElement(q,i,j,e);
 			end
+
+		end
+
+		function RepairModifiedElement(obj, e)
+
+			% One or both of the nodes has been
+			% modified, so we need to fix the boxes
+			if ~isempty(e.oldNode1)
+				old1 = e.oldNode1;
+			else
+				old1 = e.Node1;
+			end
+
+			if ~isempty(e.oldNode2)
+				old2 = e.oldNode2;
+			else
+				old2 = e.Node2;
+			end
+
+			if old1 == e.Node1 && old2 == e.Node2
+				warning('SP:AddNewCells:BothOldAreNotOld','Both old nodes match the current nodes. The modified flag was set incorrectly for element %d', e.id);
+			else
+
+				[ql,il,jl] = obj.GetBoxIndicesBetweenNodes(old1, old2);
+				for k = 1:length(ql)
+					obj.RemoveElement(ql(k),il(k),jl(k),e);
+				end
+
+				obj.PutElementInBoxes(e);
+
+			end
+
+			% All repaired, remove the flag and old nodes
+			modifiedInDivision = false;
+			e.oldNode1 = [];
+			e.oldNode2 = [];
 
 		end
 

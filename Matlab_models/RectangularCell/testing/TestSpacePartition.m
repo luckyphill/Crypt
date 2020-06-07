@@ -700,6 +700,10 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 				n4.MoveNode([xn4, yn4]);
 
 				% Will throw warnings because of inmplicit adding of elements
+				% This test doesn't catch any warnings for some reason...
+				% testCase.verifyWarning( @() p.UpdateBoxForNode(), 'SP:RemoveElement:DeleteFail');
+				% testCase.verifyWarning( @() p.UpdateBoxForNode(n4), 'SP:RemoveElement:DeleteFail');
+					
 				p.UpdateBoxForNode(n3);
 				p.UpdateBoxForNode(n4);
 				

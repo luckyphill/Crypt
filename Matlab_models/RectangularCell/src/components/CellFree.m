@@ -22,7 +22,11 @@ classdef CellFree < AbstractCell
 			% order around the perimeter of the cell, otherwise bad
 			% stuff will happen
 
-			% Might be useful ispolycw(x,y)
+			% Need to have some validation to check that the elements and nodes are
+			% in the anticlockwise order
+
+			% ispolycw
+
 
 			obj.CellCycleModel = varargin{1};
 			nodeList = varargin{2};
@@ -40,6 +44,10 @@ classdef CellFree < AbstractCell
 
 				obj.nodeList = nodeList;
 				obj.numNodes = length(nodeList);
+
+				% Verify that nodes are in anticlockwise order
+				% not sure how I can do that...
+				% ispolycw is a matlab function but it's part of a special toolbox
 
 				for i = 1:obj.numNodes-1
 
@@ -63,6 +71,10 @@ classdef CellFree < AbstractCell
 
 				elementList = varargin{3};
 				obj.elementList = elementList;
+
+				% Should throw in a verification step to check
+				% that nodes are in anticlockwise order and match
+				% with elements
 
 				for i = 1:length(nodeList)
 

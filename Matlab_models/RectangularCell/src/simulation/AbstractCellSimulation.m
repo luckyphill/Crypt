@@ -237,7 +237,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 				if obj.usingBoxes
 
 					% If the cell type is joined, then we need to make sure the
-					% internal element is labelled as so, and that the element
+					% internal element is labelled as such, and that the element
 					% is removed from the partition.
 
 					if strcmp(class(nc), 'SquareCellJoined')
@@ -249,7 +249,6 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 					end
 
-
 					% When a division occurs, the elements of the sister cell
 					% (which was also the parent cell before division), may
 					% have been modified to have a different node. This screws
@@ -258,38 +257,9 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 					for j = 1:length(oc.elementList)
 						e = oc.elementList(j);
+						
 						if e.modifiedInDivision
-							% One or both of the nodes has been
-							% modified, so we need to fix the boxes
-							if ~isempty(e.oldNode1)
-								old1 = e.oldNode1;
-							else
-								old1 = e.Node1;
-							end
-
-							if ~isempty(e.oldNode2)
-								old2 = e.oldNode2;
-							else
-								old2 = e.Node2;
-							end
-
-							if old1 == e.Node1 && old2 == e.Node2
-								warning('ACS:AddNewCells:BothOldAreNotOld','Both old nodes match the current nodes. The modified flag was set incorrectly for element %d', e.id);
-							else
-
-								[ql,il,jl] = obj.boxes.GetBoxIndicesBetweenNodes(old1, old2);
-								for k = 1:length(ql)
-									obj.boxes.RemoveElement(ql(k),il(k),jl(k),e);
-								end
-
-								obj.boxes.PutElementInBoxes(e);
-
-							end
-
-							modifiedInDivision = false;
-							e.oldNode1 = [];
-							e.oldNode2 = [];
-
+							obj.boxes.RepairModifiedElement(e);
 						end
 
 					end

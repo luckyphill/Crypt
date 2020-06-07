@@ -147,6 +147,17 @@ classdef Element < matlab.mixin.SetGet
 
 		end
 
+		function SwapNodes(obj)
+
+			% Used when the nodes are not anticlockwise 1 -> 2
+
+			a = obj.Node1;
+
+			obj.Node1 = obj.Node2;
+			obj.Node2 = a;
+
+		end
+
 		function AddCell(obj, c)
 
 			obj.cellList = [obj.cellList , c];

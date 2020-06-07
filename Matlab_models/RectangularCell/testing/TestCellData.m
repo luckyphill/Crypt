@@ -48,7 +48,8 @@ classdef TestCellData < matlab.unittest.TestCase
 
 		function TestCellPerimeter(testCase)
 
-			% Test a different shape
+			% Test a bunch of different shapes and see that the perimeter
+			% is correct for all cell types
 			n1 = Node(0,0,1);
 			n2 = Node(0,1,2);
 			n3 = Node(1,0,3);
@@ -60,18 +61,17 @@ classdef TestCellData < matlab.unittest.TestCase
 			er = Element(n3,n4,4);
 
 			c = SquareCellJoined(NoCellCycle, [et,eb,el,er], 1);
-
 			testCase.verifyEqual(c.cellData('cellPerimeter').GetData(c), 4);
 
 			c = SquareCellFree(NoCellCycle, [et,eb,el,er], 1);
-
 			testCase.verifyEqual(c.cellData('cellPerimeter').GetData(c), 4);
 
 		end
 
 		function TestTargetArea(testCase)
 
-			% With NoCellCycle
+			% Test a bunch of different shapes and see that the perimeter
+			% is correct for all cell types
 			n1 = Node(0,0,1);
 			n2 = Node(0,1,2);
 			n3 = Node(0.5,0,3);

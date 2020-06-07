@@ -24,7 +24,7 @@ classdef SquareCellJoined < AbstractCell
 		function obj = SquareCellJoined(Cycle, elementList, id)
 			% All the initialising
 			% A square cell will always have 4 elements
-			% elementList must have 4 elements in the order [ElementTop, ElementBottom, ElementLeft, ElementRight]
+			% elementList must have 4 elements in the order [elementTop, elementBottom, elementLeft, elementRight]
 
 			% Since these are joined cells, one of the left or right
 			% elements will be shared with another cell (assuming there is more
@@ -36,19 +36,14 @@ classdef SquareCellJoined < AbstractCell
 			obj.elementLeft 	= elementList(3);
 			obj.elementRight 	= elementList(4);
 
-			obj.elementList 	= elementList;
+			obj.MakeEverythingAntiClockwise();
 
-			obj.elementTop.AddCell(obj);
-			obj.elementBottom.AddCell(obj);
-			obj.elementLeft.AddCell(obj);
-			obj.elementRight.AddCell(obj);
 
 			obj.CellCycleModel = Cycle;
 
 			obj.age = Cycle.GetAge();
 
-			obj.AddNodesInOrder();
-
+			
 			obj.id = id;
 
 			obj.ancestorId = id;
@@ -183,8 +178,8 @@ classdef SquareCellJoined < AbstractCell
 			obj.age = 0;
 
 			% Reset the node list
-			obj.nodeList = [obj.nodeTopLeft, obj.nodeTopRight, obj.nodeBottomRight, obj.nodeBottomLeft];
-			obj.elementList = [obj.elementTop, obj.elementBottom, obj.elementLeft, obj.elementRight];
+			obj.nodeList = [obj.nodeBottomLeft, obj.nodeBottomRight, obj.nodeTopRight, obj.nodeTopLeft];
+			obj.elementList = [obj.elementBottom, obj.elementRight, obj.elementTop, obj.elementLeft];
 
 			% Make a list of new nodes and elements
 			newNodeList 	= [nodeMiddleTop, nodeMiddleBottom];
@@ -325,56 +320,92 @@ classdef SquareCellJoined < AbstractCell
 
 	methods (Access = private)
 
-		function AddNodesInOrder(obj)
-			% Adds the nodes properly so we always know which node is where
+		function MakeEverythingAntiClockwise(obj)
 
-			% NodeTopLeft must be in both elementTop and elementLeft etc.
-			% so use this fact to allocate the nodes properly
+			% A helper method to unclutter the constructor
+			% Takes the nodes and elements and makes sure they are
+			% all put in anticlockwise order. Has error checking when
+			% the order of nodes in an element can't make it work
 
-			top1 = obj.elementTop.Node1;
-			top2 = obj.elementTop.Node2;
-
-			left1 = obj.elementLeft.Node1;
-			left2 = obj.elementLeft.Node2;
-
-			if top1 == left1
-				obj.nodeTopLeft = top1;
-				obj.nodeTopRight = top2;
-				obj.nodeBottomLeft = left2;
-				obj.nodeBottomRight = obj.elementBottom.GetOtherNode(left2);
-			end
-
-			if top1 == left2
-				obj.nodeTopLeft = top1;
-				obj.nodeTopRight = top2;
-				obj.nodeBottomLeft = left1;
-				obj.nodeBottomRight = obj.elementBottom.GetOtherNode(left1);
-			end
-
-			if top2 == left1
-				obj.nodeTopLeft = top2;
-				obj.nodeTopRight = top1;
-				obj.nodeBottomLeft = left2;
-				obj.nodeBottomRight = obj.elementBottom.GetOtherNode(left2);
-			end
-
-			if top2 == left2
-				obj.nodeTopLeft = top2;
-				obj.nodeTopRight = top1;
-				obj.nodeBottomLeft = left1;
-				obj.nodeBottomRight = obj.elementBottom.GetOtherNode(left1);
-			end
-
-			% This order is critical for IsPointIncideCell to work correctly
-			obj.nodeList = [obj.nodeTopLeft, obj.nodeTopRight, obj.nodeBottomRight, obj.nodeBottomLeft];
 			
+			% Starting from elementBottom, assemble elementList in anticlockwise order
+			% Node1 from each element must match the order from AddNodesInOrder() 
+			obj.elementList = [obj.elementBottom, obj.elementRight, obj.elementTop, obj.elementLeft];
+
+			% First, need to make sure the nodes are in the correct elements
+
+			% elementBottom and elementRight must share a node
+			if ~ismember( obj.elementBottom.Node2, obj.elementRight.nodeList )
+				% Maybe the nodes are not anticlockwise, so check they're not just
+				% swapped
+				if ~ismember( obj.elementBottom.Node1, obj.elementRight.nodeList )
+					error('SCJ:MakeEverythingAntiClockwise:ElementsWrong','Bottom element doesnt share a node with Right element');
+				else
+					obj.elementBottom.SwapNodes();
+				end
+
+			end
+
+			% elementRight and elementTop must share a node
+			if ~ismember( obj.elementRight.Node2, obj.elementTop.nodeList )
+				% Maybe the nodes are not anticlockwise, so check they're not just
+				% swapped
+				if ~ismember( obj.elementRight.Node1, obj.elementTop.nodeList)
+					error('SCJ:MakeEverythingAntiClockwise:ElementsWrong','Right element doesnt share a node with Top element');
+				else
+					obj.elementRight.SwapNodes();
+				end
+
+			end
+
+			% elementTop and elementLeft must share a node
+			if ~ismember( obj.elementTop.Node2, obj.elementLeft.nodeList )
+				% Maybe the nodes are not anticlockwise, so check they're not just
+				% swapped
+				if ~ismember( obj.elementTop.Node1, obj.elementLeft.nodeList )
+					error('SCJ:MakeEverythingAntiClockwise:ElementsWrong','Top element doesnt share a node with Left element');
+				else
+					obj.elementTop.SwapNodes();
+				end
+
+			end
+
+			% elementLeft and elementBottom must share a node
+			if ~ismember( obj.elementLeft.Node2, obj.elementBottom.nodeList )
+				% Maybe the nodes are not anticlockwise, so check they're not just
+				% swapped
+				if ~ismember( obj.elementLeft.Node1, obj.elementBottom.nodeList )
+					error('SCJ:MakeEverythingAntiClockwise:ElementsWrong','Left element doesnt share a node with Bottom element');
+				else
+					obj.elementLeft.SwapNodes();
+				end
+
+			end
+
+			% Elements are all good now, add them to the cell
+			obj.elementTop.AddCell(obj);
+			obj.elementBottom.AddCell(obj);
+			obj.elementLeft.AddCell(obj);
+			obj.elementRight.AddCell(obj);
+
+
+			% If we get to this point, we know exactly where the nodes are
+			obj.nodeBottomLeft 	= obj.elementBottom.Node1;
+			obj.nodeBottomRight = obj.elementRight.Node1;
+			obj.nodeTopRight 	= obj.elementTop.Node1;
+			obj.nodeTopLeft 	= obj.elementLeft.Node1;
+
+			obj.nodeList = [obj.nodeBottomLeft, obj.nodeBottomRight, obj.nodeTopRight, obj.nodeTopLeft];
+
 			obj.nodeTopLeft.AddCell(obj);
-			obj.nodeTopLeft.isTopNode = true;
 			obj.nodeTopRight.AddCell(obj);
-			obj.nodeTopRight.isTopNode = true;
 			obj.nodeBottomLeft.AddCell(obj);
-			obj.nodeBottomLeft.isTopNode = false;
 			obj.nodeBottomRight.AddCell(obj);
+
+			% Not sure if I still need this, but I'll leave it for now...
+			obj.nodeTopLeft.isTopNode = true;
+			obj.nodeTopRight.isTopNode = true;
+			obj.nodeBottomLeft.isTopNode = false;
 			obj.nodeBottomRight.isTopNode = false;
 
 		end
