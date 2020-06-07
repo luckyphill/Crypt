@@ -5,6 +5,7 @@ classdef CellFree < AbstractCell
 
 		% Division axis calculator maybe
 		numNodes
+
 	end
 
 	methods
@@ -29,10 +30,9 @@ classdef CellFree < AbstractCell
 
 			obj.ancestorId = varargin{end};
 
-			obj.AddCellData(CellArea());
-			obj.AddCellData(CellPerimeter());
-			obj.AddCellData(TargetPerimeterSquare());
-			obj.AddCellData(TargetArea());
+			cellDataArray = [CellAreaSquare(), CellPerimeter(), TargetPerimeterSquare(), TargetArea()];
+
+			obj.AddCellDataArray(cellDataArray);
 
 			if length(varargin) == 3
 				% This case happens when a new simulation is created
@@ -383,6 +383,7 @@ classdef CellFree < AbstractCell
 
 			% Old cell should be completely remodelled by this point, adjust the age back to zero
 			obj.CellCycleModel.SetAge(0);
+			obj.age = 0;
 
 			% Make a list of new nodes and elements
 			newNodeList 	= [newNodesLeft, newNodesRight];

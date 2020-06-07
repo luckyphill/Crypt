@@ -22,8 +22,8 @@ classdef LineSimulation < AbstractCellSimulation
 
 		function KillCells(obj)
 
-			KillCells@AbstractCellSimulation();
-			if obj.usingBoxes && strcmp(class(nc), 'SquareCellJoined')
+			KillCells@AbstractCellSimulation(obj);
+			if obj.usingBoxes && strcmp(class(obj.cellList(1)), 'SquareCellJoined')
 				% Make sure that the boundary cells have their outer
 				% elements in the space partition, only needs to be updated
 				% when cells are actually killed.
@@ -31,16 +31,19 @@ classdef LineSimulation < AbstractCellSimulation
 				% This will most likely update the time step after death occurs
 				% so there could be some buggyness
 
-				bcs.obj.simData('boundaryCells');
+				bcs = obj.simData('boundaryCells').GetData(obj);
 
-				if bcs('left').elementLeft.internal
-					bcs('left').elementLeft.internal = false;
-					obj.boxes.PutElementInBoxes(bcs('left').elementLeft);
+				l = bcs('left');
+				r = bcs('right');
+
+				if l.elementLeft.internal
+					l.elementLeft.internal = false;
+					obj.boxes.PutElementInBoxes(l.elementLeft);
 				end
 
-				if bcs('right').elementRight.internal
-					bcs('right').elementRight.internal = false;
-					obj.boxes.PutElementInBoxes(bcs('right').elementRight);
+				if r.elementRight.internal
+					r.elementRight.internal = false;
+					obj.boxes.PutElementInBoxes(r.elementRight);
 				end
 
 			end

@@ -28,10 +28,22 @@ classdef SimplePhaseBasedCellCycle < AbstractCellCycleModel
 
 		end
 
+		% Redefine the AgeCellCycle method to update the phase colour
+		% Could probably add in a phase tracking variable that gets updated here
+		function AgeCellCycle(obj, dt)
+
+			obj.age = obj.age + dt;
+			if obj.age > obj.pausePhaseLength
+				obj.colour = obj.GROW;
+			end
+
+		end
+
 		function newCCM = Duplicate(obj)
 
 			newCCM = SimplePhaseBasedCellCycle(obj.meanPausePhaseLength, obj.meanGrowingPhaseLength);
 			newCCM.SetAge(0);
+			newCCM.colour = obj.PAUSE;
 
 		end
 

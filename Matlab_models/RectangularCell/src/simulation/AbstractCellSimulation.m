@@ -4,6 +4,8 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 	properties
 
+		seed
+        
 		nodeList
 		nextNodeId = 1
 
@@ -55,6 +57,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		function SetRNGSeed(obj, seed)
 
+			obj.seed = seed;
 			rng(seed);
 
 		end
@@ -279,10 +282,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 									obj.boxes.RemoveElement(ql(k),il(k),jl(k),e);
 								end
 
-								[ql,il,jl] = obj.boxes.GetBoxIndicesBetweenNodes(e.Node1, e.Node2);
-								for k = 1:length(ql)
-									obj.boxes.RemoveElement(ql(k),il(k),jl(k),e);
-								end
+								obj.boxes.PutElementInBoxes(e);
 
 							end
 
@@ -302,7 +302,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 				e = newElements(i);
 				e.id = obj.GetNextElementId();
-				if obj.usingBoxes
+				if obj.usingBoxes && ~e.internal
 					obj.boxes.PutElementInBoxes(e);
 				end
 
@@ -461,7 +461,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 			stopped = false;
 			for i = 1:length(obj.stoppingConditions)
-				if obj.stoppingConditions(i).CheckStoppingCondition(obj);
+				if obj.stoppingConditions(i).CheckStoppingCondition(obj)
 					stopped = true;
 					break;
 				end
@@ -487,7 +487,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		end
 
-		function Visualise(obj)
+		function Visualise(obj, varargin)
 
 			h = figure();
 			hold on
@@ -514,12 +514,14 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 			axis equal
 
-			cL = obj.simData('centreLine').GetData(obj);
-			plot(cL(:,1), cL(:,2), 'k');
+			if ~isempty(varargin)
+				cL = obj.simData('centreLine').GetData(obj);
+				plot(cL(:,1), cL(:,2), 'k');
+			end
 
 		end
 
-		function VisualiseWireFrame(obj)
+		function VisualiseWireFrame(obj, varargin)
 
 			% plot a line for each element
 
@@ -539,12 +541,14 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 			axis equal
 
-			cL = obj.simData('centreLine').GetData(obj);
-			plot(cL(:,1), cL(:,2), 'k');
+			if ~isempty(varargin)
+				cL = obj.simData('centreLine').GetData(obj);
+				plot(cL(:,1), cL(:,2), 'k');
+			end
 
 		end
 
-		function VisualiseWireFramePrevious(obj)
+		function VisualiseWireFramePrevious(obj, varargin)
 
 			% plot a line for each element
 
@@ -600,6 +604,11 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			end
 
 			axis equal
+
+			if ~isempty(varargin)
+				cL = obj.simData('centreLine').GetData(obj);
+				plot(cL(:,1), cL(:,2), 'k');
+			end
 
 		end
 

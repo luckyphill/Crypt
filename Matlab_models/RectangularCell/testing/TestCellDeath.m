@@ -69,9 +69,12 @@ classdef TestCellDeath < matlab.unittest.TestCase
 			testCase.verifyNotEmpty(t.boxes.nodesQ{1}{2,3});
 			testCase.verifyNotEmpty(t.boxes.nodesQ{1}{3,3});
 			testCase.verifyNotEmpty(t.boxes.nodesQ{1}{4,3});
+
+			% Box that is no longer empty because the left element
+			% is now external
+			testCase.verifyNotEmpty(t.boxes.elementsQ{1}{2,2});
 			
-			% Initiall epty (internal element)
-			testCase.verifyEmpty(t.boxes.elementsQ{1}{2,2});
+			% Initially empty (internal element)
 			testCase.verifyEmpty(t.boxes.elementsQ{1}{3,2});
 
 			% Empty from deletion
@@ -160,11 +163,13 @@ classdef TestCellDeath < matlab.unittest.TestCase
 			testCase.verifyEmpty(t.boxes.elementsQ{1}{4,3});
 
 			% Reduced size from deletion
-			testCase.verifyEqual(size(t.boxes.elementsQ{1}{3,1}), [1,1]);
-			testCase.verifyEqual(size(t.boxes.elementsQ{1}{3,3}), [1,1]);
+			testCase.verifyEqual(size(t.boxes.elementsQ{1}{3,1}), [1,2]);
+			testCase.verifyEqual(size(t.boxes.elementsQ{1}{3,3}), [1,2]);
 
+			% No longer empty because right element is now external
+			testCase.verifyNotEmpty(t.boxes.elementsQ{1}{3,2});
+			
 			% Initially empty (internal elements)
-			testCase.verifyEmpty(t.boxes.elementsQ{1}{3,2});
 			testCase.verifyEmpty(t.boxes.elementsQ{1}{2,2});
 
 			% Initially full

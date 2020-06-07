@@ -45,16 +45,17 @@ classdef SquareCellJoined < AbstractCell
 
 			obj.CellCycleModel = Cycle;
 
+			obj.age = Cycle.GetAge();
+
 			obj.AddNodesInOrder();
 
 			obj.id = id;
 
 			obj.ancestorId = id;
 
-			obj.AddCellData(CellAreaSquare());
-			obj.AddCellData(CellPerimeter());
-			obj.AddCellData(TargetPerimeterSquare());
-			obj.AddCellData(TargetArea());
+			cellDataArray = [CellAreaSquare(), CellPerimeter(), TargetPerimeterSquare(), TargetArea()];
+
+			obj.AddCellDataArray(cellDataArray);
 
 			obj.newCellTargetPerimeter = 3;
 			obj.grownCellTargetPerimeter = 4;
@@ -179,6 +180,7 @@ classdef SquareCellJoined < AbstractCell
 			% Old cell should be completely remodelled by this point, adjust the age back to zero
 
 			obj.CellCycleModel.SetAge(0);
+			obj.age = 0;
 
 			% Reset the node list
 			obj.nodeList = [obj.nodeTopLeft, obj.nodeTopRight, obj.nodeBottomRight, obj.nodeBottomLeft];

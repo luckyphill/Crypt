@@ -225,7 +225,7 @@ classdef Element < matlab.mixin.SetGet
 
 						oldNode.elementList(oldNode.elementList == obj) = [];
 
-						modified = true;
+						obj.modifiedInDivision = true;
 						obj.oldNode1 = oldNode;
 
 					case obj.Node2
@@ -239,7 +239,7 @@ classdef Element < matlab.mixin.SetGet
 
 						oldNode.elementList(oldNode.elementList == obj) = [];
 
-						modified = true;
+						obj.modifiedInDivision = true;
 						obj.oldNode2 = oldNode;
 						
 					otherwise

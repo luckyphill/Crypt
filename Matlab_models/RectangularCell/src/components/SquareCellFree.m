@@ -61,7 +61,7 @@ classdef SquareCellFree < SquareCellJoined
 			% Vectors point from cell 1 to cell 2
 
 			topV = (obj.nodeTopLeft.position - obj.nodeTopRight.position) / obj.elementTop.GetLength();
-			bottomV = obj.nodeBottomLeft.position - obj.nodeBottomRight.position / obj.elementBottom.GetLength();
+			bottomV = (obj.nodeBottomLeft.position - obj.nodeBottomRight.position) / obj.elementBottom.GetLength();
 
 			top1 = midTop - topV * obj.newFreeCellSeparation / 2;
 			top2 = midTop + topV * obj.newFreeCellSeparation / 2;
@@ -134,6 +134,7 @@ classdef SquareCellFree < SquareCellJoined
 			% Old cell should be completely remodelled by this point, adjust the age back to zero
 
 			obj.CellCycleModel.SetAge(0);
+			obj.age = 0;
 
 			% Reset the node list for this cell
 			obj.nodeList 	= [obj.nodeTopLeft, obj.nodeTopRight, obj.nodeBottomRight, obj.nodeBottomLeft];

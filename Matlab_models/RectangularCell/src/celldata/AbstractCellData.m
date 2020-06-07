@@ -1,4 +1,4 @@
-classdef AbstractCellData < handle
+classdef (Abstract) AbstractCellData < handle & matlab.mixin.Heterogeneous
 	% This class sets out the required functions for working
 	% out various types of data that can be extracted from the 
 	% a cell

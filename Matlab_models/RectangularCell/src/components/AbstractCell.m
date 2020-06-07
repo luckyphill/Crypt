@@ -39,10 +39,11 @@ classdef AbstractCell < handle & matlab.mixin.Heterogeneous
 		% because the cell can be deleted from the simulation
 		ancestorId
 
+
 		% A collection objects for calculating data about the cell
 		% stored in a map container so each type of data can be given a
 		% meaingful name
-		cellData = containers.Map
+		cellData
 		
 	end
 
@@ -106,16 +107,17 @@ classdef AbstractCell < handle & matlab.mixin.Heterogeneous
 
 		end
 
-		function AddCellData(obj, d)
+		function AddCellDataArray(obj, cellDataArray)
 
-			% Add the simulation data calculator to the map
-			% this will necessarily allow only one instance
-			% of a given type of SimulationData, since the 
-			% names are immutable
+			% Need to explicitly create a map object or matlab
+			% will only point to one map object for the
+			% entire list of Cells...
+			cD = containers.Map;
+			for i = 1:length(cellDataArray)
+				cD(cellDataArray(i).name) = cellDataArray(i);
+			end
 
-			% This is calculate-on-demand, so it does not have
-			% an associated 'use' method here
-			obj.cellData(d.name) = d;
+			obj.cellData = cD;
 
 		end
 

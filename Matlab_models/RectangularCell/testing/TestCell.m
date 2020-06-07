@@ -14,7 +14,6 @@ classdef TestCell < matlab.unittest.TestCase
 			et = Element(n2,n4,3);
 			er = Element(n3,n4,4);
 
-			% TODO: Make this work with arbitrary order of elements
 			c = Cell(NoCellCycle, [et,eb,el,er], 1);
 
 			c.deformationEnergyParameter = 1;

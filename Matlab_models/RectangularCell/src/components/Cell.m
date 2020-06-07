@@ -300,6 +300,7 @@ classdef Cell < matlab.mixin.SetGet
 			% Old cell should be completely remodelled by this point, adjust the age back to zero
 
 			obj.CellCycleModel.SetAge(0);
+			obj.age = 0;
 
 			% Reset the node list
 			obj.nodeList = [obj.nodeTopLeft, obj.nodeTopRight, obj.nodeBottomRight, obj.nodeBottomLeft];
@@ -431,6 +432,7 @@ classdef Cell < matlab.mixin.SetGet
 			% Old cell should be completely remodelled by this point, adjust the age back to zero
 
 			obj.CellCycleModel.SetAge(0);
+			obj.age = 0;
 
 			% Reset the node list for this cell
 			obj.nodeList 	= [obj.nodeTopLeft, obj.nodeTopRight, obj.nodeBottomRight, obj.nodeBottomLeft];

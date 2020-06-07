@@ -699,6 +699,7 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 				n3.MoveNode([xn3, yn3]);
 				n4.MoveNode([xn4, yn4]);
 
+				% Will throw warnings because of inmplicit adding of elements
 				p.UpdateBoxForNode(n3);
 				p.UpdateBoxForNode(n4);
 				
@@ -1224,57 +1225,61 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 			testCase.verifyEqual(size(t.boxes.nodesQ{4}{1,3}), [1, 1]);
 
 			
+			% Need to update this test to reflect the left and right elements
+			% now are permitted to be external in a CellJoined simulation
 
 			% Check element quadrants
-			% Note that only top or bottom elements are placed in boxes
-			testCase.verifyTrue(isempty(t.boxes.elementsQ{1}{1,1})); % Empty
-			testCase.verifyTrue(isempty(t.boxes.elementsQ{1}{2,1})); % Empty
-			testCase.verifyTrue(isempty(t.boxes.elementsQ{1}{1,2})); % Empty
-			testCase.verifyTrue(isempty(t.boxes.elementsQ{1}{2,2})); % Empty
-
-			testCase.verifyTrue(isempty(t.boxes.elementsQ{4}{1,1})); % Empty
-			testCase.verifyTrue(isempty(t.boxes.elementsQ{4}{1,2})); % Empty
-
+			% Note that only external elements are placed in boxes
+			testCase.verifyEmpty( t.boxes.elementsQ{1}{1,1} ); % Empty
+			testCase.verifyEmpty( t.boxes.elementsQ{1}{1,2} ); % Empty
 
 			% Check the sizes are correct
 			testCase.verifyEqual(size(t.boxes.elementsQ{1}{1,3}), [1, 2]);
-			testCase.verifyEqual(size(t.boxes.elementsQ{1}{2,3}), [1, 1]);
+			testCase.verifyEqual(size(t.boxes.elementsQ{1}{2,1}), [1, 1]);
+			testCase.verifyEqual(size(t.boxes.elementsQ{1}{2,2}), [1, 1]);
+			testCase.verifyEqual(size(t.boxes.elementsQ{1}{2,3}), [1, 2]);
 
 			testCase.verifyEqual(size(t.boxes.elementsQ{2}{1,1}), [1, 2]);
-			testCase.verifyEqual(size(t.boxes.elementsQ{2}{2,1}), [1, 1]);
+			testCase.verifyEqual(size(t.boxes.elementsQ{2}{2,1}), [1, 2]);
 
-			testCase.verifyEqual(size(t.boxes.elementsQ{3}{1,1}), [1, 1]);
+			testCase.verifyEqual(size(t.boxes.elementsQ{3}{1,1}), [1, 2]);
 
-			testCase.verifyEqual(size(t.boxes.elementsQ{4}{1,3}), [1, 1]);
+			testCase.verifyEqual(size(t.boxes.elementsQ{4}{1,1}), [1, 1]);
+			testCase.verifyEqual(size(t.boxes.elementsQ{4}{1,2}), [1, 1]);
+			testCase.verifyEqual(size(t.boxes.elementsQ{4}{1,3}), [1, 2]);
 
 
 			% Check the contents of the node boxes
 
 			testCase.verifyEqual( t.boxes.nodesQ{1}{1,3}, [  t.cellList(1).nodeTopLeft ]);
 			testCase.verifyEqual( t.boxes.nodesQ{1}{1,3}, [  t.cellList(2).nodeTopRight ]);
-
 			testCase.verifyEqual( t.boxes.nodesQ{1}{2,3}, [  t.cellList(1).nodeTopRight ]);
-
 			testCase.verifyEqual( t.boxes.nodesQ{2}{1,1}, [  t.cellList(1).nodeBottomLeft ]);
 			testCase.verifyEqual( t.boxes.nodesQ{2}{1,1}, [  t.cellList(2).nodeBottomRight ]);
-
 			testCase.verifyEqual( t.boxes.nodesQ{2}{2,1}, [  t.cellList(1).nodeBottomRight ]);
-
 			testCase.verifyEqual( t.boxes.nodesQ{3}{1,1}, [  t.cellList(2).nodeBottomLeft ]);
-
 			testCase.verifyEqual( t.boxes.nodesQ{4}{1,3}, [  t.cellList(2).nodeTopLeft ]);
 
 			% Check the contents of the element boxes
 
-			testCase.verifyEqual(  t.boxes.elementsQ{1}{1,3}  ,  [ t.cellList(1).elementTop, t.cellList(2).elementTop ] );
-			testCase.verifyEqual(  t.boxes.elementsQ{1}{2,3}  ,  [ t.cellList(1).elementTop ] );
+			testCase.verifyTrue(   ismember( t.cellList(1).elementTop, 		t.boxes.elementsQ{1}{1,3} )   )
+			testCase.verifyTrue(   ismember( t.cellList(2).elementTop, 		t.boxes.elementsQ{1}{1,3} )   )
 
-			testCase.verifyEqual(  t.boxes.elementsQ{2}{1,1}  ,  [ t.cellList(1).elementBottom, t.cellList(2).elementBottom ] );
-			testCase.verifyEqual(  t.boxes.elementsQ{2}{2,1}  ,  [ t.cellList(1).elementBottom ] );
+			testCase.verifyTrue(   ismember( t.cellList(1).elementRight, 	t.boxes.elementsQ{1}{2,3} )   )
+			testCase.verifyTrue(   ismember( t.cellList(1).elementTop,		t.boxes.elementsQ{1}{2,3} )   )
 
-			testCase.verifyEqual(  t.boxes.elementsQ{3}{1,1}  ,  [ t.cellList(2).elementBottom ] );
+			testCase.verifyTrue(   ismember( t.cellList(1).elementBottom, 	t.boxes.elementsQ{2}{1,1} )   )
+			testCase.verifyTrue(   ismember( t.cellList(2).elementBottom,	t.boxes.elementsQ{2}{1,1} )   )
 
-			testCase.verifyEqual(  t.boxes.elementsQ{4}{1,3}  ,  [ t.cellList(2).elementTop ] );
+			testCase.verifyTrue(   ismember( t.cellList(1).elementRight,	t.boxes.elementsQ{2}{2,1} )   )
+			testCase.verifyTrue(   ismember( t.cellList(1).elementBottom,	t.boxes.elementsQ{2}{2,1} )   )
+
+			testCase.verifyTrue(   ismember( t.cellList(2).elementLeft,		t.boxes.elementsQ{3}{1,1} )   )
+			testCase.verifyTrue(   ismember( t.cellList(2).elementBottom,	t.boxes.elementsQ{3}{1,1} )   )
+
+			testCase.verifyTrue(   ismember( t.cellList(2).elementLeft,		t.boxes.elementsQ{4}{1,3} )   )
+			testCase.verifyTrue(   ismember( t.cellList(2).elementTop,		t.boxes.elementsQ{4}{1,3} )   )
+
 
 		end
 
