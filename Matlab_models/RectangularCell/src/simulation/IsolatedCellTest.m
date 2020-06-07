@@ -1,4 +1,4 @@
-classdef IsolatedCellTest < LineSimulation
+classdef IsolatedCellTest < FreeCellSimulation
 
 	% A proof of concept simulation for a cells that are always
 	% completely separate from the other cells in the simulation

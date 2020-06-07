@@ -109,6 +109,9 @@ classdef LinkedBoundariesY < LineSimulation
 				elementBottom 	= Element(nodeBottomLeft, nodeBottomRight,obj.GetNextElementId());
 				elementTop	 	= Element(nodeTopLeft, nodeTopRight,obj.GetNextElementId());
 				elementRight 	= Element(nodeBottomRight, nodeTopRight,obj.GetNextElementId());
+				
+				% Critical for joined cells
+				elementLeft.internal = true;
 
 				obj.AddElementsToList([elementBottom, elementRight, elementTop]);
 

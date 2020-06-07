@@ -102,6 +102,8 @@ classdef RingOfCells < RingSimulation
 			elementBottom 	= Element(bottomNodes(1), bottomNodes(2), obj.GetNextElementId());
 			elementTop	 	= Element(topNodes(1), topNodes(2), obj.GetNextElementId());
 			
+			% Critical for joined cells
+			elementLeft.internal = true;
 
 			obj.AddElementsToList([elementBottom, elementRight, elementTop, elementLeft]);
 
@@ -126,6 +128,9 @@ classdef RingOfCells < RingSimulation
 				elementBottom 	= Element(bottomNodes(i), bottomNodes(i+1), obj.GetNextElementId());
 				elementTop	 	= Element(topNodes(i), topNodes(i+1), obj.GetNextElementId());
 
+				% Critical for joined cells
+				elementLeft.internal = true;
+
 				obj.AddElementsToList([elementBottom, elementRight, elementTop]);
 
 				ccm = SimplePhaseBasedCellCycle(p, g);
@@ -142,6 +147,9 @@ classdef RingOfCells < RingSimulation
 			elementLeft 	= obj.cellList(1).elementRight;
 			elementBottom 	= Element(bottomNodes(nCells), bottomNodes(1), obj.GetNextElementId());
 			elementTop	 	= Element(topNodes(nCells), topNodes(1), obj.GetNextElementId());
+
+			% Critical for joined cells
+			elementLeft.internal = true;
 
 			obj.AddElementsToList([elementBottom, elementTop]);
 

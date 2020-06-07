@@ -130,6 +130,8 @@ classdef SquareCellJoined < AbstractCell
 			newElementTop 		= Element(obj.nodeTopLeft, nodeMiddleTop, -2);
 			newElementBottom 	= Element(obj.nodeBottomLeft, nodeMiddleBottom, -3);
 
+			% Important for Joined Cells
+			newElementMiddle.internal = true;
 			% Duplicate the cell cycle model from the old cell
 			newCCM = obj.CellCycleModel.Duplicate();
 

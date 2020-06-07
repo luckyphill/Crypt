@@ -95,7 +95,8 @@ classdef BoundaryCellKiller < AbstractTissueLevelCellKiller
 			c.elementTop.delete;
 			c.elementLeft.delete;
 			c.elementBottom.delete;
-
+			
+			% c.elementRight.internal = false; % Handled in the KillCells method of LineSImulatoin
 			% Clean up nodes
 
 			t.nodeList(t.nodeList == c.nodeTopLeft) = [];
@@ -154,6 +155,7 @@ classdef BoundaryCellKiller < AbstractTissueLevelCellKiller
 			c.elementTop.delete;
 			c.elementRight.delete;
 			c.elementBottom.delete;
+			% c.elementLeft.internal = false; % Handled in the KillCells method of LineSImulatoin
 
 			% Clean up nodes 
 

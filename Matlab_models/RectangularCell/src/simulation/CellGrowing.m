@@ -72,6 +72,9 @@ classdef CellGrowing < LineSimulation
 				elementTop	 	= Element(nodeTopLeft, nodeTopRight,obj.GetNextElementId());
 				elementRight 	= Element(nodeBottomRight, nodeTopRight,obj.GetNextElementId());
 
+				% Critical for joined cells
+				elementLeft.internal = true;
+				
 				obj.AddElementsToList([elementBottom, elementRight, elementTop]);
 
 				ccm = SimplePhaseBasedCellCycle(p, g);

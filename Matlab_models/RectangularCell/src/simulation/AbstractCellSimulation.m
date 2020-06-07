@@ -232,6 +232,21 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 				nc.id = obj.GetNextCellId();
 
 				if obj.usingBoxes
+
+					% If the cell type is joined, then we need to make sure the
+					% internal element is labelled as so, and that the element
+					% is removed from the partition.
+
+					if strcmp(class(nc), 'SquareCellJoined')
+
+						if ~nc.elementRight.internal
+							nc.elementRight.internal = true;
+							obj.boxes.RemoveElementFromPartition(nc.elementRight);
+						end
+
+					end
+
+
 					% When a division occurs, the elements of the sister cell
 					% (which was also the parent cell before division), may
 					% have been modified to have a different node. This screws
