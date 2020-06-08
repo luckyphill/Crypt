@@ -5,8 +5,6 @@ classdef IsolatedCellTest < FreeCellSimulation
 
 	properties
 
-		dt = 0.005
-		t = 0
 		eta = 1
 
 		timeLimit = 2000

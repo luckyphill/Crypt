@@ -1064,6 +1064,9 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 
 		function TestAssembleNeighbours(testCase)
 
+			% INCOMPLETE
+			% Need to test that it picks up elements when the node is
+			% close to a boundary
 
 			load('testState.mat');
 
@@ -1133,49 +1136,6 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 			testCase.verifyEqual(a, []);
 
 		end
-
-		% function TestWholePartitionFromTestState(testCase)
-
-		% 	% This tests that the continually updated partition
-		% 	% is correct, by matching it to a partition calculated
-		% 	% directly at a given time step. This obviously assumes
-		% 	% that producing the full partition is correct
-
-		% 	load('testState.mat');
-		% 	t.collisionDetectionOn = false;
-		% 	t.collisionDetectionRequested = false;
-		% 	% Just to be sure that the save state is correct, we
-		% 	% recreate the partition
-		% 	t.boxes = SpacePartition(1,1,t);
-
-		% 	% In this time interval there should be 35 times where the
-		% 	% elements need updating, equivalent to 35 time a node has
-		% 	% moved to a new box - hopefully enough to catch problems
-		% 	t.NTimeSteps(1000);
-
-		% 	p = SpacePartition(1,1,t);
-
-		% 	% Need to now check that p is identical to t.boxes
-			
-		% 	testCase.verifyEqual(size(p.nodesQ), size(t.boxes.nodesQ));
-		% 	testCase.verifyEqual(size(p.nodesQ), size(t.boxes.nodesQ));
-		% 	for q=1:4
-		% 		testCase.verifyEqual(size(p.nodesQ{q}), size(t.boxes.nodesQ{q}));
-		% 		testCase.verifyEqual(size(p.elementsQ{q}), size(t.boxes.elementsQ{q}));
-
-		% 		[il, jl] = size(p.nodesQ{q});
-
-		% 		% For every box, check they are identical
-		% 		for i = 1:il
-		% 			for j = 1:jl
-		% 				testCase.verifyEqual(size(p.nodesQ{q}{i,j}), size(t.boxes.nodesQ{q}{i,j}));
-		% 				testCase.verifyEqual(size(p.elementsQ{q}{i,j}), size(t.boxes.elementsQ{q}{i,j}));
-		% 			end
-		% 		end
-
-		% 	end
-
-		% end
 
 		function TestSpacePartitionAfterDivision(testCase)
 
@@ -1284,8 +1244,73 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 			testCase.verifyTrue(   ismember( t.cellList(2).elementLeft,		t.boxes.elementsQ{4}{1,3} )   )
 			testCase.verifyTrue(   ismember( t.cellList(2).elementTop,		t.boxes.elementsQ{4}{1,3} )   )
 
+		end
+
+		function TestCaseFromTheWild1(testCase)
+
+			% When running this test, the node does not detect
+			% a neighbouring element when it is in a box to the left
+
+			t = IsolatedCellTest(10,10,1);
+
+			t.RunToTime(6.5);
+
+			e = t.boxes.elementsQ{1}{1,3}(1);
+			n = t.boxes.elementsQ{1}{2,3}(4).Node2;
+
+			ec = AssembleCandidateElements(n, 0.1);
+
+			testCase.verifyTrue(ismember(e,ec));
+
+			en = t.boxes.GetNeighbouringElements(n, 0.1);
+
+			testCase.verifyEqual(en, e);
+
 
 		end
+
+		% function TestWholePartitionFromTestState(testCase)
+
+		% 	% This tests that the continually updated partition
+		% 	% is correct, by matching it to a partition calculated
+		% 	% directly at a given time step. This obviously assumes
+		% 	% that producing the full partition is correct
+
+		% 	load('testState.mat');
+		% 	t.collisionDetectionOn = false;
+		% 	t.collisionDetectionRequested = false;
+		% 	% Just to be sure that the save state is correct, we
+		% 	% recreate the partition
+		% 	t.boxes = SpacePartition(1,1,t);
+
+		% 	% In this time interval there should be 35 times where the
+		% 	% elements need updating, equivalent to 35 time a node has
+		% 	% moved to a new box - hopefully enough to catch problems
+		% 	t.NTimeSteps(1000);
+
+		% 	p = SpacePartition(1,1,t);
+
+		% 	% Need to now check that p is identical to t.boxes
+			
+		% 	testCase.verifyEqual(size(p.nodesQ), size(t.boxes.nodesQ));
+		% 	testCase.verifyEqual(size(p.nodesQ), size(t.boxes.nodesQ));
+		% 	for q=1:4
+		% 		testCase.verifyEqual(size(p.nodesQ{q}), size(t.boxes.nodesQ{q}));
+		% 		testCase.verifyEqual(size(p.elementsQ{q}), size(t.boxes.elementsQ{q}));
+
+		% 		[il, jl] = size(p.nodesQ{q});
+
+		% 		% For every box, check they are identical
+		% 		for i = 1:il
+		% 			for j = 1:jl
+		% 				testCase.verifyEqual(size(p.nodesQ{q}{i,j}), size(t.boxes.nodesQ{q}{i,j}));
+		% 				testCase.verifyEqual(size(p.elementsQ{q}{i,j}), size(t.boxes.elementsQ{q}{i,j}));
+		% 			end
+		% 		end
+
+		% 	end
+
+		% end
 
 
 		% function TestSpacePartitionAfterKillingBoundaryCell(testCase)

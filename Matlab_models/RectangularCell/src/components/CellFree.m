@@ -34,7 +34,7 @@ classdef CellFree < AbstractCell
 
 			obj.ancestorId = varargin{end};
 
-			cellDataArray = [CellAreaSquare(), CellPerimeter(), TargetPerimeterSquare(), TargetArea()];
+			cellDataArray = [CellArea(), CellPerimeter(), TargetPerimeter(), TargetArea()];
 
 			obj.AddCellDataArray(cellDataArray);
 
@@ -165,7 +165,7 @@ classdef CellFree < AbstractCell
 			sPos = splitNode.position;
 
 			newL = sPos - side * obj.newFreeCellSeparation / 2;
-			newR = sPos - side * obj.newFreeCellSeparation / 2;
+			newR = sPos + side * obj.newFreeCellSeparation / 2;
 
 			% splitNode stays with the original cell which will be to the right
 			splitNode.AdjustPosition(newR);
@@ -200,7 +200,7 @@ classdef CellFree < AbstractCell
 				oPos = oppositeNode.position;
 
 				newL = oPos - side * obj.newFreeCellSeparation / 2;
-				newR = oPos - side * obj.newFreeCellSeparation / 2;
+				newR = oPos + side * obj.newFreeCellSeparation / 2;
 
 				% oppositeNode stays with the original cell which will be to the right
 				oppositeNode.AdjustPosition(newR);
@@ -297,7 +297,7 @@ classdef CellFree < AbstractCell
 				oPos = oppositeElement.GetMidPoint();												%*****
 
 				newL = oPos - side * obj.newFreeCellSeparation / 2;
-				newR = oPos - side * obj.newFreeCellSeparation / 2;
+				newR = oPos + side * obj.newFreeCellSeparation / 2;
 
 				% Make two new nodes at the split
 				newOppositeNodeLeft = Node(newL(1), newL(2), -1);

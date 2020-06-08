@@ -35,7 +35,8 @@ classdef TestCellCycles < matlab.unittest.TestCase
 			ccm.SetAge(25);
 
 			testCase.verifyEqual(ccm.GetAge(), 25);
-			testCase.verifyFalse(ccm.IsReadyToDivide());
+			testCase.verifyFalse(ccm.IsReadyToDivide()); % << 
+			% Can fail on occasion because the phases are chosen from a normal distribution
 
 			fraction = (25 - ccm.pausePhaseLength) / ccm.growingPhaseLength;
 			testCase.verifyEqual(ccm.GetGrowthPhaseFraction(), fraction);

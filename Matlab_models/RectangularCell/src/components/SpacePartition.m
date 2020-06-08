@@ -116,7 +116,7 @@ classdef SpacePartition < matlab.mixin.SetGet
 				e = b(i);
 
 				u = e.GetVector1to2();
-				v = [u(2), -u(1)];
+				v = e.GetOutwardNormal();
 
 				% Make box around element
 				% determine if node is in that box
@@ -268,7 +268,7 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 
 			% Check sides
-			if abs(n.x - sx(q) * i * obj.dx) - r < 0
+			if abs(n.x - sx(q) * (i-1) * obj.dx) - r < 0
 				% Close to left
 				b = [b, obj.GetAdjacentElementBoxFromNode(n, [-1, 0])];
 			end
@@ -278,7 +278,7 @@ classdef SpacePartition < matlab.mixin.SetGet
 				b = [b, obj.GetAdjacentElementBoxFromNode(n, [1, 0])];
 			end
 
-			if abs(n.y - sy(q) * j * obj.dy) - r < 0
+			if abs(n.y - sy(q) * (j-1) * obj.dy) - r < 0
 				% Close to bottom
 				b = [b, obj.GetAdjacentElementBoxFromNode(n, [0, -1])];
 			end
@@ -289,7 +289,9 @@ classdef SpacePartition < matlab.mixin.SetGet
 			end
 
 			% Checking diagonally not needed for elements when box side length
-			% is about the same size as the maximum element length
+			% is about the same size as the maximum element length since the
+			% element will almost certainly be in an adjacent box
+
 			% If the box size is much smaller than the max element length
 			% then it is most likely easier to not check at all, and just
 			% add the adjacent boxes
@@ -341,7 +343,7 @@ classdef SpacePartition < matlab.mixin.SetGet
 			[q,i,j] = obj.GetQuadrantAndIndices(n.x,n.y);
 
 			% Check sides
-			if abs(n.x - i * obj.dx) - r < 0
+			if abs(n.x - (i-1) * obj.dx) - r < 0
 				% Close to left
 				b = [b, obj.GetAdjacentNodeBoxFromNode(n, [-1, 0])];
 			end
@@ -351,7 +353,7 @@ classdef SpacePartition < matlab.mixin.SetGet
 				b = [b, obj.GetAdjacentNodeBoxFromNode(n, [1, 0])];
 			end
 
-			if abs(n.y - j * obj.dy) - r < 0
+			if abs(n.y - (j-1) * obj.dy) - r < 0
 				% Close to bottom
 				b = [b, obj.GetAdjacentNodeBoxFromNode(n, [0, -1])];
 			end
@@ -363,17 +365,17 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 			% Check corners
 
-			if ( abs(n.x - i * obj.dx) - r < 0 ) && ( abs(n.y - j * obj.dy) - r < 0)
+			if ( abs(n.x - (i-1) * obj.dx) - r < 0 ) && ( abs(n.y - (j-1) * obj.dy) - r < 0)
 				% Close to left bottom
 				b = [b, obj.GetAdjacentNodeBoxFromNode(n, [-1, -1])];
 			end
 
-			if ( abs(n.x - i * obj.dx) + r ) > obj.dx && ( abs(n.y - j * obj.dy) - r < 0)
+			if ( abs(n.x - i * obj.dx) + r ) > obj.dx && ( abs(n.y - (j-1) * obj.dy) - r < 0)
 				% Close to right bottom
 				b = [b, obj.GetAdjacentNodeBoxFromNode(n, [1, -1])];
 			end
 
-			if ( abs(n.x - i * obj.dx) - r < 0 ) && ( abs(n.y - j * obj.dy) + r > obj.dy)
+			if ( abs(n.x - (i-1) * obj.dx) - r < 0 ) && ( abs(n.y - j * obj.dy) + r > obj.dy)
 				% Close to left top
 				b = [b, obj.GetAdjacentNodeBoxFromNode(n, [-1, 1])];
 			end
@@ -793,6 +795,30 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 		end
 
+		function UpdateBoxForNodeAdjusted(obj, n)
+
+			% Used when manually moving a node to a new position
+			% a special method is needed since previousPosition is
+			% not changed in this propcess
+
+			[qn,in,jn] = obj.GetQuadrantAndIndices(n.preAdjustedPosition(1),n.preAdjustedPosition(2));
+			[qo,io,jo] = obj.GetQuadrantAndIndices(n.x,n.y);
+
+			if ~prod([qn,in,jn] == [qo,io,jo])
+				% The given node is in a different box compared to
+				% the previous timestep/position, so need to do some adjusting
+
+				obj.InsertNode(qn,in,jn,n);
+
+				obj.nodesQ{qo}{io,jo}( obj.nodesQ{qo}{io,jo} == n ) = [];
+
+				% Also need to adjust the elements
+				obj.UpdateBoxesForElementsUsingNodeAdjusted(n);
+
+			end
+
+		end
+
 		function UpdateBoxesForElementsUsingNode(obj, n1)
 
 			% This function will be used as each node is moved
@@ -872,6 +898,58 @@ classdef SpacePartition < matlab.mixin.SetGet
 					n2 = e.GetOtherNode(n1);
 
 					[ql,il,jl] = obj.GetBoxIndicesBetweenNodesProposedCurrent(newPos, n2);
+					[qp,ip,jp] = obj.GetBoxIndicesBetweenNodes(n1, n2);
+					
+
+					% If the box appears in both, nothing needs to change
+					% If it only appears in previous, remove element
+					% If it only appears in current, add element
+
+					new = [ql,il,jl];
+					old = [qp,ip,jp];
+
+					% Get the unique new boxes
+					J = ~ismember(new,old,'rows');
+					% And get the indices to add
+					qa = ql(J);
+					ia = il(J);
+					ja = jl(J);
+					
+					for j = 1:length(qa)
+						obj.InsertElement(qa(j),ia(j),ja(j),e);
+					end
+
+					% Get the old boxes
+					J = ~ismember(old,new,'rows');
+					% ... and the indices to remove
+					qt = qp(J);
+					it = ip(J);
+					jt = jp(J);
+					for j = 1:length(qt)
+						obj.RemoveElement(qt(j),it(j),jt(j),e);
+					end
+
+				end
+
+			end
+
+		end
+
+		function UpdateBoxesForElementsUsingNodeAdjusted(obj, n1, newPos)
+
+			% This function does the same as UpdateBoxesForElementsUsingNode
+			% when the given node is moved by a modifier
+
+			for i=1:length(n1.elementList)
+				% If the element is an internal element, skip it
+				% because they don't interact with nodes
+				
+				e = n1.elementList(i);
+				if ~e.IsElementInternal()
+
+					n2 = e.GetOtherNode(n1);
+
+					[ql,il,jl] = obj.GetBoxIndicesBetweenNodesProposedCurrent(n1.preAdjustedPosition, n2);
 					[qp,ip,jp] = obj.GetBoxIndicesBetweenNodes(n1, n2);
 					
 

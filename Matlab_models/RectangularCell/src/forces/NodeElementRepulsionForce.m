@@ -34,7 +34,7 @@ classdef NodeElementRepulsionForce < AbstractNeighbourhoodBasedForce
 
 					% Claculate distance between node and edge
 					u = e.GetVector1to2();
-					v = [u(2), -u(1)];
+					v = e.GetOutwardNormal();
 
 					% Since we know the node is within the range of
 					% the element, we can project a vector that we know
@@ -45,7 +45,8 @@ classdef NodeElementRepulsionForce < AbstractNeighbourhoodBasedForce
 					d = dot(n1ton, v);
 
 					% Encroaching amount
-					dr = obj.r - abs(d);
+					% dr = obj.r - abs(d);
+					dr = obj.r - d;
 
 					% This gives us the quantity for the force calculation
 
@@ -55,7 +56,8 @@ classdef NodeElementRepulsionForce < AbstractNeighbourhoodBasedForce
 					n1toA = u * dot(n1ton, u);
 
 					% The force points towards the element
-					Fa = -v * sign(d) * atanh(dr/obj.r);
+					% Fa = -v * sign(d) * atanh(dr/obj.r);
+					Fa = -v * sign(d) * (  exp( (dr/obj.r)^2 ) - 1  );
 
 					obj.ApplyForcesToNodeAndElement(n,e,Fa,n1toA);
 

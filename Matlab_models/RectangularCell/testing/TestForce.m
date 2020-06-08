@@ -93,6 +93,76 @@ classdef TestForce < matlab.unittest.TestCase
 
 		end
 
+		function TestChasteNagaiHondaForce(testCase)
+			% Since this force applies to cells, set up a cell to test on
+			n1 = Node(0,0,1);
+			n2 = Node(0,1,2);
+			n3 = Node(1,0,3);
+			n4 = Node(1.1,1.1,4);
+
+			el = Element(n1,n2,1);
+			eb = Element(n1,n3,2);
+			et = Element(n2,n4,3);
+			er = Element(n3,n4,4);
+
+			c = Cell(NoCellCycle, [et,eb,el,er], 1);
+
+			f = ChasteNagaiHondaForce(1,1,1);
+
+			testCase.verifyEqual(f.areaEnergyParameter, 1);
+			testCase.verifyEqual(f.surfaceEnergyParameter, 1);
+			testCase.verifyEqual(f.edgeAdhesionParameter, 1);
+
+			% Test the area forces
+
+			f.AddTargetAreaForces(c);
+
+			testCase.verifyEqual(c.nodeTopLeft.force, [0.11, -0.11], 'RelTol', 1e-8);
+			testCase.verifyEqual(c.nodeTopRight.force, [-0.1, -0.1], 'RelTol', 1e-8);
+			testCase.verifyEqual(c.nodeBottomLeft.force, [0.1, 0.1], 'RelTol', 1e-8);
+			testCase.verifyEqual(c.nodeBottomRight.force, [-0.11, 0.11], 'RelTol', 1e-8);
+
+			% Reset the forces so we can test the perimeter forces
+
+			c.nodeTopLeft.force = [0, 0];
+			c.nodeTopRight.force = [0, 0];
+			c.nodeBottomLeft.force = [0, 0];
+			c.nodeBottomRight.force = [0, 0];
+
+
+			f.AddTargetPerimeterForces(c);
+
+			testCase.verifyEqual(c.GetCellTargetPerimeter(), 4);
+			testCase.verifyEqual(c.GetCellPerimeter(), 4.2090,'AbsTol', 1e-4);
+
+			testCase.verifyEqual(c.nodeTopLeft.force, [0.4163, -0.3802], 'AbsTol', 1e-3);
+			testCase.verifyEqual(c.nodeTopRight.force, [-0.4541, -.4541], 'AbsTol', 1e-3);
+			testCase.verifyEqual(c.nodeBottomLeft.force, [0.418, 0.418], 'AbsTol', 1e-3);
+			testCase.verifyEqual(c.nodeBottomRight.force, [-0.3802, 0.4163], 'AbsTol', 1e-3);
+
+			% Reset again so we can test the adhesion forces
+
+			n1 = Node(0,0,1);
+			n2 = Node(0,1,2);
+			n3 = Node(1,0,3);
+			n4 = Node(1,1,4);
+
+			el = Element(n1,n2,1);
+			eb = Element(n1,n3,2);
+			et = Element(n2,n4,3);
+			er = Element(n3,n4,4);
+
+			c = Cell(NoCellCycle, [et,eb,el,er], 1);
+
+			f.AddAdhesionForces(c);
+
+			testCase.verifyEqual(c.nodeTopLeft.force, [1, -1]);
+			testCase.verifyEqual(c.nodeTopRight.force, [-1, -1]);
+			testCase.verifyEqual(c.nodeBottomLeft.force, [1, 1]);
+			testCase.verifyEqual(c.nodeBottomRight.force, [-1 ,1]);
+
+		end
+
 		function TestRigidBodyEdgeModifierForce(testCase)
 			
 			% Make an element that is shorter than the min length
@@ -388,7 +458,6 @@ classdef TestForce < matlab.unittest.TestCase
 
 			testCase.verifyTrue( n.force(1) < 0);
 			testCase.verifyTrue( n2.force(1) > 0);
-
 
 		end
 

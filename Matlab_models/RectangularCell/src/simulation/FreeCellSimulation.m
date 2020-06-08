@@ -5,6 +5,8 @@ classdef FreeCellSimulation < AbstractCellSimulation
 
 	properties
 
+		dt = 0.005
+		t = 0
 		step = 0
 
 	end

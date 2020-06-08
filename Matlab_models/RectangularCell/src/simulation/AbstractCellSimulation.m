@@ -196,6 +196,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			% Previous position and previous force are not modified
 
 			% Make sure the node and elements are in the correct boxes
+			% Why does this happen first?
 			if obj.usingBoxes
 				obj.boxes.UpdateBoxForNodeModifier(n, newPos);
 			end
@@ -249,11 +250,20 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 					end
 
-					% When a division occurs, the elements of the sister cell
+					% When a division occurs, the nodes and elements of the sister cell
 					% (which was also the parent cell before division), may
 					% have been modified to have a different node. This screws
 					% with the space partition, so we have to fix it
 					oc = nc.sisterCell;
+
+					for j = 1:length(oc.nodeList)
+						n = oc.nodeList(j);
+
+						if n.nodeAdjusted
+							obj.boxes.UpdateBoxForNodeAdjusted(n);
+						end
+
+					end
 
 					for j = 1:length(oc.elementList)
 						e = oc.elementList(j);
@@ -467,17 +477,9 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 			for i = 1:length(obj.cellList)
 				c = obj.cellList(i);
-				
-				x1 = c.nodeTopLeft.x;
-				x2 = c.nodeTopRight.x;
-				x3 = c.nodeBottomRight.x;
-				x4 = c.nodeBottomLeft.x;
-				x = [x1,x2,x3,x4];
-				y1 = c.nodeTopLeft.y;
-				y2 = c.nodeTopRight.y;
-				y3 = c.nodeBottomRight.y;
-				y4 = c.nodeBottomLeft.y;
-				y = [y1,y2,y3,y4];
+
+				x = [c.nodeList.x];
+				y = [c.nodeList.y];	
 
 				fillObjects(i) = fill(x,y,c.GetColour());
 			end
@@ -596,17 +598,9 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 			for i = 1:length(obj.cellList)
 				c = obj.cellList(i);
-				
-				x1 = c.nodeTopLeft.x;
-				x2 = c.nodeTopRight.x;
-				x3 = c.nodeBottomRight.x;
-				x4 = c.nodeBottomLeft.x;
-				x = [x1,x2,x3,x4];
-				y1 = c.nodeTopLeft.y;
-				y2 = c.nodeTopRight.y;
-				y3 = c.nodeBottomRight.y;
-				y4 = c.nodeBottomLeft.y;
-				y = [y1,y2,y3,y4];
+
+				x = [c.nodeList.x];
+				y = [c.nodeList.y];
 
 				fillObjects(i) = fill(x,y,c.GetColour());
 			end
@@ -620,16 +614,8 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 				for j = 1:length(obj.cellList)
 					c = obj.cellList(j);
 
-					x1 = c.nodeTopLeft.x;
-					x2 = c.nodeTopRight.x;
-					x3 = c.nodeBottomRight.x;
-					x4 = c.nodeBottomLeft.x;
-					x = [x1,x2,x3,x4];
-					y1 = c.nodeTopLeft.y;
-					y2 = c.nodeTopRight.y;
-					y3 = c.nodeBottomRight.y;
-					y4 = c.nodeBottomLeft.y;
-					y = [y1,y2,y3,y4];
+					x = [c.nodeList.x];
+					y = [c.nodeList.y];
 
 					if j > length(fillObjects)
 						fillObjects(j) = fill(x,y,c.GetColour());

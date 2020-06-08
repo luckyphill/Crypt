@@ -365,8 +365,10 @@ classdef TestCellFree < matlab.unittest.TestCase
 			testCase.verifyEqual(nodesRight(1).position, [5.5433   -0.8410], 'RelTol', 1e-4);
 			testCase.verifyEqual(nodesRight(2).position, [4.5433    0.8910], 'RelTol', 1e-4);
 
-
 			[newCell, newNodeList, newElementList] = c.Divide();
+
+			% Need to verify all of the positions, but the splitNode is chosen at random just now
+
 
 			testCase.verifyEqual(c.GetAge(), 0);
 			testCase.verifyEqual(newCell.GetAge(), 0);
@@ -375,6 +377,9 @@ classdef TestCellFree < matlab.unittest.TestCase
 			testCase.verifyEqual(c, newCell.sisterCell);
 
 			testCase.verifyEqual(c.ancestorId,newCell.ancestorId);
+
+			% The nodes in each cell should be unique
+			testCase.verifyEqual(  sum(  c.nodeList == newCell.nodeList  ), 0  );
 
 			% Test the two cells to make sure everything is in order
 

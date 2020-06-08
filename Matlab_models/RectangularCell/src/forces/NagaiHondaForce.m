@@ -101,7 +101,6 @@ classdef NagaiHondaForce < AbstractCellBasedForce
 
 		end
 
-
 		function [agtl, agtr, agbr, agbl] = GetAreaGradientAtNodes(obj, c)
 
 			% Each node has an associated area gradient according the NagaiHondaForce, lifted directly from Chaste
@@ -129,8 +128,7 @@ classdef NagaiHondaForce < AbstractCellBasedForce
 
 		function [p, pgtl, pgtr, pgbr, pgbl] = GetPerimeterAndGradientAtNodes(obj, c)
 
-			% Each node has an associated perimeter gradient according the NagaiHondaForce, lifted directly from Chaste
-			% I really have no idea what's going on here, I'm just crossing my fingers and hoping it makes sense
+			% Each node has an associated perimeter gradient according the NagaiHondaForce, lifted directly from Chaste	
 
 			% The perimeter gradient is a direction pointing into the cell,
 			% determined by the edges attached to the node of interest

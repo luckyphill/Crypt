@@ -28,6 +28,9 @@ classdef Node < matlab.mixin.SetGet
 		% between different regions in a tissue more easily
 		eta = 1
 
+		nodeAdjusted = false;
+		preAdjustedPosition = [];
+
 	end
 
 	methods
@@ -115,10 +118,16 @@ classdef Node < matlab.mixin.SetGet
 		function AdjustPosition(obj, pos)
 			% Used when modifying the position manually
 			% Doesn't affect previous position, or reset the force
+			% But it will require fixing up the space partition
+
+			obj.preAdjustedPosition = obj.position;
+
 			obj.position = pos;
 
 			obj.x = pos(1);
 			obj.y = pos(2);
+
+			obj.nodeAdjusted = true;
 
 		end
 

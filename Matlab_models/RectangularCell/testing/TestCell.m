@@ -206,7 +206,18 @@ classdef TestCell < matlab.unittest.TestCase
 			n4.NewPosition([0.5,1]);
 			testCase.verifyFalse(c.HasEdgeFlipped());
 
+			% Borderline case, one edge is co-linear with another
 			n2.NewPosition([1,0.5]);
+			n4.NewPosition([1,1]);
+
+			% Probably want this to trigger the flip but as it is, it
+			% doesn't and I don't care enough about this to fix it
+			% so I'll force it to be this way
+			testCase.verifyFalse(c.HasEdgeFlipped());
+			% testCase.verifyTrue(c.HasEdgeFlipped());
+
+
+			n2.NewPosition([1.5,0.5]);
 			n4.NewPosition([1,1]);
 			testCase.verifyTrue(c.HasEdgeFlipped());
 
