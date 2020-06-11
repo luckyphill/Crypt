@@ -36,6 +36,7 @@ classdef SquareCellJoined < AbstractCell
 			obj.elementLeft 	= elementList(3);
 			obj.elementRight 	= elementList(4);
 
+
 			obj.MakeEverythingAntiClockwise();
 
 
@@ -50,11 +51,7 @@ classdef SquareCellJoined < AbstractCell
 
 			cellDataArray = [CellAreaSquare(), CellPerimeter(), TargetPerimeterSquare(), TargetArea()];
 
-			obj.AddCellDataArray(cellDataArray);
-
-			obj.newCellTargetPerimeter = 3;
-			obj.grownCellTargetPerimeter = 4;
-			obj.currentCellTargetPerimeter = 4;
+			obj.AddCellData(cellDataArray);
 
 		end
 
@@ -208,68 +205,6 @@ classdef SquareCellJoined < AbstractCell
 
 		end
 
-		function flipped = HasEdgeFlipped(obj)
-
-			flipped = false;
-			% An edge will only flip on the top or bottom
-			% When that happens, the left and right edges will cross
-			% The following algorithm decides if the edges cross
-
-			X1 = obj.elementLeft.Node1.x;
-			X2 = obj.elementLeft.Node2.x;
-
-			Y1 = obj.elementLeft.Node1.y;
-			Y2 = obj.elementLeft.Node2.y;
-
-			X3 = obj.elementRight.Node1.x;
-			X4 = obj.elementRight.Node2.x;
-
-			Y3 = obj.elementRight.Node1.y;
-			Y4 = obj.elementRight.Node2.y;
-
-			% Basic run-down of algorithm:
-			% The lines are parameterised so that
-			% elementLeft  = (x1(t), y1(t)) = (A1t + a1, B1t + b1)
-			% elementRight = (x2(s), y2(s)) = (A2s + a2, B2s + b2)
-			% where 0 <= t,s <=1
-			% If the lines cross, then there is a unique value of t,s such that
-			% x1(t) == x2(s) and y1(t) == y2(s)
-			% There will always be a value of t and s that satisfies these
-			% conditions (except for when the lines are parallel), so to make
-			% sure the actual segments cross, we MUST have 0 <= t,s <=1
-
-			% Solving this, we have
-			% t = ( B2(a1 - a2) - A2(b1 - b2) ) / (A2B1 - A1B2)
-			% s = ( B1(a1 - a2) - A1(b1 - b2) ) / (A2B1 - A1B2)
-			% Where 
-			% A1 = X2 - X1, a1 = X1
-			% B1 = Y2 - Y1, b1 = Y1
-			% A2 = X4 - X3, a2 = X3
-			% B2 = Y4 - Y3, b2 = Y3
-
-			denom = (X4 - X3)*(Y2 - Y1) - (X2 - X1)*(Y4 - Y3);
-
-			% denom == 0 means parallel
-
-			if denom ~= 0
-				% if the numerator for either t or s expression is larger than the
-				% |denominator|, then |t| or |s| will be greater than 1, i.e. out of their range
-				% so both must be less than
-				tNum = (Y4 - Y3)*(X1 - X3) - (X4 - X3)*(Y1 - Y3);
-				sNum = (Y2 - Y1)*(X1 - X3) - (X2 - X1)*(Y1 - Y3);
-				
-				if abs(tNum) <= abs(denom) && abs(sNum) <= abs(denom)
-					% magnitudes are correct, now check the signs
-					if sign(tNum) == sign(denom) && sign(sNum) == sign(denom)
-						% If the signs of the numerator and denominators are the same
-						% Then s and t satisfy their range restrictions, hence the elements cross
-						flipped = true;
-					end
-				end
-			end
-
-		end
-
 	end
 
 	methods (Access = private)
@@ -279,14 +214,21 @@ classdef SquareCellJoined < AbstractCell
 			% A helper method to unclutter the constructor
 			% Takes the nodes and elements and makes sure they are
 			% all put in anticlockwise order. Has error checking when
-			% the order of nodes in an element can't make it work
+			% the order of nodes in an element can't make it work and when
+			% the elements are going to cross
 
 			
 			% Starting from elementBottom, assemble elementList in anticlockwise order
-			% Node1 from each element must match the order from AddNodesInOrder() 
 			obj.elementList = [obj.elementBottom, obj.elementRight, obj.elementTop, obj.elementLeft];
 
-			% First, need to make sure the nodes are in the correct elements
+			% First, make sure the elements don't cross
+
+			if obj.IsCellSelfIntersecting()
+				error('SCJ:MakeEverythingAntiClockwise:ElementsCross', 'Elements cross, make sure they are assembled properly');
+			end
+
+
+			% Need to make sure the nodes are in the correct elements
 
 			% elementBottom and elementRight must share a node
 			if ~ismember( obj.elementBottom.Node2, obj.elementRight.nodeList )
@@ -341,7 +283,6 @@ classdef SquareCellJoined < AbstractCell
 			obj.elementBottom.AddCell(obj);
 			obj.elementLeft.AddCell(obj);
 			obj.elementRight.AddCell(obj);
-
 
 			% If we get to this point, we know exactly where the nodes are
 			obj.nodeBottomLeft 	= obj.elementBottom.Node1;

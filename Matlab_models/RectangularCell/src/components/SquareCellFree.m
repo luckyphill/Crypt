@@ -137,8 +137,8 @@ classdef SquareCellFree < SquareCellJoined
 			obj.age = 0;
 
 			% Reset the node list for this cell
-			obj.nodeList 	= [obj.nodeTopLeft, obj.nodeTopRight, obj.nodeBottomRight, obj.nodeBottomLeft];
-			obj.elementList = [obj.elementTop, obj.elementBottom, obj.elementLeft, obj.elementRight];
+			obj.nodeList = [obj.nodeBottomLeft, obj.nodeBottomRight, obj.nodeTopRight, obj.nodeTopLeft];
+			obj.elementList = [obj.elementBottom, obj.elementRight, obj.elementTop, obj.elementLeft];
 
 			% Make a list of new nodes and elements
 			newNodeList 	= [nodeTop1, nodeTop2, nodeBottom1, nodeBottom2];

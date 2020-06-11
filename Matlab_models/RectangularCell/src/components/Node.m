@@ -59,59 +59,21 @@ classdef Node < matlab.mixin.SetGet
 		function AddForceContribution(obj, force)
 			
 			if sum(isnan(force)) || sum(isinf(force))
-				error('Force is inf')
+				error('N:AddForceContribution:InfNaN', 'Force is inf or NaN');
 			end
 			obj.force = obj.force + force;
 
 		end
 
-		function UpdatePosition(obj, dt)
+		function MoveNode(obj, pos)
+			% This function is used to move the position due to time stepping
+			% so the force must be reset here
+			% This is only to be used by the numerical integration
 
-			% NOT USED IN SIMULATIONS, ONLY USED IN TESTING
-			% Used primarily for testing to avoid making a cell population
-			newPosition = obj.position + dt/obj.eta * obj.force;
-
-			obj.NewPosition(newPosition);
-
+			obj.NewPosition(pos);
 			% Reset the force for next time step
 			obj.previousForce = obj.force;
 			obj.force = [0,0];
-
-		end
-
-		function AddElement(obj, ele)
-
-			obj.elementList = [obj.elementList , ele];
-			
-		end
-
-		function RemoveElement(obj, ele)
-			
-			% Remove the element from the list
-			obj.elementList(obj.elementList == ele) = [];
-
-			% If removing this element means a node is no longer associated with
-			% a specific cell, then the cell must also be removed. It's easier just to regenerate the cellList
-
-			% Make a list of the cells that the node must be part of
-			obj.cellList = unique([obj.elementList.cellList]);
-
-		end
-
-		function RemoveCell(obj, c)
-
-			% Not likely to need this now, but leaving it anyway
-			obj.cellList(obj.cellList == c) = [];
-
-		end
-
-		function NewPosition(obj, pos)
-
-			obj.previousPosition = obj.position;
-			obj.position = pos;
-
-			obj.x = pos(1);
-			obj.y = pos(2);
 
 		end
 
@@ -131,45 +93,63 @@ classdef Node < matlab.mixin.SetGet
 
 		end
 
-		function MoveNode(obj, pos)
-			% This function is used to move the position due to time stepping
-			% so the force must be reset here
-			% This is only to be used by the numerical integration
+		function AddElement(obj, e)
 
-			obj.NewPosition(pos);
-			% Reset the force for next time step
-			obj.previousForce = obj.force;
-			obj.force = [0,0];
+			% e can be a vector
+			if sum( ismember(e,obj.elementList)) ~=0
+				warning('N:AddElement:ElementAlreadyHere', 'Adding at least one element that already appears in elementList for Node %d. This has not been added.', obj.id);
+				e(ismember(e,obj.elementList)) = [];
+			end
+			obj.elementList = [obj.elementList , e];
+			
+		end
+
+		function RemoveElement(obj, e)
+			
+			% Remove the element from the list
+			if sum(obj.elementList == e) == 0
+				warning('N:RemoveElement:ElementNotHere', 'Element %d does not appear in elementList for Node %d', e.id, obj.id);
+			else
+				obj.elementList(obj.elementList == e) = [];
+			end
+
+		end
+
+		function ReplaceElementList(obj, eList)
+
+			obj.elementList = eList;
 
 		end
 
 		function AddCell(obj, c)
 
-			% Need to add the cell, but also make sure that
-			% we only have the correct cells in the list
-			% This should be the best place to do it, but I haven't verified
-
-			Lidx = ~ismember(c,obj.cellList);
-			obj.cellList = [obj.cellList , c(Lidx)];
-
-			% delCell = Cell.empty;
-			% for i = 1:length(obj.cellList)
-			% 	if ~ismember(obj,obj.cellList(i).nodeList)
-			% 		delCell(end+1) = obj.cellList(i);
-			% 	end
-			% end
-			% Lidx = ismember(obj.cellList, delCell);
-			% obj.cellList(Lidx) = [];
+			% c can be a vector
+			if sum( ismember(c,obj.cellList)) ~=0
+				warning('N:AddCell:CellAlreadyHere', 'Adding at least one cell that already appears in cellList for Node %d. This has not been added.', obj.id);
+				c(ismember(c,obj.cellList)) = [];
+			end
+			obj.cellList = [obj.cellList , c];
 
 		end
 
-		function ReplaceCellList(obj, c)
+		function RemoveCell(obj, c)
+
+			% Remove the cell from the list
+			if sum(obj.cellList == c) == 0
+				warning('N:RemoveCell:CellNotHere', 'At least one cell does not appear in nodeList for Node %d', obj.id);
+			else
+				obj.cellList(obj.cellList == c) = [];
+			end
+
+		end
+
+		function ReplaceCellList(obj, cList)
 
 			% Used for CellFree to overwrite the existing cell
 			% Does not modify any links in the cell, it assumes
 			% they are handled in the division or creation process
 
-			obj.cellList = c;
+			obj.cellList = cList;
 
 		end
 
@@ -192,6 +172,16 @@ classdef Node < matlab.mixin.SetGet
 
 	methods (Access = private)
 		
+		function NewPosition(obj, pos)
+
+			% Should not be used directly, only as part of MoveNode
+			obj.previousPosition = obj.position;
+			obj.position = pos;
+
+			obj.x = pos(1);
+			obj.y = pos(2);
+
+		end
 
 	end
 

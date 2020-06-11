@@ -97,7 +97,8 @@ classdef Element < matlab.mixin.SetGet
 			r1 = obj.Node1.position;
 			r2 = obj.Node2.position;
 
-			rD = (obj.Node1.eta * r1 + obj.Node2.eta * r2) / etaD;
+			% Centre of drag
+			rD = (obj.Node1.eta * r1 + obj.Node2.eta * r2) / obj.etaD;
 
 			rDto1 = r1 - rD;
 			rDto2 = r2 - rD;
@@ -147,29 +148,6 @@ classdef Element < matlab.mixin.SetGet
 
 		end
 
-		function SwapNodes(obj)
-
-			% Used when the nodes are not anticlockwise 1 -> 2
-
-			a = obj.Node1;
-
-			obj.Node1 = obj.Node2;
-			obj.Node2 = a;
-
-		end
-
-		function AddCell(obj, c)
-
-			obj.cellList = [obj.cellList , c];
-
-		end
-
-		function internal = IsElementInternal(obj)
-
-			internal = obj.internal;
-
-		end
-
 		function otherNode = GetOtherNode(obj, node)
 
 			if node == obj.Node1
@@ -181,37 +159,25 @@ classdef Element < matlab.mixin.SetGet
 				if node == obj.Node2
 					otherNode = obj.Node1;
 				else
-					error('Node not in this element');
+					error('E:GetOtherNode:NodeNotHere', 'Node %d is not in Element %d', node.id, obj.id);
 				end
 
 			end
 
 		end
 
-		function otherCell = GetOtherCell(obj, c)
-			% Since we don't know what order the cells are in, we need a special way to grab the
-			% other cell if we already know one of them. There will be two cases per simulation
-			% where there is no other cell, so in these cases, return logical false
+		function SwapNodes(obj)
 
-			otherCell = [];
+			% Used when the nodes are not anticlockwise 1 -> 2
+			% An element has no concept of orientation by itself
+			% so this must be controlled from outside the element only
 
-			if length(obj.cellList) == 2
+			a = obj.Node1;
 
-				if c == obj.cellList(1)
+			obj.Node1 = obj.Node2;
+			obj.Node2 = a;
 
-					otherCell = obj.cellList(2);
-
-				else
-
-					if c == obj.cellList(2)
-						otherCell = obj.cellList(1);
-					else
-						error('Cell doesnt contain this element');
-					end
-
-				end
-
-			end
+			obj.nodeList = [obj.Node1, obj.Node2];
 
 		end
 
@@ -228,30 +194,26 @@ classdef Element < matlab.mixin.SetGet
 					case obj.Node1
 						% Remove link back to this element
 						obj.Node1.RemoveElement(obj);
-						obj.nodeList(obj.nodeList == obj.Node1) = [];
 
 						obj.Node1 = newNode;
-						obj.Node1.AddElement(obj);
-						obj.nodeList(end + 1) = obj.Node1;
-
-						oldNode.elementList(oldNode.elementList == obj) = [];
+						newNode.AddElement(obj);
 
 						obj.modifiedInDivision = true;
 						obj.oldNode1 = oldNode;
 
+						obj.nodeList = [obj.Node1, obj.Node2];
+
 					case obj.Node2
 						% Remove link back to this element
 						obj.Node2.RemoveElement(obj);
-						obj.nodeList(obj.nodeList == obj.Node2) = [];
 
 						obj.Node2 = newNode;
-						obj.Node2.AddElement(obj);
-						obj.nodeList(end + 1) = obj.Node2;
-
-						oldNode.elementList(oldNode.elementList == obj) = [];
+						newNode.AddElement(obj);
 
 						obj.modifiedInDivision = true;
 						obj.oldNode2 = oldNode;
+
+						obj.nodeList = [obj.Node1, obj.Node2];
 						
 					otherwise
 						error('e:nodeNotFound','Node not in this element')
@@ -260,20 +222,46 @@ classdef Element < matlab.mixin.SetGet
 
 		end
 
+		function AddCell(obj, c)
+
+			% c can be a vector
+			if sum( ismember(c,obj.cellList)) ~=0
+				warning('E:AddCell:CellAlreadyHere', 'Adding at least one cell that already appears in cellList for Element %d. This has not been added.', obj.id);
+				c(ismember(c,obj.cellList)) = [];
+			end
+			obj.cellList = [obj.cellList , c];
+
+		end
+
+		function otherCell = GetOtherCell(obj, c)
+			% Since we don't know what order the cells are in, we need a special way to grab the
+			% other cell if we already know one of them. There will be two cases per simulation
+			% where there is no other cell, so in these cases, return logical false
+
+			otherCell = [];
+
+			if ismember(c, obj.cellList)
+				if length(obj.cellList) < 3
+					otherCell = obj.cellList(obj.cellList ~= c);
+				else
+					error('E:GetOtherCell:MoreThanTwo','The cellList for this element has more than two cells');
+				end
+			else
+				error('E:GetOtherCell:CellNotHere','Cell doesnt contain this element');
+			end
+
+		end
+
 		function ReplaceCell(obj, oldC, newC)
 
 			% Currently the cell list has at most two entries
-
-			if obj.cellList(1) == oldC
-				obj.cellList(1) = newC;
+			if oldC == newC
+				warning('E:ReplaceCell:SameCell','Both cells are the same, nothing will happen')
 			else
-				if length(obj.cellList) == 2
-					if obj.cellList(2) == oldC
-						obj.cellList(2) = newC;
-					else
-						error('Cell does not contain this element');
-					end
-				end
+
+				obj.AddCell(newC);
+				obj.RemoveCell(oldC);
+
 			end
 
 		end
@@ -285,17 +273,22 @@ classdef Element < matlab.mixin.SetGet
 		end
 
 		function RemoveCell(obj, c)
-			% No error checking that cell is actually part of the list
-			obj.cellList(obj.cellList == c) = [];
+
+			% Remove the cell from the list
+			if sum(obj.cellList == c) == 0
+				warning('E:RemoveCell:CellNotHere', 'At least one cell does not appear in elementList for Element %d', obj.id);
+			else
+				obj.cellList(obj.cellList == c) = [];
+			end
+
+		end
+
+		function internal = IsElementInternal(obj)
+
+			internal = obj.internal;
 
 		end
 
 	end
-
-	methods (Access = private)
-
-
-	end
-
 
 end

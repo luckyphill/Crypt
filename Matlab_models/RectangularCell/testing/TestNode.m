@@ -2,13 +2,17 @@ classdef TestNode < matlab.unittest.TestCase
    
 	methods (Test)
 
-		function TestProperties(testCase)
+		function TestPropertiesAndInitialise(testCase)
+
+			% COMPLETE
 
 			n = Node(1,2,3);
+
 			testCase.verifyEqual(n.x,1);
 			testCase.verifyEqual(n.y,2);
 			testCase.verifyEqual(n.id,3);
 			testCase.verifyEqual(n.position,[1,2]);
+			testCase.verifyEqual(n.previousPosition,[1,2]);
 			testCase.verifyEqual(n.force,[0,0]);
 			testCase.verifyEqual(n.previousForce,[0,0]);
 
@@ -16,20 +20,46 @@ classdef TestNode < matlab.unittest.TestCase
 			testCase.verifyEmpty(n.elementList);
 			testCase.verifyEmpty(n.cellList);
 
+			testCase.verifyFalse(n.nodeAdjusted);
+			testCase.verifyEmpty(n.preAdjustedPosition);
+
+			testCase.verifyEqual(n.eta, 1);
+
+			% Move to function testing
 			n.SetDragCoefficient(2);
 			testCase.verifyEqual(n.eta, 2);
 
 		end
 
-		function TestMoveNode(testCase)
+		function TestAddForceContribution(testCase)
 
-			% Test moving by specifying position
+			% COMPLETE
+
 			n = Node(1,1,3);
-			n.NewPosition([2,2]);
+
+			testCase.verifyEqual(n.force,[0,0]);
+			n.AddForceContribution([1,1]);
+			testCase.verifyEqual(n.force,[1,1]);
+			n.AddForceContribution([1,1]);
+			testCase.verifyEqual(n.force,[2,2]);
+
+			testCase.verifyError( @() n.AddForceContribution([Inf,Inf]), 'N:AddForceContribution:InfNaN');
+			testCase.verifyError( @() n.AddForceContribution([nan,nan]), 'N:AddForceContribution:InfNaN');
+			
+		end
+
+		function TestMoving(testCase)
+
+ 			% COMPLETE
+
+			n = Node(1,1,3);
+			n.MoveNode([2,2]);
 			testCase.verifyEqual(n.position,[2, 2]);
+			testCase.verifyEqual(n.previousPosition,[1,1]);
 			testCase.verifyEqual(n.x,2);
 			testCase.verifyEqual(n.y,2);
-
+			testCase.verifyEqual(n.force,[0,0]);
+			testCase.verifyEqual(n.previousForce,[0,0]);
 
 			% Test moving from a force
 			n = Node(1,1,3);
@@ -37,29 +67,49 @@ classdef TestNode < matlab.unittest.TestCase
 			testCase.verifyEqual(n.force,[1,1]);
 
 			dt = 0.01;
-			eta = 1;
-
-			n.UpdatePosition(dt/eta);
+			pos = n.position + dt * n.force/n.eta;
+			n.MoveNode(pos);
 
 			testCase.verifyEqual(n.position,[1.01, 1.01]);
+			testCase.verifyEqual(n.previousPosition,[1,1]);
 			testCase.verifyEqual(n.x,1.01);
 			testCase.verifyEqual(n.y,1.01);
 			testCase.verifyEqual(n.force,[0,0]);
+			testCase.verifyEqual(n.previousForce,[1,1]);
 
-			% Move node using move method
-			% This resets the force on the node also
-			n = Node(1,1,3);
-			n.MoveNode([2,2]);
-			testCase.verifyEqual(n.position,[2, 2]);
-			testCase.verifyEqual(n.x,2);
-			testCase.verifyEqual(n.y,2);
-			testCase.verifyEqual(n.force,[0,0]);
+
+			% Test adjusting
+			% Use same node as above
+			n.AddForceContribution([2,2]);
+
+			% Adjust position doesn't trigger force clearing
+			n.AdjustPosition([4,4]);
+
+			testCase.verifyEqual(n.position,[4, 4]);
+			testCase.verifyEqual(n.previousPosition,[1,1]);
+			testCase.verifyEqual(n.x,4);
+			testCase.verifyEqual(n.y,4);
+			testCase.verifyEqual(n.force,[2,2]);
+			testCase.verifyEqual(n.previousForce,[1,1]);
+			testCase.verifyEqual(n.preAdjustedPosition,[1.01, 1.01]);
+			testCase.verifyTrue(n.nodeAdjusted);
 
 		end
 
 		function TestPointToElementAndCell(testCase)
 
 
+			% COMPLETE
+			% Node only handles it's own values, it shouldn't update
+			% anything held in an element or cell, as they should be only handled
+			% by the element or cell themselves. This is to fix the line of command
+			% so to speak
+
+			% Here we are only testing the function of the adding to list
+			% functionality using functions in Node, not if the functions
+			% from Element or Cell work properly
+
+			% Make a cell to test with 
 			n1 = Node(0,0,1);
 			n2 = Node(0,1,2);
 			n3 = Node(1,0,3);
@@ -70,55 +120,64 @@ classdef TestNode < matlab.unittest.TestCase
 			et = Element(n2,n4,3);
 			er = Element(n3,n4,4);
 
-			c = Cell(NoCellCycle, [et,eb,el,er], 1);
+			c1 = Cell(NoCellCycle, [et,eb,el,er], 1);
+
+			% Make another cell to test with
+
+			n5 = Node(0,0,1);
+			n6 = Node(0,1,2);
+			n7 = Node(1,0,3);
+			n8 = Node(1,1,4);
+
+			el2 = Element(n1,n2,1);
+			eb2 = Element(n1,n3,2);
+			et2 = Element(n2,n4,3);
+			er2 = Element(n3,n4,4);
+
+			c2 = Cell(NoCellCycle, [et2,eb2,el2,er2], 2);
 
 
-			testCase.verifyTrue(ismember(el,n1.elementList));
-			testCase.verifyTrue(ismember(el,n2.elementList));
+			% The node that will allow us to access the functions
+			n = Node(-1,-1,5);
 
-			testCase.verifyTrue(ismember(eb,n1.elementList));
-			testCase.verifyTrue(ismember(eb,n3.elementList));
+			% Adding elements
+			n.AddElement([el,eb,et,er]);
+			testCase.verifyEqual(n.elementList, [el,eb,et,er]);
 
-			testCase.verifyTrue(ismember(et,n4.elementList));
-			testCase.verifyTrue(ismember(et,n2.elementList));
+			testCase.verifyWarning(@() n.AddElement(eb), 'N:AddElement:ElementAlreadyHere')
 
-			testCase.verifyTrue(ismember(er,n3.elementList));
-			testCase.verifyTrue(ismember(er,n4.elementList));
+			testCase.verifyWarning(@() n.AddElement([el,el2]), 'N:AddElement:ElementAlreadyHere')
+			testCase.verifyEqual(n.elementList, [el,eb,et,er,el2]);
 
-			testCase.verifyTrue(ismember(c,n1.cellList));
-			testCase.verifyTrue(ismember(c,n2.cellList));
+			% Removing elements
+			n.RemoveElement(et);
+			testCase.verifyEqual(n.elementList, [el,eb,er,el2]);
+			testCase.verifyWarning(@() n.RemoveElement(et), 'N:RemoveElement:ElementNotHere');
 
-			testCase.verifyTrue(n2.isTopNode);
-			testCase.verifyTrue(n4.isTopNode);
+			% Replacing elementList
+			n.ReplaceElementList([et2,eb2,el]);
+			testCase.verifyEqual(n.elementList, [et2,eb2,el]);
 
-			testCase.verifyFalse(n1.isTopNode);
-			testCase.verifyFalse(n3.isTopNode);
 
-			% Remove the element from both lists
-			n1.RemoveElement(el);
-			n2.RemoveElement(el);
+			% Adding cells
+			n.AddCell([c1]);
+			testCase.verifyEqual(n.cellList, [c1]);
 
-			testCase.verifyFalse(ismember(el,n1.elementList));
-			testCase.verifyFalse(ismember(el,n2.elementList));
+			testCase.verifyWarning(@() n.AddCell(c1), 'N:AddCell:CellAlreadyHere');
+			testCase.verifyWarning(@() n.AddCell([c1, c2]), 'N:AddCell:CellAlreadyHere');
+			testCase.verifyEqual(n.cellList, [c1,c2]);
 
-			testCase.verifyTrue(ismember(c,n1.cellList));
-			testCase.verifyTrue(ismember(c,n2.cellList));
+			% Removing cells
+			n.RemoveCell(c1);
+			testCase.verifyEqual(n.cellList, [c2]);
+			testCase.verifyWarning( @() n.RemoveCell(c1), 'N:RemoveCell:CellNotHere');
 
-			n1.RemoveElement(er);
-			n2.RemoveElement(er);
-			n1.RemoveElement(eb);
-			n2.RemoveElement(eb);
-			n1.RemoveElement(et);
-			n2.RemoveElement(et);
+			% Replacing cellList
+			n.ReplaceCellList([c1,c2,c1,c2]);
+			testCase.verifyEqual(n.cellList, [c1,c2,c1,c2]);
 
-			testCase.verifyEmpty(n1.elementList);
-			testCase.verifyEmpty(n2.elementList);
-
-			testCase.verifyEmpty(n1.cellList);
-			testCase.verifyEmpty(n2.cellList);
 		end
 
-
-
 	end
+
 end

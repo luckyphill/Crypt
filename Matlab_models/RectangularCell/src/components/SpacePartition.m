@@ -65,21 +65,21 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 	methods
 		
-		function obj = SpacePartition(dx, dy, s)
+		function obj = SpacePartition(dx, dy, t)
 			% Need to pass in a cell simulation to initialise
 			obj.dx = dx;
 			obj.dy = dy;
-			obj.simulation = s;
+			obj.simulation = t;
 
-			for i = 1:length(s.nodeList)
-				obj.PutNodeInBox(s.nodeList(i));
+			for i = 1:length(t.nodeList)
+				obj.PutNodeInBox(t.nodeList(i));
 			end
 
-			for i=1:length(s.elementList)
+			for i=1:length(t.elementList)
 				% If the element is an internal element, skip it
 				% because they don't interact with nodes
 				
-				e = s.elementList(i);
+				e = t.elementList(i);
 				if ~e.IsElementInternal()
 					obj.PutElementInBoxes(e);
 				end
@@ -246,7 +246,7 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 			end
 
-			neighboursN = obj.QuickUniqueEmpty(neighboursN);
+			neighboursN = obj.QuickUnique(neighboursN);
 			
 		end
 
@@ -315,21 +315,13 @@ classdef SpacePartition < matlab.mixin.SetGet
 			% needing all the bells and whistles - it can by a factor of 2
 
 			% Is there a more efficient way when the most repetitions is 3?
-
-			b = sort(b);
-
-			% If there are repeated elements, they will be adjacent after sorting
-			Lidx = b(1:end-1) ~= b(2:end);
-			Lidx = [Lidx, true];
-			b = b(Lidx);
-
-		end
-
-		function b = QuickUniqueEmpty(obj, b)
-			
-			% Same a QuickUnique, but handles empty vectors
 			if ~isempty(b)
-				b = QuickUnique(obj, b);
+				b = sort(b);
+
+				% If there are repeated elements, they will be adjacent after sorting
+				Lidx = b(1:end-1) ~= b(2:end);
+				Lidx = [Lidx, true];
+				b = b(Lidx);
 			end
 
 		end
@@ -495,36 +487,6 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 		end
 
-		function PutElementsInBoxesUsingNode(obj, n1)
-
-			% Given the list of elements that a given node
-			% is part of, distribute the elements to the element
-			% boxes. This will require putting elements in 
-			% intermediate boxes too
-
-			for i=1:length(n1.elementList)
-				% If the element is an internal element, skip it
-				% because they don't interact with nodes
-				
-				e = n1.elementList(i);
-				if ~e.IsElementInternal()
-
-					n2 = e.GetOtherNode(n1);
-
-					[Q,I,J] = GetBoxIndicesBetweenNodes(obj, n1, n2);
-
-					for j = 1:length(Q)
-
-						obj.InsertElement(Q(j),I(j),J(j),e);
-
-					end
-
-				end
-
-			end
-
-		end
-
 		function PutElementInBoxes(obj, e)
 
 			% Given the list of elements that a given node
@@ -545,74 +507,46 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 		end
 
-		function [ql,il,jl] = GetBoxIndicesBetweenNodes(obj, n1, n2)
+		function [qp,ip,jp] = GetBoxIndicesBetweenPoints(obj, pos1, pos2)
 
-			% Given two nodes, we want all the indices between them
-			% If the nodes are in the same quadrant, this is simple,
-			% but if they span quadrants, we need to be careful
+			% Given two points, we want all the indices between them
+			% in order to determine which boxes an element needs to go in
 
-			% ql,il,jl are vectors (lists) of all the possible box indices where
-			% the element could pass through
-			[q1,i1,j1] = obj.GetQuadrantAndIndices(n1.x,n1.y);
-			[q2,i2,j2] = obj.GetQuadrantAndIndices(n2.x,n2.y);
+			[q1,i1,j1] = obj.GetQuadrantAndIndices(pos1(1),pos1(2));
+			[q2,i2,j2] = obj.GetQuadrantAndIndices(pos2(1),pos2(2));
 
-			[ql,il,jl] = obj.MakeElementBoxList(q1,i1,j1,q2,i2,j2);
+			[qp,ip,jp] = obj.MakeElementBoxList(q1,i1,j1,q2,i2,j2);
 
 		end
 
-		function [qp,ip,jp] = GetBoxIndicesBetweenNodesPrevious(obj, n1, n2)
+		function [ql,il,jl] = GetBoxIndicesBetweenNodes(obj, n1, n2)
 
 			% Given two nodes, we want all the indices between them
-			% in order to determine which boxes an element needs to go in
+			[ql,il,jl] = obj.GetBoxIndicesBetweenPoints(n1.position, n2.position);
 
-			% This function gets the box indices between nodes in the previous time step2
+		end
 
-			% qp,ip,jp are vectors (lists) of all the possible box indices where
-			% the element could pass through
+		% Redundant
+		function [qp,ip,jp] = GetBoxIndicesBetweenNodesPrevious(obj, n1, n2)
+
+			% Given two nodes, we want all the indices between their previous positions
 			if isempty(n1.previousPosition) || isempty(n2.previousPosition)
 				error('SP:GetBoxIndicesBetweenNodesPrevious:NoPrevious', 'There has not been a previous position');
 			end
 
-
-			[q1,i1,j1] = obj.GetQuadrantAndIndices(n1.previousPosition(1),n1.previousPosition(2));
-			[q2,i2,j2] = obj.GetQuadrantAndIndices(n2.previousPosition(1),n2.previousPosition(2));
-
-			[qp,ip,jp] = obj.MakeElementBoxList(q1,i1,j1,q2,i2,j2);
+			[qp,ip,jp] = obj.GetBoxIndicesBetweenPoints(n1.previousPosition, n2.previousPosition);
 
 		end
 
 		function [qp,ip,jp] = GetBoxIndicesBetweenNodesPreviousCurrent(obj, n1, n2)
 
-			% Given two nodes, we want all the indices between them
-			% in order to determine which boxes an element needs to go in
-
-			% This function finds the previous boxes for the node that has just moved
-			% and the current indices for its associated element paired node
-
-			% qp,ip,jp are vectors (lists) of all the possible box indices where
-			% the element could pass through
-			if isempty(n1.previousPosition) || isempty(n2.previousPosition)
+			% Given two nodes, we want all the indices between n1s previous
+			% and n2s current positions
+			if isempty(n1.previousPosition)
 				error('SP:GetBoxIndicesBetweenNodesPrevious:NoPrevious', 'There has not been a previous position');
 			end
 
-
-			[q1,i1,j1] = obj.GetQuadrantAndIndices(n1.previousPosition(1),n1.previousPosition(2));
-			[q2,i2,j2] = obj.GetQuadrantAndIndices(n2.x,n2.y);
-
-			[qp,ip,jp] = obj.MakeElementBoxList(q1,i1,j1,q2,i2,j2);
-
-		end
-
-		function [qp,ip,jp] = GetBoxIndicesBetweenNodesProposedCurrent(obj, newPos, n2)
-
-			% Same function as other methods of the same form, but finds the boxes
-			% for the element when a node is moved by a modifier
-
-
-			[q1,i1,j1] = obj.GetQuadrantAndIndices(newPos(1),newPos(2));
-			[q2,i2,j2] = obj.GetQuadrantAndIndices(n2.x,n2.y);
-
-			[qp,ip,jp] = obj.MakeElementBoxList(q1,i1,j1,q2,i2,j2);
+			[qp,ip,jp] = obj.GetBoxIndicesBetweenPoints(n1.previousPosition, n2.position);
 
 		end
 
@@ -668,85 +602,6 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 		end
 
-		function [ql,il,jl] = MakeExactElementBoxList(obj,q1,i1,j1,q2,i2,j2)
-
-			% DOESN'T WORK YET - There may be a fundamental flaw to do with
-			% the indexing
-
-			% This method for finding the boxes uses the exact algorithm
-			% to find the full range of boxes that an element could feasibly
-			% be found in. It avoids the overshoot of the rectangle method
-
-			% To find the boxes that the element could pass through
-			% it is much simpler to convert to global indices, then
-			% back to quadrants
-			[I1, J1] = obj.ConvertToGlobal(q1,i1,j1);
-			[I2, J2] = obj.ConvertToGlobal(q2,i2,j2);
-
-			if I1<I2; Is = I1; Ie = I2; else; Is = I2; Ie = I1; end
-			if J1<J2; Js = J1; Je = J2; else; Js = J2; Je = J1; end
-
-			% To get the exact boxes, get the vector from top corner to top corner
-			% If the upper box is to the right, take top left to top left
-			% and vice versa if the upper box is to the left
-
-			%      _    _
-			%    /|_|  |_|\
-			%   /          \
-			%  /            \
-			% /              \
-			%|_|            |_|
-			% 
-
-			if Js < Je
-				% Upper box is right
-
-				pl = [Is, (Js+1)];
-				pr = [Ie, (Je+1)];
-
-				% v = (pr - pl)s + pl
-				% For each vertical boundary that it crosses we need to solve
-				% vx = i
-				% Then use s to find the matching j
-				% Then vice versa for the horizontal boundaries
-
-				iI = Is:Ie;
-				jJ = Js:Je;
-
-				% Remove the 0 indices because matlab
-				iI(iI==0) = [];
-				jJ(jJ==0) = [];
-
-				sx = ( iI - pl(1) )./(pr(1) - pl(1))
-				sy = ( jJ - pl(2) )./(pr(2) - pl(2))
-
-				jI = round((pr(2) - pl(2)) * sx - pl(2))
-				iJ = round((pr(1) - pl(1)) * sy - pl(1))
-
-
-				Il = [iI';iJ']
-				Jl = [jI';jJ']
-
-				% Since this is for the upper line, we need to duplicate it
-				% for the lower line. This can be done by adding 1 to I and -1 to J
-
-				Il = [Il; Il+1];
-				Jl = [Jl; Jl-1];
-
-				% And once again, because matlab indexes from 1...
-				Il(Il==0) = 1;
-				Jl(Jl==0) = -1;
-
-
-			else
-				% Upper box is left or directly above
-
-			end
-
-			[ql,il,jl] = obj.ConvertToQuadrant(Il,Jl);
-
-		end
-
 		function UpdateBoxForNode(obj, n)
 
 			if isempty(n.previousPosition)
@@ -771,38 +626,14 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 		end
 
-		function UpdateBoxForNodeModifier(obj, n, newPos)
-
-			% Used when manually moving a node to a new position
-			% a special method is needed since previousPosition is
-			% not changed in this propcess
-
-			[qn,in,jn] = obj.GetQuadrantAndIndices(newPos(1),newPos(2));
-			[qo,io,jo] = obj.GetQuadrantAndIndices(n.x,n.y);
-
-			if ~prod([qn,in,jn] == [qo,io,jo])
-				% The given node is in a different box compared to
-				% the previous timestep/position, so need to do some adjusting
-
-				obj.InsertNode(qn,in,jn,n);
-
-				obj.nodesQ{qo}{io,jo}( obj.nodesQ{qo}{io,jo} == n ) = [];
-
-				% Also need to adjust the elements
-				obj.UpdateBoxesForElementsUsingNodeModifier(n, newPos);
-
-			end
-
-		end
-
 		function UpdateBoxForNodeAdjusted(obj, n)
 
 			% Used when manually moving a node to a new position
 			% a special method is needed since previousPosition is
 			% not changed in this propcess
 
-			[qn,in,jn] = obj.GetQuadrantAndIndices(n.preAdjustedPosition(1),n.preAdjustedPosition(2));
-			[qo,io,jo] = obj.GetQuadrantAndIndices(n.x,n.y);
+			[qn,in,jn] = obj.GetQuadrantAndIndices(n.x,n.y);
+			[qo,io,jo] = obj.GetQuadrantAndIndices(n.preAdjustedPosition(1),n.preAdjustedPosition(2));
 
 			if ~prod([qn,in,jn] == [qo,io,jo])
 				% The given node is in a different box compared to
@@ -816,6 +647,9 @@ classdef SpacePartition < matlab.mixin.SetGet
 				obj.UpdateBoxesForElementsUsingNodeAdjusted(n);
 
 			end
+
+			n1.nodeAdjusted = false;
+			n1.preAdjustedPosition = [];
 
 		end
 
@@ -846,36 +680,13 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 					n2 = e.GetOtherNode(n1);
 
-					[ql,il,jl] = obj.GetBoxIndicesBetweenNodes(n1, n2);
-					[qp,ip,jp] = obj.GetBoxIndicesBetweenNodesPreviousCurrent(n1, n2);
+					[qn,in,jn] = obj.GetBoxIndicesBetweenNodes(n1, n2);
+					[qo,io,jo] = obj.GetBoxIndicesBetweenNodesPreviousCurrent(n1, n2);
 
-					% If the box appears in both, nothing needs to change
-					% If it only appears in previous, remove element
-					% If it only appears in current, add element
+					new = [qn,in,jn];
+					old = [qo,io,jo];
 
-					new = [ql,il,jl];
-					old = [qp,ip,jp];
-
-					% Get the unique new boxes
-					J = ~ismember(new,old,'rows');
-					% And get the indices to add
-					qa = ql(J);
-					ia = il(J);
-					ja = jl(J);
-					
-					for j = 1:length(qa)
-						obj.InsertElement(qa(j),ia(j),ja(j),e);
-					end
-
-					% Get the old boxes
-					J = ~ismember(old,new,'rows');
-					% ... and the indices to remove
-					qt = qp(J);
-					it = ip(J);
-					jt = jp(J);
-					for j = 1:length(qt)
-						obj.RemoveElement(qt(j),it(j),jt(j),e);
-					end
+					obj.MoveElementToNewBoxes(old, new, e);
 
 				end
 
@@ -883,110 +694,38 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 		end
 
-		function UpdateBoxesForElementsUsingNodeModifier(obj, n1, newPos)
+		function UpdateBoxesForElementsUsingNodeAdjusted(obj, n1)
 
 			% This function does the same as UpdateBoxesForElementsUsingNode
-			% when the given node is moved by a modifier
-
-			for i=1:length(n1.elementList)
-				% If the element is an internal element, skip it
-				% because they don't interact with nodes
-				
-				e = n1.elementList(i);
-				if ~e.IsElementInternal()
-
-					n2 = e.GetOtherNode(n1);
-
-					[ql,il,jl] = obj.GetBoxIndicesBetweenNodesProposedCurrent(newPos, n2);
-					[qp,ip,jp] = obj.GetBoxIndicesBetweenNodes(n1, n2);
+			% when the given node is moved by adjusting it's position manually
+			if n1.nodeAdjusted
+				for i=1:length(n1.elementList)
+					% If the element is an internal element, skip it
+					% because they don't interact with nodes
 					
+					e = n1.elementList(i);
+					if ~e.IsElementInternal()
 
-					% If the box appears in both, nothing needs to change
-					% If it only appears in previous, remove element
-					% If it only appears in current, add element
+						n2 = e.GetOtherNode(n1);
 
-					new = [ql,il,jl];
-					old = [qp,ip,jp];
+						[qn,in,jn] = obj.GetBoxIndicesBetweenNodes(n1, n2);
+						[qo,io,jo] = obj.GetBoxIndicesBetweenPoints(n1.preAdjustedPosition, n2.position);
 
-					% Get the unique new boxes
-					J = ~ismember(new,old,'rows');
-					% And get the indices to add
-					qa = ql(J);
-					ia = il(J);
-					ja = jl(J);
-					
-					for j = 1:length(qa)
-						obj.InsertElement(qa(j),ia(j),ja(j),e);
-					end
+						new = [qn,in,jn];
+						old = [qo,io,jo];
 
-					% Get the old boxes
-					J = ~ismember(old,new,'rows');
-					% ... and the indices to remove
-					qt = qp(J);
-					it = ip(J);
-					jt = jp(J);
-					for j = 1:length(qt)
-						obj.RemoveElement(qt(j),it(j),jt(j),e);
+						obj.MoveElementToNewBoxes(old, new, e);
+
 					end
 
 				end
-
+			else
+				warning('SP:UpdateBoxesAdjusted:NotAdjusted', 'Node %d has not been adjusted, this will do nothing', n1.id);
 			end
 
 		end
 
-		function UpdateBoxesForElementsUsingNodeAdjusted(obj, n1, newPos)
-
-			% This function does the same as UpdateBoxesForElementsUsingNode
-			% when the given node is moved by a modifier
-
-			for i=1:length(n1.elementList)
-				% If the element is an internal element, skip it
-				% because they don't interact with nodes
-				
-				e = n1.elementList(i);
-				if ~e.IsElementInternal()
-
-					n2 = e.GetOtherNode(n1);
-
-					[ql,il,jl] = obj.GetBoxIndicesBetweenNodesProposedCurrent(n1.preAdjustedPosition, n2);
-					[qp,ip,jp] = obj.GetBoxIndicesBetweenNodes(n1, n2);
-					
-
-					% If the box appears in both, nothing needs to change
-					% If it only appears in previous, remove element
-					% If it only appears in current, add element
-
-					new = [ql,il,jl];
-					old = [qp,ip,jp];
-
-					% Get the unique new boxes
-					J = ~ismember(new,old,'rows');
-					% And get the indices to add
-					qa = ql(J);
-					ia = il(J);
-					ja = jl(J);
-					
-					for j = 1:length(qa)
-						obj.InsertElement(qa(j),ia(j),ja(j),e);
-					end
-
-					% Get the old boxes
-					J = ~ismember(old,new,'rows');
-					% ... and the indices to remove
-					qt = qp(J);
-					it = ip(J);
-					jt = jp(J);
-					for j = 1:length(qt)
-						obj.RemoveElement(qt(j),it(j),jt(j),e);
-					end
-
-				end
-
-			end
-
-		end
-
+		% Redundant
 		function UpdateBoxesForElement(obj, e)
 
 			% This function will be run in the simulation
@@ -1009,29 +748,47 @@ classdef SpacePartition < matlab.mixin.SetGet
 					new = [ql,il,jl];
 					old = [qp,ip,jp];
 
-					% Get the unique new boxes
-					J = ~ismember(new,old,'rows');
-					% And get the indices to add
-					qa = ql(J);
-					ia = il(J);
-					ja = jl(J);
-					
-					for j = 1:length(qa)
-						obj.InsertElement(qa(j),ia(j),ja(j),e);
-					end
-
-					% Get the old boxes
-					J = ~ismember(old,new,'rows');
-					% ... and rhe indices to remove
-					qt = qp(J);
-					it = ip(J);
-					jt = jp(J);
-					for j = 1:length(qt)
-						obj.RemoveElement(qt(j),it(j),jt(j),e);
-					end
+					obj.MoveElementToNewBoxes(old, new, e);
 
 				end
 
+			end
+
+		end
+
+		function MoveElementToNewBoxes(obj, old, new, e)
+
+			% Old is the set of boxes the element used to be in
+			% new is the set that it should be in now
+
+			ql = new(:,1);
+			il = new(:,2);
+			jl = new(:,3);
+
+			qp = old(:,1);
+			ip = old(:,2);
+			jp = old(:,3);
+
+			% Get the unique new boxes
+			J = ~ismember(new,old,'rows');
+			% And get the indices to add
+
+			qa = ql(J);
+			ia = il(J);
+			ja = jl(J);
+			
+			for j = 1:length(qa)
+				obj.InsertElement(qa(j),ia(j),ja(j),e);
+			end
+
+			% Get the old boxes
+			J = ~ismember(old,new,'rows');
+			% ... and the indices to remove
+			qt = qp(J);
+			it = ip(J);
+			jt = jp(J);
+			for j = 1:length(qt)
+				obj.RemoveElementFromBox(qt(j),it(j),jt(j),e);
 			end
 
 		end
@@ -1050,8 +807,12 @@ classdef SpacePartition < matlab.mixin.SetGet
 			% but it doesn't work the proper way if the box exists, but is empty
 			% and you want to make sure the node doesn't already exist in there
 			try
-				obj.nodesQ{q}{i,j}(end + 1) = n;
-				obj.nodesQ{q}{i,j} = unique(obj.nodesQ{q}{i,j});
+				if sum(obj.nodesQ{q}{i,j} == n) == 0
+					obj.nodesQ{q}{i,j}(end + 1) = n;
+				else
+					% Node already in box
+					% Maybe put a warning here, but I think it should be ok
+				end
 			catch ME
 				if (strcmp(ME.identifier,'MATLAB:badsubscript'))
 					obj.nodesQ{q}{i,j} = [n];
@@ -1066,8 +827,12 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 
 			try
-				obj.elementsQ{q}{i,j}(end + 1) = e;
-				obj.elementsQ{q}{i,j} = unique(obj.elementsQ{q}{i,j});
+				if sum(obj.elementsQ{q}{i,j} == e) == 0
+					obj.elementsQ{q}{i,j}(end + 1) = e;
+				else
+					% Element already in box
+					% Maybe put a warning here, but I think it should be ok
+				end
 			catch ME
 				if (strcmp(ME.identifier,'MATLAB:badsubscript'))
 					obj.elementsQ{q}{i,j} = [e];
@@ -1095,15 +860,19 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 		end
 
-		function RemoveElement(obj,q,i,j,e)
+		function RemoveElementFromBox(obj,q,i,j,e)
 
 			% If it gets to this point, the element should be in
-			% the given box, so no need for error catching
-			% If it does in fact fail here, we want it to stop
+			% the given box. If it's not, could be a sign of other problems
+			% but the simulation can continue
 			try
-				obj.elementsQ{q}{i,j}( obj.elementsQ{q}{i,j} == e ) = [];
+				if sum(obj.elementsQ{q}{i,j} == e) == 0
+					warning('SP:RemoveElementFromBox:NotHere','Element %d is not in box (%d,%d,%d)', e.id,q,i,j);
+				else
+					obj.elementsQ{q}{i,j}( obj.elementsQ{q}{i,j} == e ) = [];
+				end
 			catch
-				warning('SP:RemoveElement:DeleteFail','Deleting element %d from box (%d,%d,%d) failed for some reason', e.id,q,i,j);
+				warning('SP:RemoveElementFromBox:DeleteFail','Deleting element %d from box (%d,%d,%d) failed for some reason', e.id,q,i,j);
 			end
 
 		end
@@ -1113,13 +882,18 @@ classdef SpacePartition < matlab.mixin.SetGet
 			% Used when cells die
 			[q,i,j] = obj.GetQuadrantAndIndices(n.x,n.y);
 
-			obj.nodesQ{q}{i,j}( obj.nodesQ{q}{i,j} == n ) = [];
-
+			if sum(obj.nodesQ{q}{i,j} == n) == 0
+					warning('SP:RemoveNodeFromPartition:NotHere','Node %d is not in box (%d,%d,%d)', n.id,q,i,j);
+			else
+				obj.nodesQ{q}{i,j}( obj.nodesQ{q}{i,j} == n ) = [];
+			end
+			
 		end
 
 		function RemoveElementFromPartition(obj, e)
 
 			% Used when cells die
+			% Assumes that the element is completely up to date
 
 			[ql,il,jl] = GetBoxIndicesBetweenNodes(obj, e.Node1, e.Node2);
 
@@ -1127,7 +901,7 @@ classdef SpacePartition < matlab.mixin.SetGet
 				q = ql(k);
 				i = il(k);
 				j = jl(k);
-				obj.RemoveElement(q,i,j,e);
+				obj.RemoveElementFromBox(q,i,j,e);
 			end
 
 		end
@@ -1154,7 +928,7 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 				[ql,il,jl] = obj.GetBoxIndicesBetweenNodes(old1, old2);
 				for k = 1:length(ql)
-					obj.RemoveElement(ql(k),il(k),jl(k),e);
+					obj.RemoveElementFromBox(ql(k),il(k),jl(k),e);
 				end
 
 				obj.PutElementInBoxes(e);
@@ -1173,7 +947,12 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 			[q,i,j] = obj.GetQuadrantAndIndices(x,y);
 
-			b = obj.nodesQ{q}{i,j};
+			try
+				b = obj.nodesQ{q}{i,j};
+			catch
+				error('SP:GetNodeBox:NoBox','Node box (%d,%d,%d) doesnt exist yet', q,i,j);
+				b = [];
+			end
 
 		end
 
@@ -1201,7 +980,12 @@ classdef SpacePartition < matlab.mixin.SetGet
 			% Determine the indices
 			[q,i,j] = obj.GetQuadrantAndIndices(x,y);
 
-			b = obj.elementsQ{q}{i,j};
+			try
+				b = obj.elementsQ{q}{i,j};
+			catch
+				error('SP:GetElementBox:NoBox','Element box (%d,%d,%d) doesnt exist yet', q,i,j);
+				b = [];
+			end
 
 		end
 
@@ -1218,6 +1002,10 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 			I = sign(x) * (floor(abs(x/obj.dx)) + 1);
 			J = sign(y) * (floor(abs(y/obj.dy)) + 1);
+
+			% Need this since sign(0) = 0
+			if I==0; I=1; end
+			if J==0; J=1; end
 
 		end
 

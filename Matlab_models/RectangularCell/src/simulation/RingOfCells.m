@@ -113,7 +113,7 @@ classdef RingOfCells < RingSimulation
 
 			% Assemble the cell
 
-			obj.cellList = Cell(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
+			obj.cellList = SquareCellJoined(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
 
 			%---------------------------------------------------
 			% Make the middle cells
@@ -135,7 +135,7 @@ classdef RingOfCells < RingSimulation
 
 				ccm = SimplePhaseBasedCellCycle(p, g);
 
-				obj.cellList(i) = Cell(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
+				obj.cellList(i) = SquareCellJoined(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
 
 			end
 
@@ -155,7 +155,7 @@ classdef RingOfCells < RingSimulation
 
 			ccm = SimplePhaseBasedCellCycle(p, g);
 
-			obj.cellList(nCells) = Cell(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
+			obj.cellList(nCells) = SquareCellJoined(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
 
 
 			%---------------------------------------------------

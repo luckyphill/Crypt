@@ -23,7 +23,9 @@ classdef SimplePhaseBasedCellCycle < AbstractCellCycleModel
 			obj.SetPausePhaseLength(p);
 			obj.SetGrowingPhaseLength(g);
 
-			% Cell will start off in the pause phase
+			% By default cell will start off in the pause phase
+			% (actually, this will depend somewhat on the randomly
+			% chosen pausePhaselength)
 			obj.SetAge(randi(p - 1));
 
 		end

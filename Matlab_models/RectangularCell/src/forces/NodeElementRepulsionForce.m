@@ -45,8 +45,8 @@ classdef NodeElementRepulsionForce < AbstractNeighbourhoodBasedForce
 					d = dot(n1ton, v);
 
 					% Encroaching amount
-					% dr = obj.r - abs(d);
-					dr = obj.r - d;
+					dr = obj.r - abs(d);
+					% dr = obj.r - d;
 
 					% This gives us the quantity for the force calculation
 
@@ -57,7 +57,7 @@ classdef NodeElementRepulsionForce < AbstractNeighbourhoodBasedForce
 
 					% The force points towards the element
 					% Fa = -v * sign(d) * atanh(dr/obj.r);
-					Fa = -v * sign(d) * (  exp( (dr/obj.r)^2 ) - 1  );
+					Fa = -v * (  exp( (dr/obj.r)^2 ) - 1  );
 
 					obj.ApplyForcesToNodeAndElement(n,e,Fa,n1toA);
 

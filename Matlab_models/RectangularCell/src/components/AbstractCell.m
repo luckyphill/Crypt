@@ -10,16 +10,8 @@ classdef AbstractCell < handle & matlab.mixin.Heterogeneous
 		nodeList 	= Node.empty()
 		elementList = Element.empty()
 
-		cellArea
-		cellPerimeter
-
 		newCellTargetArea = 0.5
 		grownCellTargetArea = 1
-		currentCellTargetArea = 1
-
-		newCellTargetPerimeter
-		grownCellTargetPerimeter
-		currentCellTargetPerimeter
 
 		CellCycleModel
 
@@ -51,7 +43,7 @@ classdef AbstractCell < handle & matlab.mixin.Heterogeneous
 
 		[newCell, newNodeList, newElementList] = Divide(obj)
 		inside = IsPointInsideCell(obj, point)
-		flipped = HasEdgeFlipped(obj)
+
 	end
 
 	methods
@@ -107,17 +99,22 @@ classdef AbstractCell < handle & matlab.mixin.Heterogeneous
 
 		end
 
-		function AddCellDataArray(obj, cellDataArray)
+		function AddCellData(obj, d)
 
 			% Need to explicitly create a map object or matlab
 			% will only point to one map object for the
 			% entire list of Cells...
-			cD = containers.Map;
-			for i = 1:length(cellDataArray)
-				cD(cellDataArray(i).name) = cellDataArray(i);
+			if isempty(obj.cellData)
+				cD = containers.Map;
+				for i = 1:length(d)
+					cD(d(i).name) = d(i);
+				end
+				obj.cellData = cD;
+			else
+				for i = 1:length(d)
+					obj.cellData(d(i).name) = d(i);
+				end
 			end
-
-			obj.cellData = cD;
 
 		end
 
@@ -140,6 +137,98 @@ classdef AbstractCell < handle & matlab.mixin.Heterogeneous
 
 			colour = obj.CellCycleModel.GetColour();
 		
+		end
+
+		function crossing = DoElementsCross(obj, e1, e2)
+
+			crossing = false;
+			% An edge will only flip on the top or bottom
+			% When that happens, the left and right edges will cross
+			% The following algorithm decides if the edges cross
+
+			X1 = e1.Node1.x;
+			X2 = e1.Node2.x;
+
+			Y1 = e1.Node1.y;
+			Y2 = e1.Node2.y;
+
+			X3 = e2.Node1.x;
+			X4 = e2.Node2.x;
+
+			Y3 = e2.Node1.y;
+			Y4 = e2.Node2.y;
+
+			% Basic run-down of algorithm:
+			% The lines are parameterised so that
+			% elementLeft  = (x1(t), y1(t)) = (A1t + a1, B1t + b1)
+			% elementRight = (x2(s), y2(s)) = (A2s + a2, B2s + b2)
+			% where 0 <= t,s <=1
+			% If the lines cross, then there is a unique value of t,s such that
+			% x1(t) == x2(s) and y1(t) == y2(s)
+			% There will always be a value of t and s that satisfies these
+			% conditions (except for when the lines are parallel), so to make
+			% sure the actual segments cross, we MUST have 0 <= t,s <=1
+
+			% Solving this, we have
+			% t = ( B2(a1 - a2) - A2(b1 - b2) ) / (A2B1 - A1B2)
+			% s = ( B1(a1 - a2) - A1(b1 - b2) ) / (A2B1 - A1B2)
+			% Where 
+			% A1 = X2 - X1, a1 = X1
+			% B1 = Y2 - Y1, b1 = Y1
+			% A2 = X4 - X3, a2 = X3
+			% B2 = Y4 - Y3, b2 = Y3
+
+			denom = (X4 - X3)*(Y2 - Y1) - (X2 - X1)*(Y4 - Y3);
+
+			% denom == 0 means parallel
+
+			if denom ~= 0
+				% if the numerator for either t or s expression is larger than the
+				% |denominator|, then |t| or |s| will be greater than 1, i.e. out of their range
+				% so both must be less than
+				tNum = (Y4 - Y3)*(X1 - X3) - (X4 - X3)*(Y1 - Y3);
+				sNum = (Y2 - Y1)*(X1 - X3) - (X2 - X1)*(Y1 - Y3);
+				
+				% If they strictly less than, then crossing occurs
+				% If they are equal, then the end points join
+				if abs(tNum) < abs(denom) && abs(sNum) < abs(denom) && tNum~=0 && sNum~=0
+					% magnitudes are correct, now check the signs
+					if sign(tNum) == sign(denom) && sign(sNum) == sign(denom)
+						% If the signs of the numerator and denominators are the same
+						% Then s and t satisfy their range restrictions, hence the elements cross
+						crossing = true;
+					end
+				end
+			end
+
+		end
+
+		function selfIntersecting = IsCellSelfIntersecting(obj)
+
+			% This is the slowest possible algorithm to check self intersection
+			% so it should only be used WHEN INITIALISING A CELL. It should NOT
+			% be used regularly to detect intersections because it is
+			% EXTREMELY SLOW
+			
+			selfIntersecting = false;
+
+			for i = 1:length(obj.elementList)
+				
+				e1 = obj.elementList(i);
+				for j = i+1:length(obj.elementList)
+					
+					e2 = obj.elementList(j);
+					if obj.DoElementsCross(e1, e2)
+						
+						selfIntersecting = true;
+						return;
+
+					end
+
+				end
+
+			end
+
 		end
 
 		function DrawCell(obj)

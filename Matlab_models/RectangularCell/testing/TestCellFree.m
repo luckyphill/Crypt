@@ -1,5 +1,6 @@
 classdef TestCellFree < matlab.unittest.TestCase
-   
+   % INCOMPLETE
+   % Not entirely sure if it's all done, but I think it is
 	methods (Test)
 
 		function TestInitialisingAndOpposite(testCase)

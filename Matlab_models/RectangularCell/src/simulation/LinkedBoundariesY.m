@@ -90,7 +90,7 @@ classdef LinkedBoundariesY < LineSimulation
 
 			% Assemble the cell
 
-			obj.cellList = Cell(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
+			obj.cellList = SquareCellJoined(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
 
 
 			for i = 2:nCells
@@ -117,12 +117,10 @@ classdef LinkedBoundariesY < LineSimulation
 
 				ccm = SimplePhaseBasedCellCycle(p, g);
 
-				obj.cellList(i) = Cell(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
+				obj.cellList(i) = SquareCellJoined(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
 
 			end
 
-			obj.leftBoundaryCell = obj.cellList(1);
-			obj.rightBoundaryCell = obj.cellList(end);
 
 			%---------------------------------------------------
 			% Add in the forces

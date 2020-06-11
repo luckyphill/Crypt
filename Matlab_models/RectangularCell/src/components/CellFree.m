@@ -36,7 +36,7 @@ classdef CellFree < AbstractCell
 
 			cellDataArray = [CellArea(), CellPerimeter(), TargetPerimeter(), TargetArea()];
 
-			obj.AddCellDataArray(cellDataArray);
+			obj.AddCellData(cellDataArray);
 
 			if length(varargin) == 3
 				% This case happens when a new simulation is created
@@ -653,71 +653,6 @@ classdef CellFree < AbstractCell
 			end
 
 			sTOo = oPos - s.position;
-
-		end
-
-		function flipped = HasEdgeFlipped(obj)
-
-			% Need to consider if this is important for this cell
-
-
-			flipped = false;
-			% % An edge will only flip on the top or bottom
-			% % When that happens, the left and right edges will cross
-			% % The following algorithm decides if the edges cross
-
-			% X1 = obj.elementLeft.Node1.x;
-			% X2 = obj.elementLeft.Node2.x;
-
-			% Y1 = obj.elementLeft.Node1.y;
-			% Y2 = obj.elementLeft.Node2.y;
-
-			% X3 = obj.elementRight.Node1.x;
-			% X4 = obj.elementRight.Node2.x;
-
-			% Y3 = obj.elementRight.Node1.y;
-			% Y4 = obj.elementRight.Node2.y;
-
-			% % Basic run-down of algorithm:
-			% % The lines are parameterised so that
-			% % elementLeft  = (x1(t), y1(t)) = (A1t + a1, B1t + b1)
-			% % elementRight = (x2(s), y2(s)) = (A2s + a2, B2s + b2)
-			% % where 0 <= t,s <=1
-			% % If the lines cross, then there is a unique value of t,s such that
-			% % x1(t) == x2(s) and y1(t) == y2(s)
-			% % There will always be a value of t and s that satisfies these
-			% % conditions (except for when the lines are parallel), so to make
-			% % sure the actual segments cross, we MUST have 0 <= t,s <=1
-
-			% % Solving this, we have
-			% % t = ( B2(a1 - a2) - A2(b1 - b2) ) / (A2B1 - A1B2)
-			% % s = ( B1(a1 - a2) - A1(b1 - b2) ) / (A2B1 - A1B2)
-			% % Where 
-			% % A1 = X2 - X1, a1 = X1
-			% % B1 = Y2 - Y1, b1 = Y1
-			% % A2 = X4 - X3, a2 = X3
-			% % B2 = Y4 - Y3, b2 = Y3
-
-			% denom = (X4 - X3)*(Y2 - Y1) - (X2 - X1)*(Y4 - Y3);
-
-			% % denom == 0 means parallel
-
-			% if denom ~= 0
-			% 	% if the numerator for either t or s expression is larger than the
-			% 	% |denominator|, then |t| or |s| will be greater than 1, i.e. out of their range
-			% 	% so both must be less than
-			% 	tNum = (Y4 - Y3)*(X1 - X3) - (X4 - X3)*(Y1 - Y3);
-			% 	sNum = (Y2 - Y1)*(X1 - X3) - (X2 - X1)*(Y1 - Y3);
-				
-			% 	if abs(tNum) <= abs(denom) && abs(sNum) <= abs(denom)
-			% 		% magnitudes are correct, now check the signs
-			% 		if sign(tNum) == sign(denom) && sign(sNum) == sign(denom)
-			% 			% If the signs of the numerator and denominators are the same
-			% 			% Then s and t satisfy their range restrictions, hence the elements cross
-			% 			flipped = true;
-			% 		end
-			% 	end
-			% end
 
 		end
 

@@ -230,6 +230,26 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			% as well as the new elements and nodes are correctly added to
 			% their respective lists and boxes if relevant
 
+			for i = 1:length(newNodes)
+
+				n = newNodes(i);
+				n.id = obj.GetNextNodeId();
+				if obj.usingBoxes
+					obj.boxes.PutNodeInBox(n);
+				end
+
+			end
+
+			for i = 1:length(newElements)
+
+				e = newElements(i);
+				e.id = obj.GetNextElementId();
+				if obj.usingBoxes && ~e.internal
+					obj.boxes.PutElementInBoxes(e);
+				end
+
+			end
+
 			for i = 1:length(newCells)
 				
 				nc = newCells(i);
@@ -278,25 +298,6 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 			end
 
-			for i = 1:length(newElements)
-
-				e = newElements(i);
-				e.id = obj.GetNextElementId();
-				if obj.usingBoxes && ~e.internal
-					obj.boxes.PutElementInBoxes(e);
-				end
-
-			end
-
-			for i = 1:length(newNodes)
-
-				n = newNodes(i);
-				n.id = obj.GetNextNodeId();
-				if obj.usingBoxes
-					obj.boxes.PutNodeInBox(n);
-				end
-
-			end
 
 			obj.cellList = [obj.cellList, newCells];
 

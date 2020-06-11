@@ -1,13 +1,72 @@
 classdef TestSpacePartition < matlab.unittest.TestCase
-   
+   % INCOMPLETE
+   % MISSING:
+   % TestInitialise
+   % TestUpdateBoxesForElementsUsingNode
+   % TestGettingBoxes
+
+   % x = done
+   % i = done implicitly via a funciton that uses it
+   % . = probably done well enough
+   %   = not done
+   % r = redundant, or don't need to test
+
+   % Methods to test:
+   %   Constructor
+   % i GetQuadrant > GetQuadrantAndIndices
+   % i GetIndices > GetQuadrantAndIndices
+   % x ConvertToQuadrant
+   % x ConvertToGlobal
+   % x GetGlobalIndices
+   % x GetQuadrantAndIndices
+   % x GetElementBox
+   % r IsNodeInNewBox
+   % x GetNodeBox
+   %   RepairModifiedElement
+   % x RemoveElementFromPartition
+   % x RemoveNodeFromPartition
+   % x RemoveElementFromBox
+   % i InsertElement > PutElementInBoxes
+   % i InsertNode > PutNodeInBox
+   % r UpdateBoxesForElement - This is slow compared to using node, no testing
+   % . UpdateBoxesForElementUsingNode
+   % . UpdateBoxesForElementUsingNodeAdjusted
+   % i MoveElementToNewBoxes > UpdateBoxesForElementUsingNode
+   % x UpdateBoxForNode
+   % x UpdateBoxForNodeAdjusted
+   %   MakeElementBoxList
+   %   GetBoxIndicesBetweenPoints
+   %   GetBoxIndicesBetweenNodes
+   % r GetBoxIndicesBetweenNodesPrevious
+   %   GetBoxIndicesBetweenNodesPreviousCurrent
+   % x PutElementInBoxes
+   %   GetAdjacentElementBoxFromNode
+   %   GetAdjacentNodeBoxFromNode
+   % x GetElementBoxFromNode
+   % x GetNodeBoxFromNode
+   % x PutNodeInBox
+   %   AssembleCandidateNodes
+   %   AssembleCandidateElements
+   %   GetNeighbouringNodesAndElements
+   %   GetNeighbouringNodes
+   %   GetNeighbouringElements
+   % . QuickUnique
+
+   % Test interaction between adjustposition and modified element
+
+
 	methods (Test)
 
-		function TestFindQuadrantsAndBoxes(testCase)
+		function TestGetQuadrantAndIndices(testCase)
 
-			% COMPLETE
+			% COMPLETE BUT CAN'T BE EXHAUSTIVE
 			% This tests all possible cases of where a node can be found
 			% in relation to a box and its boundaries, and makes
 			% sure they end up in the expected boxes
+			% In combination with TestPutNodeInBox, this gets every type
+			% of placement given the boundaries
+			% It can't test every possible box because there are technically
+			% infinite
 
 			t = CellGrowing(3,20,10,10,10,1,10);
 			p = SpacePartition(1, 1, t);
@@ -62,7 +121,7 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 
 		end
 
-		function TestFindQuadrantsAndBoxesVectorised(testCase)
+		function TestGetQuadrantAndIndicesVectorised(testCase)
 			% COMPLETE
 			% Does exactly the same as TestFindQuadrantsAndBoxes
 			% but it does it all in one hit by vectorising
@@ -80,6 +139,133 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 
 			testCase.verifyEqual([q,i,j], out);
 		
+		end
+
+		function TestConvertToQuadrant(testCase)
+
+			% COMPLETE
+			% Goes from global indices to quadrant indices
+
+			t.nodeList = [];
+			t.elementList = [];
+
+			p = SpacePartition(1, 1, t);
+
+			% Test in each quadrant
+			% Returns the quadrant incides, give the global indices
+			[q,i,j] = p.ConvertToQuadrant(1,1);
+			testCase.verifyEqual( [q,i,j], [1,1,1]);
+			[q,i,j] = p.ConvertToQuadrant(-1,1);
+			testCase.verifyEqual( [q,i,j], [4,1,1]);
+			[q,i,j] = p.ConvertToQuadrant(1,-1);
+			testCase.verifyEqual( [q,i,j], [2,1,1]);
+			[q,i,j] = p.ConvertToQuadrant(-1,-1);
+			testCase.verifyEqual( [q,i,j], [3,1,1]); 
+
+		end
+
+		function TestConvertToGlobal(testCase)
+
+			% COMPLETE
+			% Goes from quadrant to global indices
+
+			t.nodeList = [];
+			t.elementList = [];
+
+			p = SpacePartition(1, 1, t);
+
+			[I, J] = p.ConvertToGlobal(1,1,1);
+			testCase.verifyEqual([I, J], [1,1]);
+			[I, J] = p.ConvertToGlobal(2,1,1);
+			testCase.verifyEqual([I, J], [1,-1]);
+			[I, J] = p.ConvertToGlobal(3,1,1);
+			testCase.verifyEqual([I, J], [-1,-1]);
+			[I, J] = p.ConvertToGlobal(4,1,1);
+			testCase.verifyEqual([I, J], [-1,1]);
+
+		end
+
+		function TestGetGlobalIndices(testCase)
+
+			% COMPLETE
+
+			% Need to test every poisition including edge cases
+
+			t.nodeList = [];
+			t.elementList = [];
+
+			p = SpacePartition(1, 1, t);
+
+
+			% Quadrant 1
+			[I, J] = p.GetGlobalIndices(1.1,2.2);
+
+			testCase.verifyEqual([I, J], [2,3]);
+
+			% Quadrant 2
+			[I, J] = p.GetGlobalIndices(1.1,-2.2);
+
+			testCase.verifyEqual([I, J], [2,-3]);
+
+			% Quadrant 3
+			[I, J] = p.GetGlobalIndices(-1.1,-2.2);
+
+			testCase.verifyEqual([I, J], [-2,-3]);
+
+			% Quadrant 4
+			[I, J] = p.GetGlobalIndices(-1.1,2.2);
+
+			testCase.verifyEqual([I, J], [-2,3]);
+
+			% Edge cases
+
+			% Origin
+			[I, J] = p.GetGlobalIndices(0,0);
+
+			testCase.verifyEqual([I, J], [1,1]);
+
+			% Axes
+			% +ve x
+			[I, J] = p.GetGlobalIndices(1.5,0);
+
+			testCase.verifyEqual([I, J], [2,1]);
+
+			% +ve y
+			[I, J] = p.GetGlobalIndices(0,1.5);
+
+			testCase.verifyEqual([I, J], [1,2]);
+
+			% -ve x
+			[I, J] = p.GetGlobalIndices(-1.5,0);
+
+			testCase.verifyEqual([I, J], [-2,1]);
+
+			% -ve y
+			[I, J] = p.GetGlobalIndices(0,-1.5);
+
+			testCase.verifyEqual([I, J], [1,-2]);
+
+			% Corners
+			% Quadrant 1
+			[I, J] = p.GetGlobalIndices(1,1);
+
+			testCase.verifyEqual([I, J], [2,2]);
+
+			% Quadrant 2
+			[I, J] = p.GetGlobalIndices(1,-1);
+
+			testCase.verifyEqual([I, J], [2,-2]);
+
+			% Quadrant 3
+			[I, J] = p.GetGlobalIndices(-1,-1);
+
+			testCase.verifyEqual([I, J], [-2,-2]);
+
+			% Quadrant 4
+			[I, J] = p.GetGlobalIndices(-1,1);
+
+			testCase.verifyEqual([I, J], [-2,2]);
+
 		end
 
 		function TestPutNodeInBox(testCase)
@@ -227,6 +413,77 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 				testCase.verifyTrue(ismember(n, p.nodesQ{q}{3,3}));
 
 			end
+
+		end
+
+		function TestGetNodeBox(testCase)
+
+			% COMPLETE
+
+			% Returns the contents of the box in the node partition
+
+			t.nodeList = [];
+			t.elementList = [];
+
+			p = SpacePartition(1, 1, t);
+
+			n1 = Node(1,1,1);
+
+			testCase.verifyError( @() p.GetNodeBoxFromNode(n1), 'SP:GetNodeBoxFromNode:Missing');
+
+			p.PutNodeInBox(n1);
+
+			b = p.GetNodeBoxFromNode(n1);
+			testCase.verifyEqual(b, [n1]);
+
+			b = p.GetNodeBox(1.1,1.1);
+			testCase.verifyEqual(b, [n1]);
+
+			b = p.GetNodeBox(0.1,0.1);
+			testCase.verifyEmpty(b);
+
+			b = p.GetNodeBox(1.1,0.1);
+			testCase.verifyEmpty(b);
+
+			b = p.GetNodeBox(0.1,1.1);
+			testCase.verifyEmpty(b);
+
+			testCase.verifyError( @() p.GetNodeBox(5,5), 'SP:GetNodeBox:NoBox');
+			testCase.verifyError( @() p.GetNodeBox(-1,5), 'SP:GetNodeBox:NoBox');
+
+
+			% Test the other 3 quadrants
+			n2 = Node(-0.2,1,1);
+
+			p.PutNodeInBox(n2);
+
+			b = p.GetNodeBox(-0.2,1);
+			testCase.verifyEqual(b, [n2]);
+
+			n3 = Node(-0.2,-1,1);
+
+			p.PutNodeInBox(n3);
+
+			b = p.GetNodeBox(-0.2,-1);
+			testCase.verifyEqual(b, [n3]);
+
+			n4 = Node(0.2,-1,1);
+
+			p.PutNodeInBox(n4);
+
+			b = p.GetNodeBox(0.2,-1);
+			testCase.verifyEqual(b, [n4]);
+
+
+
+			b = p.GetNodeBoxFromNode(n2);
+			testCase.verifyEqual(b, [n2]);
+
+			b = p.GetNodeBoxFromNode(n3);
+			testCase.verifyEqual(b, [n3]);
+
+			b = p.GetNodeBoxFromNode(n4);
+			testCase.verifyEqual(b, [n4]);
 
 		end
 
@@ -401,9 +658,139 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 
 		end
 
+		function TestGetElementBox(testCase)
+
+			% COMPLETE
+
+			% Returns the contents of the box in the element partition
+
+			t.nodeList = [];
+			t.elementList = [];
+
+			p = SpacePartition(1, 1, t);
+
+			n1 = Node(0.5,0.5,1);
+			n2 = Node(-0.5,-0.5,2);
+			n3 = Node(0.5,-0.5,3);
+			n4 = Node(-0.5,0.5,4);
+
+			e1 = Element(n1,n2,1);
+			e2 = Element(n3,n4,2);
+
+			p.PutElementInBoxes(e1);
+			p.PutElementInBoxes(e2);
+
+			b = p.GetElementBox(0.5,0.5);
+			testCase.verifyEqual(b, [e1, e2]);
+
+			b = p.GetElementBox(-0.5,0.5);
+			testCase.verifyEqual(b, [e1, e2]);
+
+			b = p.GetElementBox(0.5,-0.5);
+			testCase.verifyEqual(b, [e1, e2]);
+
+			b = p.GetElementBox(-0.5,-0.5);
+			testCase.verifyEqual(b, [e1, e2]);
+
+			testCase.verifyError( @() p.GetElementBox(5,5), 'SP:GetElementBox:NoBox');
+			testCase.verifyError( @() p.GetElementBox(-1,5), 'SP:GetElementBox:NoBox');
+
+
+			b = p.GetElementBoxFromNode(n1);
+			testCase.verifyEqual(b, [e1, e2]);
+
+			b = p.GetElementBoxFromNode(n2);
+			testCase.verifyEqual(b, [e1, e2]);
+
+			b = p.GetElementBoxFromNode(n3);
+			testCase.verifyEqual(b, [e1, e2]);
+
+			b = p.GetElementBoxFromNode(n4);
+			testCase.verifyEqual(b, [e1, e2]);
+
+			% Need to remove element to test failure getting element box from node
+			p.RemoveElementFromPartition(e1);
+			p.RemoveElementFromPartition(e2);
+
+			testCase.verifyError( @() p.GetElementBoxFromNode(n1), 'SP:GetElementBoxFromNode:Missing');
+
+		end
+
+		function TestRemoveNodeRemoveElement(testCase)
+
+			% COMPLETE
+
+			% Removes the contents of the node or element boxes
+
+			t.nodeList = [];
+			t.elementList = [];
+
+			p = SpacePartition(1, 1, t);
+
+			n1 = Node(0.5,0.5,1);
+			n2 = Node(-0.5,-0.5,2);
+			n3 = Node(0.5,-0.5,3);
+			n4 = Node(-0.5,0.5,4);
+
+			e1 = Element(n1,n2,1);
+			e2 = Element(n3,n4,2);
+
+			p.PutNodeInBox(n1);
+			p.PutNodeInBox(n2);
+			p.PutNodeInBox(n3);
+			p.PutNodeInBox(n4);
+
+			p.PutElementInBoxes(e1);
+			p.PutElementInBoxes(e2);
+
+
+			p.RemoveNodeFromPartition(n1);
+
+			testCase.verifyEmpty(p.GetNodeBox(0.5,0.5));
+			testCase.verifyWarning( @() p.RemoveNodeFromPartition(n1), 'SP:RemoveNodeFromPartition:NotHere');
+
+			p.RemoveNodeFromPartition(n2);
+			p.RemoveNodeFromPartition(n3);
+			p.RemoveNodeFromPartition(n4);
+
+			testCase.verifyEmpty(p.GetNodeBox(-0.5,0.5));
+			testCase.verifyEmpty(p.GetNodeBox(0.5,-0.5));
+			testCase.verifyEmpty(p.GetNodeBox(-0.5,-0.5));
+
+
+			p.RemoveElementFromBox(1,1,1,e1);
+
+			testCase.verifyEqual(p.GetElementBox(0.5,0.5), [e2]);
+			testCase.verifyEqual(p.GetElementBox(-0.5,0.5), [e1,e2]);
+			testCase.verifyEqual(p.GetElementBox(0.5,-0.5), [e1,e2]);
+			testCase.verifyEqual(p.GetElementBox(-0.5,-0.5), [e1,e2]);
+
+			testCase.verifyWarning( @() p.RemoveElementFromBox(1,1,1,e1), 'SP:RemoveElementFromBox:NotHere');
+			p.RemoveElementFromBox(2,1,1,e1);
+			p.RemoveElementFromBox(3,1,1,e1);
+			p.RemoveElementFromBox(4,1,1,e1);
+
+			testCase.verifyEqual(p.GetElementBox(0.5,0.5), [e2]);
+			testCase.verifyEqual(p.GetElementBox(-0.5,0.5), [e2]);
+			testCase.verifyEqual(p.GetElementBox(0.5,-0.5), [e2]);
+			testCase.verifyEqual(p.GetElementBox(-0.5,-0.5), [e2]);
+
+
+			p.RemoveElementFromPartition(e2);
+			testCase.verifyEmpty( p.GetElementBox(0.5,0.5) );
+			testCase.verifyEmpty( p.GetElementBox(-0.5,0.5) );
+			testCase.verifyEmpty( p.GetElementBox(0.5,-0.5) );
+			testCase.verifyEmpty( p.GetElementBox(-0.5,-0.5) );
+
+		end
+
 		function TestInitialise(testCase)
 
-			% COMPLETE (I think)
+			% INCOMPLETE
+			% Missing
+			% 1. Precise contents of each box including
+			%    empty boxes and non-existent boxes
+
 			% Tests that the partition intialised correctly
 			% Currently just checks that the quadrants have the right
 			% number of occupied boxes
@@ -536,6 +923,74 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 
 		end
 
+		function TestUpdateBoxForNodeAdjusted(testCase)
+			% COMPLETE
+			% Identical to TestUpdateBoxForNode except for
+			% using Adjust
+
+			% A dummy simulation to satisfy the initialisation
+			t.nodeList = [];
+			t.elementList = [];
+
+			% For each quadrant, put a node in the centre of a non axis box
+			% Then move it to a position in another box of the same quadrant
+			newPosition = [0.5,0.5; 0.5,1.5; 0.5,2.5; 1.5,0.5; 1.5,2.5; 2.5,0.5; 2.5,1.5; 2.5,2.5];
+			I = [1,1,1,2,2,3,3,3];
+			J = [1,2,3,1,3,1,2,3];
+
+			% A vector that matches q to the sign of x or y
+			sx = [1, 1, -1, -1];
+			sy = [1, -1, -1, 1];
+
+			% For each quadrant, jump from box 2,2 to all of I(k),J(k)
+			for q = 1:4
+
+				for k=1:8
+					p = SpacePartition(1, 1, t);
+					nx = sx(q)*1.5;
+					ny = sy(q)*1.5;
+					n = Node(nx,ny,1);
+					p.PutNodeInBox(n);
+
+					x = sx(q) * newPosition(k,1);
+					y = sy(q) * newPosition(k,2);
+					n.AdjustPosition([x,y]);
+					p.UpdateBoxForNodeAdjusted(n);
+
+					testCase.verifyEqual( [n], p.nodesQ{q}{I(k),J(k)} );
+					testCase.verifyEmpty(p.nodesQ{q}{2,2});
+				end
+
+			end
+
+			% For each quadrant, put a node in an axis box, and move it to another quadrant
+
+			% Starting quadrant
+			for qs = 1:4
+				% Ending quadrant
+				for qe = 1:4
+					if qs ~= qe
+						p = SpacePartition(1, 1, t);
+						nx = sx(qs)*0.5;
+						ny = sy(qs)*0.5;
+						n = Node(nx,ny,1);
+						p.PutNodeInBox(n);
+
+						x = sx(qe)*0.5;
+						y = sy(qe)*0.5;
+						n.AdjustPosition([x,y]);
+						p.UpdateBoxForNodeAdjusted(n);
+
+						testCase.verifyEqual( [n], p.nodesQ{qe}{1,1} );
+						testCase.verifyEmpty(p.nodesQ{qs}{1,1});
+					end
+
+				end
+
+			end
+
+		end
+
 		function TestUpdateBoxesForElementsUsingNode(testCase)
 
 			% INCOMPLETE
@@ -579,7 +1034,9 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 			sy = [1, -1, -1, 1];
 
 
-			
+			% Otherwise we are flooded with warnings
+			warning('off','all')
+
 			for q = 1:4
 
 				p = SpacePartition(1, 1, t);
@@ -701,8 +1158,8 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 
 				% Will throw warnings because of inmplicit adding of elements
 				% This test doesn't catch any warnings for some reason...
-				% testCase.verifyWarning( @() p.UpdateBoxForNode(), 'SP:RemoveElement:DeleteFail');
-				% testCase.verifyWarning( @() p.UpdateBoxForNode(n4), 'SP:RemoveElement:DeleteFail');
+				% testCase.verifyWarning( @() p.UpdateBoxForNode(), 'SP:RemoveElementFromBox:DeleteFail');
+				% testCase.verifyWarning( @() p.UpdateBoxForNode(n4), 'SP:RemoveElementFromBox:DeleteFail');
 					
 				p.UpdateBoxForNode(n3);
 				p.UpdateBoxForNode(n4);
@@ -783,7 +1240,7 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 
 			end
 
-
+			
 			sx = [1, 1, -1, -1];
 			sy = [1, -1, -1, 1];
 			% Now looking at multiple quadrants
@@ -896,9 +1353,350 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 
 			end
 
+			warning('on','all')
+
+		end
+
+		function TestUpdateBoxesForElementsUsingNodeAdjusted(testCase)
+
+			% This is identical to TestUpdateBoxesForElementsUsingNode
+			% except it uses adjust node rather than move node
+			t.nodeList = [];
+			t.elementList = [];
+
+			% A vector that matches q to the sign of x or y
+			sx = [1, 1, -1, -1];
+			sy = [1, -1, -1, 1];
+
+
+			% Otherwise we are flooded with warnings
+			warning('off','all')
+
+			for q = 1:4
+
+				p = SpacePartition(1, 1, t);
+
+				x1 = sx(q) * 1.1;
+				x2 = sx(q) * 1.9;
+				x3 = sx(q) * 2.1;
+				x4 = sx(q) * 2.1;
+
+				y1 = sy(q) * 1.1;
+				y2 = sy(q) * 1.9;
+				y3 = sy(q) * 0.1;
+				y4 = sy(q) * 0.9;
+
+				n1 = Node(x1,y1,1);
+				n2 = Node(x2,y2,2);
+				n3 = Node(x3,y3,3);
+				n4 = Node(x4,y4,4);
+
+				p.PutNodeInBox(n1);
+				p.PutNodeInBox(n2);
+				p.PutNodeInBox(n3);
+				p.PutNodeInBox(n4);
+			
+				% These will be in the partition and moving
+				et = Element(n1,n2,1);
+				eb = Element(n3,n4,2);
+
+				% These are just around to make the cell
+				el = Element(n4,n1,3);
+				er = Element(n2,n3,4);
+
+				c = Cell(NoCellCycle, [et,eb,el,er], 1);
+
+				%-------------------------------------------------
+				% 1. Element in 1 box, nodes don't leave box
+				%-------------------------------------------------
+
+				p.PutElementInBoxes(et);
+
+				xn1 = sx(q) * 1.3;
+				xn2 = sx(q) * 1.7;
+
+				yn1 = sy(q) * 1.3;
+				yn2 = sy(q) * 1.7;
+
+				n1.AdjustPosition([xn1, yn1]);
+				p.UpdateBoxForNodeAdjusted(n1);
+
+				n2.AdjustPosition([xn2, yn2]);
+				p.UpdateBoxForNodeAdjusted(n2);
+
+				testCase.verifyEqual(p.elementsQ{q}{2,2}, [et]);
+
+				% A bit over the top, but this needs to be the case
+				% Can't test every possible index, so test the adjacent
+				% boxes
+
+				% These will exist, but are empty
+				testCase.verifyEmpty(p.elementsQ{q}{1,1});
+				testCase.verifyEmpty(p.elementsQ{q}{1,2});
+				testCase.verifyEmpty(p.elementsQ{q}{2,1});
+
+				% These won't exist
+				testCase.verifyError(@() p.elementsQ{q}{2,3}, 'MATLAB:badsubscript');
+				testCase.verifyError(@() p.elementsQ{q}{3,3}, 'MATLAB:badsubscript');
+				testCase.verifyError(@() p.elementsQ{q}{3,2}, 'MATLAB:badsubscript');
+				testCase.verifyError(@() p.elementsQ{q}{3,1}, 'MATLAB:badsubscript');
+				testCase.verifyError(@() p.elementsQ{q}{1,3}, 'MATLAB:badsubscript');
+
+				%-------------------------------------------------
+				% 2. Element in 1 box, one or both nodes leave box
+				%-------------------------------------------------
+
+				% One node leaves
+				%-----------------
+				xn1 = sx(q) * 0.9;
+				yn1 = sy(q) * 1.3;
+
+				n1.AdjustPosition([xn1, yn1]);
+				p.UpdateBoxForNodeAdjusted(n1);
+
+				% When the node moves to a new box, it implicitly adds any
+				% of its elements that may be missing from the partition
+				% I'm not sure if this is a good idea or not, but I can't
+				% think of a better way to handle it right now. Better make
+				% it integral to the test incase it impacts anything in the future
+				% This happens as a consequence of IsElementInternal. A better
+				% way might be to put a flag in stating if the element is considered
+				% part of the space partition.
+
+				testCase.verifyEqual(p.elementsQ{q}{2,2}, [et]);
+				testCase.verifyTrue(ismember(et, p.elementsQ{q}{1,2}));
+				testCase.verifyTrue(ismember(el, p.elementsQ{q}{1,2})); 	% << This will change
+				testCase.verifyEqual( size(p.elementsQ{q}{1,2}), [1 2]);	% << This will change
+				testCase.verifyEqual(p.elementsQ{q}{1,1}, [el]);			% << This will change
+				
+				testCase.verifyEmpty(p.elementsQ{q}{2,1});
+
+				testCase.verifyError(@() p.elementsQ{q}{2,3}, 'MATLAB:badsubscript');
+				testCase.verifyError(@() p.elementsQ{q}{3,3}, 'MATLAB:badsubscript');
+				testCase.verifyError(@() p.elementsQ{q}{3,2}, 'MATLAB:badsubscript');
+				testCase.verifyError(@() p.elementsQ{q}{3,1}, 'MATLAB:badsubscript');
+				testCase.verifyError(@() p.elementsQ{q}{1,3}, 'MATLAB:badsubscript');
+
+				
+				% Both nodes leave
+				%-----------------
+				p.PutElementInBoxes(eb);
+
+				xn3 = sx(q) * 1.9;
+				yn3 = sy(q) * 0.1;
+
+				xn4 = sx(q) * 2.1;
+				yn4 = sy(q) * 1.1;
+
+				n3.AdjustPosition([xn3, yn3]);
+				n4.AdjustPosition([xn4, yn4]);
+
+				% Will throw warnings because of inmplicit adding of elements
+				% This test doesn't catch any warnings for some reason...
+				% testCase.verifyWarning( @() p.UpdateBoxForNodeAdjusted(), 'SP:RemoveElementFromBox:DeleteFail');
+				% testCase.verifyWarning( @() p.UpdateBoxForNodeAdjusted(n4), 'SP:RemoveElementFromBox:DeleteFail');
+					
+				p.UpdateBoxForNodeAdjusted(n3);
+				p.UpdateBoxForNodeAdjusted(n4);
+				
+				testCase.verifyEqual(p.elementsQ{q}{2,1}, [eb]);
+				testCase.verifyTrue(ismember(eb, p.elementsQ{q}{2,2}));
+				testCase.verifyTrue(ismember(et, p.elementsQ{q}{2,2}));
+				testCase.verifyEqual(size(p.elementsQ{q}{2,2}), [1,2]);
+				testCase.verifyEqual(p.elementsQ{q}{3,1}, [eb]);
+				testCase.verifyEqual(p.elementsQ{q}{3,2}, [eb]);
+				
+				%--------------------------------------------------------------------
+				% 3. Element in multiple boxes in one quadrant, nodes don't leave box
+				%--------------------------------------------------------------------
+
+
+				% I think this is proven from above
+
+
+				%--------------------------------------------------
+				% 4. Element in multiple boxes in one quadrant, 
+				%    one or both leave, but stay in same quadrant
+				%--------------------------------------------------
+
+				% One leaves
+				%-----------
+				xn4 = sx(q) * 1.9;
+				yn4 = sy(q) * 1.1;
+
+				n4.AdjustPosition([xn4, yn4]);
+
+				p.UpdateBoxForNodeAdjusted(n4);
+
+				testCase.verifyEqual(p.elementsQ{q}{2,1}, [eb]);
+				testCase.verifyTrue(ismember(eb, p.elementsQ{q}{2,2}));
+
+				testCase.verifyEmpty(p.elementsQ{q}{1,1});
+				testCase.verifyEmpty(p.elementsQ{q}{3,1});
+				testCase.verifyEmpty(p.elementsQ{q}{3,2}); % << FAILS
+
+				% Both leave
+				%-----------
+				xn1 = sx(q) * 0.9;
+				yn1 = sy(q) * 0.9;
+
+				xn2 = sx(q) * 1.7;
+				yn2 = sy(q) * 2.3;
+
+				n1.AdjustPosition([xn1, yn1]);
+				p.UpdateBoxForNodeAdjusted(n1);
+
+				n2.AdjustPosition([xn2, yn2]);
+				p.UpdateBoxForNodeAdjusted(n2);
+
+				% When the node moves to a new box, it implicitly adds any
+				% of its elements that may be missing from the partition.
+				% This is a consequence of IsElementInternal, and is only an
+				% issue for the test (at this point)
+
+				testCase.verifyTrue(ismember(et, p.elementsQ{q}{1,1}));
+				testCase.verifyTrue(ismember(et, p.elementsQ{q}{1,2}));
+				testCase.verifyTrue(ismember(el, p.elementsQ{q}{1,1})); 	% << This will change
+				testCase.verifyTrue(ismember(el, p.elementsQ{q}{1,2})); 	% << This will change
+				testCase.verifyEqual( size(p.elementsQ{q}{1,1}), [1 2]);	% << This will change
+				testCase.verifyEqual( size(p.elementsQ{q}{1,2}), [1 2]);	% << This will change
+				testCase.verifyEqual(p.elementsQ{q}{1,3}, [et]);
+
+				testCase.verifyTrue(ismember(et, p.elementsQ{q}{2,1}));
+				testCase.verifyTrue(ismember(et, p.elementsQ{q}{2,2}));
+
+				testCase.verifyTrue(ismember(et, p.elementsQ{q}{2,3}));
+				testCase.verifyTrue(ismember(er, p.elementsQ{q}{2,3})); 	% << This will change
+				testCase.verifyEqual( size(p.elementsQ{q}{2,3}), [1 2]);	% << This will change
+
+				testCase.verifyEmpty(p.elementsQ{q}{3,1});
+				testCase.verifyEmpty(p.elementsQ{q}{3,2}); % << FAILS
+				testCase.verifyEmpty(p.elementsQ{q}{3,3});
+
+			end
+
+			
+			sx = [1, 1, -1, -1];
+			sy = [1, -1, -1, 1];
+			% Now looking at multiple quadrants
+			% Starting quadrant
+			for qs = 1:4
+				% Ending quadrant
+				for qe = 1:4
+					if qs ~= qe
+
+						p = SpacePartition(1, 1, t);
+
+						x1 = sx(qs) * 0.1;
+						y1 = sy(qs) * 0.9;
+
+						x2 = sx(qs) * 0.9;
+						y2 = sy(qs) * 0.9;
+
+						x3 = sx(qs) * 0.1;
+						y3 = sy(qs) * 0.1;
+
+						x4 = sx(qs) * 1.1;
+						y4 = sy(qs) * 0.1;
+
+						n1 = Node(x1,y1,1);
+						n2 = Node(x2,y2,2);
+						n3 = Node(x3,y3,3);
+						n4 = Node(x4,y4,4);
+
+						p.PutNodeInBox(n1);
+						p.PutNodeInBox(n2);
+						p.PutNodeInBox(n3);
+						p.PutNodeInBox(n4);
+					
+						% These will be in the partition and moving
+						et = Element(n1,n2,1);
+						eb = Element(n3,n4,2);
+
+						% These are just around to make the cell
+						el = Element(n4,n1,3);
+						er = Element(n2,n3,4);
+
+						c = Cell(NoCellCycle, [et,eb,el,er], 1);
+
+
+						%--------------------------------------------------
+						% 5. Element in multiple boxes in one quadrant, 
+						%    one or both leave, but move to different quadrant
+						%--------------------------------------------------
+
+						p.PutElementInBoxes(et);
+						p.PutElementInBoxes(eb);
+
+						xn1 = sx(qe) * 0.1;
+						yn1 = sy(qe) * 0.9;
+
+						xn2 = sx(qs) * 0.8;
+						yn2 = sy(qs) * 0.8;
+
+						xn3 = sx(qe) * 0.1;
+						yn3 = sy(qe) * 0.1;
+
+						xn4 = sx(qe) * 1.1;
+						yn4 = sy(qe) * 0.1;
+
+
+						n1.AdjustPosition([xn1, yn1]);
+						p.UpdateBoxForNodeAdjusted(n1);
+
+						n2.AdjustPosition([xn2, yn2]);
+						p.UpdateBoxForNodeAdjusted(n2);
+
+						n3.AdjustPosition([xn3, yn3]);
+						p.UpdateBoxForNodeAdjusted(n3);
+
+						n4.AdjustPosition([xn4, yn4]);
+						p.UpdateBoxForNodeAdjusted(n4);
+
+						% Check top element
+						testCase.verifyTrue(ismember(et, p.elementsQ{qs}{1,1}) );
+						testCase.verifyTrue(ismember(et, p.elementsQ{qe}{1,1}) );
+
+						% Check bottom element
+						testCase.verifyTrue(~ismember(eb, p.elementsQ{qs}{1,1}) );
+						testCase.verifyEmpty(p.elementsQ{qs}{2,1});
+
+						testCase.verifyTrue(ismember(eb, p.elementsQ{qe}{1,1}) );
+						testCase.verifyTrue(ismember(eb, p.elementsQ{qe}{2,1}) );
+						
+
+
+						%--------------------------------------------------
+						% 6. Element in multiple boxes in different quadrants
+						%    nodes don't leave box
+						%--------------------------------------------------
+
+
+						%--------------------------------------------------
+						% 7. Element in multiple boxes in different quadrants
+						%    one or both leave, but stay in same quadrant
+						%--------------------------------------------------
+
+
+						%--------------------------------------------------
+						% 8. Element in multiple boxes in different quadrants
+						%    one or both leave, but move to different quadrant
+						%--------------------------------------------------
+					end
+
+				end
+
+			end
+
+			warning('on','all')
+
 		end
 
 		function TestGettingBoxes(testCase)
+
+			% INCOMPLETE
+			% Missing:
+			% 1. Nearly everything...
 
 			% Sometimes you need to get adjacent boxes
 
@@ -1091,6 +1889,7 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 
 		function TestQuickUnique(testCase)
 
+			% COMPLETE (probably)
 			% Need to make sure it gets all duplicates
 
 			% Dummy simulation for the partition
@@ -1265,7 +2064,6 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 			en = t.boxes.GetNeighbouringElements(n, 0.1);
 
 			testCase.verifyEqual(en, e);
-
 
 		end
 
