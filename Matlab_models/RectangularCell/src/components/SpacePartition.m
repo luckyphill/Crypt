@@ -132,11 +132,8 @@ classdef SpacePartition < matlab.mixin.SetGet
 				x = [p1(1), p2(1), p3(1), p4(1)];
 				y = [p1(2), p2(2), p3(2), p4(2)];
 
+				% Inside includes on the boundary
 				[inside, on] = inpolygon(n.x, n.y, x ,y);
-
-				if inside && on
-					inside = false;
-				end
 
 				if inside
 					neighbours(end+1) = e;
@@ -204,11 +201,9 @@ classdef SpacePartition < matlab.mixin.SetGet
 				x = [p1(1), p2(1), p3(1), p4(1)];
 				y = [p1(2), p2(2), p3(2), p4(2)];
 
+				% Inside includes on the boundary
 				[inside, on] = inpolygon(n.x, n.y, x ,y);
 
-				if inside && on
-					inside = false;
-				end
 
 				if inside
 					neighboursE(end+1) = e;
@@ -256,34 +251,28 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 			% Then check if the node is near a boundary
 
-			[q,i,j] = obj.GetQuadrantAndIndices(n.x,n.y);
-
 			% Need to decide if the process of check is more effort than
 			% just taking the adjacent boxes always, even when the node is
 			% in the middle of its box
 
-			% A vector that matches q to the sign of x or y
-			sx = [1, 1, -1, -1];
-			sy = [1, -1, -1, 1];
-
 
 			% Check sides
-			if abs(n.x - sx(q) * (i-1) * obj.dx) - r < 0
+			if floor(n.x/obj.dx) ~= floor((n.x-r)/obj.dx)
 				% Close to left
 				b = [b, obj.GetAdjacentElementBoxFromNode(n, [-1, 0])];
 			end
 
-			if abs(n.x - sx(q) * i * obj.dx) + r > obj.dx
+			if floor(n.x/obj.dx) ~= floor((n.x+r)/obj.dx)
 				% Close to right
 				b = [b, obj.GetAdjacentElementBoxFromNode(n, [1, 0])];
 			end
 
-			if abs(n.y - sy(q) * (j-1) * obj.dy) - r < 0
+			if floor(n.y/obj.dx) ~= floor((n.y-r)/obj.dx)
 				% Close to bottom
 				b = [b, obj.GetAdjacentElementBoxFromNode(n, [0, -1])];
 			end
 
-			if abs(n.y - sy(q) * j * obj.dy) + r > obj.dy
+			if floor(n.y/obj.dx) ~= floor((n.y+r)/obj.dx)
 				% Close to top
 				b = [b, obj.GetAdjacentElementBoxFromNode(n, [0, 1])];
 			end
@@ -298,6 +287,7 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 
 			% Remove duplicates
+			% Must do this because elements can be in multiple boxes
 			% b = unique(b);
 			b = obj.QuickUnique(b);
 
@@ -332,47 +322,47 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 			% Then check if the node is near a boundary
 
-			[q,i,j] = obj.GetQuadrantAndIndices(n.x,n.y);
+			% All this checking might be more effort than it's worth...
 
 			% Check sides
-			if abs(n.x - (i-1) * obj.dx) - r < 0
+			if floor(n.x/obj.dx) ~= floor((n.x-r)/obj.dx)
 				% Close to left
 				b = [b, obj.GetAdjacentNodeBoxFromNode(n, [-1, 0])];
 			end
 
-			if abs(n.x - i * obj.dx) + r > obj.dx
+			if floor(n.x/obj.dx) ~= floor((n.x+r)/obj.dx)
 				% Close to right
 				b = [b, obj.GetAdjacentNodeBoxFromNode(n, [1, 0])];
 			end
 
-			if abs(n.y - (j-1) * obj.dy) - r < 0
+			if floor(n.y/obj.dx) ~= floor((n.y-r)/obj.dx)
 				% Close to bottom
 				b = [b, obj.GetAdjacentNodeBoxFromNode(n, [0, -1])];
 			end
 
-			if abs(n.y - j * obj.dy) + r > obj.dy
+			if floor(n.y/obj.dx) ~= floor((n.y+r)/obj.dx)
 				% Close to top
 				b = [b, obj.GetAdjacentNodeBoxFromNode(n, [0, 1])];
 			end
 
 			% Check corners
 
-			if ( abs(n.x - (i-1) * obj.dx) - r < 0 ) && ( abs(n.y - (j-1) * obj.dy) - r < 0)
+			if ( floor(n.x/obj.dx) ~= floor((n.x-r)/obj.dx) ) && ( floor(n.y/obj.dx) ~= floor((n.y-r)/obj.dx) )
 				% Close to left bottom
 				b = [b, obj.GetAdjacentNodeBoxFromNode(n, [-1, -1])];
 			end
 
-			if ( abs(n.x - i * obj.dx) + r ) > obj.dx && ( abs(n.y - (j-1) * obj.dy) - r < 0)
+			if ( floor(n.x/obj.dx) ~= floor((n.x+r)/obj.dx) ) && ( floor(n.y/obj.dx) ~= floor((n.y-r)/obj.dx) )
 				% Close to right bottom
 				b = [b, obj.GetAdjacentNodeBoxFromNode(n, [1, -1])];
 			end
 
-			if ( abs(n.x - (i-1) * obj.dx) - r < 0 ) && ( abs(n.y - j * obj.dy) + r > obj.dy)
+			if ( floor(n.x/obj.dx) ~= floor((n.x-r)/obj.dx) ) && ( floor(n.y/obj.dx) ~= floor((n.y+r)/obj.dx))
 				% Close to left top
 				b = [b, obj.GetAdjacentNodeBoxFromNode(n, [-1, 1])];
 			end
 
-			if ( abs(n.x - i * obj.dx) + r > obj.dx ) && ( abs(n.y - j * obj.dy) + r > obj.dy) 
+			if ( floor(n.x/obj.dx) ~= floor((n.x+r)/obj.dx) ) && ( floor(n.y/obj.dx) ~= floor((n.y+r)/obj.dx)) 
 				% Close to right top
 				b = [b, obj.GetAdjacentNodeBoxFromNode(n, [1, 1])];
 			end
@@ -405,6 +395,8 @@ classdef SpacePartition < matlab.mixin.SetGet
 			% Returns the same box that n is in
 			[q,i,j] = obj.GetQuadrantAndIndices(n.x,n.y);
 
+			b = [];
+
 			try
 				b = obj.elementsQ{q}{i,j};
 			catch
@@ -413,19 +405,16 @@ classdef SpacePartition < matlab.mixin.SetGet
 		
 		end
 
-		function b = GetAdjacentNodeBoxFromNode(obj, n, dir)
+		function [q,i,j] = GetAdjacentIndicesFromNode(obj, n, direction)
 
-			% Returns the node box adjacent to the one indicated
-			% specifying the direction
-
-			% dir = [a, b]
+			% direction = [a, b]
 			% where a,b = 1 or -1
 			% 1 indicates an increase in the global index etc.
 			% a is applied to I and b applied to J
 
 			b = [];
-			a = dir(1);
-			c = dir(2);
+			a = direction(1);
+			c = direction(2);
 			[q,i,j] = obj.GetQuadrantAndIndices(n.x,n.y);
 			[I, J] = obj.ConvertToGlobal(q,i,j);
 
@@ -439,6 +428,16 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 			[q,i,j] = obj.ConvertToQuadrant(I,J);
 
+		end
+
+		function b = GetAdjacentNodeBoxFromNode(obj, n, direction)
+
+			% Returns the node box adjacent to the one indicated
+			% specifying the directionection
+
+			[q,i,j] = obj.GetAdjacentIndicesFromNode(n, direction);
+
+			b = [];
 
 			try
 				b = obj.nodesQ{q}{i,j};
@@ -450,32 +449,14 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 		end
 
-		function b = GetAdjacentElementBoxFromNode(obj, n, dir)
+		function b = GetAdjacentElementBoxFromNode(obj, n, direction)
 
 			% Returns the node box adjacent to the one indicated
-			% specifying the direction
+			% specifying the directionection
 
-			% dir = [a, b]
-			% where a,b = 1 or -1
-			% 1 indicates an increase in the global index etc.
-			% a is applied to I and b applied to J
-			a = dir(1);
-			c = dir(2);
+			[q,i,j] = obj.GetAdjacentIndicesFromNode(n, direction);
+
 			b = [];
-			[q,i,j] = obj.GetQuadrantAndIndices(n.x,n.y);
-			[I, J] = obj.ConvertToGlobal(q,i,j);
-
-			I = I + a;
-			J = J + c;
-
-			% This is needed because matlab doesn't index from 0!!!!!!!!!!!!!!!!!
-
-			if I == 0; I = a; end
-			if J == 0; J = c; end
-
-			[q,i,j] = obj.ConvertToQuadrant(I,J);
-
-
 			
 			try
 				b = obj.elementsQ{q}{i,j};

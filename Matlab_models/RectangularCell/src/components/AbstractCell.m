@@ -146,57 +146,64 @@ classdef AbstractCell < handle & matlab.mixin.Heterogeneous
 			% When that happens, the left and right edges will cross
 			% The following algorithm decides if the edges cross
 
-			X1 = e1.Node1.x;
-			X2 = e1.Node2.x;
+			if e1.Node1 == e2.Node1 || e1.Node1 == e2.Node2 || e1.Node2 == e2.Node1 || e1.Node2 == e2.Node2
+				% These elements share a node, so there is no need to check if they cross
+				crossing = false;
+			else
+				% But if the nodes are distinct, they could cause a problem
 
-			Y1 = e1.Node1.y;
-			Y2 = e1.Node2.y;
+				X1 = e1.Node1.x;
+				X2 = e1.Node2.x;
 
-			X3 = e2.Node1.x;
-			X4 = e2.Node2.x;
+				Y1 = e1.Node1.y;
+				Y2 = e1.Node2.y;
 
-			Y3 = e2.Node1.y;
-			Y4 = e2.Node2.y;
+				X3 = e2.Node1.x;
+				X4 = e2.Node2.x;
 
-			% Basic run-down of algorithm:
-			% The lines are parameterised so that
-			% elementLeft  = (x1(t), y1(t)) = (A1t + a1, B1t + b1)
-			% elementRight = (x2(s), y2(s)) = (A2s + a2, B2s + b2)
-			% where 0 <= t,s <=1
-			% If the lines cross, then there is a unique value of t,s such that
-			% x1(t) == x2(s) and y1(t) == y2(s)
-			% There will always be a value of t and s that satisfies these
-			% conditions (except for when the lines are parallel), so to make
-			% sure the actual segments cross, we MUST have 0 <= t,s <=1
+				Y3 = e2.Node1.y;
+				Y4 = e2.Node2.y;
 
-			% Solving this, we have
-			% t = ( B2(a1 - a2) - A2(b1 - b2) ) / (A2B1 - A1B2)
-			% s = ( B1(a1 - a2) - A1(b1 - b2) ) / (A2B1 - A1B2)
-			% Where 
-			% A1 = X2 - X1, a1 = X1
-			% B1 = Y2 - Y1, b1 = Y1
-			% A2 = X4 - X3, a2 = X3
-			% B2 = Y4 - Y3, b2 = Y3
+				% Basic run-down of algorithm:
+				% The lines are parameterised so that
+				% elementLeft  = (x1(t), y1(t)) = (A1t + a1, B1t + b1)
+				% elementRight = (x2(s), y2(s)) = (A2s + a2, B2s + b2)
+				% where 0 <= t,s <=1
+				% If the lines cross, then there is a unique value of t,s such that
+				% x1(t) == x2(s) and y1(t) == y2(s)
+				% There will always be a value of t and s that satisfies these
+				% conditions (except for when the lines are parallel), so to make
+				% sure the actual segments cross, we MUST have 0 <= t,s <=1
 
-			denom = (X4 - X3)*(Y2 - Y1) - (X2 - X1)*(Y4 - Y3);
+				% Solving this, we have
+				% t = ( B2(a1 - a2) - A2(b1 - b2) ) / (A2B1 - A1B2)
+				% s = ( B1(a1 - a2) - A1(b1 - b2) ) / (A2B1 - A1B2)
+				% Where 
+				% A1 = X2 - X1, a1 = X1
+				% B1 = Y2 - Y1, b1 = Y1
+				% A2 = X4 - X3, a2 = X3
+				% B2 = Y4 - Y3, b2 = Y3
 
-			% denom == 0 means parallel
+				denom = (X4 - X3)*(Y2 - Y1) - (X2 - X1)*(Y4 - Y3);
 
-			if denom ~= 0
-				% if the numerator for either t or s expression is larger than the
-				% |denominator|, then |t| or |s| will be greater than 1, i.e. out of their range
-				% so both must be less than
-				tNum = (Y4 - Y3)*(X1 - X3) - (X4 - X3)*(Y1 - Y3);
-				sNum = (Y2 - Y1)*(X1 - X3) - (X2 - X1)*(Y1 - Y3);
-				
-				% If they strictly less than, then crossing occurs
-				% If they are equal, then the end points join
-				if abs(tNum) < abs(denom) && abs(sNum) < abs(denom) && tNum~=0 && sNum~=0
-					% magnitudes are correct, now check the signs
-					if sign(tNum) == sign(denom) && sign(sNum) == sign(denom)
-						% If the signs of the numerator and denominators are the same
-						% Then s and t satisfy their range restrictions, hence the elements cross
-						crossing = true;
+				% denom == 0 means parallel
+
+				if denom ~= 0
+					% if the numerator for either t or s expression is larger than the
+					% |denominator|, then |t| or |s| will be greater than 1, i.e. out of their range
+					% so both must be less than
+					tNum = (Y4 - Y3)*(X1 - X3) - (X4 - X3)*(Y1 - Y3);
+					sNum = (Y2 - Y1)*(X1 - X3) - (X2 - X1)*(Y1 - Y3);
+					
+					% If they strictly less than, then crossing occurs
+					% If they are equal, then the end points join
+					if abs(tNum) < abs(denom) && abs(sNum) < abs(denom) && tNum~=0 && sNum~=0
+						% magnitudes are correct, now check the signs
+						if sign(tNum) == sign(denom) && sign(sNum) == sign(denom)
+							% If the signs of the numerator and denominators are the same
+							% Then s and t satisfy their range restrictions, hence the elements cross
+							crossing = true;
+						end
 					end
 				end
 			end

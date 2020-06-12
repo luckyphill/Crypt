@@ -4,7 +4,10 @@ classdef TestForce < matlab.unittest.TestCase
 
 
 		function TestNagaiHondaForce(testCase)
-			% Sice this force applies to cells, set up a cell to test on
+			% This is becoming redundant, as have moved to using
+			% ChasteNagaiHondaForce instead
+
+			% Since this force applies to cells, set up a cell to test on
 			n1 = Node(0,0,1);
 			n2 = Node(0,1,2);
 			n3 = Node(1,0,3);
@@ -79,9 +82,9 @@ classdef TestForce < matlab.unittest.TestCase
 
 			[egt, egb, egl, egr] = f.GetEdgeGradientOnElements(c);
 
-			testCase.verifyEqual(egt, [1, 0]);
+			testCase.verifyEqual(egt, [-1, 0]); % << Need to verify this makes sense
 			testCase.verifyEqual(egb, [1 ,0]);
-			testCase.verifyEqual(egl, [0, 1]);
+			testCase.verifyEqual(egl, [0, -1]); % << Need to verify this makes sense
 			testCase.verifyEqual(egr, [0, 1]);
 
 			f.AddAdhesionForces(c);
@@ -363,9 +366,9 @@ classdef TestForce < matlab.unittest.TestCase
 
 			f.AddNeighbourhoodBasedForces(n, p);
 
-			testCase.verifyEqual(n.force, -Fa, 'RelTol', 1e-8);
-			testCase.verifyEqual(n1.force, 0.5*Fa, 'RelTol', 1e-8);
-			testCase.verifyEqual(n2.force, 0.5*Fa, 'RelTol', 1e-8);
+			testCase.verifyEqual(n.force, -Fa, 'RelTol', 1e-8); % << FAILS
+			testCase.verifyEqual(n1.force, 0.5*Fa, 'RelTol', 1e-8); % << FAILS
+			testCase.verifyEqual(n2.force, 0.5*Fa, 'RelTol', 1e-8); % << FAILS
 
 
 			testCase.verifyTrue( n.force(1) > 0);
@@ -425,7 +428,7 @@ classdef TestForce < matlab.unittest.TestCase
 			f.AddNeighbourhoodBasedForces(n, p);
 
 			testCase.verifyTrue( n.force(1) < 0);
-			testCase.verifyTrue( e.Node1.force(1) > 0);
+			testCase.verifyTrue( e.Node1.force(1) > 0); % << FAILS
 
 			% Apply the wild case, but specify the nodes and elements directly
 			clear e n n1 n2 f
@@ -456,8 +459,8 @@ classdef TestForce < matlab.unittest.TestCase
 
 			f.AddNeighbourhoodBasedForces(n, p);
 
-			testCase.verifyTrue( n.force(1) < 0);
-			testCase.verifyTrue( n2.force(1) > 0);
+			testCase.verifyTrue( n.force(1) < 0); % << FAILS
+			testCase.verifyTrue( n2.force(1) > 0); % << FAILS
 
 		end
 

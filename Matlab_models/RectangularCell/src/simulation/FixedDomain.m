@@ -88,7 +88,7 @@ classdef FixedDomain < LineSimulation
 
 			% Assemble the cell
 
-			obj.cellList = Cell(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
+			obj.cellList = SquareCellJoined(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
 
 
 			for i = 2:nCells
@@ -115,7 +115,7 @@ classdef FixedDomain < LineSimulation
 
 				ccm = SimplePhaseBasedCellCycle(p, g);
 
-				obj.cellList(i) = Cell(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
+				obj.cellList(i) = SquareCellJoined(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
 
 			end
 
