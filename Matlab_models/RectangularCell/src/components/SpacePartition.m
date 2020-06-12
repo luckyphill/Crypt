@@ -59,6 +59,16 @@ classdef SpacePartition < matlab.mixin.SetGet
 		% A pointer to the simulation
 		simulation
 
+		% A flag stating if the partition will search only the boxes
+		% that a node is in or close to, rather than all 8 surrounding
+		% boxes. For small dx,dy in comparision to the average element
+		% length, taking all 8 will probably be more efficient than
+		% specifying the precise boxes. If the boxes are quite large
+		% or the elements and nodes are quite dense, this should be set
+		% to true, as it will reduce the number of comparison operations
+
+		onlyBoxesInProximity = false;
+
 
 	end
 
@@ -107,7 +117,13 @@ classdef SpacePartition < matlab.mixin.SetGet
 			% First off, get the elements in the same box
 
 
-			b = obj.AssembleCandidateElements(n, r);
+			b = [];
+			
+			if obj.onlyBoxesInProximity
+				b = obj.AssembleCandidateElements(n, r);
+			else
+				b = obj.GetAllAdjacentElementBoxes(n);
+			end
 
 			neighbours = Element.empty();
 
@@ -148,7 +164,13 @@ classdef SpacePartition < matlab.mixin.SetGet
 			% Given the node n and the radius r find all the nodes
 			% that are neighbours
 
-			b = obj.AssembleCandidateNodes(n1, r);
+			b = [];
+			
+			if obj.onlyBoxesInProximity
+				b = obj.AssembleCandidateNodes(n1, r);
+			else
+				b = obj.GetAllAdjacentNodeBoxes(n1);
+			end
 
 			neighbours = Node.empty();
 
@@ -174,8 +196,13 @@ classdef SpacePartition < matlab.mixin.SetGet
 			% time, taking account of obtuse angled element pairs
 			% necessitating node-node interactions
 
+			b = [];
 
-			b = obj.AssembleCandidateElements(n, r);
+			if obj.onlyBoxesInProximity
+				b = obj.AssembleCandidateElements(n, r);
+			else
+				b = obj.GetAllAdjacentElementBoxes(n);
+			end
 
 			neighboursN = Node.empty();
 			neighboursE = Element.empty();
@@ -245,6 +272,50 @@ classdef SpacePartition < matlab.mixin.SetGet
 			
 		end
 
+		function b = GetAllAdjacentElementBoxes(obj, n);
+
+			% Grab all potential elements from the 8 adjacent boxes
+
+			b = obj.GetElementBoxFromNode(n);
+			b = [b, obj.GetAdjacentElementBoxFromNode(n, [-1, 0])];
+			b = [b, obj.GetAdjacentElementBoxFromNode(n, [-1, -1])];
+			b = [b, obj.GetAdjacentElementBoxFromNode(n, [0, -1])];
+			b = [b, obj.GetAdjacentElementBoxFromNode(n, [1, -1])];
+			b = [b, obj.GetAdjacentElementBoxFromNode(n, [1, 0])];
+			b = [b, obj.GetAdjacentElementBoxFromNode(n, [1, 1])];
+			b = [b, obj.GetAdjacentElementBoxFromNode(n, [0, 1])];
+			b = [b, obj.GetAdjacentElementBoxFromNode(n, [-1, 1])];
+
+			% Remove duplicates
+			% Must do this because elements can be in multiple boxes
+			b = obj.QuickUnique(b);
+
+			% Remove nodes own elements
+			for i = 1:length(n.elementList)
+				b(b==n.elementList(i)) = [];
+			end
+
+		end
+
+		function b = GetAllAdjacentNodeBoxes(obj, n);
+
+			% Grab all potential Nodes from the 8 adjacent boxes
+
+			b = obj.GetNodeBoxFromNode(n);
+			b = [b, obj.GetAdjacentNodeBoxFromNode(n, [-1, 0])];
+			b = [b, obj.GetAdjacentNodeBoxFromNode(n, [-1, -1])];
+			b = [b, obj.GetAdjacentNodeBoxFromNode(n, [0, -1])];
+			b = [b, obj.GetAdjacentNodeBoxFromNode(n, [1, -1])];
+			b = [b, obj.GetAdjacentNodeBoxFromNode(n, [1, 0])];
+			b = [b, obj.GetAdjacentNodeBoxFromNode(n, [1, 1])];
+			b = [b, obj.GetAdjacentNodeBoxFromNode(n, [0, 1])];
+			b = [b, obj.GetAdjacentNodeBoxFromNode(n, [-1, 1])];
+
+			% Remove the node itself
+			b(b==n) = [];
+
+		end
+
 		function b = AssembleCandidateElements(obj, n, r)
 
 			b = obj.GetElementBoxFromNode(n);
@@ -296,22 +367,6 @@ classdef SpacePartition < matlab.mixin.SetGet
 			% b(Lidx) = [];
 			for i = 1:length(n.elementList)
 				b(b==n.elementList(i)) = [];
-			end
-
-		end
-
-		function b = QuickUnique(obj, b)
-			% Test to see if I can do the unique check quicker without
-			% needing all the bells and whistles - it can by a factor of 2
-
-			% Is there a more efficient way when the most repetitions is 3?
-			if ~isempty(b)
-				b = sort(b);
-
-				% If there are repeated elements, they will be adjacent after sorting
-				Lidx = b(1:end-1) ~= b(2:end);
-				Lidx = [Lidx, true];
-				b = b(Lidx);
 			end
 
 		end
@@ -371,11 +426,47 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 		end
 
+		function b = QuickUnique(obj, b)
+			% Test to see if I can do the unique check quicker without
+			% needing all the bells and whistles - it can by a factor of 2
+
+			% Is there a more efficient way when the most repetitions is 3?
+			if ~isempty(b)
+				b = sort(b);
+
+				% If there are repeated elements, they will be adjacent after sorting
+				Lidx = b(1:end-1) ~= b(2:end);
+				Lidx = [Lidx, true];
+				b = b(Lidx);
+			end
+
+		end
+
 		function PutNodeInBox(obj, n)
 
 			[q,i,j] = obj.GetQuadrantAndIndices(n.x,n.y);
 
 			obj.InsertNode(q,i,j,n);
+
+		end
+
+		function PutElementInBoxes(obj, e)
+
+			% Given the list of elements that a given node
+			% is part of, distribute the elements to the element
+			% boxes. This will require putting elements in 
+			% intermediate boxes too
+
+			n1 = e.Node1;
+			n2 = e.Node2;
+
+			[Q,I,J] = GetBoxIndicesBetweenNodes(obj, n1, n2);
+
+			for j = 1:length(Q)
+
+				obj.InsertElement(Q(j),I(j),J(j),e);
+				
+			end
 
 		end
 
@@ -464,26 +555,6 @@ classdef SpacePartition < matlab.mixin.SetGet
 				if ~strcmp(ME.identifier,'MATLAB:badsubscript')
 					error('SP:GetAdjacentElementBox','Assignment didnt fail properly');
 				end
-			end
-
-		end
-
-		function PutElementInBoxes(obj, e)
-
-			% Given the list of elements that a given node
-			% is part of, distribute the elements to the element
-			% boxes. This will require putting elements in 
-			% intermediate boxes too
-
-			n1 = e.Node1;
-			n2 = e.Node2;
-
-			[Q,I,J] = GetBoxIndicesBetweenNodes(obj, n1, n2);
-
-			for j = 1:length(Q)
-
-				obj.InsertElement(Q(j),I(j),J(j),e);
-				
 			end
 
 		end
@@ -629,8 +700,8 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 			end
 
-			n1.nodeAdjusted = false;
-			n1.preAdjustedPosition = [];
+			n.nodeAdjusted = false;
+			n.preAdjustedPosition = [];
 
 		end
 
@@ -907,7 +978,27 @@ classdef SpacePartition < matlab.mixin.SetGet
 				warning('SP:AddNewCells:BothOldAreNotOld','Both old nodes match the current nodes. The modified flag was set incorrectly for element %d', e.id);
 			else
 
+				% Assume neither node is adjusted first, then if either is
+				% change the boxes
 				[ql,il,jl] = obj.GetBoxIndicesBetweenNodes(old1, old2);
+
+				if old1.nodeAdjusted && ~old2.nodeAdjusted
+					[ql,il,jl] = obj.GetBoxIndicesBetweenPoints(old1.preAdjustedPosition, old2.position);
+					obj.UpdateBoxForNodeAdjusted(old1);
+				end
+
+				if ~old1.nodeAdjusted && old2.nodeAdjusted
+					[ql,il,jl] = obj.GetBoxIndicesBetweenPoints(old1.position, old2.preAdjustedPosition);
+					obj.UpdateBoxForNodeAdjusted(old2);
+				end
+
+				if old1.nodeAdjusted && old2.nodeAdjusted
+					[ql,il,jl] = obj.GetBoxIndicesBetweenPoints(old1.preAdjustedPosition, old2.preAdjustedPosition);
+					obj.UpdateBoxForNodeAdjusted(old1);
+					obj.UpdateBoxForNodeAdjusted(old2);
+				end
+
+				
 				for k = 1:length(ql)
 					obj.RemoveElementFromBox(ql(k),il(k),jl(k),e);
 				end
@@ -917,7 +1008,7 @@ classdef SpacePartition < matlab.mixin.SetGet
 			end
 
 			% All repaired, remove the flag and old nodes
-			modifiedInDivision = false;
+			e.modifiedInDivision = false;
 			e.oldNode1 = [];
 			e.oldNode2 = [];
 

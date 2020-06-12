@@ -21,6 +21,7 @@ classdef LinkedBoundariesY < LineSimulation
 		function obj = LinkedBoundariesY(nCells, p, g, w, seed, varargin)
 			% All the initilising
 			obj.SetRNGSeed(seed);
+			obj.usingBoxes = false;
 
 						% We keep the option of diffent box sizes for efficiency reasons
 			if length(varargin) > 0

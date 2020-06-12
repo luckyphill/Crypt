@@ -265,8 +265,8 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 						if ~nc.elementRight.internal
 							nc.elementRight.internal = true;
-							obj.boxes.RemoveElementFromPartition(nc.elementRight);
 						end
+						obj.boxes.RemoveElementFromPartition(nc.elementRight);
 
 					end
 

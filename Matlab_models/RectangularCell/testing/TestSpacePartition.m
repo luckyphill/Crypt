@@ -18,7 +18,7 @@ classdef TestSpacePartition < matlab.unittest.TestCase
    % x GetElementBox
    % r IsNodeInNewBox
    % x GetNodeBox
-   %   RepairModifiedElement
+   % x RepairModifiedElement
    % x RemoveElementFromPartition
    % x RemoveNodeFromPartition
    % x RemoveElementFromBox
@@ -48,7 +48,7 @@ classdef TestSpacePartition < matlab.unittest.TestCase
    % x GetNeighbouringNodes
    % x GetNeighbouringElements
    % . QuickUnique
-   %   Test interaction between AdjustPosition and ReplaceNode (for an element)
+   % x Test interaction between AdjustPosition and ReplaceNode (for an element)
 
 
 	methods (Test)
@@ -1356,6 +1356,7 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 
 		function TestUpdateBoxesForElementsUsingNodeAdjusted(testCase)
 
+			% INCOMPLETE (probably enough though)
 			% This is identical to TestUpdateBoxesForElementsUsingNode
 			% except it uses adjust node rather than move node
 			t.nodeList = [];
@@ -1938,7 +1939,7 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 			for q = 1:4
 
 				N = Node.empty();
-				t = [];
+				tissue = [];
 
 				x = [0.1,0.5,0.9,0.1,0.5,0.9,0.1,0.5,0.9] + sx(q);
 				y = [0.1,0.1,0.1,0.5,0.5,0.5,0.9,0.9,0.9] + sy(q);
@@ -1955,9 +1956,10 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 					end
 				end
 
-				t.nodeList = N;
-				t.elementList = [];
-				p = SpacePartition(1, 1, t);
+				tissue.nodeList = N;
+				tissue.elementList = [];
+				p = SpacePartition(1, 1, tissue);
+				p.onlyBoxesInProximity = true;
 
 				% Looking at the nodes in the middle box
 
@@ -2126,6 +2128,7 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 				t.nodeList = [N, n1,n2,n3,n4,n5,n6,n7,n8,n9,n10,n11,n12,n13,n14,n15,n16];
 				t.elementList = [e1,e2,e3,e4, ebl,eb,ebr,er,etr,et,etl,el];
 				p = SpacePartition(1, 1, t);
+				p.onlyBoxesInProximity = true;
 
 
 				% The order surrounding boxes are added
@@ -2309,6 +2312,131 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 			a = p.QuickUnique(a);
 
 			testCase.verifyEqual(a, []);
+
+		end
+
+		function TestRepairModifiedElementWithNodeAdjusted(testCase)
+
+			% INCOMPLETE
+
+			% When a division has occurred, usually at least one element
+			% will have a node replaced, and there will often also be a
+			% node whose position is adjusted.
+
+			% These need to have their containing boxes corrected so the
+			% simulation functions correctly
+
+			% This does not test every scenario with quadrants, it is
+			% assumed that the constiteunt functions that perform
+			% the moving have been tested thoroughly (they have)
+
+
+			n1 = Node(0.1,0.1,1);
+			n2 = Node(1.1,1.1,2);
+			n3 = Node(0.1,2.2,3);
+			n4 = Node(-1,1.1,4);
+
+			% All elements assembled clockwise
+			e1 = Element(n1,n2,1);
+			e2 = Element(n4,n3,2);
+
+			t.nodeList = [n1,n2,n3,n4];
+			t.elementList = [e1,e2];
+
+			% Make the partition small, so there is enough detail
+			% to make the test useful
+			p = SpacePartition(0.2, 0.2, t);
+
+			% Just to verify the elements are in the right place
+			% testCase.verifyEqual(p.elementsQ{2}{1,1}, e1);
+			% testCase.verifyEqual(p.elementsQ{2}{2,1}, e1);
+			% testCase.verifyEqual(p.elementsQ{2}{3,1}, e1);
+
+			h = figure();
+			hold on
+			for i = 1:length(t.elementList)
+
+				x1 = t.elementList(i).Node1.x;
+				x2 = t.elementList(i).Node2.x;
+				x = [x1,x2];
+				y1 = t.elementList(i).Node1.y;
+				y2 = t.elementList(i).Node2.y;
+				y = [y1,y2];
+
+				line(x,y)
+			end
+
+			gridlines(0.2,gca);
+
+			% Just modified
+
+			n5 = Node(0.9,0.5,5);
+
+			e1.ReplaceNode(n2,n5);
+			p.PutNodeInBox(n5);
+			p.RepairModifiedElement(e1);
+			line([e1.nodeList.x],[e1.nodeList.y])
+
+			testCase.verifyFalse(e1.modifiedInDivision);
+			testCase.verifyEmpty(e1.oldNode1);
+			testCase.verifyEmpty(e1.oldNode2);
+
+			for i = 1:5
+				for j = 1:3
+					testCase.verifyEqual(p.elementsQ{1}{i,j}, e1);
+				end
+			end
+
+			for i = 2:6
+				for j = 4:6
+					testCase.verifyEmpty(p.elementsQ{1}{i,j});
+				end
+			end
+
+			testCase.verifyEmpty(p.elementsQ{1}{1,4});
+			testCase.verifyEmpty(p.elementsQ{1}{6,5});
+			testCase.verifyEqual(p.elementsQ{1}{1,6}, e2);
+
+			testCase.verifyEmpty(p.elementsQ{1}{6,1});
+			testCase.verifyEmpty(p.elementsQ{1}{6,2});
+			testCase.verifyEmpty(p.elementsQ{1}{6,3});
+
+			% To make the next testing a bit easier
+			p.RemoveElementFromPartition(e1);
+			% Node adjusted, then replaced (element modified)
+			
+			n4.AdjustPosition([-1.3, 0.9]);
+			n6 = Node(-0.7,0.5,6);
+			e2.ReplaceNode(n4,n6);
+			p.RepairModifiedElement(e2);
+			line([e2.nodeList.x],[e2.nodeList.y])
+
+			for i = 1:4
+				for j = 3:12
+					testCase.verifyEqual(p.elementsQ{4}{i,j}, e2);
+				end
+			end
+
+			for j = 3:12
+				testCase.verifyEqual(p.elementsQ{1}{1,j}, e2);
+			end
+
+			for j = 6:12
+				testCase.verifyEmpty(p.elementsQ{4}{5,j});
+			end
+
+
+			testCase.verifyFalse(e2.modifiedInDivision);
+			testCase.verifyEmpty(e2.oldNode1);
+			testCase.verifyEmpty(e2.oldNode2);
+
+			% Also check that it adjusts the box for n4 and updates its adjusted state
+
+			testCase.verifyFalse(n4.nodeAdjusted);
+			testCase.verifyEmpty(n4.preAdjustedPosition);
+			testCase.verifyEqual(p.nodesQ{4}{7,4}, n4);
+			testCase.verifyEmpty(p.nodesQ{4}{5,6});
+
 
 		end
 
