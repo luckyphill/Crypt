@@ -2045,13 +2045,6 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 
 
 			% COMPLETE
-			% UNINTENDED BEHAVIOUR:
-			% Elements in a box diagonal from the centre box are not considered
-			% so, given the way GetNeighbouringNodesAndElements works, diagonal
-			% nodes are not found. This is not the intended behaviour, but it works
-			% so testing is done to reflect this
-			% Test all the combinations of element neighbours
-			% around a box
 
 			% Test nodes in centre box
 
@@ -2137,13 +2130,13 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 				dr = 0.3;
 				% Get the candidate elements
 				candidates = p.AssembleCandidateElements(N(1), dr);
-				testCase.verifyEqual(candidates, sort([e2,e3,el,eb]));
+				testCase.verifyEqual(candidates, sort([e2,e3,el,eb,ebl]));
 
 				candidates = p.AssembleCandidateElements(N(2), dr);
 				testCase.verifyEqual(candidates, sort([e1,e2,e3,e4,eb]));
 
 				candidates = p.AssembleCandidateElements(N(3), dr);
-				testCase.verifyEqual(candidates, sort([e3,e4,er,eb]));
+				testCase.verifyEqual(candidates, sort([e3,e4,er,eb,ebr]));
 
 
 				candidates = p.AssembleCandidateElements(N(4), dr);
@@ -2157,13 +2150,13 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 
 
 				candidates = p.AssembleCandidateElements(N(7), dr);
-				testCase.verifyEqual(candidates, sort([e1,e2,el,et]));
+				testCase.verifyEqual(candidates, sort([e1,e2,el,et,etl]));
 
 				candidates = p.AssembleCandidateElements(N(8), dr);
 				testCase.verifyEqual(candidates, sort([e1,e2,e3,e4,et]));
 
 				candidates = p.AssembleCandidateElements(N(9), dr);
-				testCase.verifyEqual(candidates, sort([e1,e4,er,et]));
+				testCase.verifyEqual(candidates, sort([e1,e4,er,et,etr]));
 
 
 
@@ -2202,13 +2195,7 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 				% Get the neighbouring nodes and elements
 				[nE, nN] = p.GetNeighbouringNodesAndElements(N(1), dr);
 				testCase.verifyEqual(nE, sort([el,eb]));
-				% I had intended this to work this way, but it can't given the way
-				% the function GetNeighbouringNodesAndElements works; it only finds
-				% nodes when they are part of an element that is a candidate neighbour
-				% and diagonal boxes are not considered in assembling the element
-				% neighbours at this point. If it changes to all neighbouring boxes,
-				% then this will work
-				% testCase.verifyEqual(nN, n1); % << FAILS
+				testCase.verifyEqual(nN, n1);
 
 				[nE, nN] = p.GetNeighbouringNodesAndElements(N(2), dr);
 				testCase.verifyEqual(nE, sort([e1,eb]));
@@ -2216,13 +2203,7 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 
 				[nE, nN] = p.GetNeighbouringNodesAndElements(N(3), dr);
 				testCase.verifyEqual(nE, sort([er,eb]));
-				% I had intended this to work this way, but it can't given the way
-				% the function GetNeighbouringNodesAndElements works; it only finds
-				% nodes when they are part of an element that is a candidate neighbour
-				% and diagonal boxes are not considered in assembling the element
-				% neighbours at this point. If it changes to all neighbouring boxes,
-				% then this will work
-				% testCase.verifyEqual(nN, n5); % << FAILS
+				testCase.verifyEqual(nN, n5);
 
 
 				[nE, nN] = p.GetNeighbouringNodesAndElements(N(4), dr);
@@ -2240,13 +2221,7 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 
 				[nE, nN] = p.GetNeighbouringNodesAndElements(N(7), dr);
 				testCase.verifyEqual(nE, sort([el,et]));
-				% I had intended this to work this way, but it can't given the way
-				% the function GetNeighbouringNodesAndElements works; it only finds
-				% nodes when they are part of an element that is a candidate neighbour
-				% and diagonal boxes are not considered in assembling the element
-				% neighbours at this point. If it changes to all neighbouring boxes,
-				% then this will work
-				% testCase.verifyEqual(nN, n13); % << FAILS
+				testCase.verifyEqual(nN, n13);
 
 				[nE, nN] = p.GetNeighbouringNodesAndElements(N(8), dr);
 				testCase.verifyEqual(nE, sort([e3,et]));
@@ -2254,13 +2229,7 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 
 				[nE, nN] = p.GetNeighbouringNodesAndElements(N(9), dr);
 				testCase.verifyEqual(nE, sort([er,et]));
-				% I had intended this to work this way, but it can't given the way
-				% the function GetNeighbouringNodesAndElements works; it only finds
-				% nodes when they are part of an element that is a candidate neighbour
-				% and diagonal boxes are not considered in assembling the element
-				% neighbours at this point. If it changes to all neighbouring boxes,
-				% then this will work
-				% testCase.verifyEqual(nN, n9); % << FAILS
+				testCase.verifyEqual(nN, n9);
 
 			end
 
@@ -2352,22 +2321,6 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 			% testCase.verifyEqual(p.elementsQ{2}{2,1}, e1);
 			% testCase.verifyEqual(p.elementsQ{2}{3,1}, e1);
 
-			h = figure();
-			hold on
-			for i = 1:length(t.elementList)
-
-				x1 = t.elementList(i).Node1.x;
-				x2 = t.elementList(i).Node2.x;
-				x = [x1,x2];
-				y1 = t.elementList(i).Node1.y;
-				y2 = t.elementList(i).Node2.y;
-				y = [y1,y2];
-
-				line(x,y)
-			end
-
-			gridlines(0.2,gca);
-
 			% Just modified
 
 			n5 = Node(0.9,0.5,5);
@@ -2375,7 +2328,6 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 			e1.ReplaceNode(n2,n5);
 			p.PutNodeInBox(n5);
 			p.RepairModifiedElement(e1);
-			line([e1.nodeList.x],[e1.nodeList.y])
 
 			testCase.verifyFalse(e1.modifiedInDivision);
 			testCase.verifyEmpty(e1.oldNode1);
@@ -2409,7 +2361,7 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 			n6 = Node(-0.7,0.5,6);
 			e2.ReplaceNode(n4,n6);
 			p.RepairModifiedElement(e2);
-			line([e2.nodeList.x],[e2.nodeList.y])
+
 
 			for i = 1:4
 				for j = 3:12
@@ -2434,9 +2386,8 @@ classdef TestSpacePartition < matlab.unittest.TestCase
 
 			testCase.verifyFalse(n4.nodeAdjusted);
 			testCase.verifyEmpty(n4.preAdjustedPosition);
-			testCase.verifyEqual(p.nodesQ{4}{7,4}, n4);
+			testCase.verifyEqual(p.nodesQ{4}{7,5}, n4);
 			testCase.verifyEmpty(p.nodesQ{4}{5,6});
-
 
 		end
 

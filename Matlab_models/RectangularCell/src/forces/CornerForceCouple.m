@@ -24,9 +24,10 @@ classdef CornerForceCouple < AbstractCellBasedForce
 			% and add them to the nodes
 
 			for i = 1:length(cellList)
-
 				c = cellList(i);
-				obj.AddCouples(c);
+				if strcmp(class(c), 'SquareCellJoined')
+					obj.AddCouples(c);
+				end
 
 			end
 

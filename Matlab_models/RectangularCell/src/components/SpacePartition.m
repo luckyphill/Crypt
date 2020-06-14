@@ -67,7 +67,7 @@ classdef SpacePartition < matlab.mixin.SetGet
 		% or the elements and nodes are quite dense, this should be set
 		% to true, as it will reduce the number of comparison operations
 
-		onlyBoxesInProximity = false;
+		onlyBoxesInProximity = true;
 
 
 	end
@@ -295,6 +295,16 @@ classdef SpacePartition < matlab.mixin.SetGet
 				b(b==n.elementList(i)) = [];
 			end
 
+			% Remove elements from the cell the node is in
+			% it doesn't interact with them except indirectly
+			% via a volume force
+			for j = 1:length(n.cellList)
+				eL = n.cellList(j).elementList;
+				for i = 1:length(eL)
+					b(b==eL(i)) = [];
+				end
+			end
+
 		end
 
 		function b = GetAllAdjacentNodeBoxes(obj, n);
@@ -348,6 +358,27 @@ classdef SpacePartition < matlab.mixin.SetGet
 				b = [b, obj.GetAdjacentElementBoxFromNode(n, [0, 1])];
 			end
 
+
+			if ( floor(n.x/obj.dx) ~= floor((n.x-r)/obj.dx) ) && ( floor(n.y/obj.dx) ~= floor((n.y-r)/obj.dx) )
+				% Close to left bottom
+				b = [b, obj.GetAdjacentElementBoxFromNode(n, [-1, -1])];
+			end
+
+			if ( floor(n.x/obj.dx) ~= floor((n.x+r)/obj.dx) ) && ( floor(n.y/obj.dx) ~= floor((n.y-r)/obj.dx) )
+				% Close to right bottom
+				b = [b, obj.GetAdjacentElementBoxFromNode(n, [1, -1])];
+			end
+
+			if ( floor(n.x/obj.dx) ~= floor((n.x-r)/obj.dx) ) && ( floor(n.y/obj.dx) ~= floor((n.y+r)/obj.dx))
+				% Close to left top
+				b = [b, obj.GetAdjacentElementBoxFromNode(n, [-1, 1])];
+			end
+
+			if ( floor(n.x/obj.dx) ~= floor((n.x+r)/obj.dx) ) && ( floor(n.y/obj.dx) ~= floor((n.y+r)/obj.dx)) 
+				% Close to right top
+				b = [b, obj.GetAdjacentElementBoxFromNode(n, [1, 1])];
+			end
+
 			% Checking diagonally not needed for elements when box side length
 			% is about the same size as the maximum element length since the
 			% element will almost certainly be in an adjacent box
@@ -367,6 +398,16 @@ classdef SpacePartition < matlab.mixin.SetGet
 			% b(Lidx) = [];
 			for i = 1:length(n.elementList)
 				b(b==n.elementList(i)) = [];
+			end
+
+			% Remove elements from the cell the node is in
+			% it doesn't interact with them except indirectly
+			% via a volume force
+			for j = 1:length(n.cellList)
+				eL = n.cellList(j).elementList;
+				for i = 1:length(eL)
+					b(b==eL(i)) = [];
+				end
 			end
 
 		end

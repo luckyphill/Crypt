@@ -1,4 +1,4 @@
-classdef FixedDomain < LineSimulation
+classdef LayerOnStroma < LineSimulation
 
 	% This simulation is the most basic - a simple row of cells growing on
 	% a plate. It allows us to choose the number of initial cells
@@ -16,11 +16,11 @@ classdef FixedDomain < LineSimulation
 
 	methods
 
-		function obj = FixedDomain(nCells, p, g, w, seed, varargin)
+		function obj = LayerOnStroma(nCells, p, g, w, seed, varargin)
 			% All the initilising
 			obj.SetRNGSeed(seed);
 
-						% We keep the option of diffent box sizes for efficiency reasons
+			% We keep the option of diffent box sizes for efficiency reasons
 			if length(varargin) > 0
 				if length(varargin) == 3
 					areaEnergy = varargin{1};
@@ -119,6 +119,43 @@ classdef FixedDomain < LineSimulation
 
 			end
 
+			% Set the boundary cells so it doesn't get the stromal cell
+			bcs = obj.simData('boundaryCells');
+			bcs.data = containers.Map({'left','right'}, {obj.cellList(1), obj.cellList(end)});
+			
+
+			%---------------------------------------------------
+			% Make the cell that acts as the stroma
+			%---------------------------------------------------
+			nodeList = Node.empty();
+			dx = (leftBoundary - rightBoundary)/(nCells);
+			for x = rightBoundary:dx:leftBoundary
+				nodeList(end + 1) = Node(x,-0.1,obj.GetNextNodeId());
+			end
+
+			nodeList(end + 1) = Node(leftBoundary,-1,obj.GetNextNodeId());
+			nodeList(end + 1) = Node(rightBoundary,-1,obj.GetNextNodeId());
+			
+			elementList = Element.empty();
+			for i = 1:length(nodeList)-1
+				elementList(end + 1) = Element(nodeList(i), nodeList(i+1), obj.GetNextElementId() );
+			end
+
+			elementList(end + 1) = Element(nodeList(end), nodeList(1), obj.GetNextElementId() );
+
+			ccm = NoCellCycle();
+			ccm.colour = ccm.STROMA;
+
+			s = CellFree(ccm, nodeList, elementList, obj.GetNextCellId());
+
+			s.grownCellTargetArea = (rightBoundary - leftBoundary) * 0.9;
+
+			s.cellData('targetPerimeter') = TargetPerimeterStroma();
+
+			obj.AddNodesToList( nodeList );
+			obj.AddElementsToList( elementList );
+			obj.cellList = [obj.cellList, s];
+
 			%---------------------------------------------------
 			% Add in the forces
 			%---------------------------------------------------
@@ -133,7 +170,7 @@ classdef FixedDomain < LineSimulation
 			obj.AddElementBasedForce(EdgeSpringForce(@(n,l) 20 * exp(1-25 * l/n)));
 
 			% Node-Element interaction force - requires a SpacePartition
-			obj.AddNeighbourhoodBasedForce(NodeElementRepulsionForce(0.1, obj.dt));
+			obj.AddNeighbourhoodBasedForce(SimpleAdhesionRepulsionForce(0.1, obj.dt));
 
 			
 			%---------------------------------------------------
@@ -148,6 +185,14 @@ classdef FixedDomain < LineSimulation
 			%---------------------------------------------------
 
 			obj.AddDataStore(StoreWiggleRatio(10));
+
+			%---------------------------------------------------
+			% Add the modfier to keep the stromal corner cells
+			% locked in place
+			%---------------------------------------------------
+			
+			% nodeList comes from building the stroma
+			obj.AddSimulationModifier(   PinNodes(  [nodeList(1), nodeList(end-2:end)]  )   );
 
 			%---------------------------------------------------
 			% All done. Ready to roll

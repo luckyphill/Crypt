@@ -54,12 +54,16 @@ classdef FreeCellTest < FreeCellSimulation
 			% Node-Element interaction force - requires a SpacePartition
 			obj.AddNeighbourhoodBasedForce(NodeElementRepulsionForce(0.1, obj.dt));
 
+			% A small element based force to regularise the placement of the nodes
+			% around the perimeter of the cell
+			obj.AddElementBasedForce(EdgeSpringForce());
+
 			
 			%---------------------------------------------------
 			% Add space partition
 			%---------------------------------------------------
 			
-			obj.boxes = SpacePartition(0.5, 0.5, obj);
+			obj.boxes = SpacePartition(0.2, 0.2, obj);
 
 
 

@@ -88,7 +88,7 @@ classdef CellGrowing < LineSimulation
 			%---------------------------------------------------
 
 			% Nagai Honda forces
-			obj.AddCellBasedForce(ChasteNagaiHondaForce(areaEnergy, perimeterEnergy, adhesionEnergy));
+			obj.AddCellBasedForce(NagaiHondaForce(areaEnergy, perimeterEnergy, adhesionEnergy));
 
 			% Corner force to prevent very sharp corners
 			obj.AddCellBasedForce(CornerForceCouple(0.1,pi/2));

@@ -10,6 +10,7 @@ classdef AbstractCellCycleModel < matlab.mixin.SetGet
 		GROW = [0.6562 0.8555 0.9375];
 		STOPPED = [0.6680 0.5430 0.4883];
 		DYING = [0.5977 0.5859 0.5820];
+		STROMA = [ 0.9453, 0.9023, 0.6406]
 
 		% An RGB triplet, default pinkish colour
 		colour = [0.9375 0.7383 0.6562];

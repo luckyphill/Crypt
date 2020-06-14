@@ -112,7 +112,22 @@ classdef BoundaryCellKiller < AbstractTissueLevelCellKiller
 
 			% Clean up cell
 
-			t.cellList(t.cellList == c) = [];
+			% Since the cell List for the tissue is heterogeneous, we can't use
+			% t.cellList(t.cellList == c) = []; to delete the cell because 
+			% "one or more inputs of class 'AbstractCell' are heterogeneous
+			% and 'eq' is not sealed". I have no idea what this means, but
+			% it is a quirk of matlab OOP we have to work around
+			for i = 1:length(t.cellList)
+				oc = t.cellList(i);
+				if strcmp(class( oc ), 'SquareCellJoined')
+					if oc == c
+						t.cellList(i) = [];
+						break;
+					end
+				end
+			end
+			
+
 
 			c.delete;
 
@@ -170,9 +185,22 @@ classdef BoundaryCellKiller < AbstractTissueLevelCellKiller
 			c.nodeTopRight.delete;
 			c.nodeBottomRight.delete;
 
-			% Finally clean up cell
+			% Clean up cell
 
-			t.cellList(t.cellList == c) = [];
+			% Since the cell List for the tissue is heterogeneous, we can't use
+			% t.cellList(t.cellList == c) = []; to delete the cell because 
+			% "one or more inputs of class 'AbstractCell' are heterogeneous
+			% and 'eq' is not sealed". I have no idea what this means, but
+			% it is a quirk of matlab OOP we have to work around
+			for i = 1:length(t.cellList)
+				oc = t.cellList(i);
+				if strcmp(class( oc ), 'SquareCellJoined')
+					if oc == c
+						t.cellList(i) = [];
+						break;
+					end
+				end
+			end
 
 			c.delete;
 

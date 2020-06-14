@@ -366,6 +366,8 @@ classdef TestForce < matlab.unittest.TestCase
 
 			f.AddNeighbourhoodBasedForces(n, p);
 
+			Fa = [-(exp( (dr/r)^2 ) - 1) , 0];
+
 			testCase.verifyEqual(n.force, -Fa, 'RelTol', 1e-8); % << FAILS
 			testCase.verifyEqual(n1.force, 0.5*Fa, 'RelTol', 1e-8); % << FAILS
 			testCase.verifyEqual(n2.force, 0.5*Fa, 'RelTol', 1e-8); % << FAILS
@@ -378,9 +380,6 @@ classdef TestForce < matlab.unittest.TestCase
 
 			% This time the node is near the end of the edge
 			clear e n n1 n2 f
-			t.nodeList = [];
-			t.elementList = [];
-			p = SpacePartition(1, 1, t);
 
 			n1 = Node(0,0,1);
 			n2 = Node(0,1,2);
@@ -391,11 +390,9 @@ classdef TestForce < matlab.unittest.TestCase
 
 			f = NodeElementRepulsionForce(r, dt);
 
-			p.PutNodeInBox(n);
-			p.PutNodeInBox(n1);
-			p.PutNodeInBox(n2);
-
-			p.PutElementInBoxes(e);
+			t.nodeList = [n, n1, n2];
+			t.elementList = [e];
+			p = SpacePartition(0.5, 0.5, t);
 
 			f.AddNeighbourhoodBasedForces(n, p);
 
@@ -428,14 +425,11 @@ classdef TestForce < matlab.unittest.TestCase
 			f.AddNeighbourhoodBasedForces(n, p);
 
 			testCase.verifyTrue( n.force(1) < 0);
-			testCase.verifyTrue( e.Node1.force(1) > 0); % << FAILS
+			testCase.verifyTrue( e.Node2.force(1) > 0); % << FAILS
 
 			% Apply the wild case, but specify the nodes and elements directly
 			clear e n n1 n2 f
-			t.nodeList = [];
-			t.elementList = [];
-			p = SpacePartition(1, 1, t);
-
+			
 			n1 = Node(7.522,2.397,1);
 			n2 = Node(7.737,2.894,2);
 
@@ -443,24 +437,408 @@ classdef TestForce < matlab.unittest.TestCase
 
 			n = Node(7.704,2.86,3);
 
+			t.nodeList = [n, n1, n2];
+			t.elementList = [e];
+			p = SpacePartition(1, 1, t);
+
 			u = e.GetVector1to2();
-			v = [u(2), -u(1)];
+			v = e.GetOutwardNormal();
 
 			n1ton = n.position - e.Node1.position;
-			d = dot(n1ton, v)
+			d = dot(n1ton, v);
 
 			f = NodeElementRepulsionForce(r, dt);
 
-			p.PutNodeInBox(n);
-			p.PutNodeInBox(n1);
-			p.PutNodeInBox(n2);
-
-			p.PutElementInBoxes(e);
-
 			f.AddNeighbourhoodBasedForces(n, p);
 
+			% This is definitely what I would expect, but it fails and I can't see why
+			% perhaps there is some detail I'm overlooking
 			testCase.verifyTrue( n.force(1) < 0); % << FAILS
 			testCase.verifyTrue( n2.force(1) > 0); % << FAILS
+
+		end
+
+		function TestNodeElementRepulsionForceAgain(testCase)
+
+			% INCOMPLETE
+			% Missing:
+			% 1. Test interactions when element is at an angle from the 
+			%    vertical or horizontal
+
+			% Systematically test each possibility of node interacting with
+			% element, so that we always get the correct rotation (sign on the force)
+			% The magnitude is not tested here just yet because I haven't settled
+			% on a force model, but the direction must follow the rules
+			% set out by the drag dominated equations of motion
+
+			% The element is oriented so that e.Node1 to e.Node2 is considered
+			% anticlockwise. When facing along the element in the anticlockwise
+			% direction, the inside of the cell is left and the outside is right
+
+			% When the node is inside the cell, a force pushes it out, when the
+			% node is out side the cell, it pushes it away to the interaction boundary
+
+			%-------------------------------------------
+			% Interacting with centre of drag
+			%-------------------------------------------
+
+			% Node left, element right
+			%-------------------------------------------
+			n1 = Node(0.1,0,1);
+			n2 = Node(0.1,1,2);
+
+			n = Node(0,0.5,3);
+
+			% Loose node outside
+			e = Element(n2,n1,1);
+
+			t.nodeList = [n,n1,n2];
+			t.elementList = e;
+
+			p = SpacePartition(1,1,t);
+
+			f = NodeElementRepulsionForce(0.2, 0.005);
+
+			f.AddNeighbourhoodBasedForces(t.nodeList, p);
+
+			testCase.verifyTrue(n.force(1) < 0);
+			testCase.verifyEqual(n.force(2), 0);
+
+			testCase.verifyTrue(n1.force(1) > 0);
+			testCase.verifyEqual(n1.force(2), 0);
+
+			testCase.verifyTrue(n2.force(1) > 0);
+			testCase.verifyEqual(n2.force(2), 0);
+
+			n.force = [0, 0];
+			n1.force = [0, 0];
+			n2.force = [0, 0];
+
+			% Loose node inside
+			e.SwapNodes();
+
+			f.AddNeighbourhoodBasedForces(t.nodeList, p);
+
+			testCase.verifyTrue(n.force(1) > 0);
+			testCase.verifyEqual(n.force(2), 0);
+
+			testCase.verifyTrue(n1.force(1) < 0);
+			testCase.verifyEqual(n1.force(2), 0);
+
+			testCase.verifyTrue(n2.force(1) < 0);
+			testCase.verifyEqual(n2.force(2), 0);
+
+
+			% Node right element left
+			%-------------------------------------------
+			n1 = Node(0,0,1);
+			n2 = Node(0,1,2);
+
+			n = Node(0.1,0.5,3);
+
+			% Loose node outside
+			e = Element(n1,n2,1);
+
+			t.nodeList = [n,n1,n2];
+			t.elementList = e;
+
+			p = SpacePartition(1,1,t);
+
+			f = NodeElementRepulsionForce(0.2, 0.005);
+
+			f.AddNeighbourhoodBasedForces(t.nodeList, p);
+
+			testCase.verifyTrue(n.force(1) > 0);
+			testCase.verifyEqual(n.force(2), 0);
+
+			testCase.verifyTrue(n1.force(1) < 0);
+			testCase.verifyEqual(n1.force(2), 0);
+
+			testCase.verifyTrue(n2.force(1) < 0);
+			testCase.verifyEqual(n2.force(2), 0);
+
+			n.force = [0, 0];
+			n1.force = [0, 0];
+			n2.force = [0, 0];
+
+			% Loose node inside
+			e.SwapNodes();
+
+			f.AddNeighbourhoodBasedForces(t.nodeList, p);
+
+			testCase.verifyTrue(n.force(1) < 0);
+			testCase.verifyEqual(n.force(2), 0);
+
+			testCase.verifyTrue(n1.force(1) > 0);
+			testCase.verifyEqual(n1.force(2), 0);
+
+			testCase.verifyTrue(n2.force(1) > 0);
+			testCase.verifyEqual(n2.force(2), 0);
+
+
+			% Node top element bottom
+			%-------------------------------------------
+			n1 = Node(0,0,1);
+			n2 = Node(1,0,2);
+
+			n = Node(0.5,0.1,3);
+
+			% Loose node outside
+			e = Element(n2,n1,1);
+
+			t.nodeList = [n,n1,n2];
+			t.elementList = e;
+
+			p = SpacePartition(1,1,t);
+
+			f = NodeElementRepulsionForce(0.2, 0.005);
+
+			f.AddNeighbourhoodBasedForces(t.nodeList, p);
+
+			testCase.verifyTrue(n.force(2) > 0);
+			testCase.verifyEqual(n.force(1), 0);
+
+			testCase.verifyTrue(n1.force(2) < 0);
+			testCase.verifyEqual(n1.force(1), 0);
+
+			testCase.verifyTrue(n2.force(2) < 0);
+			testCase.verifyEqual(n2.force(1), 0);
+
+			n.force = [0, 0];
+			n1.force = [0, 0];
+			n2.force = [0, 0];
+
+			% Loose node inside
+			e.SwapNodes();
+
+			f.AddNeighbourhoodBasedForces(t.nodeList, p);
+
+			testCase.verifyTrue(n.force(2) < 0);
+			testCase.verifyEqual(n.force(1), 0);
+
+			testCase.verifyTrue(n1.force(2) > 0);
+			testCase.verifyEqual(n1.force(1), 0);
+
+			testCase.verifyTrue(n2.force(2) > 0);
+			testCase.verifyEqual(n2.force(1), 0);
+
+
+			% Node bottom element top
+			%-------------------------------------------
+			n1 = Node(0,0.1,1);
+			n2 = Node(1,0.1,2);
+
+			n = Node(0.5,0,3);
+
+			% Loose node outside
+			e = Element(n1,n2,1);
+
+			t.nodeList = [n,n1,n2];
+			t.elementList = e;
+
+			p = SpacePartition(1,1,t);
+
+			f = NodeElementRepulsionForce(0.2, 0.005);
+
+			f.AddNeighbourhoodBasedForces(t.nodeList, p);
+
+			testCase.verifyTrue(n.force(2) < 0);
+			testCase.verifyEqual(n.force(1), 0);
+
+			testCase.verifyTrue(n1.force(2) > 0);
+			testCase.verifyEqual(n1.force(1), 0);
+
+			testCase.verifyTrue(n2.force(2) > 0);
+			testCase.verifyEqual(n2.force(1), 0);
+
+			n.force = [0, 0];
+			n1.force = [0, 0];
+			n2.force = [0, 0];
+
+			% Loose node inside
+			e.SwapNodes();
+
+			f.AddNeighbourhoodBasedForces(t.nodeList, p);
+
+			testCase.verifyTrue(n.force(2) > 0);
+			testCase.verifyEqual(n.force(1), 0);
+
+			testCase.verifyTrue(n1.force(2) < 0);
+			testCase.verifyEqual(n1.force(1), 0);
+
+			testCase.verifyTrue(n2.force(2) < 0);
+			testCase.verifyEqual(n2.force(1), 0);
+
+
+
+
+			%-------------------------------------------
+			% Interacting away from centre of drag
+			%-------------------------------------------
+			% Only look at node closest to loose node
+
+			% Node left, element right
+			%-------------------------------------------
+			n1 = Node(0.1,0,1);
+			n2 = Node(0.1,1,2);
+
+			n = Node(0,0.8,3);
+
+			% Loose node outside
+			e = Element(n2,n1,1);
+
+			t.nodeList = [n,n1,n2];
+			t.elementList = e;
+
+			p = SpacePartition(1,1,t);
+
+			f = NodeElementRepulsionForce(0.2, 0.005);
+
+			f.AddNeighbourhoodBasedForces(t.nodeList, p);
+
+			testCase.verifyTrue(n.force(1) < 0);
+
+			testCase.verifyTrue(n1.force(1) > 0);
+
+			testCase.verifyTrue(n2.force(1) > 0);
+
+			n.force = [0, 0];
+			n1.force = [0, 0];
+			n2.force = [0, 0];
+
+			% Loose node inside
+			e.SwapNodes();
+
+			f.AddNeighbourhoodBasedForces(t.nodeList, p);
+
+			testCase.verifyTrue(n.force(1) > 0);
+
+			testCase.verifyTrue(n1.force(1) < 0);
+
+			testCase.verifyTrue(n2.force(1) < 0);
+
+
+			% Node right element left
+			%-------------------------------------------
+			n1 = Node(0,0,1);
+			n2 = Node(0,1,2);
+
+			n = Node(0.1,0.8,3);
+
+			% Loose node outside
+			e = Element(n1,n2,1);
+
+			t.nodeList = [n,n1,n2];
+			t.elementList = e;
+
+			p = SpacePartition(1,1,t);
+
+			f = NodeElementRepulsionForce(0.2, 0.005);
+
+			f.AddNeighbourhoodBasedForces(t.nodeList, p);
+
+			testCase.verifyTrue(n.force(1) > 0);
+
+			testCase.verifyTrue(n1.force(1) < 0);
+
+			testCase.verifyTrue(n2.force(1) < 0);
+
+			n.force = [0, 0];
+			n1.force = [0, 0];
+			n2.force = [0, 0];
+
+			% Loose node inside
+			e.SwapNodes();
+
+			f.AddNeighbourhoodBasedForces(t.nodeList, p);
+
+			testCase.verifyTrue(n.force(1) < 0);
+
+			testCase.verifyTrue(n1.force(1) > 0);
+
+			testCase.verifyTrue(n2.force(1) > 0);
+
+
+			% Node top element bottom
+			%-------------------------------------------
+			n1 = Node(0,0,1);
+			n2 = Node(1,0,2);
+
+			n = Node(0.8,0.1,3);
+
+			% Loose node outside
+			e = Element(n2,n1,1);
+
+			t.nodeList = [n,n1,n2];
+			t.elementList = e;
+
+			p = SpacePartition(1,1,t);
+
+			f = NodeElementRepulsionForce(0.2, 0.005);
+
+			f.AddNeighbourhoodBasedForces(t.nodeList, p);
+
+			testCase.verifyTrue(n.force(2) > 0);
+
+			testCase.verifyTrue(n1.force(2) < 0);
+
+			testCase.verifyTrue(n2.force(2) < 0);
+
+			n.force = [0, 0];
+			n1.force = [0, 0];
+			n2.force = [0, 0];
+
+			% Loose node inside
+			e.SwapNodes();
+
+			f.AddNeighbourhoodBasedForces(t.nodeList, p);
+
+			testCase.verifyTrue(n.force(2) < 0);
+
+			testCase.verifyTrue(n1.force(2) > 0);
+
+			testCase.verifyTrue(n2.force(2) > 0);
+
+
+			% Node bottom element top
+			%-------------------------------------------
+			n1 = Node(0,0.1,1);
+			n2 = Node(1,0.1,2);
+
+			n = Node(0.8,0,3);
+
+			% Loose node outside
+			e = Element(n1,n2,1);
+
+			t.nodeList = [n,n1,n2];
+			t.elementList = e;
+
+			p = SpacePartition(1,1,t);
+
+			f = NodeElementRepulsionForce(0.2, 0.005);
+
+			f.AddNeighbourhoodBasedForces(t.nodeList, p);
+
+			testCase.verifyTrue(n.force(2) < 0);
+
+			testCase.verifyTrue(n1.force(2) > 0);
+
+			testCase.verifyTrue(n2.force(2) > 0);
+
+			n.force = [0, 0];
+			n1.force = [0, 0];
+			n2.force = [0, 0];
+
+			% Loose node inside
+			e.SwapNodes();
+
+			f.AddNeighbourhoodBasedForces(t.nodeList, p);
+
+			testCase.verifyTrue(n.force(2) > 0);
+
+			testCase.verifyTrue(n1.force(2) < 0);
+
+			testCase.verifyTrue(n2.force(2) < 0);
 
 		end
 

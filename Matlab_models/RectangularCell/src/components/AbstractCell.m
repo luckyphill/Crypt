@@ -238,6 +238,21 @@ classdef AbstractCell < handle & matlab.mixin.Heterogeneous
 
 		end
 
+		function inside = IsNodeInsideCell(obj, n)
+
+			% Assemble vertices in the correct order to produce a quadrilateral
+
+			x = [obj.nodeList.x];
+			y = [obj.nodeList.y];
+
+			[inside, on] = inpolygon(n.x, n.y, x ,y);
+
+			if inside && on
+				inside = false;
+			end
+
+		end
+
 		function DrawCell(obj)
 
 			% plot a line for each element

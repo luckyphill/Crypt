@@ -196,12 +196,10 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			% Previous position and previous force are not modified
 
 			% Make sure the node and elements are in the correct boxes
-			% Why does this happen first?
-			if obj.usingBoxes
-				obj.boxes.UpdateBoxForNodeModifier(n, newPos);
-			end
-
 			n.AdjustPosition(newPos);
+			if obj.usingBoxes
+				obj.boxes.UpdateBoxForNodeAdjusted(n);
+			end
 
 		end
 
@@ -276,20 +274,22 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 					% with the space partition, so we have to fix it
 					oc = nc.sisterCell;
 
-					for j = 1:length(oc.nodeList)
-						n = oc.nodeList(j);
-
-						if n.nodeAdjusted
-							obj.boxes.UpdateBoxForNodeAdjusted(n);
-						end
-
-					end
-
+					% Repair modified elements goes first because that adjusts nodes
+					% in the function
 					for j = 1:length(oc.elementList)
 						e = oc.elementList(j);
 						
 						if e.modifiedInDivision
 							obj.boxes.RepairModifiedElement(e);
+						end
+
+					end
+
+					for j = 1:length(oc.nodeList)
+						n = oc.nodeList(j);
+
+						if n.nodeAdjusted
+							obj.boxes.UpdateBoxForNodeAdjusted(n);
 						end
 
 					end
