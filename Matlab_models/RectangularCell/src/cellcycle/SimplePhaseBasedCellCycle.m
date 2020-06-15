@@ -36,7 +36,7 @@ classdef SimplePhaseBasedCellCycle < AbstractCellCycleModel
 
 			obj.age = obj.age + dt;
 			if obj.age > obj.pausePhaseLength
-				obj.colour = obj.GROW;
+				obj.colour = obj.colourSet.GetNumber('GROW');
 			end
 
 		end
@@ -45,7 +45,7 @@ classdef SimplePhaseBasedCellCycle < AbstractCellCycleModel
 
 			newCCM = SimplePhaseBasedCellCycle(obj.meanPausePhaseLength, obj.meanGrowingPhaseLength);
 			newCCM.SetAge(0);
-			newCCM.colour = obj.PAUSE;
+			newCCM.colour = obj.colourSet.GetNumber('PAUSE');
 
 		end
 
@@ -63,10 +63,10 @@ classdef SimplePhaseBasedCellCycle < AbstractCellCycleModel
 
 			if obj.age < obj.pausePhaseLength
 				fraction = 0;
-				obj.colour = obj.PAUSE;
+				obj.colour = obj.colourSet.GetNumber('PAUSE');
 			else
 				fraction = (obj.age - obj.pausePhaseLength) / obj.growingPhaseLength;
-				obj.colour = obj.GROW;
+				obj.colour = obj.colourSet.GetNumber('GROW');
 			end
 
 		end

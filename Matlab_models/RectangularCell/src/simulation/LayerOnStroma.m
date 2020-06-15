@@ -128,13 +128,15 @@ classdef LayerOnStroma < LineSimulation
 			% Make the cell that acts as the stroma
 			%---------------------------------------------------
 			nodeList = Node.empty();
-			dx = (leftBoundary - rightBoundary)/(nCells);
-			for x = rightBoundary:dx:leftBoundary
+			left = leftBoundary - 0.5;
+			right = rightBoundary + 0.5;
+			dx = (left - right)/(2*nCells);
+			for x = right:dx:left
 				nodeList(end + 1) = Node(x,-0.1,obj.GetNextNodeId());
 			end
 
-			nodeList(end + 1) = Node(leftBoundary,-1,obj.GetNextNodeId());
-			nodeList(end + 1) = Node(rightBoundary,-1,obj.GetNextNodeId());
+			nodeList(end + 1) = Node(left,-1,obj.GetNextNodeId());
+			nodeList(end + 1) = Node(right,-1,obj.GetNextNodeId());
 			
 			elementList = Element.empty();
 			for i = 1:length(nodeList)-1
@@ -148,7 +150,7 @@ classdef LayerOnStroma < LineSimulation
 
 			s = CellFree(ccm, nodeList, elementList, obj.GetNextCellId());
 
-			s.grownCellTargetArea = (rightBoundary - leftBoundary) * 0.9;
+			s.grownCellTargetArea = (right - left) * 0.9;
 
 			s.cellData('targetPerimeter') = TargetPerimeterStroma();
 
@@ -193,6 +195,13 @@ classdef LayerOnStroma < LineSimulation
 			
 			% nodeList comes from building the stroma
 			obj.AddSimulationModifier(   PinNodes(  [nodeList(1), nodeList(end-2:end)]  )   );
+
+			% %---------------------------------------------------
+			% % Add the modfier to keep the boundary cells at the
+			% % same vertical position
+			% %---------------------------------------------------
+			
+			% obj.AddSimulationModifier(ShiftBoundaryCells());
 
 			%---------------------------------------------------
 			% All done. Ready to roll

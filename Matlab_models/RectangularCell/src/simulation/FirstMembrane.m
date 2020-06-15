@@ -1,10 +1,8 @@
-classdef LinkedBoundariesY < LineSimulation
+classdef FirstMembrane < LineSimulation
 
-	% This is a line simulation, with a fixed domain.
-	% It controls to y position of the boundary cells
-	% to keep them at the same height
-	% This is a bit of a hack to approximate periodic boundaries
-	% i.e. simulating on the surface of a cylinder
+	% This simulation is the most basic - a simple row of cells growing on
+	% a plate. It allows us to choose the number of initial cells
+	% the force related parameters, and the cell cycle lengths
 
 	properties
 
@@ -18,13 +16,12 @@ classdef LinkedBoundariesY < LineSimulation
 
 	methods
 
-		function obj = LinkedBoundariesY(nCells, p, g, w, seed, varargin)
+		function obj = FirstMembrane(nCells, p, g, w, seed, varargin)
 			% All the initilising
 			obj.SetRNGSeed(seed);
-			obj.usingBoxes = false;
 
 						% We keep the option of diffent box sizes for efficiency reasons
-			if length(varargin) > 0
+			if ~isempty(varargin)
 				if length(varargin) == 3
 					areaEnergy = varargin{1};
 					perimeterEnergy = varargin{2};
@@ -110,10 +107,10 @@ classdef LinkedBoundariesY < LineSimulation
 				elementBottom 	= Element(nodeBottomLeft, nodeBottomRight,obj.GetNextElementId());
 				elementTop	 	= Element(nodeTopLeft, nodeTopRight,obj.GetNextElementId());
 				elementRight 	= Element(nodeBottomRight, nodeTopRight,obj.GetNextElementId());
-				
+
 				% Critical for joined cells
 				elementLeft.internal = true;
-
+				
 				obj.AddElementsToList([elementBottom, elementRight, elementTop]);
 
 				ccm = SimplePhaseBasedCellCycle(p, g);
@@ -122,13 +119,12 @@ classdef LinkedBoundariesY < LineSimulation
 
 			end
 
-
 			%---------------------------------------------------
 			% Add in the forces
 			%---------------------------------------------------
 
 			% Nagai Honda forces
-			obj.AddCellBasedForce(NagaiHondaForce(areaEnergy, perimeterEnergy, adhesionEnergy));
+			obj.AddCellBasedForce(ChasteNagaiHondaForce(areaEnergy, perimeterEnergy, adhesionEnergy));
 
 			% Corner force to prevent very sharp corners
 			obj.AddCellBasedForce(CornerForceCouple(0.1,pi/2));
@@ -140,29 +136,20 @@ classdef LinkedBoundariesY < LineSimulation
 			% obj.AddNeighbourhoodBasedForce(NodeElementRepulsionForce(0.1, obj.dt));
 
 			% Force to keep epithelial layer flat
-			obj.AddTissueBasedForce(BasementMembraneForce(5));
-
+			obj.AddTissueBasedForce(BasementMembraneForce(2));
 			
 			%---------------------------------------------------
 			% Add space partition
 			%---------------------------------------------------
 			% In this simulation we are fixing the size of the boxes
-
-			obj.boxes = SpacePartition(0.5, 0.5, obj);
+			obj.usingBoxes = false;
+			% obj.boxes = SpacePartition(0.5, 0.5, obj);
 
 			%---------------------------------------------------
 			% Add the data we'd like to store
 			%---------------------------------------------------
 
 			obj.AddDataStore(StoreWiggleRatio(10));
-
-
-			%---------------------------------------------------
-			% Add the modfier to keep the boundary cells at the
-			% same vertical position
-			%---------------------------------------------------
-			
-			obj.AddSimulationModifier(ShiftBoundaryCells());
 
 			%---------------------------------------------------
 			% All done. Ready to roll

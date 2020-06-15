@@ -1,5 +1,13 @@
-classdef NodeElementRepulsionForce < AbstractNodeElementForce
+classdef NodeElementRepulsionForce < AbstractNeighbourhoodBasedForce
 	% Applies a force to push the angle of a cell corner towards its prefered value
+
+	properties
+
+		r
+		dt
+
+	end
+
 
 	methods
 

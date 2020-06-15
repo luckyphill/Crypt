@@ -84,6 +84,9 @@ classdef BoundaryCellKiller < AbstractTissueLevelCellKiller
 			c.nodeTopRight.elementList( c.nodeTopRight.elementList ==  c.elementTop ) = [];
 			c.nodeBottomRight.elementList( c.nodeBottomRight.elementList ==  c.elementBottom ) = [];
 
+			c.nodeTopRight.cellList( c.nodeTopRight.cellList ==  c ) = [];
+			c.nodeBottomRight.cellList( c.nodeBottomRight.cellList ==  c ) = [];
+
 			c.elementRight.cellList(c.elementRight.cellList == c) = [];
 
 			if t.usingBoxes
@@ -126,8 +129,6 @@ classdef BoundaryCellKiller < AbstractTissueLevelCellKiller
 					end
 				end
 			end
-			
-
 
 			c.delete;
 
@@ -148,7 +149,6 @@ classdef BoundaryCellKiller < AbstractTissueLevelCellKiller
 			% apparently, this is actually a handle, so
 			% changing it here modifies the value
 			bcs('right') = c.elementLeft.GetOtherCell(c);
-			% t.simData('boundaryCells').SetData(bcs);
 			
 			% Clean up elements
 
@@ -158,6 +158,9 @@ classdef BoundaryCellKiller < AbstractTissueLevelCellKiller
 
 			c.nodeTopLeft.elementList( c.nodeTopLeft.elementList ==  c.elementTop ) = [];
 			c.nodeBottomLeft.elementList( c.nodeBottomLeft.elementList ==  c.elementBottom ) = [];
+
+			c.nodeTopLeft.cellList( c.nodeTopLeft.cellList ==  c ) = [];
+			c.nodeBottomLeft.cellList( c.nodeBottomLeft.cellList ==  c ) = [];
 
 			c.elementLeft.cellList(c.elementLeft.cellList == c) = [];
 

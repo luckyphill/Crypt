@@ -842,6 +842,51 @@ classdef TestForce < matlab.unittest.TestCase
 
 		end
 
+		function TestBasementMembraneForce(testCase)
+
+			% INCOMPLETE
+
+			% Make sure the forces applied are in the correct direction
+
+			nl = Node(-1,0, 1);
+			n  = Node(0,0,2);
+			nr = Node(1,0,3);
+
+			f = BasementMembraneForce(1);
+
+			f.CalculateAndAddRestoringForce(nl, n, nr);
+
+			testCase.verifyEqual(nl.force, [0,0]);
+			testCase.verifyEqual(n.force, [0,0]);
+			testCase.verifyEqual(nr.force, [0,0]);
+
+
+			nl = Node(-1,1, 1);
+			n  = Node(0,0,2);
+			nr = Node(1,1,3);
+
+			f = BasementMembraneForce(1);
+
+			f.CalculateAndAddRestoringForce(nl, n, nr);
+
+			testCase.verifyTrue(nl.force(2) < 0);
+			testCase.verifyTrue(n.force(2) > 0);
+			testCase.verifyTrue(nr.force(2) < 0);
+
+
+			nl = Node(-1,-1, 1);
+			n  = Node(0,0,2);
+			nr = Node(1,-1,3);
+
+			f = BasementMembraneForce(1);
+
+			f.CalculateAndAddRestoringForce(nl, n, nr);
+
+			testCase.verifyTrue(nl.force(2) > 0);
+			testCase.verifyTrue(n.force(2) < 0);
+			testCase.verifyTrue(nr.force(2) > 0);
+
+		end
 
 	end
 

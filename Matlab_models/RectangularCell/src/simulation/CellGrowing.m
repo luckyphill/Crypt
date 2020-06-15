@@ -97,7 +97,7 @@ classdef CellGrowing < LineSimulation
 			obj.AddElementBasedForce(EdgeSpringForce(@(n,l) 20 * exp(1-25 * l/n)));
 
 			% Node-Element interaction force - requires a SpacePartition
-			obj.AddNeighbourhoodBasedForce(NodeElementRepulsionForce(0.1, obj.dt));
+			% obj.AddNeighbourhoodBasedForce(NodeElementRepulsionForce(0.1, obj.dt));
 
 			
 			%---------------------------------------------------
@@ -115,7 +115,15 @@ classdef CellGrowing < LineSimulation
 			% Add the data we'd like to store
 			%---------------------------------------------------
 
-			obj.AddDataStore(StoreWiggleRatio(10));
+			obj.AddDataStore(StoreWiggleRatio(20));
+
+
+			%---------------------------------------------------
+			% Add the data writers
+			%---------------------------------------------------
+
+			obj.AddSimulationData(SpatialState());
+			obj.AddDataWriter(WriteSpatialState(20,'CellGrowing/'));
 
 			%---------------------------------------------------
 			% All done. Ready to roll

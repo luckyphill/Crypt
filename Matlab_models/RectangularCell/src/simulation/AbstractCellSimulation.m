@@ -20,6 +20,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 		cellBasedForces AbstractCellBasedForce
 		elementBasedForces AbstractElementBasedForce
 		neighbourhoodBasedForces AbstractNeighbourhoodBasedForce
+		tissueBasedForces AbstractTissueBasedForce
 
 		stoppingConditions AbstractStoppingCondition
 
@@ -34,14 +35,18 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 		% with also the potential to write to file
 		dataStores AbstractDataStore
 
+		dataWriters AbstractDataWriter
+
 		% A collection objects for calculating data about the simulation
 		% stored in a map container so each type of data can be given a
 		% meaingful name
-		simData = containers.Map
+		simData = containers.Map;
 
-		boxes SpacePartition
+		boxes SpacePartition;
 
 		usingBoxes = true;
+
+		writeToFile = true;
 		
 	end
 
@@ -65,6 +70,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 		function NextTimeStep(obj)
 			% Updates all the forces and applies the movements
 
+			obj.GenerateTissueBasedForces();
 			obj.GenerateCellBasedForces();
 			obj.GenerateElementBasedForces();
 
@@ -87,6 +93,10 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			obj.step = obj.step + 1;
 
 			obj.StoreData();
+			
+			if obj.writeToFile
+				obj.WriteData();
+			end
 
 			if obj.IsStoppingConditionMet()
 				obj.stopped = true;
@@ -120,6 +130,14 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			if t > obj.t
 				n = ceil((t-obj.t) / obj.dt);
 				NTimeSteps(obj, n);
+			end
+
+		end
+
+		function GenerateTissueBasedForces(obj)
+			
+			for i = 1:length(obj.tissueBasedForces)
+				obj.tissueBasedForces(i).AddTissueBasedForces(obj);
 			end
 
 		end
@@ -345,6 +363,16 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		end
 
+		function AddTissueBasedForce(obj, f)
+
+			if isempty(obj.tissueBasedForces)
+				obj.tissueBasedForces = f;
+			else
+				obj.tissueBasedForces(end + 1) = f;
+			end
+
+		end
+
 		function AddTissueLevelKiller(obj, k)
 
 			if isempty(obj.tissueLevelKillers)
@@ -395,6 +423,16 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		end
 
+		function AddDataWriter(obj, w)
+
+			if isempty(obj.dataWriters)
+				obj.dataWriters = w;
+			else
+				obj.dataWriters(end + 1) = w;
+			end
+
+		end
+
 		function AddSimulationData(obj, d)
 
 			% Add the simulation data calculator to the map
@@ -412,6 +450,14 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 			for i = 1:length(obj.dataStores)
 				obj.dataStores(i).StoreData(obj);
+			end
+
+		end
+
+		function WriteData(obj)
+
+			for i = 1:length(obj.dataWriters)
+				obj.dataWriters(i).WriteData(obj);
 			end
 
 		end
@@ -435,6 +481,8 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			for i = 1:length(obj.cellKillers)
 				obj.cellKillers(i).KillCells(obj.cellList);
 			end
+
+
 
 		end
 

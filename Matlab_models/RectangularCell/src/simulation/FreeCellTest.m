@@ -51,12 +51,15 @@ classdef FreeCellTest < FreeCellSimulation
 			% Nagai Honda forces
 			obj.AddCellBasedForce(ChasteNagaiHondaForce(areaEnergy, perimeterEnergy, adhesionEnergy));
 
+			% % Node-Element interaction force - requires a SpacePartition
+			% obj.AddNeighbourhoodBasedForce(NodeElementRepulsionForce(0.1, obj.dt));
+
 			% Node-Element interaction force - requires a SpacePartition
-			obj.AddNeighbourhoodBasedForce(NodeElementRepulsionForce(0.1, obj.dt));
+			obj.AddNeighbourhoodBasedForce(SimpleAdhesionRepulsionForce(0.1, obj.dt));
 
 			% A small element based force to regularise the placement of the nodes
 			% around the perimeter of the cell
-			obj.AddElementBasedForce(EdgeSpringForce());
+			obj.AddElementBasedForce(EdgeSpringForce(@(n, l) 2*(n - l)));
 
 			
 			%---------------------------------------------------

@@ -5,15 +5,9 @@ classdef AbstractCellCycleModel < matlab.mixin.SetGet
 
 		age
 
-		% Colours
-		PAUSE = [0.9375 0.7383 0.6562];
-		GROW = [0.6562 0.8555 0.9375];
-		STOPPED = [0.6680 0.5430 0.4883];
-		DYING = [0.5977 0.5859 0.5820];
-		STROMA = [ 0.9453, 0.9023, 0.6406]
+		colourSet = ColourSet();
 
-		% An RGB triplet, default pinkish colour
-		colour = [0.9375 0.7383 0.6562];
+		colour = 1;
 
 	end
 
@@ -48,7 +42,7 @@ classdef AbstractCellCycleModel < matlab.mixin.SetGet
 
 		function colour = GetColour(obj)
 
-			colour = obj.colour;
+			colour = obj.colourSet.GetRGB(obj.colour);
 
 		end
 

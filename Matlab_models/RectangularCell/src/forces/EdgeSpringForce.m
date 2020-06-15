@@ -21,7 +21,7 @@ classdef EdgeSpringForce < AbstractElementBasedForce
 
 		function obj = EdgeSpringForce(varargin)
 
-			if length(varargin) > 1
+			if length(varargin) > 0
 				obj.springFunction = varargin{1};
 			end
 

@@ -76,6 +76,7 @@ classdef SpacePartition < matlab.mixin.SetGet
 	methods
 		
 		function obj = SpacePartition(dx, dy, t)
+			
 			% Need to pass in a cell simulation to initialise
 			obj.dx = dx;
 			obj.dy = dy;
@@ -394,8 +395,6 @@ classdef SpacePartition < matlab.mixin.SetGet
 			b = obj.QuickUnique(b);
 
 			% Remove nodes own elements
-			% Lidx = ismember(b,n.elementList);
-			% b(Lidx) = [];
 			for i = 1:length(n.elementList)
 				b(b==n.elementList(i)) = [];
 			end
@@ -1054,6 +1053,26 @@ classdef SpacePartition < matlab.mixin.SetGet
 			e.oldNode2 = [];
 
 		end
+
+		% function CleanPartition(obj)
+
+		% 	% Goes through the partition and removes any nodes 
+		% 	% or elements that have been deleted
+		% 	for q = 1:4
+		% 		[I,J] = size(obj.nodesQ{q});
+		% 		for i = 1:I
+		% 			for j = 1:J
+		% 				K = length(obj.nodesQ{q}{i,j});
+		% 				for k = 1:K
+		% 					% If element is deleted, remove it
+		% 					n = obj.nodesQ{q}{i,j}(k);
+		% 					if whos('n').bytes == 0
+
+		% 				end
+		% 			end
+		% 		end
+		% 	end
+		% end
 
 		function b = GetNodeBox(obj, x, y)
 			% Given a pair of coordinates, access the matching box
