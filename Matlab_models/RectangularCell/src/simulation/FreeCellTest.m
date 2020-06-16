@@ -30,7 +30,7 @@ classdef FreeCellTest < FreeCellSimulation
 			nodes = Node.empty();
 
 			for i = 1:n
-				nodes(i) = Node(v(i,1),v(i,2),i);
+				nodes(i) = Node(v(i,1),v(i,2),obj.GetNextNodeId());
 			end
 
 			ccm = SimplePhaseBasedCellCycle(p, g);
@@ -67,6 +67,13 @@ classdef FreeCellTest < FreeCellSimulation
 			%---------------------------------------------------
 			
 			obj.boxes = SpacePartition(0.2, 0.2, obj);
+
+			%---------------------------------------------------
+			% Add the data writers
+			%---------------------------------------------------
+
+			obj.AddSimulationData(SpatialState());
+			obj.AddDataWriter(WriteSpatialState(20,'FreeCellTest/'));
 
 
 

@@ -10,15 +10,21 @@ classdef Visualiser < matlab.mixin.SetGet
 
 		timeSteps
 
+		% How many entries per cell in cellData - one for each node
+		% and a colour number. For a square cell this is 5
+		nEntriesCell
+
 		cs = ColourSet()
 		
 	end
 
 	methods
 
-		function obj = Visualiser(ptss)
+		function obj = Visualiser(epc, ptss)
 
-			obj.pathToSpatialState = ptss;
+			obj.pathToSpatialState = ['/Users/phillip/Research/Crypt/Data/Matlab/SimulationOutput/',ptss];
+
+			obj.nEntriesCell = epc;
 
 			obj.LoadData();
 
@@ -29,6 +35,7 @@ classdef Visualiser < matlab.mixin.SetGet
 			nodeData = readmatrix([obj.pathToSpatialState, 'nodes.csv']);
 			elementData = readmatrix([obj.pathToSpatialState, 'elements.csv']);
 			cellData = readmatrix([obj.pathToSpatialState, 'cells.csv']);
+			% cellData = csvread([obj.pathToSpatialState, 'cells.csv']);
 
 			obj.timeSteps = nodeData(:,1);
 			nodeData = nodeData(:,2:end);
@@ -69,9 +76,8 @@ classdef Visualiser < matlab.mixin.SetGet
 			% First dimension, time, second dimension, cell or element, third dimension, node id
 			% so to get the nodes for a given time,t, and a given cell, c, it's accessed
 			% cellData(t,c,:)
-			nEntriesCell = 5;
 			obj.elements = permute(reshape(elementData,m,2,[]),[1,3,2]);
-			obj.cells = permute(reshape(cellData,m,nEntriesCell,[]),[1,3,2]);
+			obj.cells = permute(reshape(cellData,m,obj.nEntriesCell,[]),[1,3,2]);
 
 		end
 
@@ -88,7 +94,6 @@ classdef Visualiser < matlab.mixin.SetGet
 
 			% The number of values in a row that correspond to
 			% one cell
-			nEntriesCell = 5;
 
 			h = figure();
 			hold on
@@ -99,7 +104,7 @@ classdef Visualiser < matlab.mixin.SetGet
 			fillObjects(1) = fill([1,1],[2,2],'r');
 
 			% Need to grab the non-nan entries
-			cells = reshape(obj.cells(1,~isnan(obj.cells(1,:,:))),[],nEntriesCell);
+			cells = reshape(obj.cells(1,~isnan(obj.cells(1,:,:))),[],obj.nEntriesCell);
 			[J,~] = size(cells);
 			% Make the fillobjects
 			for j = 1:J
@@ -118,7 +123,7 @@ classdef Visualiser < matlab.mixin.SetGet
 
 			for i = 1:I
 				% i is the time steps
-				cells = reshape(obj.cells(i,~isnan(obj.cells(i,:,:))),[],nEntriesCell);
+				cells = reshape(obj.cells(i,~isnan(obj.cells(i,:,:))),[],obj.nEntriesCell);
 				[J,~] = size(cells);
 				for j = 1:J
 					% j is the cell
