@@ -273,18 +273,21 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 				if obj.usingBoxes
 
-					% If the cell type is joined, then we need to make sure the
-					% internal element is labelled as such, and that the element
-					% is removed from the partition.
+					% Not necessary, as external elements never become internal elements
+					% even considering cell death. As long as the internal flag is set
+					% correctly during division, there is no issue
+					% % If the cell type is joined, then we need to make sure the
+					% % internal element is labelled as such, and that the element
+					% % is removed from the partition.
 
-					if strcmp(class(nc), 'SquareCellJoined')
+					% if strcmp(class(nc), 'SquareCellJoined')
 
-						if ~nc.elementRight.internal
-							nc.elementRight.internal = true;
-						end
-						obj.boxes.RemoveElementFromPartition(nc.elementRight);
+					% 	if ~nc.elementRight.internal
+					% 		nc.elementRight.internal = true;
+					% 		obj.boxes.RemoveElementFromPartition(nc.elementRight);
+					% 	end
 
-					end
+					% end
 
 					% When a division occurs, the nodes and elements of the sister cell
 					% (which was also the parent cell before division), may
