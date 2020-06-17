@@ -1,4 +1,4 @@
-classdef FirstMembrane < LineSimulation
+classdef BeamMembranePinned < LineSimulation
 
 	% This simulation is the most basic - a simple row of cells growing on
 	% a plate. It allows us to choose the number of initial cells
@@ -6,17 +6,17 @@ classdef FirstMembrane < LineSimulation
 
 	properties
 
-		dt = 0.005
+		dt = 0.001
 		t = 0
 		eta = 1
 
-		timeLimit = 2000
+		timeLimit = 400
 
 	end
 
 	methods
 
-		function obj = FirstMembrane(nCells, p, g, w, seed, varargin)
+		function obj = BeamMembranePinned(nCells, p, g, w, b, seed, varargin)
 			% All the initilising
 			obj.SetRNGSeed(seed);
 
@@ -136,7 +136,11 @@ classdef FirstMembrane < LineSimulation
 			% obj.AddNeighbourhoodBasedForce(NodeElementRepulsionForce(0.1, obj.dt));
 
 			% Force to keep epithelial layer flat
-			obj.AddTissueBasedForce(BasementMembraneForce(2));
+			if b > 0
+				obj.AddTissueBasedForce(BasementMembraneForce(b));
+			else
+				fprintf('No basement membrane force applied\n');
+			end
 			
 			%---------------------------------------------------
 			% Add space partition
@@ -146,26 +150,25 @@ classdef FirstMembrane < LineSimulation
 			% obj.boxes = SpacePartition(0.5, 0.5, obj);
 
 			%---------------------------------------------------
-			% Add the data we'd like to store
+			% Add the modfier to keep the boundary cells at the
+			% same vertical position
+			%---------------------------------------------------
+			
+			obj.AddSimulationModifier(ShiftBoundaryCells());
+
+
+			%---------------------------------------------------
+			% Add the data writers
 			%---------------------------------------------------
 
-			obj.AddDataStore(StoreWiggleRatio(10));
+			% obj.AddSimulationData(SpatialState());
+			% obj.AddDataWriter(WriteSpatialState(50,'BeamMembranePinned/'));
+			pathName = sprintf('BeamMembranePinned/p%dg%dw%db%d_seed%d/',p,g,w,b,seed);
+			obj.AddDataWriter(WriteWiggleRatio(10,pathName));
 
 			%---------------------------------------------------
 			% All done. Ready to roll
 			%---------------------------------------------------
-
-		end
-
-
-		function RunToBuckle(obj)
-
-			% This function runs the simulation until just after buckling has occurred
-			% Buckling is defined by the wiggle ratio, i.e. epithelial length/domain width
-
-			obj.AddStoppingCondition(BuckledStoppingCondition(1.1));
-
-			obj.RunToTime(obj.timeLimit);
 
 		end
 

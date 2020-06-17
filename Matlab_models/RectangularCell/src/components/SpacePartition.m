@@ -230,7 +230,7 @@ classdef SpacePartition < matlab.mixin.SetGet
 				y = [p1(2), p2(2), p3(2), p4(2)];
 
 				% Inside includes on the boundary
-				[inside, on] = inpolygon(n.x, n.y, x ,y);
+				[inside, on] = inpolygon(n.x, n.y, x, y);
 
 
 				if inside
@@ -1053,26 +1053,6 @@ classdef SpacePartition < matlab.mixin.SetGet
 			e.oldNode2 = [];
 
 		end
-
-		% function CleanPartition(obj)
-
-		% 	% Goes through the partition and removes any nodes 
-		% 	% or elements that have been deleted
-		% 	for q = 1:4
-		% 		[I,J] = size(obj.nodesQ{q});
-		% 		for i = 1:I
-		% 			for j = 1:J
-		% 				K = length(obj.nodesQ{q}{i,j});
-		% 				for k = 1:K
-		% 					% If element is deleted, remove it
-		% 					n = obj.nodesQ{q}{i,j}(k);
-		% 					if whos('n').bytes == 0
-
-		% 				end
-		% 			end
-		% 		end
-		% 	end
-		% end
 
 		function b = GetNodeBox(obj, x, y)
 			% Given a pair of coordinates, access the matching box

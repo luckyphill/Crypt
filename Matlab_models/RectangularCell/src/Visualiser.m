@@ -28,13 +28,20 @@ classdef Visualiser < matlab.mixin.SetGet
 
 			obj.LoadData();
 
+			obj.RunVisualiserGUI();
+
 		end
 
 		function LoadData(obj)
 
-			nodeData = readmatrix([obj.pathToSpatialState, 'nodes.csv']);
-			elementData = readmatrix([obj.pathToSpatialState, 'elements.csv']);
-			cellData = readmatrix([obj.pathToSpatialState, 'cells.csv']);
+			% For some reason matlab decides to ignore some lines
+			% when using readmatrix, so to stop this, pass in the following options
+			% See https://stackoverflow.com/questions/62399666/why-does-readmatrix-in-matlab-skip-the-first-n-lines?
+			opts = detectImportOptions([obj.pathToSpatialState, 'nodes.csv']);
+			opts.DataLines = [1 Inf];
+			nodeData = readmatrix([obj.pathToSpatialState, 'nodes.csv'],opts);
+			elementData = readmatrix([obj.pathToSpatialState, 'elements.csv'],opts);
+			cellData = readmatrix([obj.pathToSpatialState, 'cells.csv'],opts);
 			% cellData = csvread([obj.pathToSpatialState, 'cells.csv']);
 
 			obj.timeSteps = nodeData(:,1);
@@ -84,13 +91,14 @@ classdef Visualiser < matlab.mixin.SetGet
 		function RunVisualiserGUI(obj)
 
 			% This will take the formatted data and produce an interactive
-			% plot of the simulation
+			% plot of the simulation. At the minute it just runs a for loop
 
 			% Components:
 			% Play/Pause button
 			% Speed control (how long between each frame)
 			% Slide bar to choose position
 			% Time stamp in a corner (maybe title)
+			% Reload data button
 
 			% The number of values in a row that correspond to
 			% one cell

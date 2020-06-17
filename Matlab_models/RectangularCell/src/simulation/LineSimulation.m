@@ -29,7 +29,7 @@ classdef LineSimulation < AbstractCellSimulation
 				% when cells are actually killed.
 
 				% This will most likely update the time step after death occurs
-				% so there could be some buggyness
+				% so there could be some bugginess
 
 				bcs = obj.simData('boundaryCells').GetData(obj);
 
@@ -47,6 +47,17 @@ classdef LineSimulation < AbstractCellSimulation
 				end
 
 			end
+
+		end
+
+		function RunToBuckle(obj)
+
+			% This function runs the simulation until just after buckling has occurred
+			% Buckling is defined by the wiggle ratio, i.e. epithelial length/domain width
+
+			obj.AddStoppingCondition(BuckledStoppingCondition(1.1));
+
+			obj.RunToTime(obj.timeLimit);
 
 		end
 		

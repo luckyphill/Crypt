@@ -137,7 +137,6 @@ classdef AbstractDataWriter < handle & matlab.mixin.Heterogeneous
 
 		end
 
-
 		function MakeFullPath(obj)
 
 			% Only runs once. First checks if the directory exists,

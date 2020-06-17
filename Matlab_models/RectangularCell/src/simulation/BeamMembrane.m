@@ -1,4 +1,4 @@
-classdef CellGrowing < LineSimulation
+classdef BeamMembrane < LineSimulation
 
 	% This simulation is the most basic - a simple row of cells growing on
 	% a plate. It allows us to choose the number of initial cells
@@ -6,26 +6,62 @@ classdef CellGrowing < LineSimulation
 
 	properties
 
-		dt = 0.005
+		dt = 0.001
 		t = 0
 		eta = 1
 
-		timeLimit = 200
+		timeLimit = 400
 
 	end
 
 	methods
 
-		function obj = CellGrowing(nCells, p, g, areaEnergy, perimeterEnergy, adhesionEnergy, seed, varargin)
+		function obj = BeamMembrane(nCells, p, g, w, b, seed, varargin)
 			% All the initilising
 			obj.SetRNGSeed(seed);
+
+						% We keep the option of diffent box sizes for efficiency reasons
+			if ~isempty(varargin)
+				if length(varargin) == 3
+					areaEnergy = varargin{1};
+					perimeterEnergy = varargin{2};
+					adhesionEnergy = varargin{3};
+				else
+					error('Error using varargin, must have 3 args, areaEnergy, perimeterEnergy, and adhesionEnergy');
+				end
+			else
+				areaEnergy = 20;
+				perimeterEnergy = 10;
+				adhesionEnergy = 1;
+			end
+
+			% This simulation only allows cells to exist in a limited x domain
+
+			% Cells are set to be 0.5 units wide, so total starting width is
+			% 0.5*n. In order to keep things symmetric as much as possible, we
+			% will set the boundaries so the row of cells starts in the middle
+			% We will also check that the width is greater than the row of cells
+			% While the death process probably could handle this, I don't want to push it
+
+			if 0.5 * nCells > w
+				error('Make the width larger than the initial number of cells')
+			end
+
+			endPiece = (w - 0.5 * nCells) / 2;
+
+			leftBoundary = -endPiece;
+			rightBoundary = 0.5 * nCells + endPiece;
+
+			k = BoundaryCellKiller(leftBoundary, rightBoundary);
+
+			obj.AddTissueLevelKiller(k);
 
 			%---------------------------------------------------
 			% Make all the cells
 			%---------------------------------------------------
 
 			% The first cell needs all elements and nodes created
-			% subsequent cells will have nodes and elements from their
+			% subsquent cells will have nodes and elements from their
 			% neighbours
 
 			% Make the nodes
@@ -88,7 +124,7 @@ classdef CellGrowing < LineSimulation
 			%---------------------------------------------------
 
 			% Nagai Honda forces
-			obj.AddCellBasedForce(NagaiHondaForce(areaEnergy, perimeterEnergy, adhesionEnergy));
+			obj.AddCellBasedForce(ChasteNagaiHondaForce(areaEnergy, perimeterEnergy, adhesionEnergy));
 
 			% Corner force to prevent very sharp corners
 			obj.AddCellBasedForce(CornerForceCouple(0.1,pi/2));
@@ -99,23 +135,19 @@ classdef CellGrowing < LineSimulation
 			% Node-Element interaction force - requires a SpacePartition
 			% obj.AddNeighbourhoodBasedForce(NodeElementRepulsionForce(0.1, obj.dt));
 
+			% Force to keep epithelial layer flat
+			if b > 0
+				obj.AddTissueBasedForce(BasementMembraneForce(b));
+			else
+				fprintf('No basement membrane force applied\n');
+			end
 			
 			%---------------------------------------------------
 			% Add space partition
 			%---------------------------------------------------
-			
-			% We keep the option of diffent box sizes for efficiency reasons
-			if length(varargin) > 0
-				obj.boxes = SpacePartition(varargin{1}, varargin{2}, obj);
-			else
-				obj.boxes = SpacePartition(0.5, 0.5, obj);
-			end
-
-			%---------------------------------------------------
-			% Add the data we'd like to store
-			%---------------------------------------------------
-
-			obj.AddDataStore(StoreWiggleRatio(20));
+			% In this simulation we are fixing the size of the boxes
+			obj.usingBoxes = false;
+			% obj.boxes = SpacePartition(0.5, 0.5, obj);
 
 
 			%---------------------------------------------------
@@ -123,24 +155,13 @@ classdef CellGrowing < LineSimulation
 			%---------------------------------------------------
 
 			% obj.AddSimulationData(SpatialState());
-			% obj.AddDataWriter(WriteSpatialState(20,'CellGrowing/'));
-			obj.AddDataWriter(WriteWiggleRatio(10,'FirstMembrane/'));
+			% obj.AddDataWriter(WriteSpatialState(50,'BeamMembrane/'));
+			pathName = sprintf('BeamMembrane/p%dg%dw%db%d_seed%d/',p,g,w,b,seed);
+			obj.AddDataWriter(WriteWiggleRatio(10,pathName));
 
 			%---------------------------------------------------
 			% All done. Ready to roll
 			%---------------------------------------------------
-
-		end
-
-
-		function RunToBuckle(obj)
-
-			% This function runs the simulation until just after buckling has occurred
-			% Buckling is defined by the wiggle ratio, i.e. epithelial length/domain width
-
-			obj.AddStoppingCondition(BuckledStoppingCondition(1.1));
-
-			obj.RunToTime(obj.timeLimit);
 
 		end
 

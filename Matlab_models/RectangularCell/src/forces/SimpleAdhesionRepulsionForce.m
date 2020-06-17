@@ -25,7 +25,7 @@ classdef SimpleAdhesionRepulsionForce < AbstractNodeElementForce
 
 			for i = 1:length(nodeList)
 				n = nodeList(i);
-				elementList = p.GetNeighbouringNodesAndElements(n, 2 * obj.r);
+				elementList = p.GetNeighbouringElements(n, 2 * obj.r);
 				nList = [];
 				% [elementList, nList] = p.GetNeighbouringNodesAndElements(n, 2 * obj.r);
 
