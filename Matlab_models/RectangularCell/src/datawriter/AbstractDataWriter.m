@@ -124,7 +124,14 @@ classdef AbstractDataWriter < handle & matlab.mixin.Heterogeneous
 						n = obj.data{i};
 						n = n';
 						n = [obj.timePoint,n(:)'];
-						writematrix(n, outputFile,'WriteMode','append');
+						% A hack to make this work with versions without writematrix appending
+						% I mean, seriously, who releases a write function with no append feature??
+						v = version('-release');
+						if str2num(v(1:4)) < 2020
+							csvwrite(outputFile, n, '-append');
+						else
+							writematrix(n, outputFile,'WriteMode','append');
+						end
 					case 'cell'
 						% Need to flatten the cell into a single row, and provide separate
 						% delimiters between each row - Not Done
