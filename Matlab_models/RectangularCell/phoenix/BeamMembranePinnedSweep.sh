@@ -4,7 +4,7 @@
 #SBATCH -n 1 
 #SBATCH --time=10:00:00
 #SBATCH --mem=1GB 
-#SBATCH --array=0-605
+#SBATCH --array=0-880
 # NOTIFICATIONS
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=phillip.j.brown@adelaide.edu.au

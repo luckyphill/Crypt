@@ -50,12 +50,12 @@ classdef LineSimulation < AbstractCellSimulation
 
 		end
 
-		function RunToBuckle(obj)
+		function RunToBuckle(obj, wiggleAtBuckle)
 
 			% This function runs the simulation until just after buckling has occurred
 			% Buckling is defined by the wiggle ratio, i.e. epithelial length/domain width
 
-			obj.AddStoppingCondition(BuckledStoppingCondition(1.1));
+			obj.AddStoppingCondition(BuckledStoppingCondition(wiggleAtBuckle));
 
 			obj.RunToTime(obj.timeLimit);
 
