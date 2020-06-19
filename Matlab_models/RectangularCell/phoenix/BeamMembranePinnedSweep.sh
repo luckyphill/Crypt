@@ -2,7 +2,7 @@
 #SBATCH -p batch 
 #SBATCH -N 1 
 #SBATCH -n 1 
-#SBATCH --time=10:00:00
+#SBATCH --time=72:00:00
 #SBATCH --mem=1GB 
 #SBATCH --array=0-880
 # NOTIFICATIONS
@@ -21,7 +21,7 @@ while IFS=, read p g w b
 do 
     if [ $i = $SLURM_ARRAY_TASK_ID ]; then
         n=$((2*w))
-        echo "Running FixedDomain Buckle Sweep with n = $n, p = $p, g = $g, w = $w, b = $b"
+        echo "Running Pinned Beam Membrane Sweep with n = $n, p = $p, g = $g, w = $w, b = $b"
         found=1 
 
         break 
@@ -32,8 +32,8 @@ done < BeamMembraneSweep.txt
 if [ $found = 1 ]; then
 	for seed in $(seq 1 1 10)
 	do
-		echo "matlab -nodisplay -nodesktop -r cd ../../; addpath(genpath(pwd)); obj = BeamMembranePinned($n, $p, $g, $w, $b, $seed); obj.RunToBuckle(1.5); quit()"
-	    matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); obj = BeamMembranePinned($n, $p, $g, $w, $b, $seed); obj.RunToBuckle(1.5); quit()"
+		echo "matlab -nodisplay -nodesktop -r cd ../../; addpath(genpath(pwd)); obj = RunBeamMembranePinned($n, $p, $g, $w, $b, $seed); obj.RunSimulation(); quit()"
+	    matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); obj = RunBeamMembranePinned($n, $p, $g, $w, $b, $seed); obj.RunSimulation(); quit()"
 	done
 else 
   echo "BeamMembraneSweep.txt  does not have enough parameters for $SLURM_ARRAY_TASK_ID index" 

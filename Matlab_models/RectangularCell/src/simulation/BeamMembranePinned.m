@@ -10,7 +10,7 @@ classdef BeamMembranePinned < LineSimulation
 		t = 0
 		eta = 1
 
-		timeLimit = 400
+		timeLimit = 1000
 
 	end
 
