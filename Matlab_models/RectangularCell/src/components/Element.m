@@ -32,6 +32,10 @@ classdef Element < matlab.mixin.SetGet
 		cellList
 
 		internal = false
+
+		% Detemines if an element is part of a membrane, hence
+		% should be subject to membrane related forces
+		isMembrane = false
 		
 	end
 

@@ -485,8 +485,6 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 				obj.cellKillers(i).KillCells(obj.cellList);
 			end
 
-
-
 		end
 
 		function stopped = IsStoppingConditionMet(obj)

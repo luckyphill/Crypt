@@ -8,7 +8,6 @@ classdef SteadyStateWiggleRatioAnalysis < Analysis
 		p = 10:5:30;
 		g = 10:5:30;
 
-		
 		w = 5:20;
 		n = 10:2:40;
 
@@ -16,10 +15,11 @@ classdef SteadyStateWiggleRatioAnalysis < Analysis
 
 		seed = 1:10;
 
-		timeGrid = nan(30,30);
-		nGrid = nan(30,30);
+		targetTime = 1000;
 
 		analysisName = 'SteadyStateWiggleRatioAnalysis';
+
+		avgGrid = {}
 
 	end
 
@@ -29,29 +29,50 @@ classdef SteadyStateWiggleRatioAnalysis < Analysis
 
 			% Uses the data produced by BuckleSweepFixedDomain to produce
 			% a plot of the average time/number of cells/width at buckling
-
-			for p = 10:5:30
+			for p = obj.p
 				g = p;
-				for w = 10:20
-					for b = 0:10
-						t = 0;
-						count = 0;
-						for seed = 1:10
+				for w = obj.w
+					for b = obj.b
+						wD = [];
+						for seed = obj.seed
 							try
 								% Sometimes the data might not exist
 								a = RunBeamMembrane(2*w, p, g, w, b, seed);
 								a.LoadSimulationData();
+								temp = a.data.wiggleData(:,2)';
 
-								t = t + a.data.wiggleData;
+								if isempty(wD)
+									wD = temp;
+								else
+									% If there is a discrepancy between the sizes,
+									% pad either the matrix or vector to fix it
+									if length(temp) > length(wD)
+										% pad matrix
+										wD = padarray(wD, [0, length(temp) - length(wD)], nan, 'post');
+									end
 
-								count = count + 1;
+									if length(temp) < length(wD)
+										% pad vector
+										temp = padarray(temp, [0, length(wD) - length(temp)], nan, 'post');
+									end
+
+									wD(count, :) = temp;
+
+								end
+
 							end
 
-	                    end
+						end
 
-	                    fprintf('Completed p = %d, g = %d, w = %d\n',p,g,w);
-	    
-						obj.timeGrid(p-10,g-10,w-9) = t / count;
+						
+
+						fprintf('Completed p = %d, g = %d, w = %d, b = %d\n',p,g,w,b);
+			
+						% Varying numbers of ending entries will be nans, so use nan mean to remove them
+						% This will mean the number of entries for each column may be decresing, so
+						% expect the variance to increase for later values
+
+						obj.avgGrid{p,w,b+1} = nanmean(wD,1);
 
 					end
 

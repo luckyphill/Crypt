@@ -1,4 +1,4 @@
-classdef LayerOnStroma < LineSimulation
+classdef TrampolineMembrane < LineSimulation
 
 	% This simulation is the most basic - a simple row of cells growing on
 	% a plate. It allows us to choose the number of initial cells
@@ -10,18 +10,17 @@ classdef LayerOnStroma < LineSimulation
 		t = 0
 		eta = 1
 
-		timeLimit = 2000
+		timeLimit = 1000
 
 	end
 
 	methods
 
-		function obj = LayerOnStroma(nCells, p, g, w, seed, varargin)
-			% All the initilising
+		function obj = TrampolineMembrane(nCells, p, g, w, b, seed, varargin)
+			% All the initialising
 			obj.SetRNGSeed(seed);
 
-			% We keep the option of diffent box sizes for efficiency reasons
-			if length(varargin) > 0
+			if ~isempty(varargin)
 				if length(varargin) == 3
 					areaEnergy = varargin{1};
 					perimeterEnergy = varargin{2};
@@ -119,44 +118,49 @@ classdef LayerOnStroma < LineSimulation
 
 			end
 
-			% Set the boundary cells so it doesn't get the stromal cell
-			bcs = obj.simData('boundaryCells');
-			bcs.data = containers.Map({'left','right'}, {obj.cellList(1), obj.cellList(end)});
-			
+			% n elements means n+1 nodes
 
-			%---------------------------------------------------
-			% Make the cell that acts as the stroma
-			%---------------------------------------------------
-			nodeList = Node.empty();
-			left = leftBoundary - 0.5;
-			right = rightBoundary + 0.5;
-			dx = (left - right)/(2*nCells);
-			for x = right:dx:left
-				nodeList(end + 1) = Node(x,-0.1,obj.GetNextNodeId());
+			n = 2 * nCells;
+			x0 = rightBoundary;
+			xf = leftBoundary;
+
+			dx = (x0 - xf) / n;
+
+			x = x0;
+			y = -0.1;
+
+			firstNode = Node(x, y, obj.GetNextNodeId());
+
+			pinned = firstNode;
+
+			obj.AddNodesToList(firstNode);
+
+			for i = 1:n
+
+				% Subtract because going right to left
+				x = x0 - i * dx;
+
+				secondNode = Node(x, y, obj.GetNextNodeId);
+				obj.AddNodesToList(secondNode);
+
+				e = Element(firstNode, secondNode, obj.GetNextElementId);
+				e.naturalLength = dx;
+				e.isMembrane = true;
+				obj.AddElementsToList(e);
+
+				firstNode = secondNode;
+
 			end
 
-			nodeList(end + 1) = Node(left,-1,obj.GetNextNodeId());
-			nodeList(end + 1) = Node(right,-1,obj.GetNextNodeId());
+			pinned(end + 1) = secondNode;
+
+			%---------------------------------------------------
+			% Add the modfier to keep the stromal corner cells
+			% locked in place
+			%---------------------------------------------------
 			
-			elementList = Element.empty();
-			for i = 1:length(nodeList)-1
-				elementList(end + 1) = Element(nodeList(i), nodeList(i+1), obj.GetNextElementId() );
-			end
-
-			elementList(end + 1) = Element(nodeList(end), nodeList(1), obj.GetNextElementId() );
-
-			ccm = NoCellCycle();
-			ccm.colour = ccm.STROMA;
-
-			s = CellFree(ccm, nodeList, elementList, obj.GetNextCellId());
-
-			s.grownCellTargetArea = (right - left) * 0.9;
-
-			s.cellData('targetPerimeter') = TargetPerimeterStroma();
-
-			obj.AddNodesToList( nodeList );
-			obj.AddElementsToList( elementList );
-			obj.cellList = [obj.cellList, s];
+			% nodeList comes from building the stroma
+			obj.AddSimulationModifier(   PinNodes(  pinned  )   );
 
 			%---------------------------------------------------
 			% Add in the forces
@@ -174,34 +178,36 @@ classdef LayerOnStroma < LineSimulation
 			% Node-Element interaction force - requires a SpacePartition
 			obj.AddNeighbourhoodBasedForce(SimpleAdhesionRepulsionForce(0.1, obj.dt));
 
+			% Force to keep epithelial layer flat
+			if b > 0
+				obj.AddElementBasedForce(BasementMembraneTensionForce(b));
+			else
+				fprintf('No basement membrane force applied\n');
+			end
 			
 			%---------------------------------------------------
 			% Add space partition
 			%---------------------------------------------------
 			% In this simulation we are fixing the size of the boxes
-
-			obj.boxes = SpacePartition(0.5, 0.5, obj);
-
-			%---------------------------------------------------
-			% Add the data we'd like to store
-			%---------------------------------------------------
-
-			obj.AddDataStore(StoreWiggleRatio(10));
+			obj.usingBoxes = true;
+			obj.boxes = SpacePartition(0.2, 0.2, obj);
 
 			%---------------------------------------------------
-			% Add the modfier to keep the stromal corner cells
-			% locked in place
+			% Add the modfier to keep the boundary cells at the
+			% same vertical position
 			%---------------------------------------------------
 			
-			% nodeList comes from building the stroma
-			obj.AddSimulationModifier(   PinNodes(  [nodeList(1), nodeList(end-2:end)]  )   );
+			obj.AddSimulationModifier(ShiftBoundaryCells());
 
-			% %---------------------------------------------------
-			% % Add the modfier to keep the boundary cells at the
-			% % same vertical position
-			% %---------------------------------------------------
-			
-			% obj.AddSimulationModifier(ShiftBoundaryCells());
+
+			%---------------------------------------------------
+			% Add the data writers
+			%---------------------------------------------------
+
+			% obj.AddSimulationData(SpatialState());
+			% obj.AddDataWriter(WriteSpatialState(20,'TrampolineMembrane/'));
+			pathName = sprintf('TrampolineMembrane/p%dg%dw%db%d_seed%d/',p,g,w,b,seed);
+			obj.AddDataWriter(WriteWiggleRatio(20,pathName));
 
 			%---------------------------------------------------
 			% All done. Ready to roll
