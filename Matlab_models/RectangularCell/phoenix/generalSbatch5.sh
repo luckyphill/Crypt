@@ -33,7 +33,7 @@ do
 done < $paramFile
 
 if [ $found = 1 ]; then
-	for seed in $(seq 1 1 runs)
+	for seed in $(seq 1 1 $runs)
 	do
 		echo "matlab -nodisplay -nodesktop -r cd ../../; addpath(genpath(pwd)); obj = $simName($a, $b, $c, $d, $e, $seed); obj.RunSimulation(); quit()"
 	    matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); obj = $simName($a, $b, $c, $d, $e, $seed); obj.RunSimulation(); quit()"
