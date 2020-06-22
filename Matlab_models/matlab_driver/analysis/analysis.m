@@ -100,7 +100,7 @@ classdef (Abstract) Analysis < matlab.mixin.SetGet
 			command = 'sbatch ';
 			command = [command, sprintf('--array=0-%d ',len)];
 			command = [command, sprintf('--time=%d:00:00 ',obj.slurmTimeNeeded)];
-			command = [command, sprintf('../generalSbatch%d ',obj.simulationInputCount)];
+			command = [command, sprintf('../generalSbatch%d.sh ',obj.simulationInputCount)];
 			command = [command, sprintf('%s ', obj.simulationDriverName)];
 			command = [command, sprintf('%s ', paramFile)];
 			command = [command, sprintf('%d', obj.simulationRuns)];
