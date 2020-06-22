@@ -4,8 +4,6 @@
 #SBATCH -n 1 
 #SBATCH --mem=4GB
 # NOTIFICATIONS
-#SBATCH --err="output/error_%a.err"
-#SBATCH --output="output/slurm-%A_%a.out"
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=phillip.j.brown@adelaide.edu.au
 
