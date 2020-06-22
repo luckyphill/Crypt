@@ -33,8 +33,8 @@ done < $paramFile
 if [ $found = 1 ]; then
 	for seed in $(seq 1 1 $runs)
 	do
-		echo "matlab -nodisplay -nodesktop -r cd ../../; addpath(genpath(pwd)); obj = $simName($a, $b, $c, $d, $seed); obj.RunSimulation(); quit()"
-	    matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); obj = $simName($a, $b, $c, $d, $seed); obj.RunSimulation(); quit()"
+		echo "matlab -nodisplay -nodesktop -r cd ../../../; addpath(genpath(pwd)); obj = $simName($a, $b, $c, $d, $seed); obj.RunSimulation(); quit()"
+	    matlab -nodisplay -nodesktop -r "cd ../../../; addpath(genpath(pwd)); obj = $simName($a, $b, $c, $d, $seed); obj.RunSimulation(); quit()"
 	done
 else 
   echo "SLURM_ARRAY_TASK_ID $SLURM_ARRAY_TASK_ID is outside range of input file $paramFile" 
