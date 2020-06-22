@@ -41,6 +41,9 @@ classdef AbstractDataWriter < handle & matlab.mixin.Heterogeneous
 		% The full path to the folder where the data will be written
 		fullPath
 
+		% A flag to determine if a time stamp is added to the start of each line
+		timeStampNeeded = true
+
 	end
 
 	properties (Abstract)
@@ -123,12 +126,16 @@ classdef AbstractDataWriter < handle & matlab.mixin.Heterogeneous
 						% delimiters between each row, then append to the existing file
 						n = obj.data{i};
 						n = n';
-						n = [obj.timePoint,n(:)'];
+						if obj.timeStampNeeded
+							n = [obj.timePoint,n(:)'];
+						else
+							n = n(:)';
+						end
 						% A hack to make this work with versions without writematrix appending
 						% I mean, seriously, who releases a write function with no append feature??
 						v = version('-release');
 						if str2num(v(1:4)) < 2020
-							dlmwrite(outputFile, n, '-append');
+							dlmwrite(outputFile, n, '-append', 'precision', 10);
 						else
 							writematrix(n, outputFile,'WriteMode','append');
 						end

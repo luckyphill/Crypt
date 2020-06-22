@@ -75,30 +75,6 @@ classdef SSWiggleRatioBeamMembranePinnedAnalysis < Analysis
 
 		end
 
-		function A = Concatenate(obj, A, b)
-
-			% Adds row vector b to the bottom of matrix A
-			% If padding is needed, nans are added to the right
-			% side of the matrix or vector as appropriate
-
-
-			if length(b) < length(A)
-				% pad vector
-				d = length(A) - length(b);
-				b = [b, nan(1,d)];
-			end
-			
-			if length(b) > length(A)
-				% pad matrix
-				d = length(b) - length(A);
-				[m,n] = size(A);
-				A = [A,nan(m,d)];
-			end
-
-			A = [A;b];
-
-		end
-
 		function StabilityRegions(obj)
 
 			

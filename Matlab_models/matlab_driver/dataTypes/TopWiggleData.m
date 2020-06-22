@@ -1,10 +1,10 @@
-classdef WiggleData < dataType
+classdef TopWiggleData < dataType
 	% This grabs the behaviour data for a healthy crypt simulation
 
 	properties (Constant = true)
-		name = 'wiggleData';
+		name = 'topWiggleData';
 
-		fileNames = 'wiggleratio'
+		fileNames = 'topwiggleratio'
 	end
 
 	methods

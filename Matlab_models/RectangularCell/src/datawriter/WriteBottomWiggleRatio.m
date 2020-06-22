@@ -1,10 +1,10 @@
-classdef WriteWiggleRatio < AbstractDataWriter
+classdef WriteBottomWiggleRatio < AbstractDataWriter
 	% Stores the wiggle ratio
 
 	properties
 
 		% No special properties
-		fileNames = {'wiggleratio'};
+		fileNames = {'bottomwiggleratio'};
 
 		subdirectoryStructure = ''
 		
@@ -12,7 +12,7 @@ classdef WriteWiggleRatio < AbstractDataWriter
 
 	methods
 
-		function obj = WriteWiggleRatio(sm, simName)
+		function obj = WriteBottomWiggleRatio(sm, simName)
 
 			obj.subdirectoryStructure = simName;
 			obj.samplingMultiple = sm;
@@ -27,7 +27,7 @@ classdef WriteWiggleRatio < AbstractDataWriter
 			% The simulation t must have a simulation data object
 			% collating the complete spatial state
 
-			obj.data = {t.simData('wiggleRatio').GetData(t)};
+			obj.data = {t.simData('bottomWiggleRatio').GetData(t)};
 
 		end
 		

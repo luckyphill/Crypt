@@ -163,8 +163,10 @@ classdef BeamMembranePinned < LineSimulation
 
 			% obj.AddSimulationData(SpatialState());
 			% obj.AddDataWriter(WriteSpatialState(50,'BeamMembranePinned/'));
-			pathName = sprintf('BeamMembranePinned/p%dg%dw%db%d_seed%d/',p,g,w,b,seed);
-			obj.AddDataWriter(WriteWiggleRatio(10,pathName));
+			pathName = sprintf('BeamMembranePinned/n%dp%dg%dw%db%d_seed%d/',nCells,p,g,w,b,seed);
+			obj.AddDataWriter(WriteWiggleRatio(100,pathName));
+			obj.AddDataWriter(WriteTopWiggleRatio(100,pathName));
+			obj.AddDataWriter(WriteBottomWiggleRatio(100,pathName));
 
 			%---------------------------------------------------
 			% All done. Ready to roll
