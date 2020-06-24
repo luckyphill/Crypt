@@ -1,5 +1,7 @@
 classdef SSWiggleRatioBeamMembraneAnalysis < Analysis
 
+	% THis was built before the revamp of the Analysis class
+	% so most of the features aren't relevant
 	properties
 
 		% These cannot be changed, since they relate to a specific
@@ -22,11 +24,20 @@ classdef SSWiggleRatioBeamMembraneAnalysis < Analysis
 		avgGrid = {}
 		timePoints = {}
 
-		stabilityGrids = {}; 
+		stabilityGrids = {};
+		parameterSet
+		slurmTimeNeeded
+		simulationDriverName
+		simulationInputCount
+		simulationRuns
 
 	end
 
 	methods
+
+		function MakeParameterSet(obj)
+
+		end
 
 		function obj = SSWiggleRatioBeamMembraneAnalysis()
 
@@ -127,8 +138,8 @@ classdef SSWiggleRatioBeamMembraneAnalysis < Analysis
 
 				h = figure;
 				surf(obj.b,1:20, obj.stabilityGrids{p});
-				xlabel('Restoring force','Interpreter', 'latex');ylabel('Width','Interpreter', 'latex');
-				title(sprintf('Wiggle ratio stability regions for p = g = %dhrs',p),'Interpreter', 'latex')
+				xlabel('Restoring force parameter','Interpreter', 'latex', 'FontSize', 15);ylabel('Width','Interpreter', 'latex', 'FontSize', 15)
+				title(sprintf('Wiggle ratio stability regions for p = g = %dhrs',p),'Interpreter', 'latex', 'FontSize', 22)
 				colorbar;view(0,90);caxis([1 1.5]);
 
 				SavePlot(obj, h, sprintf('Stability-p%dg%d',p,p));
