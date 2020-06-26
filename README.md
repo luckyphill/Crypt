@@ -22,24 +22,35 @@ There is some error catching to help you on your way.
 p = 10;
 g = 10;
 seed = 1;
+
 % p and g are cell cycle phase lengths, must be at least 1
 % seed sets the rng seed for reproducibility
+
 t = FreeCellTest(p, g, seed);
+
 % if necessary, the time step size can be set by t.dt, default is 0.005hrs
 % You can run the simulator in several ways:
 % t.NextTimeStep; % Calculates the next time step
 % t.NTimeSteps(1000); % Calculates the next N time steps
-% t.RunToTime(40); % This runs the simulation to time t = 40hrs
+
+t.RunToTime(40); % This runs the simulation to time t = 40hrs
+
 % Simulating this way, you can only visualise single time steps
+
 t.Visualise;
+
 % t.VisualiseWireFrame;
 % If the simulation is not too large, you can watch it as it runs
+
 t.Animate(1000,20); % First arg, number of time steps to simulate, second arg, update frequency - here it is once every 20 time steps
+
 % If the simulation contains components that aren't part of a cell use
 % t.AnimateWireFrame(1000,20);
 
 % If you want animation of the end results, use
+
 v = Visualiser(11,'FreeCellTest/SpatialState/'); 
+
 % The first arg is 11 for FreeCellTest, and 5 for everything else.
 % The first part of the string is the name of the simulation.
 % To save the data for the Visualiser, the simulation must have a spatial state writer. See lines 125 and 126 of CellGrowing
