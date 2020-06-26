@@ -18,6 +18,7 @@ Nevertheless, I hope it is somewhat intuitive.
 There is some error catching to help you on your way.
 
 # Example code
+```
 p = 10;
 g = 10;
 seed = 1;
@@ -43,3 +44,4 @@ v = Visualiser(11,'FreeCellTest/SpatialState/');
 % The first part of the string is the name of the simulation.
 % To save the data for the Visualiser, the simulation must have a spatial state writer. See lines 125 and 126 of CellGrowing
 % NOTE: the Visualiser uses the matlab function readmatrix, which only exists after R2019b. I've found it to be extremely buggy, so there is no guarantee Visualiser will work, even if you're using the latest version.
+```
