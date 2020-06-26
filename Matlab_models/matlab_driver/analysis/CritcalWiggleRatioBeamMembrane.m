@@ -7,10 +7,13 @@ classdef CritcalWiggleRatioBeamMembrane < Analysis
 		% and a new analysis class should be made
 
 
+		% STATIC: DO NOT CHANGE
+		% IF CHANGE IS NEEDED, MAKE A NEW OBJECT
 		p = 10:5:30;
 		g = 10:5:30;
 
 		w = 5:20;
+		% n = 2*w;
 
 		b = 0:10;
 
@@ -99,6 +102,9 @@ classdef CritcalWiggleRatioBeamMembrane < Analysis
 
 		function AssembleData(obj)
 
+			% Used when there is at least some data ready
+
+			
 
 		end
 

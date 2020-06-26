@@ -39,8 +39,23 @@ classdef Visualiser < matlab.mixin.SetGet
 			% See https://stackoverflow.com/questions/62399666/why-does-readmatrix-in-matlab-skip-the-first-n-lines?
 			opts = detectImportOptions([obj.pathToSpatialState, 'nodes.csv']);
 			opts.DataLines = [1 Inf];
+			if strcmp(opts.VariableTypes{1}, 'char')
+				opts = setvartype(opts, 'x0_1', 'double');
+			end
 			nodeData = readmatrix([obj.pathToSpatialState, 'nodes.csv'],opts);
+
+			opts = detectImportOptions([obj.pathToSpatialState, 'elements.csv']);
+			opts.DataLines = [1 Inf];
+			if strcmp(opts.VariableTypes{1}, 'char')
+				opts = setvartype(opts, 'x0_1', 'double');
+			end
 			elementData = readmatrix([obj.pathToSpatialState, 'elements.csv'],opts);
+
+			opts = detectImportOptions([obj.pathToSpatialState, 'cells.csv']);
+			opts.DataLines = [1 Inf];
+			if strcmp(opts.VariableTypes{1}, 'char')
+				opts = setvartype(opts, 'x0_1', 'double');
+			end
 			cellData = readmatrix([obj.pathToSpatialState, 'cells.csv'],opts);
 			% cellData = csvread([obj.pathToSpatialState, 'cells.csv']);
 
@@ -104,6 +119,7 @@ classdef Visualiser < matlab.mixin.SetGet
 			% one cell
 
 			h = figure();
+			axis equal
 			hold on
 
 			[I,~] = size(obj.cells);

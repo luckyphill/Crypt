@@ -1,4 +1,4 @@
-classdef SupportingTissue < LineSimulation
+classdef BulkStroma < LineSimulation
 
 	% This simulation is the most basic - a simple row of cells growing on
 	% a plate. It allows us to choose the number of initial cells
@@ -16,11 +16,10 @@ classdef SupportingTissue < LineSimulation
 
 	methods
 
-		function obj = SupportingTissue(nCells, p, g, w, b, seed, varargin)
-			% All the initilising
+		function obj = BulkStroma(nCells, p, g, w, b, seed, varargin)
+			% All the initialising
 			obj.SetRNGSeed(seed);
 
-						% We keep the option of diffent box sizes for efficiency reasons
 			if ~isempty(varargin)
 				if length(varargin) == 3
 					areaEnergy = varargin{1};
@@ -119,6 +118,54 @@ classdef SupportingTissue < LineSimulation
 
 			end
 
+			% n elements means n+1 nodes
+
+			n = 2 * nCells;
+			x0 = rightBoundary;
+			xf = leftBoundary;
+
+			dx = (x0 - xf) / n;
+
+			x = x0;
+			y = -0.1;
+
+			firstNode = Node(x, y, obj.GetNextNodeId());
+
+			pinned = firstNode;
+
+			obj.AddNodesToList(firstNode);
+
+			membrane = Element.empty();
+
+			for i = 1:n
+
+				% Subtract because going right to left
+				x = x0 - i * dx;
+
+				secondNode = Node(x, y, obj.GetNextNodeId);
+				obj.AddNodesToList(secondNode);
+
+				e = Element(firstNode, secondNode, obj.GetNextElementId);
+				e.naturalLength = dx;
+				e.isMembrane = true;
+				obj.AddElementsToList(e);
+
+				firstNode = secondNode;
+
+				membrane(end + 1) = e;
+
+			end
+
+			pinned(end + 1) = secondNode;
+
+			%---------------------------------------------------
+			% Add the modfier to keep the stromal corner cells
+			% locked in place
+			%---------------------------------------------------
+			
+			% nodeList comes from building the stroma
+			% obj.AddSimulationModifier(   PinNodes(  pinned  )   );
+
 			%---------------------------------------------------
 			% Add in the forces
 			%---------------------------------------------------
@@ -133,11 +180,11 @@ classdef SupportingTissue < LineSimulation
 			obj.AddElementBasedForce(EdgeSpringForce(@(n,l) 20 * exp(1-25 * l/n)));
 
 			% Node-Element interaction force - requires a SpacePartition
-			obj.AddNeighbourhoodBasedForce(NodeElementRepulsionForce(0.1, obj.dt));
+			obj.AddNeighbourhoodBasedForce(SimpleAdhesionRepulsionForce(0.1, 10, obj.dt));
 
 			% Force to keep epithelial layer flat
 			if b > 0
-				obj.AddTissueBasedForce(SupportingTissueForce(b));
+				obj.AddTissueBasedForce(BulkStromaForce(b, membrane));
 			else
 				fprintf('No basement membrane force applied\n');
 			end
@@ -147,7 +194,14 @@ classdef SupportingTissue < LineSimulation
 			%---------------------------------------------------
 			% In this simulation we are fixing the size of the boxes
 			obj.usingBoxes = true;
-			obj.boxes = SpacePartition(0.5, 0.5, obj);
+			obj.boxes = SpacePartition(0.2, 0.2, obj);
+
+			%---------------------------------------------------
+			% Add the modfier to keep the boundary cells at the
+			% same vertical position
+			%---------------------------------------------------
+			
+			% obj.AddSimulationModifier(ShiftBoundaryCells());
 
 
 			%---------------------------------------------------
@@ -155,9 +209,9 @@ classdef SupportingTissue < LineSimulation
 			%---------------------------------------------------
 
 			obj.AddSimulationData(SpatialState());
-			obj.AddDataWriter(WriteSpatialState(20,'SupportingTissue/'));
-			% pathName = sprintf('SupportingTissue/p%dg%dw%db%d_seed%d/',p,g,w,b,seed);
-			% obj.AddDataWriter(WriteWiggleRatio(10,pathName));
+			obj.AddDataWriter(WriteSpatialState(20,'BulkStroma/'));
+			pathName = sprintf('BulkStroma/p%dg%dw%db%d_seed%d/',p,g,w,b,seed);
+			obj.AddDataWriter(WriteWiggleRatio(20,pathName));
 
 			%---------------------------------------------------
 			% All done. Ready to roll

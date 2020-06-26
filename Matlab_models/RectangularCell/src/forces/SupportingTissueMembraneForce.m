@@ -1,4 +1,4 @@
-classdef SupportingTissueForce < AbstractTissueBasedForce
+classdef SupportingTissueMembraneForce < AbstractTissueBasedForce
 	% Keeps the cells flat
 
 
@@ -10,7 +10,7 @@ classdef SupportingTissueForce < AbstractTissueBasedForce
 
 	methods
 
-		function obj = SupportingTissueForce(springRate)
+		function obj = SupportingTissueMembraneForce(springRate)
 
 			obj.springRate = springRate;
 
@@ -21,18 +21,20 @@ classdef SupportingTissueForce < AbstractTissueBasedForce
 
 			% Along the epithelial layer, calculate the angle between two bottom elements
 			% and add forces to push this towards flat
-			for i = 1:length(tissue.cellList)
-				c = tissue.cellList(i);
+			for i = 1:length(tissue.elementList)
+				e = tissue.elementList(i);
 				% Get the left cell, get the right cell, get the angle
 				% about the bottom nodes
-				obj.CalculateAndAddRestoringForce(c);
+				if e.isMembrane
+					obj.CalculateAndAddRestoringForce(e);
+				end
 
 			end
 
 		end
 
 
-		function CalculateAndAddRestoringForce(obj, c)
+		function CalculateAndAddRestoringForce(obj, e)
 
 
 			% This force represents the stromal layer underneath the epithelium
@@ -41,8 +43,8 @@ classdef SupportingTissueForce < AbstractTissueBasedForce
 			% force as an energy, integrates across the element, then applies
 			% the force to the end nodes. See thesis write up for details
 
-			nl = c.nodeBottomLeft;
-			nr = c.nodeBottomRight;
+			nl = e.Node2; % Assuming a straight line with upward normal
+			nr = e.Node1;
 
 			yl = nl.y;
 			yr = nr.y;

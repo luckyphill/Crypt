@@ -197,7 +197,7 @@ classdef TensionBeamMembrane < LineSimulation
 			% same vertical position
 			%---------------------------------------------------
 			
-			obj.AddSimulationModifier(ShiftBoundaryCells());
+			% obj.AddSimulationModifier(ShiftBoundaryCells());
 
 
 			%---------------------------------------------------

@@ -4,15 +4,22 @@ classdef SimpleAdhesionRepulsionForce < AbstractNodeElementForce
 	% the membrane, so it doesn't allow detatchment. The force law is
 	% linear, and puts the resting position at r
 
+	properties
+
+		springRate
+
+	end
+
 	methods
 		
-		function obj = SimpleAdhesionRepulsionForce(r, dt)
+		function obj = SimpleAdhesionRepulsionForce(r, s,dt)
 
 			% r is the resting separation. Adhesion attraction starts
 			% at 2r and is 0 at r. The repulsion
 			% force increases between r and -r
 			obj.r = r;
 			obj.dt = dt;
+			obj.springRate = s;
 			% We need the time step size in order to properly
 			% calculate the rotations, and produce their equivalent
 			% force.
@@ -50,7 +57,7 @@ classdef SimpleAdhesionRepulsionForce < AbstractNodeElementForce
 
 					% The goal is to have the resting separation at r apart
 					% The force points towards the element
-					Fa = v * 5 * (d - obj.r);
+					Fa = obj.springRate * v * (d - obj.r);
 
 					obj.ApplyForcesToNodeAndElement(n,e,Fa,n1toA);
 
@@ -89,7 +96,7 @@ classdef SimpleAdhesionRepulsionForce < AbstractNodeElementForce
 					% To pull together, n1 has +ve v and n has -ve v
 					% to push apart, n1 has -ve v and n has +ve v
 					% Fa = 10 * v * atanh(dr/obj.r);
-					Fa = v * 5 * (d - obj.r);
+					Fa = obj.springRate * v * (d - obj.r);
 
 					n.AddForceContribution(-Fa);
 					n1.AddForceContribution(Fa);
