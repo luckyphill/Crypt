@@ -70,7 +70,7 @@ classdef RunBeamMembranePinned < MatlabSimulation
 			obj.simObj = BeamMembranePinned(n, p, g, w, b, seed);
 			obj.simObj.dt = obj.dt;
 
-			obj.outputTypes = WiggleData;
+			obj.outputTypes = {WiggleData, TopWiggleData, BottomWiggleData};
 
 		end
 

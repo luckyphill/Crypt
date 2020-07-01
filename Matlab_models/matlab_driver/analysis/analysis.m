@@ -150,16 +150,18 @@ classdef (Abstract) Analysis < matlab.mixin.SetGet
 			% If padding is needed, nans are added to the right
 			% side of the matrix or vector as appropriate
 
+			[Am,An] = size(A);
+			[bm,bn] = size(b);
 
-			if length(b) < length(A)
+			if bn < An
 				% pad vector
-				d = length(A) - length(b);
+				d = An - bn;
 				b = [b, nan(1,d)];
 			end
 			
-			if length(b) > length(A)
+			if bn > An
 				% pad matrix
-				d = length(b) - length(A);
+				d = bn - An;
 				[m,n] = size(A);
 				A = [A,nan(m,d)];
 			end

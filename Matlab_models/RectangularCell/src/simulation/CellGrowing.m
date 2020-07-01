@@ -122,8 +122,8 @@ classdef CellGrowing < LineSimulation
 			% Add the data writers
 			%---------------------------------------------------
 
-			% obj.AddSimulationData(SpatialState());
-			% obj.AddDataWriter(WriteSpatialState(20,'CellGrowing/'));
+			obj.AddSimulationData(SpatialState());
+			obj.AddDataWriter(WriteSpatialState(20,'CellGrowing/'));
 			obj.AddDataWriter(WriteWiggleRatio(10,'FirstMembrane/'));
 
 			%---------------------------------------------------

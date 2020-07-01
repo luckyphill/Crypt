@@ -163,7 +163,8 @@ classdef AbstractDataWriter < handle & matlab.mixin.Heterogeneous
 			end
 
 			% If there's anything in there, delete it
-			[~,~] = system(['rm ', obj.fullPath, '*']);
+			% This is not compatible with the way data is managed in an analysis
+			% [~,~] = system(['rm ', obj.fullPath, '*']);
 
 		end
 

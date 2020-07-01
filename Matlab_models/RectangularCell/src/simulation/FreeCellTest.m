@@ -11,7 +11,7 @@ classdef FreeCellTest < FreeCellSimulation
 
 	methods
 
-		function obj  = FreeCellTest(p, g, seed)
+		function obj = FreeCellTest(p, g, seed)
 
 			% First go with the free cell... lets see how it goes!
 
