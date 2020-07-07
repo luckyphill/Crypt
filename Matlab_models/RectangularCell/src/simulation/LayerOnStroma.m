@@ -16,7 +16,7 @@ classdef LayerOnStroma < LineSimulation
 
 	methods
 
-		function obj = LayerOnStroma(nCells, p, g, w, seed, varargin)
+		function obj = LayerOnStroma(nCells, p, g, w, b, seed, varargin)
 			% All the initilising
 			obj.SetRNGSeed(seed);
 
@@ -146,7 +146,7 @@ classdef LayerOnStroma < LineSimulation
 			elementList(end + 1) = Element(nodeList(end), nodeList(1), obj.GetNextElementId() );
 
 			ccm = NoCellCycle();
-			ccm.colour = ccm.STROMA;
+			ccm.colour = 5;
 
 			s = CellFree(ccm, nodeList, elementList, obj.GetNextCellId());
 
@@ -172,8 +172,12 @@ classdef LayerOnStroma < LineSimulation
 			obj.AddElementBasedForce(EdgeSpringForce(@(n,l) 20 * exp(1-25 * l/n)));
 
 			% Node-Element interaction force - requires a SpacePartition
-			obj.AddNeighbourhoodBasedForce(SimpleAdhesionRepulsionForce(0.1, obj.dt));
+			obj.AddNeighbourhoodBasedForce(SimpleAdhesionRepulsionForce(0.1, b, obj.dt));
 
+			% Force to keep epithelial layer flat
+			if b <= 0
+				error("Force must be greater than 0")
+			end
 			
 			%---------------------------------------------------
 			% Add space partition
