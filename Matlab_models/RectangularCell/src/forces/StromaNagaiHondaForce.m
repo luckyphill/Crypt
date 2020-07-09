@@ -1,14 +1,15 @@
-classdef ChasteNagaiHondaForce < AbstractCellBasedForce
+classdef StromaNagaiHondaForce < AbstractCellBasedForce
 	% Applies the Nagai Honda force copied directly from Chaste
 
-	% After reflecting on the details, I don't completely agree with
-	% the way it is conceptualised, although I do agree with the
-	% calculation mechanisms, just not how they are interpreted
-	% which will change how the parameters are found
+	% This applies it only to a single cell representing the stroma.
+	% As it stands, it is a total hack job and I'm not happy with this
+	% approach because it will lead to bloating, but it will get the
+	% job done quickly
 
 
 	properties
 
+		stroma
 		areaEnergyParameter
 		surfaceEnergyParameter
 		edgeAdhesionParameter
@@ -17,8 +18,10 @@ classdef ChasteNagaiHondaForce < AbstractCellBasedForce
 
 	methods
 
-		function obj = ChasteNagaiHondaForce(areaP, surfaceP, adhesionP)
+		function obj = StromaNagaiHondaForce(stroma, areaP, surfaceP, adhesionP)
 
+			% The single cell that represents the stroma
+			obj.stroma = stroma;
 			obj.areaEnergyParameter 	= areaP;
 			obj.surfaceEnergyParameter 	= surfaceP;
 			obj.edgeAdhesionParameter 	= adhesionP;
@@ -27,19 +30,13 @@ classdef ChasteNagaiHondaForce < AbstractCellBasedForce
 
 		function AddCellBasedForces(obj, cellList)
 
-			% For each cell in the list, calculate the forces
-			% and add them to the nodes
+			% Needs to take a cell list to keep the abstract base class happy
 
-			for i = 1:length(cellList)
+			
+			obj.AddTargetAreaForces(obj.stroma);
+			obj.AddTargetPerimeterForces(obj.stroma);
+			obj.AddAdhesionForces(obj.stroma);
 
-				c = cellList(i);
-				if c.cellType == 1
-					obj.AddTargetAreaForces(c);
-					obj.AddTargetPerimeterForces(c);
-					obj.AddAdhesionForces(c);
-				end
-
-			end
 
 		end
 

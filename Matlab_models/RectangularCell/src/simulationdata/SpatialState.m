@@ -43,8 +43,12 @@ classdef SpatialState < AbstractSimulationData
 			for i = 1:t.GetNumCells()
 				c = t.cellList(i);
 				nL = c.nodeList;
+
+				% A cell can have any number of nodes, but it's usually 4
+				l = length(nL);
 				% NaN is used to signify the end of a cell when writing to file
 				cellData(i,:) = [nL.id, c.CellCycleModel.colour];
+				% cellData(i,:) = [l, nL.id, c.CellCycleModel.colour];
 			end
 
 			obj.data = {nodeData, elementData, cellData};

@@ -150,6 +150,9 @@ classdef LayerOnStroma < LineSimulation
 
 			s = CellFree(ccm, nodeList, elementList, obj.GetNextCellId());
 
+			% Critical to stop the ChasteNagaiHondaForce beign applied to the stroma
+			s.cellType = 2;
+
 			s.grownCellTargetArea = (right - left) * 0.9;
 
 			s.cellData('targetPerimeter') = TargetPerimeterStroma();
@@ -164,6 +167,9 @@ classdef LayerOnStroma < LineSimulation
 
 			% Nagai Honda forces
 			obj.AddCellBasedForce(ChasteNagaiHondaForce(areaEnergy, perimeterEnergy, adhesionEnergy));
+
+			% A special distinct force for the stroma
+			obj.AddCellBasedForce(StromaNagaiHondaForce(s, areaEnergy, 2 * perimeterEnergy, adhesionEnergy));
 
 			% Corner force to prevent very sharp corners
 			obj.AddCellBasedForce(CornerForceCouple(0.1,pi/2));

@@ -36,6 +36,9 @@ classdef AbstractCell < handle & matlab.mixin.Heterogeneous
 		% stored in a map container so each type of data can be given a
 		% meaingful name
 		cellData
+
+		% By default, the type is 1, matching a general epithelial cell
+		cellType = 1
 		
 	end
 
