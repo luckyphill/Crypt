@@ -127,16 +127,19 @@ classdef LayerOnStroma < LineSimulation
 			%---------------------------------------------------
 			% Make the cell that acts as the stroma
 			%---------------------------------------------------
+			stromaTop = -0.1;
+			stromaBottom = -4;
 			nodeList = Node.empty();
 			left = leftBoundary - 0.5;
 			right = rightBoundary + 0.5;
 			dx = (left - right)/(2*nCells);
 			for x = right:dx:left
-				nodeList(end + 1) = Node(x,-0.1,obj.GetNextNodeId());
+				nodeList(end + 1) = Node(x, stromaTop, obj.GetNextNodeId());
 			end
 
-			nodeList(end + 1) = Node(left,-1,obj.GetNextNodeId());
-			nodeList(end + 1) = Node(right,-1,obj.GetNextNodeId());
+
+			nodeList(end + 1) = Node(left, stromaBottom, obj.GetNextNodeId());
+			nodeList(end + 1) = Node(right, stromaBottom, obj.GetNextNodeId());
 			
 			elementList = Element.empty();
 			for i = 1:length(nodeList)-1
@@ -153,9 +156,9 @@ classdef LayerOnStroma < LineSimulation
 			% Critical to stop the ChasteNagaiHondaForce beign applied to the stroma
 			s.cellType = 2;
 
-			s.grownCellTargetArea = (right - left) * 0.9;
+			s.grownCellTargetArea = (right - left) * (stromaTop - stromaBottom);
 
-			s.cellData('targetPerimeter') = TargetPerimeterStroma();
+			s.cellData('targetPerimeter') = TargetPerimeterStroma( 2 * (right - left) + 2 * (stromaTop - stromaBottom));
 
 			obj.AddNodesToList( nodeList );
 			obj.AddElementsToList( elementList );
@@ -212,6 +215,13 @@ classdef LayerOnStroma < LineSimulation
 			% %---------------------------------------------------
 			
 			% obj.AddSimulationModifier(ShiftBoundaryCells());
+
+			%---------------------------------------------------
+			% Add the data writers
+			%---------------------------------------------------
+
+			obj.AddSimulationData(SpatialState());
+			obj.AddDataWriter(WriteSpatialState(20,'LayerOnStroma/'));
 
 			%---------------------------------------------------
 			% All done. Ready to roll

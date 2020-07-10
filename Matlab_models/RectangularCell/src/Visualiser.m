@@ -10,21 +10,16 @@ classdef Visualiser < matlab.mixin.SetGet
 
 		timeSteps
 
-		% How many entries per cell in cellData - one for each node
-		% and a colour number. For a square cell this is 5
-		nEntriesCell
-
 		cs = ColourSet()
 		
 	end
 
 	methods
 
-		function obj = Visualiser(epc, ptss)
+		function obj = Visualiser(ptss)
 
 			obj.pathToSpatialState = ['/Users/phillip/Research/Crypt/Data/Matlab/SimulationOutput/',ptss];
 
-			obj.nEntriesCell = epc;
 
 			obj.LoadData();
 
@@ -99,7 +94,28 @@ classdef Visualiser < matlab.mixin.SetGet
 			% so to get the nodes for a given time,t, and a given cell, c, it's accessed
 			% cellData(t,c,:)
 			obj.elements = permute(reshape(elementData,m,2,[]),[1,3,2]);
-			obj.cells = permute(reshape(cellData,m,obj.nEntriesCell,[]),[1,3,2]);
+			% obj.cells = permute(reshape(cellData,m,obj.nEntriesCell,[]),[1,3,2]);
+			
+			
+			% Each row in the matrix lists the nodes for each cell. The first number is the number
+			% of nodes in the cell, call it jump, then the nodes for the cell are listed, followed by
+			% the cell colour
+			[m,~] = size(cellData);
+			cells = {};
+			for i = 1:m
+				a = cellData(i,:);
+				j = 1;
+				counter = 1;
+				while j <= length(a) && ~isnan(a(j))
+					jump = a(j);
+					cells{i,counter} = a(j+1:j+jump+1);
+					j = j + jump + 2;
+					counter = counter + 1;
+				end
+
+			end
+
+			obj.cells = cells;
 
 		end
 
@@ -127,32 +143,15 @@ classdef Visualiser < matlab.mixin.SetGet
 			% Initialise the array with anything
 			fillObjects(1) = fill([1,1],[2,2],'r');
 
-			% Need to grab the non-nan entries
-			cells = reshape(obj.cells(1,~isnan(obj.cells(1,:,:))),[],obj.nEntriesCell);
-			[J,~] = size(cells);
-			% Make the fillobjects
-			for j = 1:J
-				% j is the cell
-				ids = cells(j,1:end-1);
-				colour = cells(j,end);
-				nodeCoords = squeeze(obj.nodes(ids,1,:));
-
-				x = nodeCoords(:,1);
-				y = nodeCoords(:,2);
-
-				fillObjects(j) = fill(x,y,obj.cs.GetRGB(colour));
-
-
-			end
-
 			for i = 1:I
 				% i is the time steps
-				cells = reshape(obj.cells(i,~isnan(obj.cells(i,:,:))),[],obj.nEntriesCell);
-				[J,~] = size(cells);
-				for j = 1:J
-					% j is the cell
-					ids = cells(j,1:end-1);
-					colour = cells(j,end);
+				[~,J] = size(obj.cells);
+				j = 1;
+				while j <= J && ~isempty(obj.cells{i,j})
+
+					c = obj.cells{i,j};
+					ids = c(1:end-1);
+					colour = c(end);
 					nodeCoords = squeeze(obj.nodes(ids,i,:));
 
 					x = nodeCoords(:,1);
@@ -166,12 +165,14 @@ classdef Visualiser < matlab.mixin.SetGet
 						fillObjects(j).FaceColor = obj.cs.GetRGB(colour);
 					end
 
+					j = j + 1;
 
 				end
+				% j will always end up being 1 more than the total number of non empty cells
 
-				for j = length(fillObjects):-1:length(cells)+1
-					fillObjects(j).delete;
-					fillObjects(j) = [];
+				for k = length(fillObjects):-1:j
+					fillObjects(k).delete;
+					fillObjects(k) = [];
 				end
 
 				drawnow

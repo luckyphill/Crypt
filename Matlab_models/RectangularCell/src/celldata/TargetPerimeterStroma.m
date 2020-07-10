@@ -5,23 +5,24 @@ classdef TargetPerimeterStroma < AbstractCellData
 
 		name = 'targetPerimeter'
 		data = []
+		target
 
 	end
 
 	methods
 
-		function obj = TargetPerimeterStroma
-			% No special initialisation
+		function obj = TargetPerimeterStroma(p)
+			
+			% As a hack to get it working, going to set the target
+			% perimeter to be whatever it was initially
+
+			obj.target = p;
 			
 		end
 
 		function CalculateData(obj, c)
-			% For a stromal 'cell' we are going to fix the width as 0.9
-			% so use that to work out the perimeter
 
-			targetArea = c.cellData('targetArea').GetData(c);
-
-			obj.data = 2 * (0.9 + targetArea/0.9);
+			obj.data = obj.target;
 
 		end
 		

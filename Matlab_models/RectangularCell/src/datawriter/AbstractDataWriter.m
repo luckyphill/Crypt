@@ -142,7 +142,25 @@ classdef AbstractDataWriter < handle & matlab.mixin.Heterogeneous
 					case 'cell'
 						% Need to flatten the cell into a single row, and provide separate
 						% delimiters between each row - Not Done
-						writecell(obj.data{i}, outputFile,'WriteMode','append');
+
+						% This expects each cell to be a numeric vector, so that the whole
+						% thing can be turned into a single row vector
+						n = obj.data{i};
+						n = [n{:}];
+						if obj.timeStampNeeded
+							n = [obj.timePoint,n(:)'];
+						else
+							n = n(:)';
+						end
+						% A hack to make this work with versions without writematrix appending
+						% I mean, seriously, who releases a write function with no append feature??
+						v = version('-release');
+						if str2num(v(1:4)) < 2020
+							dlmwrite(outputFile, n, '-append', 'precision', 10);
+						else
+							writematrix(n, outputFile,'WriteMode','append');
+						end
+
 					otherwise
 						error('ADW:WriteToSingleFile:CantWrite', 'Cant write class %s to file', class(obj.data{i}));
 				end

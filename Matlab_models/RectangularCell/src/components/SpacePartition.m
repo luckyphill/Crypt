@@ -959,7 +959,7 @@ classdef SpacePartition < matlab.mixin.SetGet
 			% but the simulation can continue
 			try
 				if sum(obj.elementsQ{q}{i,j} == e) == 0
-					warning('SP:RemoveElementFromBox:NotHere','Element %d is not in box (%d,%d,%d)', e.id,q,i,j);
+					% warning('SP:RemoveElementFromBox:NotHere','Element %d is not in box (%d,%d,%d)', e.id,q,i,j);
 				else
 					obj.elementsQ{q}{i,j}( obj.elementsQ{q}{i,j} == e ) = [];
 				end

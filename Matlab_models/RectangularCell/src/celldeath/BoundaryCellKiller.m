@@ -93,8 +93,6 @@ classdef BoundaryCellKiller < AbstractTissueLevelCellKiller
 				t.boxes.RemoveElementFromPartition(c.elementTop);
 				t.boxes.RemoveElementFromPartition(c.elementLeft);
 				t.boxes.RemoveElementFromPartition(c.elementBottom);
-				% The right most element is now exposed so need to add it
-				t.boxes.PutElementInBoxes(c.elementRight);
 			end
 
 			c.elementTop.delete;
@@ -170,8 +168,6 @@ classdef BoundaryCellKiller < AbstractTissueLevelCellKiller
 				t.boxes.RemoveElementFromPartition(c.elementTop);
 				t.boxes.RemoveElementFromPartition(c.elementRight);
 				t.boxes.RemoveElementFromPartition(c.elementBottom);
-				% The Left most element is now exposed so need to add it
-				t.boxes.PutElementInBoxes(c.elementLeft);
 			end
 
 			c.elementTop.delete;
