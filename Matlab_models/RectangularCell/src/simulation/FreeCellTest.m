@@ -55,7 +55,7 @@ classdef FreeCellTest < FreeCellSimulation
 			% obj.AddNeighbourhoodBasedForce(NodeElementRepulsionForce(0.1, obj.dt));
 
 			% Node-Element interaction force - requires a SpacePartition
-			obj.AddNeighbourhoodBasedForce(SimpleAdhesionRepulsionForce(0.1, obj.dt));
+			obj.AddNeighbourhoodBasedForce(SimpleAdhesionRepulsionForce(0.1, 10, obj.dt));
 
 			% A small element based force to regularise the placement of the nodes
 			% around the perimeter of the cell
