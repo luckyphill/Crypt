@@ -95,7 +95,6 @@ classdef SimpleAdhesionRepulsionForce < AbstractNodeElementForce
 					% has a positive sense towards n
 					% To pull together, n1 has +ve v and n has -ve v
 					% to push apart, n1 has -ve v and n has +ve v
-					% Fa = 10 * v * atanh(dr/obj.r);
 					Fa = obj.springRate * v * (d - obj.r);
 
 					n.AddForceContribution(-Fa);

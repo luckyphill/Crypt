@@ -1,8 +1,8 @@
 classdef BulkStroma < LineSimulation
 
-	% This simulation is the most basic - a simple row of cells growing on
-	% a plate. It allows us to choose the number of initial cells
-	% the force related parameters, and the cell cycle lengths
+	% This simulation has a row of cells on a membrane made of elements
+	% The elements are held in place by springs at their nodes that
+	% pull them back to their initial position
 
 	properties
 
@@ -211,7 +211,7 @@ classdef BulkStroma < LineSimulation
 			obj.AddSimulationData(SpatialState());
 			obj.AddDataWriter(WriteSpatialState(20,'BulkStroma/'));
 			pathName = sprintf('BulkStroma/p%dg%dw%db%d_seed%d/',p,g,w,b,seed);
-			obj.AddDataWriter(WriteWiggleRatio(20,pathName));
+			obj.AddDataWriter(WriteBottomWiggleRatio(20,pathName));
 
 			%---------------------------------------------------
 			% All done. Ready to roll

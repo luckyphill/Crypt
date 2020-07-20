@@ -222,6 +222,7 @@ classdef LayerOnStroma < LineSimulation
 
 			obj.AddSimulationData(SpatialState());
 			obj.AddDataWriter(WriteSpatialState(20,'LayerOnStroma/'));
+			obj.AddDataWriter(WriteBottomWiggleRatio(20,pathName));
 
 			%---------------------------------------------------
 			% All done. Ready to roll
