@@ -5,6 +5,7 @@ classdef CellFree < AbstractCell
 
 		% Division axis calculator maybe
 		numNodes
+		SplitNodeFunction AbstractSplitNode
 
 	end
 
@@ -26,7 +27,6 @@ classdef CellFree < AbstractCell
 			% in the anticlockwise order
 
 			% ispolycw
-
 
 			obj.CellCycleModel = varargin{1};
 			nodeList = varargin{2};
@@ -89,6 +89,9 @@ classdef CellFree < AbstractCell
 				end
 
 			end
+
+
+			obj.SplitNodeFunction = RandomNode();
 
 		end
 
