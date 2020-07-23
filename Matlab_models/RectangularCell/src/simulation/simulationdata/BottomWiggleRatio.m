@@ -19,7 +19,9 @@ classdef BottomWiggleRatio < AbstractSimulationData
 
 			l = 0;
 			for i = 1:t.GetNumCells()
-				l = l + t.cellList(i).elementBottom.GetLength();
+				if t.cellList(i).cellType == 1
+					l = l + t.cellList(i).elementBottom.GetLength();
+				end
 			end
 
 			sd = t.simData('boundaryCells');

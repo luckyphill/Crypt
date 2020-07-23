@@ -5,7 +5,7 @@ classdef CellFree < AbstractCell
 
 		% Division axis calculator maybe
 		numNodes
-		SplitNodeFunction AbstractSplitNode
+		splitNodeFunction AbstractSplitNode
 
 	end
 
@@ -91,7 +91,7 @@ classdef CellFree < AbstractCell
 			end
 
 
-			obj.SplitNodeFunction = RandomNode();
+			obj.splitNodeFunction = RandomNode();
 
 		end
 
@@ -551,10 +551,7 @@ classdef CellFree < AbstractCell
 			% an element or a node, depending on even or oddness of
 			% the node count
 
-			% To get things rolling, randomly choose a point
-			% and later on add some specialised way of choosing
-			i = randi( length(obj.nodeList) );
-			splitNode = obj.nodeList(  i  );
+			[splitNode, i] = obj.splitNodeFunction.GetSplitNode(obj);
 
 		end
 

@@ -57,7 +57,7 @@ classdef (Abstract) Analysis < matlab.mixin.SetGet
 				% If the parameter set is less than the job array limit, no need to
 				% number the param files
 				paramFile = [obj.analysisName, '.txt'];
-				paramFilePath = [obj,simulationFileLocation, paramFile];
+				paramFilePath = [obj.simulationFileLocation, paramFile];
 				dlmwrite( paramFilePath, obj.parameterSet, 'precision','%g');
 
 				command = obj.BuildCommand(length(obj.parameterSet), paramFile);

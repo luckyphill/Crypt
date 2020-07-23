@@ -1,4 +1,4 @@
-classdef (Abstract) AbstractSplitNode < handle
+classdef (Abstract) AbstractSplitNode < matlab.mixin.SetGet
 	% This class sets out the required functions for working
 	% out the node in a free cell where division starts from
 

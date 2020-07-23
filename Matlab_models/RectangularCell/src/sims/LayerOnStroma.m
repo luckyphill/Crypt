@@ -16,11 +16,10 @@ classdef LayerOnStroma < LineSimulation
 
 	methods
 
-		function obj = LayerOnStroma(nCells, p, g, w, b, seed, varargin)
+		function obj = LayerOnStroma(nCells, p, g, w, b, sae, spe, seed, varargin)
 			% All the initilising
 			obj.SetRNGSeed(seed);
 
-			% We keep the option of diffent box sizes for efficiency reasons
 			if length(varargin) > 0
 				if length(varargin) == 3
 					areaEnergy = varargin{1};
@@ -172,7 +171,7 @@ classdef LayerOnStroma < LineSimulation
 			obj.AddCellBasedForce(ChasteNagaiHondaForce(areaEnergy, perimeterEnergy, adhesionEnergy));
 
 			% A special distinct force for the stroma
-			obj.AddCellBasedForce(StromaNagaiHondaForce(s, areaEnergy, 2 * perimeterEnergy, adhesionEnergy));
+			obj.AddCellBasedForce(StromaNagaiHondaForce(s, sae, spe, 0));
 
 			% Corner force to prevent very sharp corners
 			obj.AddCellBasedForce(CornerForceCouple(0.1,pi/2));
@@ -220,8 +219,9 @@ classdef LayerOnStroma < LineSimulation
 			% Add the data writers
 			%---------------------------------------------------
 
-			obj.AddSimulationData(SpatialState());
-			obj.AddDataWriter(WriteSpatialState(20,'LayerOnStroma/'));
+			% obj.AddSimulationData(SpatialState());
+			pathName = sprintf('LayerOnStroma/n%gp%gg%gw%gb%gsae%gspe%g_seed%g/',nCells,p,g,w,b,sae,spe,seed);
+			% obj.AddDataWriter(WriteSpatialState(20,pathName));
 			obj.AddDataWriter(WriteBottomWiggleRatio(20,pathName));
 
 			%---------------------------------------------------
