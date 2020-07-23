@@ -4,7 +4,7 @@ classdef CryptStroma < LineSimulation
 
 	properties
 
-		dt = 0.005
+		dt = 0.002
 		t = 0
 		eta = 1
 
@@ -14,7 +14,7 @@ classdef CryptStroma < LineSimulation
 
 	methods
 
-		function obj = CryptStroma(nCells, p, g, w, b, seed, varargin)
+		function obj = CryptStroma(p, g, w, b, seed, varargin)
 			% All the initilising
 			obj.SetRNGSeed(seed);
 
@@ -33,134 +33,147 @@ classdef CryptStroma < LineSimulation
 				adhesionEnergy = 1;
 			end
 
-			% This simulation only allows cells to exist in a limited x domain
+			% This simulation is symetric about the y axis, so the width is evenly
+			% split between each part
 
-			% Cells are set to be 0.5 units wide, so total starting width is
-			% 0.5*n. In order to keep things symmetric as much as possible, we
-			% will set the boundaries so the row of cells starts in the middle
-			% We will also check that the width is greater than the row of cells
-			% While the death process probably could handle this, I don't want to push it
+			k = BoundaryCellKiller(-w/2, w/2);
 
-			if 0.5 * nCells > w
-				error('Make the width larger than the initial number of cells')
+			% obj.AddTissueLevelKiller(k);
+
+
+
+			%---------------------------------------------------
+			% Make the nodes for the stroma
+			%---------------------------------------------------
+
+			rb = 1.5; % radius of bottom/niche
+			re = 0.5; % radius of the edge
+
+			h = 5; % height of the crypt from cb to ce
+			w = 10; % width from edge to edge of sim domain
+
+			cb = [0,0];
+			cel = cb - [(rb+re), 0] + [0,h];
+			cer = cb + [(rb+re), 0] + [0,h];
+
+			d = 5; % divisions in a quater of a circle
+
+			pos = []; % a vector of all the positions
+
+			% We start from the right and work our way to the left to make an
+			% anticlockwise loop.
+
+			x = linspace(w/2,(rb+re),10);
+
+			pos = [x',(h + re)*ones(size(x'))];
+
+			% First curve
+			% Theta goes from pi/2 to pi in d steps
+			for i = 1:d-1
+			    theta = pi/2 + i * pi / (2*d);
+			    pos(end+1,:) = cer + [re*cos(theta), re*sin(theta)];
 			end
 
-			endPiece = (w - 0.5 * nCells) / 2;
+			y = linspace(h,0,20);
 
-			leftBoundary = -endPiece;
-			rightBoundary = 0.5 * nCells + endPiece;
+			temp = [rb * ones(size(y')), y'];
 
-			k = BoundaryCellKiller(leftBoundary, rightBoundary);
-
-			obj.AddTissueLevelKiller(k);
-
-			% %---------------------------------------------------
-			% % Make all the cells
-			% %---------------------------------------------------
-
-			% % The first cell needs all elements and nodes created
-			% % subsquent cells will have nodes and elements from their
-			% % neighbours
-
-			% % Make the nodes
-
-			% nodeTopLeft 	= Node(0,1,obj.GetNextNodeId());
-			% nodeBottomLeft 	= Node(0,0,obj.GetNextNodeId());
-			% nodeTopRight 	= Node(0.5,1,obj.GetNextNodeId());
-			% nodeBottomRight	= Node(0.5,0,obj.GetNextNodeId());
-
-			% obj.AddNodesToList([nodeBottomLeft, nodeBottomRight, nodeTopRight, nodeTopLeft]);
-
-			% % Make the elements
-
-			% elementBottom 	= Element(nodeBottomLeft, nodeBottomRight, obj.GetNextElementId());
-			% elementRight 	= Element(nodeBottomRight, nodeTopRight, obj.GetNextElementId());
-			% elementTop	 	= Element(nodeTopLeft, nodeTopRight, obj.GetNextElementId());
-			% elementLeft 	= Element(nodeBottomLeft, nodeTopLeft, obj.GetNextElementId());
-
-			% obj.AddElementsToList([elementBottom, elementRight, elementTop, elementLeft]);
-
-			% % Cell cycle model
-
-			% ccm = SimplePhaseBasedCellCycle(p, g);
-
-			% % Assemble the cell
-
-			% obj.cellList = SquareCellJoined(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
+			pos = [pos;temp];
 
 
-			% for i = 2:nCells
-			% 	% Each time we advance to the next cell, the right most nodes and element of the previous cell
-			% 	% become the leftmost element of the new cell
+			% Second curve
+			% Theta goes from 0 to -pi/2 in d steps
+			for i = 1:d
+			    theta = 0 - i * pi / (2*d);
+			    pos(end+1,:) = cb + [rb*cos(theta), rb*sin(theta)];
+			end
 
-			% 	nodeBottomLeft 	= nodeBottomRight;
-			% 	nodeTopLeft 	= nodeTopRight;
-			% 	nodeTopRight 	= Node(i*0.5,1,obj.GetNextNodeId());
-			% 	nodeBottomRight	= Node(i*0.5,0,obj.GetNextNodeId());
-				
 
-			% 	obj.AddNodesToList([nodeBottomRight, nodeTopRight]);
+			% The line is symetrical so just duplicate and reflect the x values
+			% except for the very bottom
 
-			% 	elementLeft 	= elementRight;
-			% 	elementBottom 	= Element(nodeBottomLeft, nodeBottomRight,obj.GetNextElementId());
-			% 	elementTop	 	= Element(nodeTopLeft, nodeTopRight,obj.GetNextElementId());
-			% 	elementRight 	= Element(nodeBottomRight, nodeTopRight,obj.GetNextElementId());
+			rpos = flipud(pos);
+			rpos(:,1) = -rpos(:,1);
+			rpos(1,:) = [];
 
-			% 	% Critical for joined cells
-			% 	elementLeft.internal = true;
-				
-			% 	obj.AddElementsToList([elementBottom, elementRight, elementTop]);
+			pos = [pos;rpos];
 
-			% 	ccm = SimplePhaseBasedCellCycle(p, g);
+			stromaBottom = -3;
 
-			% 	obj.cellList(i) = SquareCellJoined(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
+			pos(end+1,:) = [pos(end,1), stromaBottom];
+			pos(end+1,:) = [pos(1,1), stromaBottom];
 
-			% end
-
-			% % Set the boundary cells so it doesn't get the stromal cell
-			% bcs = obj.simData('boundaryCells');
-			% bcs.data = containers.Map({'left','right'}, {obj.cellList(1), obj.cellList(end)});
+			%---------------------------------------------------
+			% Make the cell that acts as the stroma
+			%---------------------------------------------------
 			
+			nodeList = Node.empty();
 
-			% %---------------------------------------------------
-			% % Make the cell that acts as the stroma
-			% %---------------------------------------------------
-			% stromaTop = -0.1;
-			% stromaBottom = -4;
-			% nodeList = Node.empty();
-			% left = leftBoundary - 0.5;
-			% right = rightBoundary + 0.5;
-			% dx = (left - right)/(2*nCells);
-			% for x = right:dx:left
-			% 	nodeList(end + 1) = Node(x, stromaTop, obj.GetNextNodeId());
-			% end
-
-
-			% nodeList(end + 1) = Node(left, stromaBottom, obj.GetNextNodeId());
-			% nodeList(end + 1) = Node(right, stromaBottom, obj.GetNextNodeId());
+			for i = 1:length(pos)
+				nodeList(end+1) = Node(pos(i,1), pos(i,2), obj.GetNextNodeId());
+			end
 			
-			% elementList = Element.empty();
-			% for i = 1:length(nodeList)-1
-			% 	elementList(end + 1) = Element(nodeList(i), nodeList(i+1), obj.GetNextElementId() );
-			% end
+			elementList = Element.empty();
+			for i = 1:length(nodeList)-1
+				elementList(end + 1) = Element(nodeList(i), nodeList(i+1), obj.GetNextElementId() );
+			end
 
-			% elementList(end + 1) = Element(nodeList(end), nodeList(1), obj.GetNextElementId() );
+			elementList(end + 1) = Element(nodeList(end), nodeList(1), obj.GetNextElementId() );
 
-			% ccm = NoCellCycle();
-			% ccm.colour = 5;
+			ccm = NoCellCycle();
+			ccm.colour = 5;
 
-			% s = CellFree(ccm, nodeList, elementList, obj.GetNextCellId());
+			s = CellFree(ccm, nodeList, elementList, obj.GetNextCellId());
 
-			% % Critical to stop the ChasteNagaiHondaForce beign applied to the stroma
-			% s.cellType = 2;
+			% Critical to stop the ChasteNagaiHondaForce beign applied to the stroma
+			s.cellType = 2;
 
-			% s.grownCellTargetArea = (right - left) * (stromaTop - stromaBottom);
+			% Make a maltab polygon to exploit the area and perimeter calculation
 
-			% s.cellData('targetPerimeter') = TargetPerimeterStroma( 2 * (right - left) + 2 * (stromaTop - stromaBottom));
+			s.grownCellTargetArea = polyarea(pos(:,1), pos(:,2));
 
-			% obj.AddNodesToList( nodeList );
-			% obj.AddElementsToList( elementList );
-			% obj.cellList = [obj.cellList, s];
+			perim = 0;
+			for i = 1:length(elementList)
+				perim = perim + elementList(i).GetLength();
+			end
+
+			s.cellData('targetPerimeter') = TargetPerimeterStroma(perim);
+
+			obj.AddNodesToList( nodeList );
+			obj.AddElementsToList( elementList );
+			obj.cellList = s;
+
+			%---------------------------------------------------
+			% Make a single cell that will populate the crypt
+			%---------------------------------------------------
+
+			% Make the nodes
+			xbr = pos(1,1);
+			ybr = pos(1,2) + 0.1;
+
+			nodeTopLeft 	= Node(xbr - 0.5, ybr + 1, obj.GetNextNodeId());
+			nodeBottomLeft 	= Node(xbr - 0.5, ybr, obj.GetNextNodeId());
+			nodeTopRight 	= Node(xbr, ybr + 1, obj.GetNextNodeId());
+			nodeBottomRight	= Node(xbr, ybr, obj.GetNextNodeId());
+
+			obj.AddNodesToList([nodeBottomLeft, nodeBottomRight, nodeTopRight, nodeTopLeft]);
+
+			% Make the elements
+
+			elementBottom 	= Element(nodeBottomLeft, nodeBottomRight, obj.GetNextElementId());
+			elementRight 	= Element(nodeBottomRight, nodeTopRight, obj.GetNextElementId());
+			elementTop	 	= Element(nodeTopLeft, nodeTopRight, obj.GetNextElementId());
+			elementLeft 	= Element(nodeBottomLeft, nodeTopLeft, obj.GetNextElementId());
+
+			obj.AddElementsToList([elementBottom, elementRight, elementTop, elementLeft]);
+
+			% Cell cycle model
+
+			ccm = SimplePhaseBasedCellCycle(p, g);
+
+			% Assemble the cell
+
+			obj.cellList = [   obj.cellList, SquareCellJoined(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId())   ];
 
 			%---------------------------------------------------
 			% Add in the forces
@@ -197,7 +210,7 @@ classdef CryptStroma < LineSimulation
 			% Add the data we'd like to store
 			%---------------------------------------------------
 
-			obj.AddDataStore(StoreWiggleRatio(10));
+			% obj.AddDataStore(StoreWiggleRatio(10));
 
 			%---------------------------------------------------
 			% Add the modfier to keep the stromal corner cells
@@ -219,8 +232,8 @@ classdef CryptStroma < LineSimulation
 			%---------------------------------------------------
 
 			obj.AddSimulationData(SpatialState());
-			obj.AddDataWriter(WriteSpatialState(20,'CryptStroma/'));
-			obj.AddDataWriter(WriteBottomWiggleRatio(20,pathName));
+			pathName = sprintf('CryptStroma/p%gg%gw%gb%g_seed%g/',p,g,w,b,seed);
+			obj.AddDataWriter(WriteSpatialState(100,'CryptStroma/'));
 
 			%---------------------------------------------------
 			% All done. Ready to roll

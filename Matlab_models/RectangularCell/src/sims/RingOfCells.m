@@ -186,6 +186,9 @@ classdef RingOfCells < RingSimulation
 			% Add the data we'd like to store
 			%---------------------------------------------------
 
+			obj.AddSimulationData(SpatialState());
+			pathName = sprintf('RingOfCells/n%gp%gg%g_seed%g/',nCells,p,g,seed);
+			obj.AddDataWriter(WriteSpatialState(20,pathName));
 			
 
 			%---------------------------------------------------
@@ -194,17 +197,6 @@ classdef RingOfCells < RingSimulation
 
 		end
 
-
-		% function RunToBuckle(obj)
-
-		% 	% This function runs the simulation until just after buckling has occurred
-		% 	% Buckling is defined by the wiggle ratio, i.e. epithelial length/domain width
-
-		% 	obj.AddStoppingCondition(BuckledStoppingCondition(1.1));
-
-		% 	obj.RunToTime(obj.timeLimit);
-
-		% end
 
 	end
 
