@@ -10,7 +10,7 @@ classdef RunLayerOnStroma < MatlabSimulation
 		% Since this is a concrete implementation of a chasteSimulation the
 		% name of the test will never be changed
 
-		matlabTest = 'BeamMembranePinned'
+		matlabTest = 'RunLayerOnStroma'
 
 	end
 
