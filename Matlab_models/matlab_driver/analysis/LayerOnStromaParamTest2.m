@@ -1,4 +1,4 @@
-classdef LayerOnStromaParamTest1 < Analysis
+classdef LayerOnStromaParamTest2 < Analysis
 
 	properties
 
@@ -9,22 +9,22 @@ classdef LayerOnStromaParamTest1 < Analysis
 
 		% STATIC: DO NOT CHANGE
 		% IF CHANGE IS NEEDED, MAKE A NEW OBJECT
-		p = 10;
-		g = 10;
+		p = 5:20;
+		g = 5:20;
 
 		w = 10;
 		n = 20;
 
 		b = 10;
 
-		sae = 2:2:20;
-		spe = 1:10;
+		sae = 10;
+		spe = 10;
 
 		seed = 1:5;
 
 		targetTime = 1000;
 
-		analysisName = 'LayerOnStromaParamTest1';
+		analysisName = 'LayerOnStromaParamTest2';
 
 		avgGrid = {}
 		timePoints = {}
@@ -51,17 +51,19 @@ classdef LayerOnStromaParamTest1 < Analysis
 			params = [];
 
 			for p = obj.p
+				for g = obj.g
 				for w = obj.w
 					for b = obj.b
 						for sae = obj.sae
 							for spe = obj.spe
 
-								params(end+1,:) = [2*w,p,p,w,b,sae,spe];
+								params(end+1,:) = [2*w,p,g,w,b,sae,spe];
 
 							end
 						end
 					end
 				end
+			end
 			end
 
 			
@@ -70,7 +72,7 @@ classdef LayerOnStromaParamTest1 < Analysis
 
 		end
 
-		function obj = LayerOnStromaParamTest1()
+		function obj = LayerOnStromaParamTest2()
 
 			
 

@@ -35,21 +35,21 @@ classdef Visualiser < matlab.mixin.SetGet
 			opts = detectImportOptions([obj.pathToSpatialState, 'nodes.csv']);
 			opts.DataLines = [1 Inf];
 			if strcmp(opts.VariableTypes{1}, 'char')
-				opts = setvartype(opts, 'x0_1', 'double');
+				opts = setvartype(opts, opts.VariableNames{1}, 'double');
 			end
 			nodeData = readmatrix([obj.pathToSpatialState, 'nodes.csv'],opts);
 
 			opts = detectImportOptions([obj.pathToSpatialState, 'elements.csv']);
 			opts.DataLines = [1 Inf];
 			if strcmp(opts.VariableTypes{1}, 'char')
-				opts = setvartype(opts, 'x0_1', 'double');
+				opts = setvartype(opts, opts.VariableNames{1}, 'double');
 			end
 			elementData = readmatrix([obj.pathToSpatialState, 'elements.csv'],opts);
 
 			opts = detectImportOptions([obj.pathToSpatialState, 'cells.csv']);
 			opts.DataLines = [1 Inf];
 			if strcmp(opts.VariableTypes{1}, 'char')
-				opts = setvartype(opts, 'x0_1', 'double');
+				opts = setvartype(opts, opts.VariableNames{1}, 'double');
 			end
 			cellData = readmatrix([obj.pathToSpatialState, 'cells.csv'],opts);
 			% cellData = csvread([obj.pathToSpatialState, 'cells.csv']);

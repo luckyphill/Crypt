@@ -10,7 +10,7 @@ classdef RunLayerOnStroma < MatlabSimulation
 		% Since this is a concrete implementation of a chasteSimulation the
 		% name of the test will never be changed
 
-		matlabTest = 'RunLayerOnStroma'
+		matlabTest = 'LayerOnStroma'
 
 	end
 
@@ -89,7 +89,7 @@ classdef RunLayerOnStroma < MatlabSimulation
 			% This generates the full path to the specific data file for the simulation
 			% If the path doesn't exist it creates the missing folder structure
 
-			obj.saveLocation = [obj.researchPath, 'Research/Crypt/Data/Matlab/SimulationOutput/', obj.matlabTest, '/'];
+			obj.saveLocation = [obj.researchPath, 'Research/Crypt/Data/Matlab/SimulationOutput/', obj.matlabTest, '/', sprintf('n20p10g10w10b10sae%gspe%g_seed%g',obj.sae,obj.spe,obj.rngSeed), '/'];
 
 
 			if exist(obj.saveLocation,'dir')~=7

@@ -10,7 +10,7 @@ classdef LayerOnStroma < LineSimulation
 		t = 0
 		eta = 1
 
-		timeLimit = 2000
+		timeLimit = 1000
 
 	end
 

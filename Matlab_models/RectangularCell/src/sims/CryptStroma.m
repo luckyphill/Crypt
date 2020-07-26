@@ -148,8 +148,8 @@ classdef CryptStroma < LineSimulation
 			%---------------------------------------------------
 
 			% Make the nodes
-			xbr = pos(1,1);
-			ybr = pos(1,2) + 0.1;
+			xbr = cb(1) + 0.25;
+			ybr = cb(2) - 1;
 
 			nodeTopLeft 	= Node(xbr - 0.5, ybr + 1, obj.GetNextNodeId());
 			nodeBottomLeft 	= Node(xbr - 0.5, ybr, obj.GetNextNodeId());
@@ -183,10 +183,10 @@ classdef CryptStroma < LineSimulation
 			obj.AddCellBasedForce(ChasteNagaiHondaForce(areaEnergy, perimeterEnergy, adhesionEnergy));
 
 			% A special distinct force for the stroma
-			obj.AddCellBasedForce(StromaNagaiHondaForce(s, areaEnergy, 2 * perimeterEnergy, adhesionEnergy));
+			obj.AddCellBasedForce(StromaNagaiHondaForce(s, areaEnergy, perimeterEnergy, adhesionEnergy));
 
 			% Corner force to prevent very sharp corners
-			obj.AddCellBasedForce(CornerForceCouple(0.1,pi/2));
+			% obj.AddCellBasedForce(CornerForceCouple(0.1,pi/2));
 
 			% Element force to stop elements becoming too small
 			obj.AddElementBasedForce(EdgeSpringForce(@(n,l) 20 * exp(1-25 * l/n)));

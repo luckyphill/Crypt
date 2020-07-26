@@ -22,7 +22,7 @@ classdef BottomWiggleData < dataType
 			
 			% folder = [sp.saveLocation, sprintf('n%dp%dg%dw%db%d_seed%d/',sp.n,sp.p,sp.g,sp.w,sp.b,sp.rngSeed)];
 			% Should be as below, but stuffed up and used %d instead of %g in BeamMembranePinned
-			folder = [sp.saveLocation, sprintf('n%dp%gg%gw%gb%g_seed%d/',sp.n,sp.p,sp.g,sp.w,sp.b,sp.rngSeed)];
+			folder = sp.saveLocation;
 
 			if exist(folder,'dir')~=7
 				mkdir(folder);
