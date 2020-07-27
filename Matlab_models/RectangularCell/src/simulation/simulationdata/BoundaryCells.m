@@ -58,10 +58,10 @@ classdef BoundaryCells < AbstractModifiableSimulationData
 				% First stage passed
 				if ismember('left', d.keys) && ismember('right', d.keys)
 					% Has the correct keys
-					if isa(d.values{1}, 'Cell') && isa(d.values{2}, 'Cell')
-						% Everything seems to be in order
+					% if isa(d.values{1}, 'AbstractCell') && isa(d.values{2}, 'AbstractCell')
+					% 	% Everything seems to be in order
 						correct = true;
-					end
+					% end
 				end
 			end
 

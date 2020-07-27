@@ -1,4 +1,4 @@
-classdef LayerOnStromaParamTest2 < Analysis
+classdef LayerOnStromaBodyParams < Analysis
 
 	properties
 
@@ -9,22 +9,22 @@ classdef LayerOnStromaParamTest2 < Analysis
 
 		% STATIC: DO NOT CHANGE
 		% IF CHANGE IS NEEDED, MAKE A NEW OBJECT
-		p = 5:20;
-		g = 5:20;
+		p = [5,10,15];
+		g = [5,10,15];
 
 		w = 10;
 		n = 20;
 
 		b = 10;
 
-		sae = 10;
-		spe = 10;
+		sae = [1:0.5:5,6:2:20];
+		spe = [1:0.25:5,6:10];
 
 		seed = 1:5;
 
 		targetTime = 1000;
 
-		analysisName = 'LayerOnStromaParamTest2';
+		analysisName = 'LayerOnStromaBodyParams';
 
 		avgGrid = {}
 		timePoints = {}
@@ -52,18 +52,18 @@ classdef LayerOnStromaParamTest2 < Analysis
 
 			for p = obj.p
 				for g = obj.g
-				for w = obj.w
-					for b = obj.b
-						for sae = obj.sae
-							for spe = obj.spe
+					for w = obj.w
+						for b = obj.b
+							for sae = obj.sae
+								for spe = obj.spe
 
-								params(end+1,:) = [2*w,p,g,w,b,sae,spe];
+									params(end+1,:) = [2*w,p,g,w,b,sae,spe];
 
+								end
 							end
 						end
 					end
 				end
-			end
 			end
 
 			
@@ -72,7 +72,7 @@ classdef LayerOnStromaParamTest2 < Analysis
 
 		end
 
-		function obj = LayerOnStromaParamTest2()
+		function obj = LayerOnStromaBodyParams()
 
 			
 
@@ -132,18 +132,18 @@ classdef LayerOnStromaParamTest2 < Analysis
 
 			h = figure;
 
-			data = reshape(obj.result,16,16);
+			data = reshape(obj.result,10,10);
 
-			[A,P] = meshgrid(obj.p,obj.g);
+			[A,P] = meshgrid(obj.sae,obj.spe);
 
 			surf(A,P,data);
-			xlabel('Pause phase','Interpreter', 'latex', 'FontSize', 15);ylabel('Growth phase','Interpreter', 'latex', 'FontSize', 15);
-			title(sprintf('Long term max wiggle ratio for division params'),'Interpreter', 'latex', 'FontSize', 22);
+			xlabel('Area force parameter','Interpreter', 'latex', 'FontSize', 15);ylabel('Perimeter force parameter','Interpreter', 'latex', 'FontSize', 15);
+			title(sprintf('Long term max wiggle ratio for stroma force params'),'Interpreter', 'latex', 'FontSize', 22);
 			shading interp
-			xlim([5 20]);ylim([5 20]);
+			xlim([2 20]);ylim([1 10]);
 			colorbar;view(90,-90);caxis([1 1.5]);
 
-			SavePlot(obj, h, sprintf('DivisionParams'));
+			SavePlot(obj, h, sprintf('BodyParams'));
 
 
 

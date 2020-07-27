@@ -8,7 +8,7 @@ classdef CryptStroma < LineSimulation
 		t = 0
 		eta = 1
 
-		timeLimit = 2000
+		timeLimit = 1000
 
 	end
 
@@ -38,9 +38,7 @@ classdef CryptStroma < LineSimulation
 
 			k = BoundaryCellKiller(-w/2, w/2);
 
-			% obj.AddTissueLevelKiller(k);
-
-
+			obj.AddTissueLevelKiller(k);
 
 			%---------------------------------------------------
 			% Make the nodes for the stroma
@@ -56,7 +54,7 @@ classdef CryptStroma < LineSimulation
 			cel = cb - [(rb+re), 0] + [0,h];
 			cer = cb + [(rb+re), 0] + [0,h];
 
-			d = 5; % divisions in a quater of a circle
+			d = 10; % divisions in a quater of a circle
 
 			pos = []; % a vector of all the positions
 
@@ -144,26 +142,45 @@ classdef CryptStroma < LineSimulation
 			obj.cellList = s;
 
 			%---------------------------------------------------
-			% Make a single cell that will populate the crypt
+			% Make cells that will populate the crypt
 			%---------------------------------------------------
 
-			% Make the nodes
-			xbr = cb(1) + 0.25;
-			ybr = cb(2) - 1;
+			nCells = 10;
+			r = 0.5 / sin(2*pi/nCells) - 0.5;
 
-			nodeTopLeft 	= Node(xbr - 0.5, ybr + 1, obj.GetNextNodeId());
-			nodeBottomLeft 	= Node(xbr - 0.5, ybr, obj.GetNextNodeId());
-			nodeTopRight 	= Node(xbr, ybr + 1, obj.GetNextNodeId());
-			nodeBottomRight	= Node(xbr, ybr, obj.GetNextNodeId());
+			topNodes = Node.empty();
+			bottomNodes = Node.empty();
 
-			obj.AddNodesToList([nodeBottomLeft, nodeBottomRight, nodeTopRight, nodeTopLeft]);
+			for n = 0:floor(nCells/2)
 
+				theta = -2*pi*n/nCells;
+				xt = r * cos(theta);
+				yt = r * sin(theta);
+
+				xb = (r + 1) * cos(theta);
+				yb = (r + 1) * sin(theta);
+
+				bottomNodes(end + 1) = Node(xb, yb, obj.GetNextNodeId());
+				topNodes(end + 1) = Node(xt, yt, obj.GetNextNodeId());
+
+			end
+
+			obj.AddNodesToList(bottomNodes);
+			obj.AddNodesToList(topNodes);
+
+
+			%---------------------------------------------------
+			% Make the first cell
+			%---------------------------------------------------
 			% Make the elements
 
-			elementBottom 	= Element(nodeBottomLeft, nodeBottomRight, obj.GetNextElementId());
-			elementRight 	= Element(nodeBottomRight, nodeTopRight, obj.GetNextElementId());
-			elementTop	 	= Element(nodeTopLeft, nodeTopRight, obj.GetNextElementId());
-			elementLeft 	= Element(nodeBottomLeft, nodeTopLeft, obj.GetNextElementId());
+			elementRight 	= Element(bottomNodes(1), topNodes(1), obj.GetNextElementId());
+			elementLeft 	= Element(bottomNodes(2), topNodes(2), obj.GetNextElementId());
+			elementBottom 	= Element(bottomNodes(1), bottomNodes(2), obj.GetNextElementId());
+			elementTop	 	= Element(topNodes(1), topNodes(2), obj.GetNextElementId());
+			
+			% Critical for joined cells
+			elementLeft.internal = true;
 
 			obj.AddElementsToList([elementBottom, elementRight, elementTop, elementLeft]);
 
@@ -173,8 +190,37 @@ classdef CryptStroma < LineSimulation
 
 			% Assemble the cell
 
-			obj.cellList = [   obj.cellList, SquareCellJoined(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId())   ];
+			obj.cellList(end + 1) = SquareCellJoined(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
 
+			boundaryCellMap = containers.Map({'right'}, {obj.cellList(end)});
+			%---------------------------------------------------
+			% Make the middle cells
+			%---------------------------------------------------
+
+			for i = 2:length(topNodes)-1
+				% Each time we advance to the next cell, the right most nodes and element of the previous cell
+				% become the leftmost element of the new cell
+
+				elementRight 	= elementLeft;
+				elementLeft 	= Element(bottomNodes(i+1), topNodes(i+1), obj.GetNextElementId());
+				elementBottom 	= Element(bottomNodes(i), bottomNodes(i+1), obj.GetNextElementId());
+				elementTop	 	= Element(topNodes(i), topNodes(i+1), obj.GetNextElementId());
+
+				% Critical for joined cells
+				elementLeft.internal = true;
+
+				obj.AddElementsToList([elementBottom, elementRight, elementTop]);
+
+				ccm = SimplePhaseBasedCellCycle(p, g);
+
+				obj.cellList(end + 1) = SquareCellJoined(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
+
+			end
+
+			boundaryCellMap('left') = obj.cellList(end);
+
+			bc = obj.simData('boundaryCells');
+			bc.SetData(boundaryCellMap);
 			%---------------------------------------------------
 			% Add in the forces
 			%---------------------------------------------------
@@ -183,7 +229,7 @@ classdef CryptStroma < LineSimulation
 			obj.AddCellBasedForce(ChasteNagaiHondaForce(areaEnergy, perimeterEnergy, adhesionEnergy));
 
 			% A special distinct force for the stroma
-			obj.AddCellBasedForce(StromaNagaiHondaForce(s, areaEnergy, perimeterEnergy, adhesionEnergy));
+			obj.AddCellBasedForce(StromaNagaiHondaForce(s, areaEnergy, perimeterEnergy, 0));
 
 			% Corner force to prevent very sharp corners
 			% obj.AddCellBasedForce(CornerForceCouple(0.1,pi/2));
@@ -192,9 +238,8 @@ classdef CryptStroma < LineSimulation
 			obj.AddElementBasedForce(EdgeSpringForce(@(n,l) 20 * exp(1-25 * l/n)));
 
 			% Node-Element interaction force - requires a SpacePartition
-			obj.AddNeighbourhoodBasedForce(SimpleAdhesionRepulsionForce(0.1, b, obj.dt));
+			obj.AddNeighbourhoodBasedForce(StromaAdhesionForce(0.1, b, obj.dt));
 
-			% Force to keep epithelial layer flat
 			if b <= 0
 				error("Force must be greater than 0")
 			end
@@ -233,7 +278,7 @@ classdef CryptStroma < LineSimulation
 
 			obj.AddSimulationData(SpatialState());
 			pathName = sprintf('CryptStroma/p%gg%gw%gb%g_seed%g/',p,g,w,b,seed);
-			obj.AddDataWriter(WriteSpatialState(100,'CryptStroma/'));
+			obj.AddDataWriter(WriteSpatialState(100,pathName));
 
 			%---------------------------------------------------
 			% All done. Ready to roll
