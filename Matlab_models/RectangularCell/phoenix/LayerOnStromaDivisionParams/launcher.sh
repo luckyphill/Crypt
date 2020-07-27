@@ -1,0 +1,1 @@
+sbatch --array=0-4347 --time=72:00:00 ../generalSbatch7.sh RunLayerOnStroma LayerOnStromaDivisionParams.txt 5
