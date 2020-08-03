@@ -31,6 +31,8 @@ classdef Node < matlab.mixin.SetGet
 		nodeAdjusted = false;
 		preAdjustedPosition = [];
 
+		nodeData
+
 	end
 
 	methods
@@ -47,6 +49,8 @@ classdef Node < matlab.mixin.SetGet
 			obj.previousPosition = [x,y];  
 			
 			obj.id 	= id;
+
+			nodeData = [ElementNeighbours()];
 
 		end
 
@@ -165,6 +169,16 @@ classdef Node < matlab.mixin.SetGet
 				obj.elementList(i).UpdateTotalDrag();
 
 			end
+
+		end
+
+		function neighbours = GetNeighbouringElements(obj, t)
+			% Used to find nodes that are in proximity
+			% and are not explicitily connected to this node
+			% The simulation managinf object must be passeed in
+			% because this function needs access to the space partition
+
+			neighbours = nodeData('elementNeighbours').GetData(obj, t);
 
 		end
 

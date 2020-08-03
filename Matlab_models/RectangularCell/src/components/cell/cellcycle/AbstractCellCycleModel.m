@@ -9,6 +9,8 @@ classdef AbstractCellCycleModel < matlab.mixin.SetGet
 
 		colour = 1;
 
+		containingCell
+
 	end
 
 

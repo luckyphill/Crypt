@@ -49,7 +49,7 @@ classdef SquareCellJoined < AbstractCell
 
 			obj.ancestorId = id;
 
-			cellDataArray = [CellAreaSquare(), CellPerimeter(), TargetPerimeterSquare(), TargetArea()];
+			cellDataArray = [CellArea(), CellPerimeter(), CellCentre(), TargetPerimeter(), TargetArea()];
 
 			obj.AddCellData(cellDataArray);
 

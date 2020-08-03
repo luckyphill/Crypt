@@ -1,4 +1,4 @@
-classdef StromaAdhesionForce < AbstractNodeElementForce
+classdef NonLinearStromaRepulsionForce < AbstractNodeElementForce
 
 	% This force is intended to keep the epithelial layer attached to
 	% the bulk stroma
@@ -11,7 +11,7 @@ classdef StromaAdhesionForce < AbstractNodeElementForce
 
 	methods
 		
-		function obj = StromaAdhesionForce(r, s, dt)
+		function obj = NonLinearStromaRepulsionForce(r, s,dt)
 
 			% r is the resting separation. Adhesion attraction starts
 			% at 2r and is 0 at r. The repulsion
@@ -31,7 +31,7 @@ classdef StromaAdhesionForce < AbstractNodeElementForce
 
 			for i = 1:length(nodeList)
 				n = nodeList(i);
-				elementList = p.GetNeighbouringElements(n, 3 * obj.r);
+				elementList = p.GetNeighbouringElements(n, 2 * obj.r);
 
 				for j = 1:length(elementList)
 					e = elementList(j);
@@ -55,14 +55,16 @@ classdef StromaAdhesionForce < AbstractNodeElementForce
 
 					% The goal is to have the resting separation at r apart
 					% The force points towards the element
-
-					if d - obj.r <= 0
-						Fa = obj.springRate * v * (d - obj.r);
+					s = obj.springRate;
+					g = 20;
+					x = d - obj.r;
+					if x <= 0
+						Fa = (s/G) * ( exp(-g*x) - 1 );
 					else
 						if e.cellList.cellType == 1
 							Fa = [0,0];
 						else
-							Fa = obj.springRate * v * (d - obj.r);
+							Fa = obj.springRate * v * x;
 						end
 					end
 

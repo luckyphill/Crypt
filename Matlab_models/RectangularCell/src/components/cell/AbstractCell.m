@@ -62,6 +62,7 @@ classdef AbstractCell < handle & matlab.mixin.Heterogeneous
 			if isa(v, 'AbstractCellCycleModel')
             	validateattributes(v, {'AbstractCellCycleModel'}, {});
             	obj.CellCycleModel = v;
+            	v.containingCell = obj;
             else
             	error('C:NotValidCCM','Not a valid cell cycle');
             end
@@ -87,6 +88,12 @@ classdef AbstractCell < handle & matlab.mixin.Heterogeneous
 		function currentPerimeter = GetCellPerimeter(obj)
 
 			currentPerimeter = obj.cellData('cellPerimeter').GetData(obj);
+
+		end
+
+		function centre = GetCellCentre(obj)
+
+			centre = obj.cellData('cellCentre').GetData(obj);
 
 		end
 

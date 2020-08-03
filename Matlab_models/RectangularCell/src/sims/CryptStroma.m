@@ -1,6 +1,8 @@
 classdef CryptStroma < LineSimulation
 
 	% This simulation gives a crypt-like structure in a "waterbed" type model
+	% It currently uses a quick hack to make the cells stop dividing past a certain height
+	% using WntCellCycle
 
 	properties
 
@@ -186,7 +188,7 @@ classdef CryptStroma < LineSimulation
 
 			% Cell cycle model
 
-			ccm = SimplePhaseBasedCellCycle(p, g);
+			ccm = WntCellCycle(p, g);
 
 			% Assemble the cell
 
@@ -211,7 +213,7 @@ classdef CryptStroma < LineSimulation
 
 				obj.AddElementsToList([elementBottom, elementRight, elementTop]);
 
-				ccm = SimplePhaseBasedCellCycle(p, g);
+				ccm = WntCellCycle(p, g);
 
 				obj.cellList(end + 1) = SquareCellJoined(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
 
@@ -232,7 +234,7 @@ classdef CryptStroma < LineSimulation
 			obj.AddCellBasedForce(StromaNagaiHondaForce(s, areaEnergy, perimeterEnergy, 0));
 
 			% Corner force to prevent very sharp corners
-			% obj.AddCellBasedForce(CornerForceCouple(0.1,pi/2));
+			obj.AddCellBasedForce(CornerForceCouple(0.1,pi/2));
 
 			% Element force to stop elements becoming too small
 			obj.AddElementBasedForce(EdgeSpringForce(@(n,l) 20 * exp(1-25 * l/n)));

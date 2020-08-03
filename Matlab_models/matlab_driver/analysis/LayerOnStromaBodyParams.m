@@ -129,21 +129,29 @@ classdef LayerOnStromaBodyParams < Analysis
 			AssembleData(obj);
 
 
+			for p = obj.p
+				for g = obj.g
 
-			h = figure;
 
-			data = reshape(obj.result,10,10);
+					h = figure;
 
-			[A,P] = meshgrid(obj.sae,obj.spe);
+					Lidx = obj.parameterSet(:,2) == p;
+					tempR = obj.result(L);
+					Lidx = obj.parameterSet(Lidx,3) == g;
+					data = tempR(Lidx);
 
-			surf(A,P,data);
-			xlabel('Area force parameter','Interpreter', 'latex', 'FontSize', 15);ylabel('Perimeter force parameter','Interpreter', 'latex', 'FontSize', 15);
-			title(sprintf('Long term max wiggle ratio for stroma force params'),'Interpreter', 'latex', 'FontSize', 22);
-			shading interp
-			xlim([2 20]);ylim([1 10]);
-			colorbar;view(90,-90);caxis([1 1.5]);
+					data = reshape(obj.result,length(obj.sae),length(obj.spe));
 
-			SavePlot(obj, h, sprintf('BodyParams'));
+					[A,P] = meshgrid(obj.sae,obj.spe);
+
+					surf(A,P,data);
+					xlabel('Area force parameter','Interpreter', 'latex', 'FontSize', 15);ylabel('Perimeter force parameter','Interpreter', 'latex', 'FontSize', 15);
+					title(sprintf('Long term max wiggle ratio for stroma force params'),'Interpreter', 'latex', 'FontSize', 22);
+					shading interp
+					xlim([2 20]);ylim([1 10]);
+					colorbar;view(90,-90);caxis([1 1.5]);
+
+					SavePlot(obj, h, sprintf('BodyParams'));
 
 
 

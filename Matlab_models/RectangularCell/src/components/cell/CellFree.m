@@ -34,7 +34,7 @@ classdef CellFree < AbstractCell
 
 			obj.ancestorId = varargin{end};
 
-			cellDataArray = [CellArea(), CellPerimeter(), TargetPerimeter(), TargetArea()];
+			cellDataArray = [CellArea(), CellPerimeter(), CellCentre(), TargetPerimeter(), TargetArea()];
 
 			obj.AddCellData(cellDataArray);
 
