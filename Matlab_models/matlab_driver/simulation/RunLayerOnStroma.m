@@ -34,7 +34,7 @@ classdef RunLayerOnStroma < MatlabSimulation
 
 		% These are solver parameters
 		t 			double {mustBeNonnegative}
-		dt 	= 0.001
+		dt 	= 0.002
 
 		% This is the RNG seed parameter
 		rngSeed 	double {mustBeNumeric}

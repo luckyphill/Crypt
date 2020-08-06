@@ -26,7 +26,7 @@ classdef SimplePhaseBasedCellCycle < AbstractCellCycleModel
 			% By default cell will start off in the pause phase
 			% (actually, this will depend somewhat on the randomly
 			% chosen pausePhaselength)
-			obj.SetAge(randi(p - 1));
+			obj.SetAge(round(unifrnd(0,p - 1),1));
 
 		end
 

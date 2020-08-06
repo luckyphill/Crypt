@@ -50,7 +50,10 @@ classdef CryptStroma < LineSimulation
 			re = 0.5; % radius of the edge
 
 			h = 5; % height of the crypt from cb to ce
-			w = 10; % width from edge to edge of sim domain
+			wd = 10; % width from edge to edge of sim domain
+			% if w < 2*(rb+re)
+			% 	error('Too narrow, increase width');
+			% end
 
 			cb = [0,0];
 			cel = cb - [(rb+re), 0] + [0,h];
@@ -63,7 +66,7 @@ classdef CryptStroma < LineSimulation
 			% We start from the right and work our way to the left to make an
 			% anticlockwise loop.
 
-			x = linspace(w/2,(rb+re),10);
+			x = linspace(wd/2,(rb+re),10);
 
 			pos = [x',(h + re)*ones(size(x'))];
 

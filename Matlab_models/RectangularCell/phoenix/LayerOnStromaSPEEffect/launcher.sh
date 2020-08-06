@@ -1,0 +1,2 @@
+sbatch --array=0-10000 --time=24:00:00 ../generalSbatch7seed.sh RunLayerOnStroma LayerOnStromaSPEEffect_1.txt 
+sbatch --array=0-6160 --time=24:00:00 ../generalSbatch7seed.sh RunLayerOnStroma LayerOnStromaSPEEffect_2.txt 

@@ -31,6 +31,8 @@ classdef (Abstract) Analysis < matlab.mixin.SetGet
 
 		slurmJobArrayLimit = 10000
 
+		specifySeedDirectly = false
+
 	end
 
 	methods (Abstract)
@@ -53,25 +55,32 @@ classdef (Abstract) Analysis < matlab.mixin.SetGet
 
 			command = '';
 
-			if length(obj.parameterSet) <= obj.slurmJobArrayLimit
+			if obj.specifySeedDirectly
+				% Need to build the parameter set for a directly specified seed
+				parametersToWrite = BuildParametersWithSeed(obj);
+			else
+				parametersToWrite = obj.parameterSet;
+			end
+
+			if length(parametersToWrite) <= obj.slurmJobArrayLimit
 				% If the parameter set is less than the job array limit, no need to
 				% number the param files
 				paramFile = [obj.analysisName, '.txt'];
 				paramFilePath = [obj.simulationFileLocation, paramFile];
-				dlmwrite( paramFilePath, obj.parameterSet, 'precision','%g');
+				dlmwrite( paramFilePath, parametersToWrite, 'precision','%g');
 
-				command = obj.BuildCommand(length(obj.parameterSet), paramFile);
+				command = obj.BuildCommand(length(parametersToWrite), paramFile);
 
 			else
 				% If it's at least obj.slurmJobArrayLimit + 1, then split it over
 				% several files
-				nFiles = ceil( length(obj.parameterSet) / obj.slurmJobArrayLimit );
+				nFiles = ceil( length(parametersToWrite) / obj.slurmJobArrayLimit );
 				for i = 1:nFiles-1
 					paramFile = [obj.analysisName, '_', num2str(i), '.txt'];
 					paramFilePath = [obj.simulationFileLocation, paramFile];
 					
 					iRange = (  (i-1) * obj.slurmJobArrayLimit + 1 ):( i * obj.slurmJobArrayLimit );
-					dlmwrite( paramFilePath, obj.parameterSet(iRange, :), 'precision','%g');
+					dlmwrite( paramFilePath, parametersToWrite(iRange, :), 'precision','%g');
 					
 					command = [command, obj.BuildCommand(obj.slurmJobArrayLimit, paramFile), '\n'];
 
@@ -80,10 +89,10 @@ classdef (Abstract) Analysis < matlab.mixin.SetGet
 				paramFile = [obj.analysisName, '_', num2str(nFiles), '.txt'];
 				paramFilePath = [obj.simulationFileLocation, paramFile];
 				
-				iRange = (  (nFiles-1) * obj.slurmJobArrayLimit + 1 ):length(obj.parameterSet);
-				dlmwrite( paramFilePath, obj.parameterSet(iRange, :),'precision','%g');
+				iRange = (  (nFiles-1) * obj.slurmJobArrayLimit + 1 ):length(parametersToWrite);
+				dlmwrite( paramFilePath, parametersToWrite(iRange, :),'precision','%g');
 
-				command = [command, obj.BuildCommand(length(obj.parameterSet) - i *obj.slurmJobArrayLimit, paramFile)];
+				command = [command, obj.BuildCommand(length(parametersToWrite) - i *obj.slurmJobArrayLimit, paramFile)];
 			end
 
 			% Now to make the shell file for sbatch  (...maybe do this later)
@@ -97,15 +106,45 @@ classdef (Abstract) Analysis < matlab.mixin.SetGet
 
 			% Build up the command to launch the sbatch
 
-			command = 'sbatch ';
-			command = [command, sprintf('--array=0-%d ',len)];
-			command = [command, sprintf('--time=%d:00:00 ',obj.slurmTimeNeeded)];
-			command = [command, sprintf('../generalSbatch%d.sh ',obj.simulationInputCount)];
-			command = [command, sprintf('%s ', obj.simulationDriverName)];
-			command = [command, sprintf('%s ', paramFile)];
-			command = [command, sprintf('%d', obj.simulationRuns)];
+			% If we want each job to have a single seed, then set obj.specifySeedDirectly to true
+			if obj.specifySeedDirectly
+				
+				command = 'sbatch ';
+				command = [command, sprintf('--array=0-%d ',len)];
+				command = [command, sprintf('--time=%d:00:00 ',obj.slurmTimeNeeded)];
+				command = [command, sprintf('../generalSbatch%dseed.sh ',obj.simulationInputCount)];
+				command = [command, sprintf('%s ', obj.simulationDriverName)];
+				command = [command, sprintf('%s ', paramFile)];
+
+			else
+				% If we want each job to handle looping through the seeds, then set obj.specifySeedDirectly to false
+				command = 'sbatch ';
+				command = [command, sprintf('--array=0-%d ',len)];
+				command = [command, sprintf('--time=%d:00:00 ',obj.slurmTimeNeeded)];
+				command = [command, sprintf('../generalSbatch%d.sh ',obj.simulationInputCount)];
+				command = [command, sprintf('%s ', obj.simulationDriverName)];
+				command = [command, sprintf('%s ', paramFile)];
+				command = [command, sprintf('%d', obj.simulationRuns)];
+
+			end
 
 		end
+
+		function params = BuildParametersWithSeed(obj)
+
+			% This expects the seed property to be a vector of the seeds that will be applied
+			% to each simulation. Each sim will have the same seeds. If different seeds
+			% are required every time, this is not going to help you
+
+			params = [];
+			for i = 1:length(obj.parameterSet)
+				for seed = obj.seed
+					params(end+1,:) = [obj.parameterSet(i,:), seed];
+				end
+			end
+
+		end
+
 
 		function SetSaveDetails(obj)
 
