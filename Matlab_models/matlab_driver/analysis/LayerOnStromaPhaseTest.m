@@ -1,4 +1,4 @@
-classdef LayerOnStromaBodyParams < Analysis
+classdef LayerOnStromaPhaseTest < Analysis
 
 	properties
 
@@ -9,22 +9,22 @@ classdef LayerOnStromaBodyParams < Analysis
 
 		% STATIC: DO NOT CHANGE
 		% IF CHANGE IS NEEDED, MAKE A NEW OBJECT
-		p = [5,10,15];
-		g = [5,10,15];
+		p = 5:.5:13;
+		g = 5:.5:12;
 
 		w = 10;
 		n = 20;
 
 		b = 10;
 
-		sae = [1:0.5:5,6:2:20];
-		spe = [1:0.25:5,6:10];
+		sae = 10;
+		spe = [2, 5, 10, 15, 20];
 
-		seed = 1:5;
+		seed = 1:20;
 
-		targetTime = 1000;
+		targetTime = 500;
 
-		analysisName = 'LayerOnStromaBodyParams';
+		analysisName = 'LayerOnStromaPhaseTest';
 
 		avgGrid = {}
 		timePoints = {}
@@ -35,8 +35,8 @@ classdef LayerOnStromaBodyParams < Analysis
 
 		parameterSet = []
 
-		simulationRuns = 5
-		slurmTimeNeeded = 72
+		simulationRuns = 20
+		slurmTimeNeeded = 24
 		simulationDriverName = 'RunLayerOnStroma'
 		simulationInputCount = 7
 		
@@ -44,6 +44,13 @@ classdef LayerOnStromaBodyParams < Analysis
 	end
 
 	methods
+
+		function obj = LayerOnStromaPhaseTest()
+
+			% Each seed runs in a separate job
+			obj.specifySeedDirectly = true;
+
+		end
 
 		function MakeParameterSet(obj)
 
@@ -72,11 +79,7 @@ classdef LayerOnStromaBodyParams < Analysis
 
 		end
 
-		function obj = LayerOnStromaBodyParams()
-
-			
-
-		end
+		
 
 		function BuildSimulation(obj)
 
@@ -152,10 +155,9 @@ classdef LayerOnStromaBodyParams < Analysis
 					colorbar;view(90,-90);caxis([1 1.5]);
 
 					SavePlot(obj, h, sprintf('BodyParams'));
+
 				end
 			end
-
-
 
 		end
 
