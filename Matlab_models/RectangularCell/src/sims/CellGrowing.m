@@ -97,7 +97,7 @@ classdef CellGrowing < LineSimulation
 			obj.AddElementBasedForce(EdgeSpringForce(@(n,l) 20 * exp(1-25 * l/n)));
 
 			% Node-Element interaction force - requires a SpacePartition
-			% obj.AddNeighbourhoodBasedForce(NodeElementRepulsionForce(0.1, obj.dt));
+			obj.AddNeighbourhoodBasedForce(NodeElementRepulsionForce(0.1, obj.dt));
 
 			
 			%---------------------------------------------------

@@ -23,7 +23,7 @@ classdef Visualiser < matlab.mixin.SetGet
 
 			obj.LoadData();
 
-			obj.RunVisualiserGUI();
+			% obj.RunVisualiserGUI();
 
 		end
 
@@ -140,6 +140,7 @@ classdef Visualiser < matlab.mixin.SetGet
 
 			[I,~] = size(obj.cells);
 
+
 			% Initialise the array with anything
 			fillObjects(1) = fill([1,1],[2,2],'r');
 
@@ -180,6 +181,101 @@ classdef Visualiser < matlab.mixin.SetGet
 				pause(0.1);
 
 			end
+
+		end
+
+		function ProduceMovie(obj, varargin)
+
+			tIdxStart = 1;
+			tIdxEnd = length(obj.timeSteps);
+			if ~isempty(varargin)
+				tIdxStart = varargin{1};
+				tIdxEnd = varargin{2};
+			end
+
+
+
+			% Currently same as run visualiser, but saves the movie
+
+			h = figure();
+			axis equal
+			axis off
+			hold on
+			xl = 0;
+			xu = 0;
+			yl = 0;
+			yu = 0;
+
+			F = getframe(h);
+
+			% Initialise the array with anything
+			fillObjects(1) = fill([1,1],[2,2],'r');
+
+			for i = tIdxStart:tIdxEnd
+				% i is the time steps
+				[~,J] = size(obj.cells);
+				j = 1;
+				while j <= J && ~isempty(obj.cells{i,j})
+
+					c = obj.cells{i,j};
+					ids = c(1:end-1);
+					colour = c(end);
+					nodeCoords = squeeze(obj.nodes(ids,i,:));
+
+					x = nodeCoords(:,1);
+					y = nodeCoords(:,2);
+
+					if j > length(fillObjects)
+						fillObjects(j) = fill(x,y,obj.cs.GetRGB(colour));
+					else
+						fillObjects(j).XData = x;
+						fillObjects(j).YData = y;
+						fillObjects(j).FaceColor = obj.cs.GetRGB(colour);
+					end
+
+					j = j + 1;
+
+				end
+				% j will always end up being 1 more than the total number of non empty cells
+
+				for k = length(fillObjects):-1:j
+					fillObjects(k).delete;
+					fillObjects(k) = [];
+				end
+
+				drawnow
+				axis off
+				% axis equal
+				xlimits = xlim;
+				ylimits = ylim;
+				e=0.01;
+
+				if xu+e < xlimits(2); xu = xlimits(2); end
+				if xl+e > xlimits(1); xl = xlimits(1); end
+				if yu+e < ylimits(2); yu = ylimits(2); end
+				if yl+e > ylimits(1); yl = ylimits(1); end
+
+				xlim([xl, xu]);
+				ylim([yl, yu]);
+
+				title(sprintf('t = %g',obj.timeSteps(i)),'Interpreter', 'latex');
+				F(end+1) = getframe(h);
+
+			end
+
+			writerObj = VideoWriter([obj.pathToSpatialState,'animation'],'MPEG-4');
+			writerObj.FrameRate = 10;
+
+			% open the video writer
+			open(writerObj);
+			% write the frames to the video
+			for i=2:length(F)
+				% convert the image to a frame
+				frame = F(i) ;    
+				writeVideo(writerObj, frame);
+			end
+			% close the writer object
+			close(writerObj);
 
 		end
 
