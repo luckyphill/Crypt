@@ -4,6 +4,7 @@ classdef Visualiser < matlab.mixin.SetGet
 	properties
 
 		pathToSpatialState
+		pathToOutput
 		nodes
 		elements
 		cells
@@ -18,7 +19,23 @@ classdef Visualiser < matlab.mixin.SetGet
 
 		function obj = Visualiser(ptss)
 
-			obj.pathToSpatialState = ['/Users/phillip/Research/Crypt/Data/Matlab/SimulationOutput/',ptss];
+			obj.pathToSpatialState = [getenv('HOME'),'/Research/Crypt/Data/Matlab/SimulationOutput/',ptss];
+
+			if ~strcmp(obj.pathToSpatialState(end),'/')
+				obj.pathToSpatialState(end+1) = '/';
+			end
+
+
+			obj.pathToOutput = [getenv('HOME'),'/Research/Crypt/Images/Matlab/',ptss];
+
+			if ~strcmp( obj.pathToOutput(end),'/' )
+				obj.pathToOutput(end+1) = '/';
+			end
+
+			if exist(obj.pathToOutput,'dir')~=7
+				mkdir(obj.pathToOutput);
+			end
+
 
 
 			obj.LoadData();
@@ -263,7 +280,15 @@ classdef Visualiser < matlab.mixin.SetGet
 
 			end
 
-			writerObj = VideoWriter([obj.pathToSpatialState,'animation'],'MPEG-4');
+			fileName = [obj.pathToOutput,'animation'];
+
+			if ~isempty(varargin)
+				ts = obj.timeSteps(tIdxStart);
+				te = obj.timeSteps(tIdxEnd);
+				fileName = sprintf('%s_%gto%g',fileName, ts, te );
+			end
+
+			writerObj = VideoWriter(fileName,'MPEG-4');
 			writerObj.FrameRate = 10;
 
 			% open the video writer
@@ -276,6 +301,54 @@ classdef Visualiser < matlab.mixin.SetGet
 			end
 			% close the writer object
 			close(writerObj);
+
+		end
+
+		function PlotTimeStep(obj, timeStep)
+
+			% Plots a single given timestep
+
+			h = figure();
+			axis equal
+			hold on
+
+			i = timeStep;
+
+
+			% Initialise the array with anything
+			fillObjects(1) = fill([1,1],[2,2],'r');
+
+
+			[~,J] = size(obj.cells);
+			j = 1;
+			while j <= J && ~isempty(obj.cells{i,j})
+
+				c = obj.cells{i,j};
+				ids = c(1:end-1);
+				colour = c(end);
+				nodeCoords = squeeze(obj.nodes(ids,i,:));
+
+				x = nodeCoords(:,1);
+				y = nodeCoords(:,2);
+
+
+				fillObjects(j) = fill(x,y,obj.cs.GetRGB(colour));
+
+				j = j + 1;
+
+			end
+				% j will always end up being 1 more than the total number of non empty cells
+			axis off
+			drawnow
+			title(sprintf('t = %g',obj.timeSteps(i)),'Interpreter', 'latex');
+
+
+			set(h,'Units','Inches');
+			pos = get(h,'Position');
+			set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)]);
+			
+			fileName = sprintf('%sImageAtTime_%g', obj.pathToOutput, obj.timeSteps(timeStep));
+			print(fileName,'-dpdf')
 
 		end
 
