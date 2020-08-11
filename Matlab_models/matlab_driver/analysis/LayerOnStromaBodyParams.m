@@ -126,7 +126,7 @@ classdef LayerOnStromaBodyParams < Analysis
 
 		function PlotData(obj)
 
-			AssembleData(obj);
+			%AssembleData(obj);
 
 
 			for p = obj.p
@@ -136,11 +136,11 @@ classdef LayerOnStromaBodyParams < Analysis
 					h = figure;
 
 					Lidx = obj.parameterSet(:,2) == p;
-					tempR = obj.result(L);
+					tempR = obj.result(Lidx);
 					Lidx = obj.parameterSet(Lidx,3) == g;
 					data = tempR(Lidx);
 
-					data = reshape(obj.result,length(obj.sae),length(obj.spe));
+					data = reshape(data,length(obj.spe),length(obj.sae));
 
 					[A,P] = meshgrid(obj.sae,obj.spe);
 
