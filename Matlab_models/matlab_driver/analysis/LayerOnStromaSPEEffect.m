@@ -107,6 +107,7 @@ classdef LayerOnStromaSPEEffect < Analysis
 
 
 				bottom = [];
+				count = 0;
 				for j = obj.seed
 					% try
 						a = RunLayerOnStroma(n,p,g,w,b,sae,spe,j);
