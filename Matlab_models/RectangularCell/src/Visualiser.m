@@ -261,19 +261,19 @@ classdef Visualiser < matlab.mixin.SetGet
 				end
 
 				drawnow
-				axis off
-				% axis equal
-				xlimits = xlim;
-				ylimits = ylim;
-				e=0.01;
+				% axis off
+				% % axis equal
+				% xlimits = xlim;
+				% ylimits = ylim;
+				% e=0.01;
 
-				if xu+e < xlimits(2); xu = xlimits(2); end
-				if xl+e > xlimits(1); xl = xlimits(1); end
-				if yu+e < ylimits(2); yu = ylimits(2); end
-				if yl+e > ylimits(1); yl = ylimits(1); end
+				% if xu+e < xlimits(2); xu = xlimits(2); end
+				% if xl+e > xlimits(1); xl = xlimits(1); end
+				% if yu+e < ylimits(2); yu = ylimits(2); end
+				% if yl+e > ylimits(1); yl = ylimits(1); end
 
-				xlim([xl, xu]);
-				ylim([yl, yu]);
+				% xlim([xl, xu]);
+				% ylim([yl, yu]);
 
 				title(sprintf('t = %g',obj.timeSteps(i)),'Interpreter', 'latex');
 				F(end+1) = getframe(h);

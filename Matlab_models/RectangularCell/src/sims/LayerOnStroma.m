@@ -219,9 +219,9 @@ classdef LayerOnStroma < LineSimulation
 			% Add the data writers
 			%---------------------------------------------------
 
-			obj.AddSimulationData(SpatialState());
+			% obj.AddSimulationData(SpatialState());
 			pathName = sprintf('LayerOnStroma/n%gp%gg%gw%gb%gsae%gspe%g_seed%g/',nCells,p,g,w,b,sae,spe,seed);
-			obj.AddDataWriter(WriteSpatialState(20,pathName));
+			% obj.AddDataWriter(WriteSpatialState(20,pathName));
 			obj.AddDataWriter(WriteBottomWiggleRatio(100,pathName));
 
 			%---------------------------------------------------

@@ -1,4 +1,4 @@
-classdef LayerOnStromaSPEEffect < Analysis
+classdef LayerOnStromaSAENoEffect3 < Analysis
 
 	properties
 
@@ -9,22 +9,22 @@ classdef LayerOnStromaSPEEffect < Analysis
 
 		% STATIC: DO NOT CHANGE
 		% IF CHANGE IS NEEDED, MAKE A NEW OBJECT
-		p = [5,10,15];
-		g = [5,10,15];
+		p = 5;
+		g = 10;
 
 		w = 10;
 		n = 20;
 
 		b = 10;
 
-		sae = 10;
-		spe = 0:0.1:10;
+		sae = [2:2:40];
+		spe = [10.5:0.5:15];
 
 		seed = 1:20;
 
 		targetTime = 500;
 
-		analysisName = 'LayerOnStromaSPEEffect';
+		analysisName = 'LayerOnStromaSAENoEffect3';
 
 		avgGrid = {}
 		timePoints = {}
@@ -38,14 +38,14 @@ classdef LayerOnStromaSPEEffect < Analysis
 		simulationRuns = 20
 		slurmTimeNeeded = 24
 		simulationDriverName = 'RunLayerOnStroma'
-		simulationInputCount = 7 % The number of parameters the driver function needs, not including the seed
+		simulationInputCount = 7
 		
 
 	end
 
 	methods
 
-		function obj = LayerOnStromaSPEEffect()
+		function obj = LayerOnStromaSAENoEffect3()
 
 			% Each seed runs in a separate job
 			obj.specifySeedDirectly = true;
@@ -63,10 +63,8 @@ classdef LayerOnStromaSPEEffect < Analysis
 						for b = obj.b
 							for sae = obj.sae
 								for spe = obj.spe
-									% Skip the case (p,g) = (5,5) because we need a slightly modified range
-									if p~=5 || g~=5
-										params(end+1,:) = [2*w,p,g,w,b,sae,spe];
-									end
+
+									params(end+1,:) = [2*w,p,g,w,b,sae,spe];
 
 								end
 							end
@@ -107,10 +105,12 @@ classdef LayerOnStromaSPEEffect < Analysis
 
 
 				bottom = [];
+				count = 0;
 				for j = obj.seed
 					% try
 						a = RunLayerOnStroma(n,p,g,w,b,sae,spe,j);
 						a.LoadSimulationData();
+						bottom = a.data.bottomWiggleData;
 						if max(bottom) > 1.05
 							count = count + 1;
 						end
@@ -131,33 +131,43 @@ classdef LayerOnStromaSPEEffect < Analysis
 
 		function PlotData(obj)
 
-			AssembleData(obj);
+			% AssembleData(obj);
 
 
 			for p = obj.p
-
-				h = figure;
 				for g = obj.g
 
 
-					
+					h = figure;
 
 					Lidx = obj.parameterSet(:,2) == p;
 					tempR = obj.result(Lidx);
 					Lidx = obj.parameterSet(Lidx,3) == g;
 					data = tempR(Lidx);
 
-					plot(obj.spe, data,'LineWidth', 4)
-					hold on
-					
+					params = obj.parameterSet(Lidx,[6,7]);
+
+					% data = reshape(obj.result,10,20);
+
+					% [A,P] = meshgrid(obj.spe,obj.sae);
+
+					% surf(P,A,data');
+
+					scatter(params(:,2), params(:,1), 100, data,'filled');
+					ylabel('Area force parameter','Interpreter', 'latex', 'FontSize', 15);xlabel('Perimeter force parameter','Interpreter', 'latex', 'FontSize', 15);
+					title(sprintf('Chance of buckling'),'Interpreter', 'latex', 'FontSize', 22);
+					shading interp
+					ylim([1 41]);xlim([1.5 10.5]);
+					colorbar; caxis([0 1]);
+					colormap jet;
+					ax = gca;
+					c = ax.Color;
+					ax.Color = 'black';
+					% set(h, 'InvertHardcopy', 'off')
+
+					SavePlot(obj, h, sprintf('BodyParams'));
 
 				end
-
-				ylabel('Chance of buckling','Interpreter', 'latex', 'FontSize', 15);xlabel('Perimeter force parameter','Interpreter', 'latex', 'FontSize', 15);
-				title(sprintf('Chance of buckling with p = %g', p),'Interpreter', 'latex', 'FontSize', 22);
-				xlim([0 10]);ylim([0 1]);
-
-				SavePlot(obj, h, sprintf('BodyParams_vs_PhaseLength'));
 			end
 
 		end

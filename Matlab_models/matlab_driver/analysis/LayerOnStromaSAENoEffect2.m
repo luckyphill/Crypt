@@ -18,7 +18,7 @@ classdef LayerOnStromaSAENoEffect2 < Analysis
 		b = 10;
 
 		sae = [2:2:40];
-		spe = [5.5:0.5:10];
+		spe = [2:0.5:10];
 
 		seed = 1:20;
 
@@ -105,17 +105,19 @@ classdef LayerOnStromaSAENoEffect2 < Analysis
 
 
 				bottom = [];
+				count = 0;
 				for j = obj.seed
 					% try
 						a = RunLayerOnStroma(n,p,g,w,b,sae,spe,j);
 						a.LoadSimulationData();
-						bottom = Concatenate(obj, bottom, a.data.bottomWiggleData');
+						bottom = a.data.bottomWiggleData;
+						if max(bottom) > 1.05
+							count = count + 1;
+						end
 					% end
 				end
 
-				b = nanmean(bottom);
-
-				result(i) = max(b);
+				result(i) = count / obj.simulationRuns;
 
 
 			end
@@ -129,7 +131,7 @@ classdef LayerOnStromaSAENoEffect2 < Analysis
 
 		function PlotData(obj)
 
-			AssembleData(obj);
+			% AssembleData(obj);
 
 
 			for p = obj.p
@@ -139,20 +141,29 @@ classdef LayerOnStromaSAENoEffect2 < Analysis
 					h = figure;
 
 					Lidx = obj.parameterSet(:,2) == p;
-					tempR = obj.result(L);
+					tempR = obj.result(Lidx);
 					Lidx = obj.parameterSet(Lidx,3) == g;
 					data = tempR(Lidx);
 
-					data = reshape(obj.result,length(obj.sae),length(obj.spe));
+					params = obj.parameterSet(Lidx,[6,7]);
 
-					[A,P] = meshgrid(obj.sae,obj.spe);
+					% data = reshape(obj.result,10,20);
 
-					surf(A,P,data);
-					xlabel('Area force parameter','Interpreter', 'latex', 'FontSize', 15);ylabel('Perimeter force parameter','Interpreter', 'latex', 'FontSize', 15);
-					title(sprintf('Long term max wiggle ratio for stroma force params'),'Interpreter', 'latex', 'FontSize', 22);
+					% [A,P] = meshgrid(obj.spe,obj.sae);
+
+					% surf(P,A,data');
+
+					scatter(params(:,2), params(:,1), 100, data,'filled');
+					ylabel('Area force parameter','Interpreter', 'latex', 'FontSize', 15);xlabel('Perimeter force parameter','Interpreter', 'latex', 'FontSize', 15);
+					title(sprintf('Chance of buckling'),'Interpreter', 'latex', 'FontSize', 22);
 					shading interp
-					xlim([2 20]);ylim([1 10]);
-					colorbar;view(90,-90);caxis([1 1.5]);
+					ylim([1 41]);xlim([1.5 10.5]);
+					colorbar; caxis([0 1]);
+					colormap jet;
+					ax = gca;
+					c = ax.Color;
+					ax.Color = 'black';
+					% set(h, 'InvertHardcopy', 'off')
 
 					SavePlot(obj, h, sprintf('BodyParams'));
 
