@@ -154,8 +154,8 @@ classdef LayerOnStromaSAENoEffect2 < Analysis
 					% surf(P,A,data');
 
 					scatter(params(:,2), params(:,1), 100, data,'filled');
-					ylabel('Area force parameter','Interpreter', 'latex', 'FontSize', 15);xlabel('Perimeter force parameter','Interpreter', 'latex', 'FontSize', 15);
-					title(sprintf('Chance of buckling'),'Interpreter', 'latex', 'FontSize', 22);
+					ylabel('Area energy parameter','Interpreter', 'latex', 'FontSize', 15);xlabel('Perimeter energy parameter','Interpreter', 'latex', 'FontSize', 15);
+					title(sprintf('Proportion buckled, p=%g, g=%g',p,g),'Interpreter', 'latex', 'FontSize', 22);
 					shading interp
 					ylim([1 41]);xlim([1.5 10.5]);
 					colorbar; caxis([0 1]);
@@ -163,7 +163,7 @@ classdef LayerOnStromaSAENoEffect2 < Analysis
 					ax = gca;
 					c = ax.Color;
 					ax.Color = 'black';
-					% set(h, 'InvertHardcopy', 'off')
+					set(h, 'InvertHardcopy', 'off')
 
 					SavePlot(obj, h, sprintf('BodyParams'));
 

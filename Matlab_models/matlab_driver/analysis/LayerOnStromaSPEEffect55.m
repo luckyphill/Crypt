@@ -105,17 +105,18 @@ classdef LayerOnStromaSPEEffect55 < Analysis
 
 
 				bottom = [];
+				count = 0;
 				for j = obj.seed
 					% try
 						a = RunLayerOnStroma(n,p,g,w,b,sae,spe,j);
 						a.LoadSimulationData();
-						bottom = Concatenate(obj, bottom, a.data.bottomWiggleData');
+						if max(bottom) > 1.05
+							count = count + 1;
+						end
 					% end
 				end
 
-				b = nanmean(bottom);
-
-				result(i) = max(b);
+				result(i) = count / obj.simulationRuns;
 
 
 			end
@@ -133,30 +134,29 @@ classdef LayerOnStromaSPEEffect55 < Analysis
 
 
 			for p = obj.p
+
+				h = figure;
 				for g = obj.g
 
 
-					h = figure;
+					
 
 					Lidx = obj.parameterSet(:,2) == p;
-					tempR = obj.result(L);
+					tempR = obj.result(Lidx);
 					Lidx = obj.parameterSet(Lidx,3) == g;
 					data = tempR(Lidx);
 
-					data = reshape(obj.result,length(obj.sae),length(obj.spe));
-
-					[A,P] = meshgrid(obj.sae,obj.spe);
-
-					surf(A,P,data);
-					xlabel('Area force parameter','Interpreter', 'latex', 'FontSize', 15);ylabel('Perimeter force parameter','Interpreter', 'latex', 'FontSize', 15);
-					title(sprintf('Long term max wiggle ratio for stroma force params'),'Interpreter', 'latex', 'FontSize', 22);
-					shading interp
-					xlim([2 20]);ylim([1 10]);
-					colorbar;view(90,-90);caxis([1 1.5]);
-
-					SavePlot(obj, h, sprintf('BodyParams'));
+					plot(obj.spe, data,'LineWidth', 4)
+					hold on
+					
 
 				end
+
+				ylabel('Chance of buckling','Interpreter', 'latex', 'FontSize', 15);xlabel('Perimeter force parameter','Interpreter', 'latex', 'FontSize', 15);
+				title(sprintf('Chance of buckling with p = %g', p),'Interpreter', 'latex', 'FontSize', 22);
+				xlim([0 10]);ylim([0 1]);
+
+				SavePlot(obj, h, sprintf('BodyParams_vs_PhaseLength'));
 			end
 
 		end
