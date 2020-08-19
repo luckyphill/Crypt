@@ -18,7 +18,7 @@ classdef LayerOnStromaSAENoEffect2 < Analysis
 		b = 10;
 
 		sae = [2:2:40];
-		spe = [2:0.5:10];
+		spe = [2:0.5:15];
 
 		seed = 1:20;
 
@@ -119,7 +119,7 @@ classdef LayerOnStromaSAENoEffect2 < Analysis
 
 				result(i) = count / obj.simulationRuns;
 
-
+				fprintf("Completed %.2f %%\n", 100*i/length(obj.parameterSet));
 			end
 
 
@@ -157,7 +157,7 @@ classdef LayerOnStromaSAENoEffect2 < Analysis
 					ylabel('Area energy parameter','Interpreter', 'latex', 'FontSize', 15);xlabel('Perimeter energy parameter','Interpreter', 'latex', 'FontSize', 15);
 					title(sprintf('Proportion buckled, p=%g, g=%g',p,g),'Interpreter', 'latex', 'FontSize', 22);
 					shading interp
-					ylim([1 41]);xlim([1.5 10.5]);
+					ylim([1 41]);xlim([1.5 15.5]);
 					colorbar; caxis([0 1]);
 					colormap jet;
 					ax = gca;
