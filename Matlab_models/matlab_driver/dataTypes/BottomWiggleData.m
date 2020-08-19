@@ -14,6 +14,25 @@ classdef BottomWiggleData < dataType
 			found = exist(obj.getFullFileName(sp), 'file');
 
 		end
+
+		function correct = verifyData(obj, data, sp)
+			
+			% To be valid, the data must either run for the specified
+			% time limit, or stop due to buckling
+
+			% NOTE: The length of the data is dependent on the max run time, the step size
+			% and the sampling multiple. The following calculation should work it out
+
+
+			l = (sp.simObj.timeLimit/sp.simObj.dt) / sp.simObj.samplingMultiple;
+
+			correct = false;
+
+			if length(data) == l || data(end) > sp.buckledWiggleRatio * 0.8
+				correct = true;
+			end
+
+		end
 	end
 
 	methods (Access = protected)

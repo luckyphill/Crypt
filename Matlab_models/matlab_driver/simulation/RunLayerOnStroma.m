@@ -42,6 +42,12 @@ classdef RunLayerOnStroma < MatlabSimulation
 		outputLocation
 	end
 
+	properties
+
+		buckledWiggleRatio = 2
+
+	end
+
 	methods
 		function obj = RunLayerOnStroma(n, p, g, w, b, sae, spe, seed)
 			% The constructor for the runLayerOnStroma object
@@ -100,7 +106,7 @@ classdef RunLayerOnStroma < MatlabSimulation
 
 		function SimulationCommand(obj)
 
-			obj.simObj.RunToBuckle(2);
+			obj.simObj.RunToBuckle(obj.buckledWiggleRatio);
 
 		end
 
