@@ -118,7 +118,7 @@ classdef (Abstract) SimulationDriver < matlab.mixin.SetGet
 				end
 			else
 				obj.outputTypesToRun = obj.outputTypes;
-				if obj.runSimulation();
+				if obj.RunSimulation();
 					successCode = 3;
 					for i=1:length(obj.outputTypesToRun)
 						if obj.outputTypesToRun{i}.exists(obj)

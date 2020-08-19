@@ -89,7 +89,7 @@ classdef RunLayerOnStroma < MatlabSimulation
 			% This generates the full path to the specific data file for the simulation
 			% If the path doesn't exist it creates the missing folder structure
 
-			obj.saveLocation = [obj.researchPath, 'Research/Crypt/Data/Matlab/SimulationOutput/', obj.matlabTest, '/', sprintf('n%dp%dg%dw%db%dsae%gspe%g_seed%g',obj.n,obj.p,obj.g,obj.w,obj.b,obj.sae,obj.spe,obj.rngSeed), '/'];
+			obj.saveLocation = [obj.researchPath, 'Research/Crypt/Data/Matlab/SimulationOutput/', obj.matlabTest, '/', sprintf('n%dp%gg%gw%gb%gsae%gspe%g_seed%g',obj.n,obj.p,obj.g,obj.w,obj.b,obj.sae,obj.spe,obj.rngSeed), '/'];
 
 
 			if exist(obj.saveLocation,'dir')~=7
