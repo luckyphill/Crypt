@@ -49,9 +49,8 @@ t.Animate(1000,20); % First arg, number of time steps to simulate, second arg, u
 
 % If you want animation of the end results, use
 
-v = Visualiser(11,'FreeCellTest/SpatialState/'); 
+v = Visualiser('FreeCellTest/SpatialState/'); 
 
-% The first arg is 11 for FreeCellTest, and 5 for everything else.
 % The first part of the string is the name of the simulation.
 % To save the data for the Visualiser, the simulation must have a spatial state writer. See lines 125 and 126 of CellGrowing
 % NOTE: the Visualiser uses the matlab function readmatrix, which only exists after R2019b. I've found it to be extremely buggy, so there is no guarantee Visualiser will work, even if you're using the latest version.
