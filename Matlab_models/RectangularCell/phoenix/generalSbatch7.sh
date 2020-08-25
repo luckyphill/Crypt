@@ -11,6 +11,11 @@ simName=$1
 paramFile=$2
 runs=$3
 
+if [ "${HOSTNAME}" == "l01" ]
+then
+    module load arch/haswell
+fi
+
 module load matlab/2019a
 
 mkdir -p output
