@@ -1,4 +1,4 @@
-classdef LayerOnStromaMembraneAdhesion < Analysis
+classdef LayerOnStromaMembraneAdhesion2 < Analysis
 
 	properties
 
@@ -15,16 +15,16 @@ classdef LayerOnStromaMembraneAdhesion < Analysis
 		w = 10;
 		n = 20;
 
-		b = 2:2:20;
+		b = [4,6,8,10,14,20];
 
 		sae = 10;
-		spe = 0:0.1:10;
+		spe = 0:10;
 
-		seed = 1:20;
+		seed = 1:100;
 
 		targetTime = 500;
 
-		analysisName = 'LayerOnStromaMembraneAdhesion';
+		analysisName = 'LayerOnStromaMembraneAdhesion2';
 
 		avgGrid = {}
 		timePoints = {}
@@ -35,7 +35,7 @@ classdef LayerOnStromaMembraneAdhesion < Analysis
 
 		parameterSet = []
 
-		simulationRuns = 20
+		simulationRuns = 100
 		slurmTimeNeeded = 24
 		simulationDriverName = 'RunLayerOnStroma'
 		simulationInputCount = 7 % The number of parameters the driver function needs, not including the seed
@@ -45,7 +45,7 @@ classdef LayerOnStromaMembraneAdhesion < Analysis
 
 	methods
 
-		function obj = LayerOnStromaMembraneAdhesion()
+		function obj = LayerOnStromaMembraneAdhesion2()
 
 			% Each seed runs in a separate job
 			obj.specifySeedDirectly = true;
@@ -63,10 +63,7 @@ classdef LayerOnStromaMembraneAdhesion < Analysis
 						for b = obj.b
 							for sae = obj.sae
 								for spe = obj.spe
-									% Skip the case (p,g) = (5,5) because we need a slightly modified range
-									if p~=5 || g~=5
-										params(end+1,:) = [2*w,p,g,w,b,sae,spe];
-									end
+									params(end+1,:) = [2*w,p,g,w,b,sae,spe];
 
 								end
 							end

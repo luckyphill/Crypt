@@ -1,0 +1,1 @@
+sbatch --array=0-6600 --time=24:00:00 ../generalSbatch7seed.sh RunLayerOnStroma LayerOnStromaMembraneAdhesion2.txt 

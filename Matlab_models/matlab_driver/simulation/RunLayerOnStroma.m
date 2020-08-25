@@ -22,7 +22,7 @@ classdef RunLayerOnStroma < MatlabSimulation
 		% Number of cells
 		n 			double {mustBeNonnegative}
 
-		% Cell cycle pahse lengths
+		% Cell cycle phase lengths
 		p 			double {mustBeNonnegative}
 		g 			double {mustBeNonnegative}
 
