@@ -138,31 +138,30 @@ classdef LayerOnStromaPhaseTest < Analysis
 
 		function PlotData(obj)
 
-			for p = obj.p
-				for g = obj.g
+			for spe = obj.spe
 
 
-					h = figure;
+				h = figure;
 
-					Lidx = obj.parameterSet(:,2) == p;
-					tempR = obj.result(L);
-					Lidx = obj.parameterSet(Lidx,3) == g;
-					data = tempR(Lidx);
+				Lidx = obj.parameterSet(:,7) == spe;
+				data = obj.result(Lidx);
 
-					data = reshape(obj.result,length(obj.sae),length(obj.spe));
+				params = obj.parameterSet(Lidx,[2,3]);
 
-					[A,P] = meshgrid(obj.sae,obj.spe);
+				scatter(params(:,2), params(:,1), 100, data,'filled');
+				ylabel('Pause','Interpreter', 'latex', 'FontSize', 15);xlabel('Grow','Interpreter', 'latex', 'FontSize', 15);
+				title(sprintf('Proportion buckled, spe=%d', spe),'Interpreter', 'latex', 'FontSize', 22);
+				shading interp
+				ylim([4 14]);xlim([4 13]);
+				colorbar; caxis([0 1]);
+				colormap jet;
+				ax = gca;
+				c = ax.Color;
+				ax.Color = 'black';
+				set(h, 'InvertHardcopy', 'off')
 
-					surf(A,P,data);
-					xlabel('Area force parameter','Interpreter', 'latex', 'FontSize', 15);ylabel('Perimeter force parameter','Interpreter', 'latex', 'FontSize', 15);
-					title(sprintf('Long term max wiggle ratio for stroma force params'),'Interpreter', 'latex', 'FontSize', 22);
-					shading interp
-					xlim([2 20]);ylim([1 10]);
-					colorbar;view(90,-90);caxis([1 1.5]);
+				SavePlot(obj, h, sprintf('PhaseTest_spe%d',spe));
 
-					SavePlot(obj, h, sprintf('BodyParams'));
-
-				end
 			end
 
 		end
