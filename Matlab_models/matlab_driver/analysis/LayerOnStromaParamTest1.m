@@ -124,10 +124,6 @@ classdef LayerOnStromaParamTest1 < Analysis
 
 		function PlotData(obj)
 
-			AssembleData(obj);
-
-
-
 			h = figure;
 
 			data = reshape(obj.result,10,10);

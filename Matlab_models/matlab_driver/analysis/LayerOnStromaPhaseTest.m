@@ -138,9 +138,6 @@ classdef LayerOnStromaPhaseTest < Analysis
 
 		function PlotData(obj)
 
-			AssembleData(obj);
-
-
 			for p = obj.p
 				for g = obj.g
 

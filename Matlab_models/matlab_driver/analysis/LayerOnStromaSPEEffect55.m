@@ -130,9 +130,6 @@ classdef LayerOnStromaSPEEffect55 < Analysis
 
 		function PlotData(obj)
 
-			AssembleData(obj);
-
-
 			for p = obj.p
 
 				h = figure;

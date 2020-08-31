@@ -126,10 +126,6 @@ classdef LayerOnStromaDivisionParams < Analysis
 
 		function PlotData(obj)
 
-			AssembleData(obj);
-
-
-
 			h = figure;
 
 			data = reshape(obj.result,16,16);

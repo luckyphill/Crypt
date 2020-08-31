@@ -28,7 +28,7 @@ classdef BottomWiggleData < dataType
 
 			correct = false;
 
-			if l > length(data) * 0.8 || data(end) > sp.buckledWiggleRatio * 0.8
+			if l * 0.8 > length(data) || data(end) > sp.buckledWiggleRatio * 0.8
 				correct = true;
 			end
 

@@ -94,6 +94,14 @@ classdef (Abstract) SimulationDriver < matlab.mixin.SetGet
 					if ~obj.outputTypes{i}.exists(obj)
 						fprintf('Need to generate data type: %s\n', obj.outputTypes{i}.name);
 						obj.outputTypesToRun{end + 1} = obj.outputTypes{i};
+					else
+						try
+							data = obj.outputTypes{i}.loadData();
+						catch err
+							fprintf('Issue with existing data type %s:\n%s\n', obj.outputTypes{i}.name, err.message);
+							fprintf('Need to generate data type: %s\n', obj.outputTypes{i}.name);
+							obj.outputTypesToRun{end + 1} = obj.outputTypes{i};
+						end
 					end
 				end
 
@@ -107,10 +115,11 @@ classdef (Abstract) SimulationDriver < matlab.mixin.SetGet
 					if obj.RunSimulation();
 						successCode = 1;
 						for i=1:length(obj.outputTypesToRun)
-							if obj.outputTypesToRun{i}.exists(obj)
+							try
+								data = obj.outputTypes{i}.loadData();
 								fprintf('Data generation successful for %s\n', obj.outputTypesToRun{i}.name);
-							else
-								fprintf('Data generation failed for %s\n', obj.outputTypesToRun{i}.name);
+							catch err
+								fprintf('Data generation failed for %s:\n%s\n', obj.outputTypes{i}.name, err.message);
 								successCode = 0;
 							end
 						end
@@ -121,10 +130,11 @@ classdef (Abstract) SimulationDriver < matlab.mixin.SetGet
 				if obj.RunSimulation();
 					successCode = 3;
 					for i=1:length(obj.outputTypesToRun)
-						if obj.outputTypesToRun{i}.exists(obj)
+						try
+							data = obj.outputTypes{i}.loadData();
 							fprintf('Data generation successful for %s\n', obj.outputTypesToRun{i}.name);
-						else
-							fprintf('Data generation failed for %s\n', obj.outputTypesToRun{i}.name);
+						catch err
+							fprintf('Data generation failed for %s:\n%s\n', obj.outputTypes{i}.name, err.message);
 							successCode = 0;
 						end
 					end

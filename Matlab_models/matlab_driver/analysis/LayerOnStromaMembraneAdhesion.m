@@ -135,8 +135,6 @@ classdef LayerOnStromaMembraneAdhesion < Analysis
 
 		function PlotData(obj)
 
-			% AssembleData(obj);
-
 			% g held constant on one plot
 			h = figure;
 			leg = {};

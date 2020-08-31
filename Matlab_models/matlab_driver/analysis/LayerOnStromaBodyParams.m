@@ -126,9 +126,6 @@ classdef LayerOnStromaBodyParams < Analysis
 
 		function PlotData(obj)
 
-			%AssembleData(obj);
-
-
 			for p = obj.p
 				for g = obj.g
 
@@ -153,9 +150,8 @@ classdef LayerOnStromaBodyParams < Analysis
 
 					SavePlot(obj, h, sprintf('BodyParams'));
 				end
+				
 			end
-
-
 
 		end
 

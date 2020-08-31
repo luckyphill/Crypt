@@ -139,8 +139,6 @@ classdef LayerOnStromaSPEvsPandG < Analysis
 
 		function PlotData(obj)
 
-			%AssembleData(obj);
-
             % g held constant on one plot
 			for g = obj.g
 
