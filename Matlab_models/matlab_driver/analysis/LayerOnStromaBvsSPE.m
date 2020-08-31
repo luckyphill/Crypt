@@ -15,7 +15,7 @@ classdef LayerOnStromaBvsSPE < Analysis
 		w = 10;
 		n = 20;
 
-		b = 0:20;
+		b = 1:20;
 
 		sae = 10;
 		spe = 0:21;
