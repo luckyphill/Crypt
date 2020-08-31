@@ -1,1 +1,1 @@
-sbatch --array=0-9240 --time=24:00:00 ../generalSbatch7seed.sh RunLayerOnStroma LayerOnStromaBvsSPE.txt 
+sbatch --array=0-8800 --time=24:00:00 ../generalSbatch7seed.sh RunLayerOnStroma LayerOnStromaBvsSPE.txt 
