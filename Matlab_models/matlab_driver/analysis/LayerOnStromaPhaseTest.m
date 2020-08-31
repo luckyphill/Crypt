@@ -105,17 +105,26 @@ classdef LayerOnStromaPhaseTest < Analysis
 
 
 				bottom = [];
+				count = 0;
+				valid = 0;
 				for j = obj.seed
 					% try
 						a = RunLayerOnStroma(n,p,g,w,b,sae,spe,j);
 						a.LoadSimulationData();
-						bottom = Concatenate(obj, bottom, a.data.bottomWiggleData');
+						bottom = a.data.bottomWiggleData;
+						if length(bottom) ~= 1
+							valid = valid + 1;
+							if max(bottom) > 1.05
+								count = count + 1;
+							end
+						end
 					% end
 				end
 
-				b = nanmean(bottom);
+				result(i) = count / valid;
 
-				result(i) = max(b);
+				fprintf("%3d buckled out of %3d. Completed %.2f %%\n",count, valid, 100*i/length(obj.parameterSet));
+
 
 
 			end
