@@ -89,6 +89,8 @@ classdef (Abstract) SimulationDriver < matlab.mixin.SetGet
 			if ~obj.overWrite
 				% We are going to take whatever data exists and if it doesn't exist
 				% we will generate it
+				% If there are any error when trying to load data that supposedly exists
+				% then we regenerate it.
 				
 				for i = 1:obj.numOutputTypes
 					if ~obj.outputTypes{i}.exists(obj)
