@@ -129,7 +129,6 @@ classdef LayerOnStromaBodyParams < Analysis
 			for p = obj.p
 				for g = obj.g
 
-
 					h = figure;
 
 					Lidx = obj.parameterSet(:,2) == p;
@@ -149,8 +148,9 @@ classdef LayerOnStromaBodyParams < Analysis
 					colorbar;view(90,-90);caxis([1 1.5]);
 
 					SavePlot(obj, h, sprintf('BodyParams'));
+					
 				end
-				
+
 			end
 
 		end
