@@ -96,7 +96,7 @@ classdef LayerOnStromaPhaseTest2 < Analysis
 
 				totalSeeds = 100;
 				% An empirically determined formula to decide if the region likely to have no buckling
-				if p > -1.2 * g - 3*log(spe) + 23 || p < -1.2 * g - 3*log(spe) + 17
+				if p > -1.3 * g - 3*log(spe) + 29.7 || p < -1.3 * g - 3*log(spe) + 22.8
 					totalSeeds = 20;
 				end
 

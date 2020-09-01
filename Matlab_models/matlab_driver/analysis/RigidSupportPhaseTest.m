@@ -1,4 +1,4 @@
-classdef LayerOnStromaPhaseTest < Analysis
+classdef RigidSupportPhaseTest < Analysis
 
 	properties
 
@@ -9,22 +9,19 @@ classdef LayerOnStromaPhaseTest < Analysis
 
 		% STATIC: DO NOT CHANGE
 		% IF CHANGE IS NEEDED, MAKE A NEW OBJECT
-		p = 5:.5:13;
-		g = 5:.5:12;
+		p = 5:.5:15;
+		g = 5:.5:15;
 
 		w = 10;
 		n = 20;
 
 		b = 10;
 
-		sae = 10;
-		spe = [5, 10, 15, 20];
-
-		seed = 1:20;
+		seed = 1:100;
 
 		targetTime = 500;
 
-		analysisName = 'LayerOnStromaPhaseTest';
+		analysisName = 'RigidSupportPhaseTest';
 
 		avgGrid = {}
 		timePoints = {}
@@ -35,15 +32,15 @@ classdef LayerOnStromaPhaseTest < Analysis
 
 		simulationRuns = 20
 		slurmTimeNeeded = 24
-		simulationDriverName = 'RunLayerOnStroma'
-		simulationInputCount = 7
+		simulationDriverName = 'RunRigidSupport'
+		simulationInputCount = 5
 		
 
 	end
 
 	methods
 
-		function obj = LayerOnStromaPhaseTest()
+		function obj = RigidSupportPhaseTest()
 
 			% Each seed runs in a separate job
 			obj.specifySeedDirectly = true;
@@ -59,13 +56,9 @@ classdef LayerOnStromaPhaseTest < Analysis
 				for g = obj.g
 					for w = obj.w
 						for b = obj.b
-							for sae = obj.sae
-								for spe = obj.spe
 
-									params(end+1,:) = [2*w,p,g,w,b,sae,spe];
+							params(end+1,:) = [2*w,p,g,w,b];
 
-								end
-							end
 						end
 					end
 				end
@@ -77,7 +70,40 @@ classdef LayerOnStromaPhaseTest < Analysis
 
 		end
 
-		
+		function params = BuildParametersWithSeed(obj)
+
+			% This expects the seed property to be a vector of the seeds that will be applied
+			% to each simulation. Each sim will have the same seeds. If different seeds
+			% are required every time, this is not going to help you
+
+			params = [];
+			for i = 1:length(obj.parameterSet)
+				s = obj.parameterSet(i,:);
+				n = s(1);
+				p = s(2);
+				g = s(3);
+				w = s(4);
+				b = s(5);
+
+				% The empirical formula below is for the LayerOnStroma simulation with
+				% stroma area and stroma perimeter energy parameters. This simulation
+				% is effectively taking the limit as spe -> \infty, so we can still use the
+				% formula to limit the number of repetitions needed. 
+				spe = 25;
+
+				totalSeeds = 100;
+				% An empirically determined formula to decide if the region likely to have no buckling
+				if p > -1.3 * g - 3*log(spe) + 29.7 || p < -1.3 * g - 3*log(spe) + 22.8
+					totalSeeds = 20;
+				end
+
+				for seed = 1:totalSeeds
+					params(end+1,:) = [obj.parameterSet(i,:), seed];
+				end
+			end
+
+		end
+
 
 		function BuildSimulation(obj)
 
@@ -98,8 +124,6 @@ classdef LayerOnStromaPhaseTest < Analysis
 				g = s(3);
 				w = s(4);
 				b = s(5);
-				sae = s(6);
-				spe = s(7);
 
 
 				bottom = [];
@@ -107,7 +131,7 @@ classdef LayerOnStromaPhaseTest < Analysis
 				valid = 0;
 				for j = obj.seed
 					% try
-						a = RunLayerOnStroma(n,p,g,w,b,sae,spe,j);
+						a = RunRigidSupport(n,p,g,w,b,j);
 						a.LoadSimulationData();
 						bottom = a.data.bottomWiggleData;
 						if length(bottom) ~= 1
@@ -136,21 +160,18 @@ classdef LayerOnStromaPhaseTest < Analysis
 
 		function PlotData(obj)
 
-			for spe = obj.spe
-
 
 				h = figure;
 
-				Lidx = obj.parameterSet(:,7) == spe;
 				data = obj.result(Lidx);
 
 				params = obj.parameterSet(Lidx,[2,3]);
 
 				scatter(params(:,2), params(:,1), 100, data,'filled');
 				ylabel('Pause','Interpreter', 'latex', 'FontSize', 15);xlabel('Grow','Interpreter', 'latex', 'FontSize', 15);
-				title(sprintf('Proportion buckled, spe=%d', spe),'Interpreter', 'latex', 'FontSize', 22);
+				title(sprintf('Proportion buckled rigid support'),'Interpreter', 'latex', 'FontSize', 22);
 				shading interp
-				ylim([4.5 13.5]);xlim([4.5 12.5]);
+				ylim([4 14]);xlim([4 13]);
 				colorbar; caxis([0 1]);
 				colormap jet;
 				ax = gca;
@@ -159,45 +180,8 @@ classdef LayerOnStromaPhaseTest < Analysis
 				set(h, 'InvertHardcopy', 'off')
 				set(h,'color','w');
 
-				SavePlot(obj, h, sprintf('PhaseTest_spe%d',spe));
+				SavePlot(obj, h, sprintf('PhaseTest_rigidsupport'));
 
-			end
-
-			h = figure;
-			leg = {};
-			for spe = 5:5:20
-				leg{end+1} = sprintf('spe=%d',spe);
-				Lidx = obj.parameterSet(:,7) == spe;
-				data = obj.result(Lidx);
-				para = obj.parameterSet(Lidx,:);
-
-				Lidx = (data > 0.3);
-
-				data = data(Lidx);
-				para = para(Lidx,:);
-
-				Lidx = (data < 0.7);
-
-				data = data(Lidx);
-				para = para(Lidx,:);
-
-				x = para(:,3);
-				y = para(:,2);
-
-				hold on
-				% scatter(x,y,100,'filled');
-				% Perform a least squares regression
-				b = [ones(size(x)),x]\y;
-				p = b' * [ones(size(obj.g)); obj.g];
-				plot(obj.g,p,'LineWidth', 4)
-
-			end
-
-			ylabel('Pause','Interpreter', 'latex', 'FontSize', 15);xlabel('Grow','Interpreter', 'latex', 'FontSize', 15);
-			title(sprintf('Proportion buckled = 0.5'),'Interpreter', 'latex', 'FontSize', 22);
-			ylim([4.5 13.5]);xlim([4.5 12.5]);
-			legend(leg);
-			SavePlot(obj, h, sprintf('PhaseTestWaveFront_spe%d',spe));
 
 		end
 
