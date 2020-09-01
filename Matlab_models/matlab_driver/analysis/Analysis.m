@@ -25,7 +25,11 @@ classdef (Abstract) Analysis < matlab.mixin.SetGet
 
 	properties
 
-		saveLocation
+		result
+
+		imageSaveLocation
+
+		dataSaveLocation
 
 		simulationFileLocation
 
@@ -41,6 +45,9 @@ classdef (Abstract) Analysis < matlab.mixin.SetGet
 		% This could include specific seeds if you like, but different seeds
 		% can be handled in the sbatch file
 		MakeParameterSet
+		% Assemble the data for the analysis into its expected form. This will usually be
+		% a matrix of some form. This function will be used in LoadSimulationData
+		AssembleData
 
 	end
 
@@ -102,6 +109,47 @@ classdef (Abstract) Analysis < matlab.mixin.SetGet
 
 		end
 
+		function LoadSimulationData(obj, varargin)
+
+			% Handles the loading and storage of the aggregated data from a simulation
+			% The abstract function AssembleData will run through the simulation
+			% output and produce the data needed in the matrix "result". This function
+			% will trigger AssembleData if no savefile exists, or if explicitly asked
+			% to regenerate the data
+			% The goal is to have the aggregated data all in a single file, which shouldn't
+			% be too much of a stretch since the outcome of an analysis should be some
+			% form of image which will most likely come from a data array. To make
+			% this even easier, the data file will be saved as a .mat file to make it
+			% a completely generic container
+
+
+			% varargin is a flag to force reassembling
+			if isempty(varargin)
+				% Attempt to read data from file
+				% If it doesn't exist, need to assemble the data
+				if exist(obj.dataFile,'file')~=2
+					obj.AssembleData();
+					result = obj.result;
+					save(obj.dataFile, 'result');
+				else
+					try
+						temp = load(obj.dataFile);
+						obj.result = temp.result;
+					catch err
+						fprintf('Error loading file:\n%s', err.message);
+					end
+				end
+
+			else
+				% If anything exists in varargin, force reassemble
+				obj.AssembleData();
+				result = obj.result;
+				save(obj.dataFile, 'result');
+				
+			end
+
+		end
+
 		function command = BuildCommand(obj,len,paramFile)
 
 			% Build up the command to launch the sbatch
@@ -145,7 +193,6 @@ classdef (Abstract) Analysis < matlab.mixin.SetGet
 
 		end
 
-
 		function SetSaveDetails(obj)
 
 			researchPath = getenv('HOME');
@@ -158,11 +205,18 @@ classdef (Abstract) Analysis < matlab.mixin.SetGet
 
 			obj.simulationFileLocation = [researchPath, 'Research/Crypt/Matlab_models/RectangularCell/phoenix/', obj.analysisName, '/'];
 
-			obj.saveLocation = [researchPath, 'Research/Crypt/Images/Matlab/', obj.analysisName, '/'];
+			obj.imageSaveLocation = [researchPath, 'Research/Crypt/Images/Matlab/', obj.analysisName, '/'];
 
+			obj.dataSaveLocation = [researchPath, 'Research/Crypt/Data/Matlab/AnalysisOutput/', obj.analysisName, '/'];
 
-			if exist(obj.saveLocation,'dir')~=7
-				mkdir(obj.saveLocation);
+			obj.dataFile = [obj.dataSaveLocation, 'data.mat'];
+
+			if exist(obj.imageSaveLocation,'dir')~=7
+				mkdir(obj.imageSaveLocation);
+			end
+
+			if exist(obj.dataSaveLocation,'dir')~=7
+				mkdir(obj.dataSaveLocation);
 			end
 
 			if exist(obj.simulationFileLocation,'dir')~=7
@@ -179,7 +233,7 @@ classdef (Abstract) Analysis < matlab.mixin.SetGet
 			pos = get(h,'Position');
 			set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)]);
 			
-			print([obj.saveLocation,name],'-dpdf')
+			print([obj.imageSaveLocation,name],'-dpdf')
 
 		end
 
