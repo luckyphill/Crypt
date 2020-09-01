@@ -127,8 +127,10 @@ classdef (Abstract) Analysis < matlab.mixin.SetGet
 			if isempty(varargin)
 				% Attempt to read data from file
 				% If it doesn't exist, need to assemble the data
-				if exist(obj.dataFile,'file')~=2
-					obj.AssembleData();
+				if exist(obj.dataFile,'file') ~= 2
+					if isempty(obj.result)
+						obj.AssembleData();
+					end
 					result = obj.result;
 					save(obj.dataFile, 'result');
 				else
@@ -145,7 +147,7 @@ classdef (Abstract) Analysis < matlab.mixin.SetGet
 				obj.AssembleData();
 				result = obj.result;
 				save(obj.dataFile, 'result');
-				
+
 			end
 
 		end
