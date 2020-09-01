@@ -1,4 +1,4 @@
-classdef LayerOnStromaPhaseTest < Analysis
+classdef LayerOnStromaBvsSPE < Analysis
 
 	properties
 
@@ -9,22 +9,22 @@ classdef LayerOnStromaPhaseTest < Analysis
 
 		% STATIC: DO NOT CHANGE
 		% IF CHANGE IS NEEDED, MAKE A NEW OBJECT
-		p = 5:.5:13;
-		g = 5:.5:12;
+		p = 10;
+		g = 10;
 
 		w = 10;
 		n = 20;
 
-		b = 10;
+		b = 1:20;
 
 		sae = 10;
-		spe = [2, 5, 10, 15, 20];
+		spe = 0:21;
 
 		seed = 1:20;
 
 		targetTime = 500;
 
-		analysisName = 'LayerOnStromaPhaseTest';
+		analysisName = 'LayerOnStromaBvsSPE';
 
 		avgGrid = {}
 		timePoints = {}
@@ -45,7 +45,7 @@ classdef LayerOnStromaPhaseTest < Analysis
 
 	methods
 
-		function obj = LayerOnStromaPhaseTest()
+		function obj = LayerOnStromaBvsSPE()
 
 			% Each seed runs in a separate job
 			obj.specifySeedDirectly = true;
@@ -152,14 +152,13 @@ classdef LayerOnStromaPhaseTest < Analysis
 				ylabel('Pause','Interpreter', 'latex', 'FontSize', 15);xlabel('Grow','Interpreter', 'latex', 'FontSize', 15);
 				title(sprintf('Proportion buckled, spe=%d', spe),'Interpreter', 'latex', 'FontSize', 22);
 				shading interp
-				ylim([4.5 13.5]);xlim([4.5 12.5]);
+				ylim([4 14]);xlim([4 13]);
 				colorbar; caxis([0 1]);
 				colormap jet;
 				ax = gca;
 				c = ax.Color;
 				ax.Color = 'black';
 				set(h, 'InvertHardcopy', 'off')
-				set(h,'color','w');
 
 				SavePlot(obj, h, sprintf('PhaseTest_spe%d',spe));
 

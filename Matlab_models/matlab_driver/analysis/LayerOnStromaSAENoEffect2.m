@@ -161,6 +161,7 @@ classdef LayerOnStromaSAENoEffect2 < Analysis
 					c = ax.Color;
 					ax.Color = 'black';
 					set(h, 'InvertHardcopy', 'off')
+					set(h,'color','w');
 
 					SavePlot(obj, h, sprintf('BodyParams'));
 
