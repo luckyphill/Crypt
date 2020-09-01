@@ -1,4 +1,4 @@
-classdef LayerOnStromaPhaseTest < Analysis
+classdef LayerOnStromaPhaseTest2 < Analysis
 
 	properties
 
@@ -9,8 +9,8 @@ classdef LayerOnStromaPhaseTest < Analysis
 
 		% STATIC: DO NOT CHANGE
 		% IF CHANGE IS NEEDED, MAKE A NEW OBJECT
-		p = 5:.5:13;
-		g = 5:.5:12;
+		p = 5:15;
+		g = 5:15;
 
 		w = 10;
 		n = 20;
@@ -18,13 +18,13 @@ classdef LayerOnStromaPhaseTest < Analysis
 		b = 10;
 
 		sae = 10;
-		spe = [2, 5, 10, 15, 20];
+		spe = [5, 10, 15, 20, 25];
 
-		seed = 1:20;
+		seed = 1:100;
 
 		targetTime = 500;
 
-		analysisName = 'LayerOnStromaPhaseTest';
+		analysisName = 'LayerOnStromaPhaseTest2';
 
 		avgGrid = {}
 		timePoints = {}
@@ -45,7 +45,7 @@ classdef LayerOnStromaPhaseTest < Analysis
 
 	methods
 
-		function obj = LayerOnStromaPhaseTest()
+		function obj = LayerOnStromaPhaseTest2()
 
 			% Each seed runs in a separate job
 			obj.specifySeedDirectly = true;
@@ -76,6 +76,36 @@ classdef LayerOnStromaPhaseTest < Analysis
 			
 
 			obj.parameterSet = params;
+
+		end
+
+		function params = BuildParametersWithSeed(obj)
+
+			% This expects the seed property to be a vector of the seeds that will be applied
+			% to each simulation. Each sim will have the same seeds. If different seeds
+			% are required every time, this is not going to help you
+
+			params = [];
+			for i = 1:length(obj.parameterSet)
+				s = obj.parameterSet(i,:);
+				n = s(1);
+				p = s(2);
+				g = s(3);
+				w = s(4);
+				b = s(5);
+				sae = s(6);
+				spe = s(7);
+
+				totalSeeds = 100;
+				% An empirically determined formula to decide if the region likely to have no buckling
+				if p > -1.2 * g - 3*log(spe) + 23 || p < -1.2 * g - 3*log(spe) + 17
+					totalSeeds = 20;
+				end
+
+				for seed = 1:totalSeeds
+					params(end+1,:) = [obj.parameterSet(i,:), seed];
+				end
+			end
 
 		end
 
