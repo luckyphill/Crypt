@@ -124,6 +124,8 @@ classdef (Abstract) Analysis < matlab.mixin.SetGet
 			% this even easier, the data file will be saved as a .mat file to make it
 			% a completely generic container
 
+			obj.SetSaveDetails();
+			obj.MakeParameterSet();
 
 			% varargin is a flag to force reassembling
 			if isempty(varargin)
