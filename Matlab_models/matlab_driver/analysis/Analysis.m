@@ -31,6 +31,8 @@ classdef (Abstract) Analysis < matlab.mixin.SetGet
 
 		dataSaveLocation
 
+		dataFile
+
 		simulationFileLocation
 
 		slurmJobArrayLimit = 10000
