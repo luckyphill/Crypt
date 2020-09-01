@@ -165,6 +165,37 @@ classdef LayerOnStromaPhaseTest < Analysis
 
 			end
 
+			h = figure;
+
+			for spe = 5:5:20
+
+				Lidx = obj.parameterSet(:,7) == spe;
+				data = obj.result(Lidx);
+				para = obj.parameterSet(Lidx,:);
+
+				Lidx = (data > 0.4);
+
+				data = data(Lidx);
+				para = para(Lidx,:);
+
+				Lidx = (data < 0.6);
+
+				data = data(Lidx);
+				para = para(Lidx,:);
+
+				x = para(:,3);
+				y = para(:,2);
+
+				hold on
+				scatter(x,y,100,'filled');
+				b = [ones(size(x)),x]\y
+				p = b' * [ones(size(obj.g)); obj.g];
+				plot(obj.g,p,'LineWidth', 4)
+
+			end
+			ylim([4.5 13.5]);xlim([4.5 12.5]);
+
+
 		end
 
 	end
