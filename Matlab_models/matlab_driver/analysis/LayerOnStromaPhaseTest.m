@@ -152,7 +152,7 @@ classdef LayerOnStromaPhaseTest < Analysis
 				ylabel('Pause','Interpreter', 'latex', 'FontSize', 15);xlabel('Grow','Interpreter', 'latex', 'FontSize', 15);
 				title(sprintf('Proportion buckled, spe=%d', spe),'Interpreter', 'latex', 'FontSize', 22);
 				shading interp
-				ylim([4 14]);xlim([4 13]);
+				ylim([4.5 13.5]);xlim([4.5 12.5]);
 				colorbar; caxis([0 1]);
 				colormap jet;
 				ax = gca;
