@@ -9,8 +9,8 @@ classdef LayerOnStromaPhaseTest2 < Analysis
 
 		% STATIC: DO NOT CHANGE
 		% IF CHANGE IS NEEDED, MAKE A NEW OBJECT
-		p = 5:15;
-		g = 5:15;
+		p = 5:.5:15;
+		g = 5:.5:15;
 
 		w = 10;
 		n = 20;
@@ -30,8 +30,6 @@ classdef LayerOnStromaPhaseTest2 < Analysis
 		timePoints = {}
 
 		stabilityGrids = {};
-
-		result
 
 		parameterSet = []
 
@@ -107,6 +105,13 @@ classdef LayerOnStromaPhaseTest2 < Analysis
 				end
 			end
 
+			previousAnalysis = LayerOnStromaPhaseTest;
+			previousAnalysis.MakeParameterSet();
+			otherparams = previousAnalysis.BuildParametersWithSeed();
+
+			[Lia,Locb] = ismember(otherparams,params,'rows');
+
+			params(Locb,:)=[];
 		end
 
 		
