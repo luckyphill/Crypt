@@ -31,8 +31,6 @@ classdef LayerOnStromaMembraneAdhesion < Analysis
 
 		stabilityGrids = {};
 
-		result
-
 		parameterSet = []
 
 		simulationRuns = 20

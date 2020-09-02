@@ -31,8 +31,6 @@ classdef LayerOnStromaSAENoEffect3 < Analysis
 
 		stabilityGrids = {};
 
-		result
-
 		parameterSet = []
 
 		simulationRuns = 20

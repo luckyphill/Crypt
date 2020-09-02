@@ -30,9 +30,7 @@ classdef LayerOnStromaDivisionParams < Analysis
 		timePoints = {}
 
 		stabilityGrids = {};
-
-		result
-
+		
 		parameterSet = []
 
 		simulationRuns = 5

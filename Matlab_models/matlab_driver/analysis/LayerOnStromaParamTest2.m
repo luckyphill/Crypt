@@ -31,8 +31,6 @@ classdef LayerOnStromaParamTest2 < Analysis
 
 		stabilityGrids = {};
 
-		result
-
 		parameterSet = []
 
 		simulationRuns = 5

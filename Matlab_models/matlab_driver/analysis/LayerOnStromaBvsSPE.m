@@ -31,8 +31,6 @@ classdef LayerOnStromaBvsSPE < Analysis
 
 		stabilityGrids = {};
 
-		result
-
 		parameterSet = []
 
 		simulationRuns = 20

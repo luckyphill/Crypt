@@ -31,8 +31,6 @@ classdef LayerOnStromaSPEvsPandG < Analysis
 
 		stabilityGrids = {};
 
-		result
-
 		parameterSet = []
 
 		simulationRuns = 100
