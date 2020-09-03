@@ -25,10 +25,9 @@ classdef BottomWiggleData < dataType
 
 
 			l = (sp.simObj.timeLimit/sp.simObj.dt) / sp.simObj.samplingMultiple;
-
 			correct = false;
 
-			if l * 0.8 > length(data) || data(end) > sp.buckledWiggleRatio * 0.8
+			if l * 0.8 < length(data) || data(end) > sp.buckledWiggleRatio * 0.8
 				correct = true;
 			end
 

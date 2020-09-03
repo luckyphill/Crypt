@@ -26,11 +26,6 @@ classdef LayerOnStromaBvsSPE < Analysis
 
 		analysisName = 'LayerOnStromaBvsSPE';
 
-		avgGrid = {}
-		timePoints = {}
-
-		stabilityGrids = {};
-
 		parameterSet = []
 
 		simulationRuns = 20
@@ -136,31 +131,25 @@ classdef LayerOnStromaBvsSPE < Analysis
 
 		function PlotData(obj)
 
-			for spe = obj.spe
+			h = figure;
 
+			data = obj.result;
 
-				h = figure;
+			params = obj.parameterSet(:,[5,7]);
 
-				Lidx = obj.parameterSet(:,7) == spe;
-				data = obj.result(Lidx);
+			scatter(params(:,2), params(:,1), 100, data,'filled');
+			ylabel('Membrane adhesion','Interpreter', 'latex', 'FontSize', 15);xlabel('Perimeter energy','Interpreter', 'latex', 'FontSize', 15);
+			title(sprintf('Proportion buckled'),'Interpreter', 'latex', 'FontSize', 22);
+			ylim([0.5 20.5]);xlim([-0.5 21.5]);
+			colorbar; caxis([0 1]);
+			colormap jet;
+			ax = gca;
+			c = ax.Color;
+			ax.Color = 'black';
+			set(h, 'InvertHardcopy', 'off')
 
-				params = obj.parameterSet(Lidx,[2,3]);
+			SavePlot(obj, h, sprintf('BvsSPE'));
 
-				scatter(params(:,2), params(:,1), 100, data,'filled');
-				ylabel('Pause','Interpreter', 'latex', 'FontSize', 15);xlabel('Grow','Interpreter', 'latex', 'FontSize', 15);
-				title(sprintf('Proportion buckled, spe=%d', spe),'Interpreter', 'latex', 'FontSize', 22);
-				shading interp
-				ylim([4 14]);xlim([4 13]);
-				colorbar; caxis([0 1]);
-				colormap jet;
-				ax = gca;
-				c = ax.Color;
-				ax.Color = 'black';
-				set(h, 'InvertHardcopy', 'off')
-
-				SavePlot(obj, h, sprintf('PhaseTest_spe%d',spe));
-
-			end
 
 		end
 

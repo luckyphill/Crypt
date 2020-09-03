@@ -23,11 +23,6 @@ classdef RigidSupportPhaseTest < Analysis
 
 		analysisName = 'RigidSupportPhaseTest';
 
-		avgGrid = {}
-		timePoints = {}
-
-		stabilityGrids = {};
-
 		parameterSet = []
 
 		simulationRuns = 20
