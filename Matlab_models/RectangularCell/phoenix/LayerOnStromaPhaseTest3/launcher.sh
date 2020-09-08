@@ -1,0 +1,1 @@
+sbatch --array=0-8000 --time=24:00:00 ../generalSbatch7seed.sh RunLayerOnStroma LayerOnStromaPhaseTest3.txt 

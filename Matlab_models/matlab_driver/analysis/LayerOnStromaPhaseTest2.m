@@ -9,8 +9,13 @@ classdef LayerOnStromaPhaseTest2 < Analysis
 
 		% STATIC: DO NOT CHANGE
 		% IF CHANGE IS NEEDED, MAKE A NEW OBJECT
-		p = 5:.5:15;
-		g = 5:.5:15;
+
+		% This is to demonstrate that we only need to increase the parameter space resolution
+		% not the number of simulation runs
+
+		% FINER RESOLUTION
+		p = 5:.25:15;
+		g = 5:.25:15;
 
 		w = 10;
 		n = 20;
@@ -18,9 +23,9 @@ classdef LayerOnStromaPhaseTest2 < Analysis
 		b = 10;
 
 		sae = 10;
-		spe = [5, 10, 15, 20, 25];
+		spe = 15;
 
-		seed = 1:100;
+		seed = 1:20;
 
 		targetTime = 500;
 
@@ -94,24 +99,16 @@ classdef LayerOnStromaPhaseTest2 < Analysis
 				sae = s(6);
 				spe = s(7);
 
-				totalSeeds = 100;
 				% An empirically determined formula to decide if the region likely to have no buckling
 				if p > -1.3 * g - 3*log(spe) + 29.7 || p < -1.3 * g - 3*log(spe) + 22.8
-					totalSeeds = 20;
+					for seed = obj.seed
+						params(end+1,:) = [obj.parameterSet(i,:), seed];
+					end
 				end
 
-				for seed = 1:totalSeeds
-					params(end+1,:) = [obj.parameterSet(i,:), seed];
-				end
+				
 			end
 
-			previousAnalysis = LayerOnStromaPhaseTest;
-			previousAnalysis.MakeParameterSet();
-			otherparams = previousAnalysis.BuildParametersWithSeed();
-
-			[Lia,Locb] = ismember(otherparams,params,'rows');
-
-			params(Locb,:)=[];
 		end
 
 		
@@ -127,7 +124,7 @@ classdef LayerOnStromaPhaseTest2 < Analysis
 
 			% Used when there is at least some data ready
 			MakeParameterSet(obj);
-			result = nan(1,length(obj.parameterSet));
+			obj.result = nan(1,length(obj.parameterSet));
 			for i = 1:length(obj.parameterSet)
 				s = obj.parameterSet(i,:);
 				n = s(1);
@@ -156,17 +153,12 @@ classdef LayerOnStromaPhaseTest2 < Analysis
 					% end
 				end
 
-				result(i) = count / valid;
+				obj.result(i) = count / valid;
 
 				fprintf("%3d buckled out of %3d. Completed %.2f %%\n",count, valid, 100*i/length(obj.parameterSet));
 
 
-
 			end
-
-
-			obj.result = result;
-
 			
 
 		end

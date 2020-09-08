@@ -203,9 +203,10 @@ classdef RigidSupport < LineSimulation
 			% Add the data writers
 			%---------------------------------------------------
 
-			% obj.AddSimulationData(SpatialState());
+			
 			pathName = sprintf('RigidSupport/n%gp%gg%gw%gb%g_seed%g/',nCells,p,g,w,b,seed);
-			% obj.AddDataWriter(WriteSpatialState(20,pathName));
+			obj.AddSimulationData(SpatialState());
+			obj.AddDataWriter(WriteSpatialState(20,pathName));
 			obj.AddDataWriter(WriteBottomWiggleRatio(obj.samplingMultiple, pathName));
 
 			%---------------------------------------------------
