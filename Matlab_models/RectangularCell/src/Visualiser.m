@@ -352,6 +352,61 @@ classdef Visualiser < matlab.mixin.SetGet
 
 		end
 
+
+		function VisualiseRods(obj)
+
+			% This will take the formatted data and produces a video of a rod cell simulation
+
+			h = figure();
+			axis equal
+			hold on
+
+			[I,~] = size(obj.cells);
+
+
+			% Initialise the array with anything
+			fillObjects(1) = fill([1,1],[2,2],'r');
+
+			for i = 1:I
+				% i is the time steps
+				[~,J] = size(obj.cells);
+				j = 1;
+				while j <= J && ~isempty(obj.cells{i,j})
+
+					c = obj.cells{i,j};
+					ids = c(1:end-1);
+					colour = c(end);
+					nodeCoords = squeeze(obj.nodes(ids,i,:));
+
+					x = nodeCoords(:,1);
+					y = nodeCoords(:,2);
+
+					if j > length(fillObjects)
+						fillObjects(j) = fill(x,y,obj.cs.GetRGB(colour));
+					else
+						fillObjects(j).XData = x;
+						fillObjects(j).YData = y;
+						fillObjects(j).FaceColor = obj.cs.GetRGB(colour);
+					end
+
+					j = j + 1;
+
+				end
+				% j will always end up being 1 more than the total number of non empty cells
+
+				for k = length(fillObjects):-1:j
+					fillObjects(k).delete;
+					fillObjects(k) = [];
+				end
+
+				drawnow
+				title(sprintf('t = %g',obj.timeSteps(i)),'Interpreter', 'latex');
+				pause(0.1);
+
+			end
+
+		end
+
 	end
 
 

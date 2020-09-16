@@ -124,7 +124,6 @@ classdef CellGrowing < LineSimulation
 
 			obj.AddSimulationData(SpatialState());
 			obj.AddDataWriter(WriteSpatialState(20,'CellGrowing/'));
-			obj.AddDataWriter(WriteWiggleRatio(10,'FirstMembrane/'));
 
 			%---------------------------------------------------
 			% All done. Ready to roll

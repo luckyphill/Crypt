@@ -6,6 +6,9 @@ classdef WntCellCycle < AbstractCellCycleModel
 	% After a fresh division, the cell stays a constant size, for a time specified by
 	% pausePhaseLength, after which it starts growing
 
+	% This offers a way to make cells stop growing after they reach a certain position
+	% It is intended at this moment to be a quick hack to make cells stop growing in a crypt
+
 	properties
 
 		meanPausePhaseLength

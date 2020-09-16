@@ -88,7 +88,7 @@ classdef LayerOnStromaBvsSPE2 < Analysis
 
 			% Used when there is at least some data ready
 			MakeParameterSet(obj);
-			result = nan(1,length(obj.parameterSet));
+			obj.result = nan(1,length(obj.parameterSet));
 			for i = 1:length(obj.parameterSet)
 				s = obj.parameterSet(i,:);
 				n = s(1);
@@ -117,41 +117,43 @@ classdef LayerOnStromaBvsSPE2 < Analysis
 					% end
 				end
 
-				result(i) = count / valid;
+				obj.result(i) = count / valid;
 
 				fprintf("%3d buckled out of %3d. Completed %.2f %%\n",count, valid, 100*i/length(obj.parameterSet));
 
-
-
-			end
-
-
-			obj.result = result;
-
-			
+			end			
 
 		end
 
 		function PlotData(obj)
 
-			h = figure;
+			for p = obj.p
+				for g = obj.g
 
-			data = obj.result;
+					h = figure;
 
-			params = obj.parameterSet(:,[5,7]);
+					Lidx = obj.parameterSet(:,2) == p;
+					tempR = obj.result(Lidx);
+					Lidx = obj.parameterSet(Lidx,3) == g;
+					data = tempR(Lidx);
 
-			scatter(params(:,2), params(:,1), 100, data,'filled');
-			ylabel('Membrane adhesion','Interpreter', 'latex', 'FontSize', 15);xlabel('Perimeter energy','Interpreter', 'latex', 'FontSize', 15);
-			title(sprintf('Proportion buckled'),'Interpreter', 'latex', 'FontSize', 22);
-			ylim([0.5 20.5]);xlim([-0.5 21.5]);
-			colorbar; caxis([0 1]);
-			colormap jet;
-			ax = gca;
-			c = ax.Color;
-			ax.Color = 'black';
-			set(h, 'InvertHardcopy', 'off')
+					params = obj.parameterSet(Lidx,[5,7]);
 
-			SavePlot(obj, h, sprintf('BvsSPE'));
+					scatter(params(:,2), params(:,1), 100, data,'filled');
+					ylabel('Membrane adhesion','Interpreter', 'latex', 'FontSize', 15);xlabel('Perimeter energy','Interpreter', 'latex', 'FontSize', 15);
+					title(sprintf('Proportion buckled'),'Interpreter', 'latex', 'FontSize', 22);
+					ylim([0.5 20.5]);xlim([-0.5 21.5]);
+					colorbar; caxis([0 1]);
+					colormap jet;
+					ax = gca;
+					c = ax.Color;
+					ax.Color = 'black';
+					set(h, 'InvertHardcopy', 'off')
+
+					SavePlot(obj, h, sprintf('BvsSPE_p%gg%g',p,g));
+
+				end
+			end
 
 
 		end
