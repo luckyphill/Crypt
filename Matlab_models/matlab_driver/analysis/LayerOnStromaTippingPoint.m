@@ -78,15 +78,29 @@ classdef LayerOnStromaTippingPoint < Analysis
 
 			% Used when there is at least some data ready
 			MakeParameterSet(obj);
-			collection = [];
+			bottom = [];
 			for j = obj.seed
 				a = RunLayerOnStroma(obj.n,obj.p,obj.g,obj.w,obj.b,obj.sae,obj.spe,j);
 				a.LoadSimulationData();
-				bottom = a.data.bottomWiggleData;
-				collection(j) = max(bottom);
+				bottom = Concatenate(obj, bottom, a.data.bottomWiggleData');
 			end
 
-			obj.result = sort(collection);
+			% Find the tipping point when all buckle
+			jumpsize = 10;
+			J = 1:length(bottom)-jumpsize;
+			% sortc = sort(bottom,1);
+			% sortc(sortc > 1.1) = nan;
+			diffc = bottom(:,J+jumpsize) - bottom(:,J);
+			
+			% diffc(diffc < 0.9) = nan;
+			% [~,I] = max(diffc);
+			% nanmean(max(sortc(I,:)));
+			% nanmean(bottom(:))
+			% obj.result = sortc;
+			figure;plot(bottom')
+			figure;plot(diffc')
+			% Find the tipping point when none buckle
+			% max(bottom(:))
 
 		end
 

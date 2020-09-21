@@ -45,8 +45,6 @@ classdef RodCellGrowthForce < AbstractCellBasedForce
 
 			unitVector1to2 = e.GetVector1to2();
 
-
-
 			n = c.GetCellTargetArea();
 			l = c.GetCellArea();
 			mag = obj.springFunction(n, l);

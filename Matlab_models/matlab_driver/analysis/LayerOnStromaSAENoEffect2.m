@@ -90,7 +90,9 @@ classdef LayerOnStromaSAENoEffect2 < Analysis
 
 			% Used when there is at least some data ready
 			MakeParameterSet(obj);
-			result = nan(1,length(obj.parameterSet));
+			obj.result = [nan,nan];
+			tip = nan(1,length(obj.parameterSet));
+			prop = nan(1,length(obj.parameterSet));
 			for i = 1:length(obj.parameterSet)
 				s = obj.parameterSet(i,:);
 				n = s(1);
@@ -103,27 +105,36 @@ classdef LayerOnStromaSAENoEffect2 < Analysis
 
 
 				bottom = [];
+				collection = [];
 				count = 0;
 				for j = obj.seed
 					% try
 						a = RunLayerOnStroma(n,p,g,w,b,sae,spe,j);
 						a.LoadSimulationData();
 						bottom = a.data.bottomWiggleData;
-						if max(bottom) > 1.05
+						collection(j) = max(bottom);
+						if collection(j) > 1.1
 							count = count + 1;
 						end
 					% end
 				end
 
-				result(i) = count / obj.simulationRuns;
+				jumpSize = 3;
+				J = obj.seed(1:end-jumpSize);
+				sortc = sort(collection);
+				diffc = sortc(J+jumpSize) - sortc(J);
+				[mdiffc,k] = max(diffc);
+				
+				if mdiffc > 0.3
+					tip(i) = sortc(k);
+				end
+
+				prop(i) = count / obj.simulationRuns;
+
+				obj.result(i,:) = [prop(i), tip(i)];
 
 				fprintf("Completed %.2f %%\n", 100*i/length(obj.parameterSet));
 			end
-
-
-			obj.result = result;
-
-			
 
 		end
 
@@ -133,12 +144,14 @@ classdef LayerOnStromaSAENoEffect2 < Analysis
 				for g = obj.g
 
 
-					h = figure;
+					
 
 					Lidx = obj.parameterSet(:,2) == p;
-					tempR = obj.result(Lidx);
+					tempP = obj.result(Lidx,1);
+					tempT = obj.result(Lidx,2);
 					Lidx = obj.parameterSet(Lidx,3) == g;
-					data = tempR(Lidx);
+					dataP = tempP(Lidx);
+					dataT = tempT(Lidx);
 
 					params = obj.parameterSet(Lidx,[6,7]);
 
@@ -147,11 +160,10 @@ classdef LayerOnStromaSAENoEffect2 < Analysis
 					% [A,P] = meshgrid(obj.spe,obj.sae);
 
 					% surf(P,A,data');
-
-					scatter(params(:,2), params(:,1), 100, data,'filled');
+					h = figure;
+					scatter(params(:,2), params(:,1), 100, dataP,'filled');
 					ylabel('Area energy parameter','Interpreter', 'latex', 'FontSize', 15);xlabel('Perimeter energy parameter','Interpreter', 'latex', 'FontSize', 15);
 					title(sprintf('Proportion buckled, p=%g, g=%g',p,g),'Interpreter', 'latex', 'FontSize', 22);
-					shading interp
 					ylim([1 41]);xlim([1.5 15.5]);
 					colorbar; caxis([0 1]);
 					colormap jet;
@@ -161,7 +173,23 @@ classdef LayerOnStromaSAENoEffect2 < Analysis
 					set(h, 'InvertHardcopy', 'off')
 					set(h,'color','w');
 
-					SavePlot(obj, h, sprintf('BodyParams'));
+					SavePlot(obj, h, sprintf('BodyParamsProp'));
+
+
+					h = figure;
+					scatter(params(:,2), params(:,1), 100, dataT,'filled');
+					ylabel('Area energy parameter','Interpreter', 'latex', 'FontSize', 15);xlabel('Perimeter energy parameter','Interpreter', 'latex', 'FontSize', 15);
+					title(sprintf('Tipping point, p=%g, g=%g',p,g),'Interpreter', 'latex', 'FontSize', 22);
+					ylim([1 41]);xlim([1.5 15.5]);
+					colorbar; caxis([1 1.06]);
+					colormap jet;
+					ax = gca;
+					c = ax.Color;
+					ax.Color = 'black';
+					set(h, 'InvertHardcopy', 'off')
+					set(h,'color','w');
+
+					SavePlot(obj, h, sprintf('BodyParamsTip'));
 
 				end
 			end

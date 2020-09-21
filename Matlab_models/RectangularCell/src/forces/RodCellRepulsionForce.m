@@ -13,6 +13,9 @@ classdef RodCellRepulsionForce < AbstractNeighbourhoodBasedForce
 
 		function obj = RodCellRepulsionForce(r, dt)
 
+			% r is the radius in which we search for interactions
+			% it will be 2x the searching radius of a single cell
+			% assuming all cells are searching at the same distance
 			obj.r = r;
 			obj.dt = dt;
 			% We need the time step size in order to properly

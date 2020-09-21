@@ -12,7 +12,9 @@ classdef RodCellTest < FreeCellSimulation
 
 		function obj = RodCellTest(r, g, d, seed)
 
-
+			% r is the rod growing force
+			% g is the time to grow from new cell to full size
+			% d is the division probability for an hour
 			n1 = Node(0,0,obj.GetNextNodeId());
 			n2 = Node(0.5,0,obj.GetNextNodeId());
 
@@ -20,13 +22,16 @@ classdef RodCellTest < FreeCellSimulation
 
 			obj.nodeList = [n1,n2];
 			obj.elementList = e;
-			obj.cellList = RodCell(e,SimpleRodCellCycle(g, d, obj.dt),obj.GetNextCellId());
+			c = RodCell(e,SimpleRodCellCycle(g, d, obj.dt),obj.GetNextCellId());
+			c.newCellTargetArea = 0.25;
+			c.grownCellTargetArea = 0.5;
+			obj.cellList = c;
 
 
 			% Node-Element interaction force - requires a SpacePartition
 			obj.AddNeighbourhoodBasedForce(RodCellRepulsionForce(0.2, obj.dt));
 
-			% A force to keep the rod cell at tis preferred length
+			% A force to keep the rod cell at its preferred length
 			obj.AddCellBasedForce(RodCellGrowthForce(r));
 
 			

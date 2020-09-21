@@ -90,7 +90,9 @@ classdef LayerOnStromaPhaseTest < Analysis
 
 			% Used when there is at least some data ready
 			MakeParameterSet(obj);
-			result = nan(1,length(obj.parameterSet));
+			obj.result = [nan,nan];
+			tip = nan(1,length(obj.parameterSet));
+			prop = nan(1,length(obj.parameterSet));
 			for i = 1:length(obj.parameterSet)
 				s = obj.parameterSet(i,:);
 				n = s(1);
@@ -103,34 +105,36 @@ classdef LayerOnStromaPhaseTest < Analysis
 
 
 				bottom = [];
+				collection = [];
 				count = 0;
-				valid = 0;
 				for j = obj.seed
 					% try
 						a = RunLayerOnStroma(n,p,g,w,b,sae,spe,j);
 						a.LoadSimulationData();
 						bottom = a.data.bottomWiggleData;
-						if length(bottom) ~= 1
-							valid = valid + 1;
-							if max(bottom) > 1.05
-								count = count + 1;
-							end
+						collection(j) = max(bottom);
+						if collection(j) > 1.1
+							count = count + 1;
 						end
 					% end
 				end
 
-				result(i) = count / valid;
+				jumpSize = 3;
+				J = obj.seed(1:end-jumpSize);
+				sortc = sort(collection);
+				diffc = sortc(J+jumpSize) - sortc(J);
+				[mdiffc,k] = max(diffc);
+				
+				if mdiffc > 0.3
+					tip(i) = sortc(k);
+				end
 
-				fprintf("%3d buckled out of %3d. Completed %.2f %%\n",count, valid, 100*i/length(obj.parameterSet));
+				prop(i) = count / obj.simulationRuns;
 
+				obj.result(i,:) = [prop(i), tip(i)];
 
-
+				fprintf("Completed %.2f %%\n", 100*i/length(obj.parameterSet));
 			end
-
-
-			obj.result = result;
-
-			
 
 		end
 
@@ -142,14 +146,14 @@ classdef LayerOnStromaPhaseTest < Analysis
 				h = figure;
 
 				Lidx = obj.parameterSet(:,7) == spe;
-				data = obj.result(Lidx);
+				dataP = obj.result(Lidx,1);
+				dataT = obj.result(Lidx,2);
 
 				params = obj.parameterSet(Lidx,[2,3]);
 
-				scatter(params(:,2), params(:,1), 100, data,'filled');
+				scatter(params(:,2), params(:,1), 100, dataP,'filled');
 				ylabel('Pause','Interpreter', 'latex', 'FontSize', 15);xlabel('Grow','Interpreter', 'latex', 'FontSize', 15);
 				title(sprintf('Proportion buckled, spe=%d', spe),'Interpreter', 'latex', 'FontSize', 22);
-				shading interp
 				ylim([4.5 13.5]);xlim([4.5 12.5]);
 				colorbar; caxis([0 1]);
 				colormap jet;
@@ -159,7 +163,22 @@ classdef LayerOnStromaPhaseTest < Analysis
 				set(h, 'InvertHardcopy', 'off')
 				set(h,'color','w');
 
-				SavePlot(obj, h, sprintf('PhaseTest_spe%d',spe));
+				SavePlot(obj, h, sprintf('PhaseTestProp_spe%d',spe));
+
+				h = figure;
+				scatter(params(:,2), params(:,1), 100, dataT,'filled');
+				ylabel('Pause','Interpreter', 'latex', 'FontSize', 15);xlabel('Grow','Interpreter', 'latex', 'FontSize', 15);
+				title(sprintf('Tipping point, p=%g, g=%g',p,g),'Interpreter', 'latex', 'FontSize', 22);
+				ylim([1 41]);xlim([1.5 15.5]);
+				colorbar; caxis([1 1.1]);
+				colormap jet;
+				ax = gca;
+				c = ax.Color;
+				ax.Color = 'black';
+				set(h, 'InvertHardcopy', 'off')
+				set(h,'color','w');
+
+				SavePlot(obj, h, sprintf('PhaseTestTip_spe%d',spe));
 
 			end
 
@@ -171,12 +190,12 @@ classdef LayerOnStromaPhaseTest < Analysis
 				data = obj.result(Lidx);
 				para = obj.parameterSet(Lidx,:);
 
-				Lidx = (data > 0.3);
+				Lidx = (data > 0.4);
 
 				data = data(Lidx);
 				para = para(Lidx,:);
 
-				Lidx = (data < 0.7);
+				Lidx = (data < 0.6);
 
 				data = data(Lidx);
 				para = para(Lidx,:);

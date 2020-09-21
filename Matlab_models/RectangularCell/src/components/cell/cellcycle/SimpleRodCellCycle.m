@@ -35,9 +35,9 @@ classdef SimpleRodCellCycle < AbstractCellCycleModel
 
 		function newCCM = Duplicate(obj)
 
-			newCCM = SimpleRodCellCycle(obj.divisionProbHour, obj.dt);
+			newCCM = SimpleRodCellCycle(obj.growTime, obj.divisionProbHour, obj.dt);
 			newCCM.SetAge(0);
-			newCCM.colour = obj.colourSet.GetNumber('GROW');
+			newCCM.colour = obj.colourSet.GetNumber('PILLGROW');
 
 		end
 
@@ -45,7 +45,8 @@ classdef SimpleRodCellCycle < AbstractCellCycleModel
 
 			c = obj.containingCell;
 			ready = false;
-			if (obj.age > obj.growTime) && (c.elementList.GetLength() > 0.8) && (obj.divisionProbHour * obj.dt > rand)
+
+			if (obj.age > obj.growTime) && (c.elementList.GetLength() > 0.8 * c.grownCellTargetArea) && (obj.divisionProbHour * obj.dt > rand)
 				ready = true;
 			end
 
@@ -56,10 +57,10 @@ classdef SimpleRodCellCycle < AbstractCellCycleModel
 			% Grows to a target size and stays there until random division
 			if obj.age < obj.growTime
 				fraction = obj.age / obj.growTime;
-				obj.colour = obj.colourSet.GetNumber('GROW');
+				obj.colour = obj.colourSet.GetNumber('PILLGROW');
 			else
 				fraction = 1;
-				obj.colour = obj.colourSet.GetNumber('PAUSE');
+				obj.colour = obj.colourSet.GetNumber('PILL');
 			end
 
 		end

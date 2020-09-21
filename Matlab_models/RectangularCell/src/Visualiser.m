@@ -261,19 +261,6 @@ classdef Visualiser < matlab.mixin.SetGet
 				end
 
 				drawnow
-				% axis off
-				% % axis equal
-				% xlimits = xlim;
-				% ylimits = ylim;
-				% e=0.01;
-
-				% if xu+e < xlimits(2); xu = xlimits(2); end
-				% if xl+e > xlimits(1); xl = xlimits(1); end
-				% if yu+e < ylimits(2); yu = ylimits(2); end
-				% if yl+e > ylimits(1); yl = ylimits(1); end
-
-				% xlim([xl, xu]);
-				% ylim([yl, yu]);
 
 				title(sprintf('t = %g',obj.timeSteps(i)),'Interpreter', 'latex');
 				F(end+1) = getframe(h);
@@ -361,11 +348,13 @@ classdef Visualiser < matlab.mixin.SetGet
 			axis equal
 			hold on
 
+			r = 0.08;
+
 			[I,~] = size(obj.cells);
 
 
 			% Initialise the array with anything
-			fillObjects(1) = fill([1,1],[2,2],'r');
+			patchObjects(1) = patch([1,1],[2,2],obj.cs.GetRGB(6), 'LineWidth', 4);
 
 			for i = 1:I
 				% i is the time steps
@@ -378,15 +367,17 @@ classdef Visualiser < matlab.mixin.SetGet
 					colour = c(end);
 					nodeCoords = squeeze(obj.nodes(ids,i,:));
 
-					x = nodeCoords(:,1);
-					y = nodeCoords(:,2);
+					a = nodeCoords(1,:);
+					b = nodeCoords(2,:);
 
-					if j > length(fillObjects)
-						fillObjects(j) = fill(x,y,obj.cs.GetRGB(colour));
+					if j > length(patchObjects)
+						[pillX,pillY] = obj.DrawPill(a,b,r);
+						patchObjects(j) = patch(pillX,pillY,obj.cs.GetRGB(colour), 'LineWidth', 4);
 					else
-						fillObjects(j).XData = x;
-						fillObjects(j).YData = y;
-						fillObjects(j).FaceColor = obj.cs.GetRGB(colour);
+						[pillX,pillY] = obj.DrawPill(a,b,r);
+						patchObjects(j).XData = pillX;
+						patchObjects(j).YData = pillY;
+						patchObjects(j).FaceColor = obj.cs.GetRGB(colour);
 					end
 
 					j = j + 1;
@@ -394,9 +385,9 @@ classdef Visualiser < matlab.mixin.SetGet
 				end
 				% j will always end up being 1 more than the total number of non empty cells
 
-				for k = length(fillObjects):-1:j
-					fillObjects(k).delete;
-					fillObjects(k) = [];
+				for k = length(patchObjects):-1:j
+					patchObjects(k).delete;
+					patchObjects(k) = [];
 				end
 
 				drawnow
@@ -404,6 +395,183 @@ classdef Visualiser < matlab.mixin.SetGet
 				pause(0.1);
 
 			end
+
+		end
+
+		function ProduceRodMovie(obj, varargin)
+
+			tIdxStart = 1;
+			tIdxEnd = length(obj.timeSteps);
+			if ~isempty(varargin)
+				tIdxStart = varargin{1};
+				tIdxEnd = varargin{2};
+			end
+
+			% Currently same as run visualiser, but saves the movie
+
+			h = figure();
+			axis equal
+			axis off
+			hold on
+
+			r = 0.08;
+
+			xl = 0;
+			xu = 0;
+			yl = 0;
+			yu = 0;
+
+			F = getframe(h);
+
+			% Initialise the array with anything
+			% Initialise the array with anything
+			patchObjects(1) = patch([1,1],[2,2],obj.cs.GetRGB(6), 'LineWidth', 4);
+
+			for i = tIdxStart:tIdxEnd
+				% i is the time steps
+				[~,J] = size(obj.cells);
+				j = 1;
+				while j <= J && ~isempty(obj.cells{i,j})
+
+					c = obj.cells{i,j};
+					ids = c(1:end-1);
+					colour = c(end);
+					nodeCoords = squeeze(obj.nodes(ids,i,:));
+
+					a = nodeCoords(1,:);
+					b = nodeCoords(2,:);
+
+					if j > length(patchObjects)
+						[pillX,pillY] = obj.DrawPill(a,b,r);
+						patchObjects(j) = patch(pillX,pillY,obj.cs.GetRGB(colour), 'LineWidth', 4);
+					else
+						[pillX,pillY] = obj.DrawPill(a,b,r);
+						patchObjects(j).XData = pillX;
+						patchObjects(j).YData = pillY;
+						patchObjects(j).FaceColor = obj.cs.GetRGB(colour);
+					end
+
+					j = j + 1;
+
+				end
+				% j will always end up being 1 more than the total number of non empty cells
+
+				for k = length(patchObjects):-1:j
+					patchObjects(k).delete;
+					patchObjects(k) = [];
+				end
+
+				drawnow
+
+				title(sprintf('t = %g',obj.timeSteps(i)),'Interpreter', 'latex');
+				F(end+1) = getframe(h);
+
+			end
+
+			fileName = [obj.pathToOutput,'animation'];
+
+			if ~isempty(varargin)
+				ts = obj.timeSteps(tIdxStart);
+				te = obj.timeSteps(tIdxEnd);
+				fileName = sprintf('%s_%gto%g',fileName, ts, te );
+			end
+
+			writerObj = VideoWriter(fileName,'MPEG-4');
+			writerObj.FrameRate = 10;
+
+			% open the video writer
+			open(writerObj);
+			% write the frames to the video
+			for i=2:length(F)
+				% convert the image to a frame
+				frame = F(i) ;    
+				writeVideo(writerObj, frame);
+			end
+			% close the writer object
+			close(writerObj);
+
+		end
+
+		function PlotRodTimeStep(obj, timeStep)
+
+			% Plots a single given timestep
+
+			h = figure();
+			axis equal
+			hold on
+			r = 0.08;
+
+			i = timeStep;
+
+
+			% Initialise the array with anything
+			patchObjects(1) = patch([1,1],[2,2],obj.cs.GetRGB(6), 'LineWidth', 4);
+
+
+			[~,J] = size(obj.cells);
+			j = 1;
+			while j <= J && ~isempty(obj.cells{i,j})
+
+				c = obj.cells{i,j};
+				ids = c(1:end-1);
+				colour = c(end);
+				nodeCoords = squeeze(obj.nodes(ids,i,:));
+
+				a = nodeCoords(1,:);
+				b = nodeCoords(2,:);
+
+				[pillX,pillY] = obj.DrawPill(a,b,r);
+				patchObjects(j) = patch(pillX,pillY,obj.cs.GetRGB(colour), 'LineWidth', 4);
+
+				j = j + 1;
+
+			end
+				% j will always end up being 1 more than the total number of non empty cells
+			axis off
+			drawnow
+			title(sprintf('t = %g',obj.timeSteps(i)),'Interpreter', 'latex');
+
+
+			set(h,'Units','Inches');
+			pos = get(h,'Position');
+			set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)]);
+			
+			fileName = sprintf('%sImageAtTime_%g', obj.pathToOutput, obj.timeSteps(timeStep));
+			print(fileName,'-dpdf')
+
+		end
+
+		function [pillX,pillY] = DrawPill(obj,a,b,r)
+
+			% Draws a pill shape where the centre of the circles are at
+			% a and b and the radius is r
+
+			 AtoB = b - a;
+			 
+			 normAtoB = [-AtoB(2), AtoB(1)];
+			 
+			 normAtoB = normAtoB / norm(normAtoB);
+			 
+			 R = r*normAtoB;
+			% Make n equally spaced points around a circle starting from R
+			
+			n = 10;
+			apoints = [];
+			bpoints = [];
+			
+			rot = @(theta) [cos(theta), -sin(theta); sin(theta), cos(theta)];
+			
+			for i=1:n-1
+				
+				theta = i*pi/n;
+				apoints(i,:) = rot(theta)*R' + a';
+				bpoints(i,:) = -rot(theta)*R' + b';
+				
+			end
+			pill = [ a + R; apoints; a - R; b - R; bpoints;  b + R];
+			
+			pillX = pill(:,1);
+			pillY = pill(:,2);
 
 		end
 

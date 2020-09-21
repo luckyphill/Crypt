@@ -38,8 +38,8 @@ classdef RodCell < AbstractCell
 			e = obj.elementList;
 			direction1to2 = e.GetVector1to2();
 
-			newPos = centre + direction1to2 * obj.preferredSeperation;
-			oldPos = centre - direction1to2 * obj.preferredSeperation;
+			newPos = centre + direction1to2 * 0.5*obj.preferredSeperation;
+			oldPos = centre - direction1to2 * 0.5*obj.preferredSeperation;
 
 			% Create the two new nodes for the edge
 			n1 = Node(newPos(1), newPos(2), -1);
@@ -49,7 +49,12 @@ classdef RodCell < AbstractCell
 
 			e.Node2.AdjustPosition(oldPos);
 
-			newCell = RodCell(e1, obj.CellCycleModel, -1);
+			newCCM = obj.CellCycleModel.Duplicate();
+
+			newCell = RodCell(e1, newCCM, -1);
+
+			newCell.newCellTargetArea = obj.newCellTargetArea;
+			newCell.grownCellTargetArea = obj.grownCellTargetArea;
 			newNodeList = [n1,n2];
 			newElementList = e1;
 

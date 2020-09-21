@@ -85,7 +85,10 @@ classdef LayerOnStromaBvsSPE < Analysis
 
 			% Used when there is at least some data ready
 			MakeParameterSet(obj);
-			result = nan(1,length(obj.parameterSet));
+			obj.result = [nan,nan];
+			tip = nan(1,length(obj.parameterSet));
+			notip = nan(1,length(obj.parameterSet));
+			prop = nan(1,length(obj.parameterSet));
 			for i = 1:length(obj.parameterSet)
 				s = obj.parameterSet(i,:);
 				n = s(1);
@@ -98,34 +101,62 @@ classdef LayerOnStromaBvsSPE < Analysis
 
 
 				bottom = [];
+				collection = [];
 				count = 0;
-				valid = 0;
 				for j = obj.seed
 					% try
 						a = RunLayerOnStroma(n,p,g,w,b,sae,spe,j);
 						a.LoadSimulationData();
 						bottom = a.data.bottomWiggleData;
-						if length(bottom) ~= 1
-							valid = valid + 1;
-							if max(bottom) > 1.05
-								count = count + 1;
-							end
+						if max(bottom) > 1.1
+							count = count + 1;
 						end
+						collection = Concatenate(obj, collection, bottom');
 					% end
 				end
 
-				result(i) = count / valid;
+				% Three cases:
+				% 1. No buckling. We choose the largest ratio achieved and store it in notip
+				% 2. Some buckle. Find the biggest jump at the end
+				% 3. All buckle. Search the full time series
+				jumpSize = 3;
+				if max(collection(:)) < 1.1
+					notip(i) = max(collection(:))
+				else
+					if min(collection(:,end)) > 1.4
 
-				fprintf("%3d buckled out of %3d. Completed %.2f %%\n",count, valid, 100*i/length(obj.parameterSet));
+						J = obj.seed(1:end-jumpSize);
+						sortc = sort(collection,1);
+						diffc = sortc(J+jumpSize,:) - sortc(J,:);
+						diffc(diffc < 0.3) = nan;
+						% [~,I] = max(diffc);
+						% nanmean(max(sortc(I,:)))
+						% obj.result = sortc(:,I);
+						
+						if mdiffc > 0.3
+							tip(i) = sortc(k);
+						end
 
+					else
+						last = collection(:,end);
+						J = obj.seed(1:end-jumpSize);
+						sortc = sort(last);
+						diffc = sortc(J+jumpSize) - sortc(J);
+						[mdiffc,k] = max(diffc);
+						
+						if mdiffc > 0.3
+							tip(i) = sortc(k);
+						end
 
+					end
+				end
 
+				prop(i) = count / obj.simulationRuns;
+
+				obj.result(i,:) = [prop(i), tip(i)];
+
+				fprintf("Completed %.2f %%\n", 100*i/length(obj.parameterSet));
 			end
-
-
-			obj.result = result;
-
-			
 
 		end
 
@@ -133,11 +164,12 @@ classdef LayerOnStromaBvsSPE < Analysis
 
 			h = figure;
 
-			data = obj.result;
+			dataP = obj.result(:,1);
+			dataT = obj.result(:,2);
 
 			params = obj.parameterSet(:,[5,7]);
 
-			scatter(params(:,2), params(:,1), 100, data,'filled');
+			scatter(params(:,2), params(:,1), 100, dataP,'filled');
 			ylabel('Membrane adhesion','Interpreter', 'latex', 'FontSize', 15);xlabel('Perimeter energy','Interpreter', 'latex', 'FontSize', 15);
 			title(sprintf('Proportion buckled'),'Interpreter', 'latex', 'FontSize', 22);
 			ylim([0.5 20.5]);xlim([-0.5 21.5]);
@@ -147,8 +179,24 @@ classdef LayerOnStromaBvsSPE < Analysis
 			c = ax.Color;
 			ax.Color = 'black';
 			set(h, 'InvertHardcopy', 'off')
+			set(h,'color','w');
 
-			SavePlot(obj, h, sprintf('BvsSPE'));
+			SavePlot(obj, h, sprintf('BvsSPEProp'));
+
+			h = figure;
+			scatter(params(:,2), params(:,1), 100, dataT,'filled');
+			ylabel('Membrane adhesion','Interpreter', 'latex', 'FontSize', 15);xlabel('Perimeter energy','Interpreter', 'latex', 'FontSize', 15);
+			title(sprintf('Tipping point'),'Interpreter', 'latex', 'FontSize', 22);
+			ylim([0.5 20.5]);xlim([-0.5 21.5]);
+			colorbar; caxis([1 1.1]);
+			colormap jet;
+			ax = gca;
+			c = ax.Color;
+			ax.Color = 'black';
+			set(h, 'InvertHardcopy', 'off')
+			set(h,'color','w');
+
+			SavePlot(obj, h, sprintf('BvsSPETip'));
 
 
 		end
