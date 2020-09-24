@@ -53,11 +53,14 @@ classdef CellFree < AbstractCell
 
 					e = Element(nodeList(i),nodeList(i+1), -1);
 					obj.elementList(end + 1) = e;
-
+					nodeList(i).cellList = obj;
+					e.cellList = obj;
 				end
 
 				e = Element(nodeList(end),nodeList(1), -1);
 				obj.elementList(end + 1) = e;
+				nodeList(end).cellList = obj;
+				e.cellList = obj;
 
 			end
 

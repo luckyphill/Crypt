@@ -33,7 +33,7 @@ classdef ChasteNagaiHondaForce < AbstractCellBasedForce
 			for i = 1:length(cellList)
 
 				c = cellList(i);
-				if c.cellType == 1
+				if c.cellType ~= 5 % As long as it is not stromal type
 					obj.AddTargetAreaForces(c);
 					obj.AddTargetPerimeterForces(c);
 					obj.AddAdhesionForces(c);

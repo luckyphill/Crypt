@@ -22,6 +22,17 @@ classdef TestCellFree < matlab.unittest.TestCase
 			testCase.verifyEqual(length(c.nodeList), 6);
 			testCase.verifyEqual(length(c.elementList), 6);
 
+			testCase.verifyEqual(n1.cellList, c);
+			testCase.verifyEqual(n2.cellList, c);
+			testCase.verifyEqual(n3.cellList, c);
+			testCase.verifyEqual(n4.cellList, c);
+			testCase.verifyEqual(n5.cellList, c);
+			testCase.verifyEqual(n6.cellList, c);
+
+			for i = 1:c.elementList
+				testCase.verifyEqual(c.elementList(i).cellList, c);
+			end
+
 			% Check that the order is correct going around
 			% anticlockwise. Also checking the GetNextNode function
 			% works properly

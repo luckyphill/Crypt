@@ -110,7 +110,7 @@ classdef LayerOnStromaBvsSPE2 < Analysis
 						bottom = a.data.bottomWiggleData;
 						if length(bottom) ~= 1
 							valid = valid + 1;
-							if max(bottom) > 1.05
+							if max(bottom) > 1.1
 								count = count + 1;
 							end
 						end
@@ -141,7 +141,7 @@ classdef LayerOnStromaBvsSPE2 < Analysis
 
 					scatter(params(:,2), params(:,1), 100, data,'filled');
 					ylabel('Membrane adhesion','Interpreter', 'latex', 'FontSize', 15);xlabel('Perimeter energy','Interpreter', 'latex', 'FontSize', 15);
-					title(sprintf('Proportion buckled'),'Interpreter', 'latex', 'FontSize', 22);
+					title(sprintf('Proportion buckled, p=%g, g=%g',p,g),'Interpreter', 'latex', 'FontSize', 22);
 					ylim([0.5 20.5]);xlim([-0.5 21.5]);
 					colorbar; caxis([0 1]);
 					colormap jet;

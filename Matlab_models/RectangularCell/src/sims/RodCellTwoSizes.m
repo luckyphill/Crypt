@@ -1,4 +1,4 @@
-classdef RodCellTest < FreeCellSimulation
+classdef RodCellTwoSizes < FreeCellSimulation
 
 	% This uses rod cells
 
@@ -10,10 +10,10 @@ classdef RodCellTest < FreeCellSimulation
 
 	methods
 
-		function obj = RodCellTest(r, s, g, d, seed)
+		function obj = RodCellTwoSizes(r, s, g, seed)
 
 			% r is the rod growing force
-			% s is the force pushing cells apart to their preferred distance
+			% s is the separation force, pushing cells apart
 			% g is the time to grow from new cell to full size
 			% d is the division probability for an hour
 			n1 = Node(0,0,obj.GetNextNodeId());
@@ -21,12 +21,31 @@ classdef RodCellTest < FreeCellSimulation
 
 			e = Element(n1,n2,obj.GetNextElementId());
 
-			obj.nodeList = [n1,n2];
-			obj.elementList = e;
-			c = RodCell(e,SimpleRodCellCycle(g, d, obj.dt),obj.GetNextCellId());
+			ccm = ExponentialGrowthCellCycle(g, obj.dt);
+			ccm.colour = 6;
+			c = RodCell(e,ccm,obj.GetNextCellId());
 			c.newCellTargetArea = 0.25;
 			c.grownCellTargetArea = 0.5;
+
+			obj.nodeList = [n1,n2];
+			obj.elementList = e;
 			obj.cellList = c;
+
+			% Make the smaller cell
+			n1 = Node(-0.2,0,obj.GetNextNodeId());
+			n2 = Node(-0.1,0,obj.GetNextNodeId());
+
+			e = Element(n1,n2,obj.GetNextElementId());
+
+			ccm = ExponentialGrowthCellCycle(g, obj.dt);
+			ccm.colour = 7;
+			c = RodCell(e,ccm,obj.GetNextCellId());
+			c.newCellTargetArea = 0.05;
+			c.grownCellTargetArea = 0.1;
+			
+			obj.nodeList = [obj.nodeList, n1,n2];
+			obj.elementList = [obj.elementList, e];
+			obj.cellList = [obj.cellList , c];
 
 
 			% Node-Element interaction force - requires a SpacePartition
@@ -47,7 +66,7 @@ classdef RodCellTest < FreeCellSimulation
 			%---------------------------------------------------
 
 			obj.AddSimulationData(SpatialState());
-			obj.AddDataWriter(WriteSpatialState(20,'RodCellTest/'));
+			obj.AddDataWriter(WriteSpatialState(20,'RodCellTwoSizes/'));
 
 
 

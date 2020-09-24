@@ -155,7 +155,7 @@ classdef LayerOnStroma < LineSimulation
 			s = CellFree(ccm, nodeList, elementList, obj.GetNextCellId());
 
 			% Critical to stop the ChasteNagaiHondaForce beign applied to the stroma
-			s.cellType = 2;
+			s.cellType = 5;
 
 			s.grownCellTargetArea = (right - left) * (stromaTop - stromaBottom);
 

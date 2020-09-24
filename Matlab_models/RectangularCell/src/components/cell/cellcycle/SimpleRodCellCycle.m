@@ -37,7 +37,7 @@ classdef SimpleRodCellCycle < AbstractCellCycleModel
 
 			newCCM = SimpleRodCellCycle(obj.growTime, obj.divisionProbHour, obj.dt);
 			newCCM.SetAge(0);
-			newCCM.colour = obj.colourSet.GetNumber('PILLGROW');
+			newCCM.colour = obj.colour;
 
 		end
 

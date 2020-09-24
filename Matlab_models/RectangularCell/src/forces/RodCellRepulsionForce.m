@@ -5,13 +5,14 @@ classdef RodCellRepulsionForce < AbstractNeighbourhoodBasedForce
 
 		r
 		dt
+		s
 
 	end
 
 
 	methods
 
-		function obj = RodCellRepulsionForce(r, dt)
+		function obj = RodCellRepulsionForce(r, s, dt)
 
 			% r is the radius in which we search for interactions
 			% it will be 2x the searching radius of a single cell
@@ -21,6 +22,9 @@ classdef RodCellRepulsionForce < AbstractNeighbourhoodBasedForce
 			% We need the time step size in order to properly
 			% calculate the rotations, and produce their equivalent
 			% force.
+
+			% s is the strength of the force separating any two cells
+			obj.s = s;
 
 		end
 
@@ -63,7 +67,7 @@ classdef RodCellRepulsionForce < AbstractNeighbourhoodBasedForce
 
 					% The force points towards the element
 					% Fa = -v * sign(d) * atanh(dr/obj.r);
-					Fa = -v * sign(d) * (  exp( (dr/obj.r)^2 ) - 1  );
+					Fa = -obj.s * v * sign(d) * (  exp( (dr/obj.r)^2 ) - 1  );
 
 					obj.ApplyForcesToNodeAndElement(n,e,Fa,n1toA);
 					% fprintf('Magnitude of force applied = %.4f\n', norm(Fa));
@@ -90,7 +94,7 @@ classdef RodCellRepulsionForce < AbstractNeighbourhoodBasedForce
 					% hence to push the ndoes apart, the for is + ve
 					% for n1 and -ve for n2
 					% Fa = 10 * v * atanh(dr/obj.r);
-					Fa = v * (  exp( (dr/obj.r)^2 ) - 1  );
+					Fa = obj.s * v * (  exp( (dr/obj.r)^2 ) - 1  );
 
 					n.AddForceContribution(-Fa);
 					n1.AddForceContribution(Fa);
