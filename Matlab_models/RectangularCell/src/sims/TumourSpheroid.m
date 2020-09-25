@@ -1,10 +1,7 @@
-classdef DifferentialAdhesion < FreeCellSimulation
+classdef TumourSpheroid < FreeCellSimulation
 
 	% This uses free cells, i.e. cells that never share
-	% elemetns or node with other cells. There are two cell
-	% types, and they have different adhesion attraction rates
-	% depending on if they are next to the same or different
-	% cell types. No cell division occurs
+	% elemetns or node with other cells
 
 	properties
 
@@ -14,34 +11,31 @@ classdef DifferentialAdhesion < FreeCellSimulation
 
 	methods
 
-		function obj = DifferentialAdhesion(repulsion, same, different, seed)
+		function obj = TumourSpheroid(p, g, b, seed)
 
 			obj.SetRNGSeed(seed);
 
 			areaEnergy = 20;
 			perimeterEnergy = 10;
-			adhesionEnergy = 1;
+			adhesionEnergy = 10;
 
 			% Make nodes around a polygon
-			N = 7;
+			N = 10;
+			X = [0, 1, 0, 1];
+			Y = [0, 0, 1, 1];
 
-			for x = 1:10
-				for y = 1:10
+			for i = 1:length(X)
+				x = X(i);
+				y = Y(i);
+				
+				ccm = SimplePhaseBasedCellCycle(p, g);
+				c = MakeCellAtCentre(obj, N, x + 0.5 * mod(y,2), y * sqrt(3)/2, ccm);
 
-					ccm = NoCellCycle();
-					c = MakeCellAtCentre(obj, N, x + 0.5 * mod(y,2), y * sqrt(3)/2, ccm);
-					c.cellType = randi([1 2]);
-					ccm.colour = c.cellType;
-					c.grownCellTargetArea = 0.8;
-					
-					obj.nodeList = [obj.nodeList, c.nodeList];
-					obj.elementList = [obj.elementList, c.elementList];
+				obj.nodeList = [obj.nodeList, c.nodeList];
+				obj.elementList = [obj.elementList, c.elementList];
+				obj.cellList = [obj.cellList, c];
 
-					obj.cellList = [obj.cellList, c];
-
-				end
 			end
-
 
 			%---------------------------------------------------
 			% Add in the forces
@@ -49,11 +43,12 @@ classdef DifferentialAdhesion < FreeCellSimulation
 
 			% Nagai Honda forces
 			obj.AddCellBasedForce(ChasteNagaiHondaForce(areaEnergy, perimeterEnergy, adhesionEnergy));
-			% Random motion force
-			obj.AddCellBasedForce(RandomMotionForce(0.05, obj.dt));
+
+			% % Node-Element interaction force - requires a SpacePartition
+			% obj.AddNeighbourhoodBasedForce(NodeElementRepulsionForce(0.1, obj.dt));
 
 			% Node-Element interaction force - requires a SpacePartition
-			obj.AddNeighbourhoodBasedForce(DifferentialAdhesionForce(0.1, repulsion, same, different, obj.dt));
+			obj.AddNeighbourhoodBasedForce(NonLinearAdhesionForce(0.1, b, obj.dt));
 
 			% A small element based force to regularise the placement of the nodes
 			% around the perimeter of the cell
@@ -69,9 +64,9 @@ classdef DifferentialAdhesion < FreeCellSimulation
 			%---------------------------------------------------
 			% Add the data writers
 			%---------------------------------------------------
-
+			pathName = sprintf('TumourSpheroid/p%gg%gb%g_seed%g/',p,g,b,seed);
 			obj.AddSimulationData(SpatialState());
-			obj.AddDataWriter(WriteSpatialState(20,'DifferentialAdhesion/'));
+			obj.AddDataWriter(WriteSpatialState(20, pathName));
 
 
 

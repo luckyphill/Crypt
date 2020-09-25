@@ -136,7 +136,7 @@ classdef Visualiser < matlab.mixin.SetGet
 
 		end
 
-		function RunVisualiserGUI(obj)
+		function RunVisualiserGUI(obj, varargin)
 
 			% This will take the formatted data and produce an interactive
 			% plot of the simulation. At the minute it just runs a for loop
@@ -161,7 +161,12 @@ classdef Visualiser < matlab.mixin.SetGet
 			% Initialise the array with anything
 			fillObjects(1) = fill([1,1],[2,2],'r');
 
-			for i = 1:I
+			startI =  1;
+			if ~isempty(varargin)
+				startI = varargin{1};
+			end
+
+			for i = startI:I
 				% i is the time steps
 				[~,J] = size(obj.cells);
 				j = 1;

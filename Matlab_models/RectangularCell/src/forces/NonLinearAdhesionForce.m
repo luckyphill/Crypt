@@ -1,4 +1,4 @@
-classdef SimpleAdhesionRepulsionForce < AbstractNodeElementForce
+classdef NonLinearAdhesionForce < AbstractNodeElementForce
 
 	% This force is intended to keep the epithelial layer attached to
 	% the membrane, so it doesn't allow detatchment. The force law is
@@ -12,7 +12,7 @@ classdef SimpleAdhesionRepulsionForce < AbstractNodeElementForce
 
 	methods
 		
-		function obj = SimpleAdhesionRepulsionForce(r, s,dt)
+		function obj = NonLinearAdhesionForce(r, s,dt)
 
 			% r is the resting separation. Adhesion attraction starts
 			% at 2r and is 0 at r. The repulsion
@@ -32,7 +32,7 @@ classdef SimpleAdhesionRepulsionForce < AbstractNodeElementForce
 
 			for i = 1:length(nodeList)
 				n = nodeList(i);
-				elementList = p.GetNeighbouringElements(n, 2 * obj.r);
+				elementList = p.GetNeighbouringElements(n, 3 * obj.r);
 				% nList = [];
 				% [elementList, nList] = p.GetNeighbouringNodesAndElements(n, 2 * obj.r);
 
@@ -58,7 +58,13 @@ classdef SimpleAdhesionRepulsionForce < AbstractNodeElementForce
 
 						% The goal is to have the resting separation at r apart
 						% The force points towards the element
-						Fa = obj.springRate * v * (d - obj.r);
+						if d - obj.r > 0
+							% Attraction dependent on type
+							Fa = obj.springRate * d * v * exp(-2.0 * d/obj.r);
+						else
+							% Repulsion
+							Fa = obj.springRate * v * (d - obj.r);
+						end
 
 						obj.ApplyForcesToNodeAndElement(n,e,Fa,n1toA);
 

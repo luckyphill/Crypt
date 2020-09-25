@@ -52,12 +52,8 @@ classdef EdgeSpringForce < AbstractElementBasedForce
 			e.Node1.AddForceContribution(-force);
 			e.Node2.AddForceContribution(force);
 
-
-
 		end
 
 	end
-
-
 
 end
