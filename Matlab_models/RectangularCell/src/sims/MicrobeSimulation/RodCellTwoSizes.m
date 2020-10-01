@@ -14,8 +14,7 @@ classdef RodCellTwoSizes < FreeCellSimulation
 
 			% r is the rod growing force
 			% s is the separation force, pushing cells apart
-			% g is the time to grow from new cell to full size
-			% d is the division probability for an hour
+			% g is the exponential growth rate
 			n1 = Node(0,0,obj.GetNextNodeId());
 			n2 = Node(0.5,0,obj.GetNextNodeId());
 
@@ -34,6 +33,22 @@ classdef RodCellTwoSizes < FreeCellSimulation
 			% Make the smaller cell
 			n1 = Node(-0.2,0,obj.GetNextNodeId());
 			n2 = Node(-0.1,0,obj.GetNextNodeId());
+
+			e = Element(n1,n2,obj.GetNextElementId());
+
+			ccm = ExponentialGrowthCellCycle(g, obj.dt);
+			ccm.colour = 7;
+			c = RodCell(e,ccm,obj.GetNextCellId());
+			c.newCellTargetArea = 0.05;
+			c.grownCellTargetArea = 0.1;
+			
+			obj.nodeList = [obj.nodeList, n1,n2];
+			obj.elementList = [obj.elementList, e];
+			obj.cellList = [obj.cellList , c];
+
+
+			n1 = Node(-0.4,0,obj.GetNextNodeId());
+			n2 = Node(-0.3,0,obj.GetNextNodeId());
 
 			e = Element(n1,n2,obj.GetNextElementId());
 

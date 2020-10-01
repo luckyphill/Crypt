@@ -10,4 +10,4 @@
 
 module load matlab/2019a
 
-matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); t = TumourSpheroid(10,10,20,2);t.RunToTime(300); quit()"
+matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); t = TumourSpheroid(10,10,20,10);t.RunToTime(300); quit()"

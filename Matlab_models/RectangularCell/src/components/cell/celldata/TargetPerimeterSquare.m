@@ -1,5 +1,7 @@
 classdef TargetPerimeterSquare < AbstractCellData
-	% Calculates the wiggle ratio
+	% Returns the target area of a square/rectangular cell
+	% The cell will start off with an area of 0.5 and perimeter of 3
+	% and end with an area of 1 and perimeter of 4
 
 	properties 
 

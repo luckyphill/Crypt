@@ -5,19 +5,15 @@ classdef RodCellGrowthForce < AbstractCellBasedForce
 	properties
 
 		springRate = 10;
-		springFunction = @(n, l) n - l;
 
 	end
 
 	methods
 
 
-		function obj = RodCellGrowthForce(springRate, varargin)
+		function obj = RodCellGrowthForce(springRate)
 
 			obj.springRate = springRate;
-			if length(varargin) > 0
-				obj.springFunction = varargin{1};
-			end
 
 		end
 
@@ -47,7 +43,7 @@ classdef RodCellGrowthForce < AbstractCellBasedForce
 
 			n = c.GetCellTargetArea();
 			l = c.GetCellArea();
-			mag = obj.springFunction(n, l);
+			mag = obj.springRate * (n - l);
 
 			force = mag * unitVector1to2;
 

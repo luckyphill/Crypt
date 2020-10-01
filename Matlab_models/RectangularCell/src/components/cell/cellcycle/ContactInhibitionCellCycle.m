@@ -1,4 +1,4 @@
-classdef SimplePhaseBasedCellCycle < AbstractCellCycleModel
+classdef ContactInhibitionCellCycle < AbstractCellCycleModel
 	% A cell cycle with 2 phases, a growth phase and a pause phase
 	% During the pause phase the cell is a constant size (or target size)
 	% During the growing phase, the cell is increasing its volume (or target volume)
@@ -14,14 +14,18 @@ classdef SimplePhaseBasedCellCycle < AbstractCellCycleModel
 		meanGrowingPhaseLength
 		growingPhaseLength
 
+		growthTriggerFraction
+
 	end
 
 
 	methods
 
-		function obj = SimplePhaseBasedCellCycle(p, g)
+		function obj = ContactInhibitionCellCycle(p, g, f)
 			obj.SetPausePhaseLength(p);
 			obj.SetGrowingPhaseLength(g);
+
+			obj.growthTriggerFraction = f;
 
 			% By default cell will start off in the pause phase
 			% (actually, this will depend somewhat on the randomly
@@ -35,17 +39,18 @@ classdef SimplePhaseBasedCellCycle < AbstractCellCycleModel
 		function AgeCellCycle(obj, dt)
 
 			obj.age = obj.age + dt;
-			if obj.age > obj.pausePhaseLength
-				obj.colour = obj.colourSet.GetNumber('GROW');
-			end
 
 		end
 
 		function newCCM = Duplicate(obj)
 
-			newCCM = SimplePhaseBasedCellCycle(obj.meanPausePhaseLength, obj.meanGrowingPhaseLength);
+			newCCM = ContactInhibitionCellCycle(obj.meanPausePhaseLength, obj.meanGrowingPhaseLength);
 			newCCM.SetAge(0);
 			newCCM.colour = obj.colourSet.GetNumber('PAUSE');
+
+			obj.colour = obj.colourSet.GetNumber('PAUSE');
+			obj.SetPausePhaseLength(obj.meanPausePhaseLength);
+			obj.SetGrowingPhaseLength(obj.meanGrowingPhaseLength);
 
 		end
 
@@ -64,8 +69,15 @@ classdef SimplePhaseBasedCellCycle < AbstractCellCycleModel
 				fraction = 0;
 				obj.colour = obj.colourSet.GetNumber('PAUSE');
 			else
-				fraction = (obj.age - obj.pausePhaseLength) / obj.growingPhaseLength;
-				obj.colour = obj.colourSet.GetNumber('GROW');
+				c = obj.containingCell;
+				if  ( obj.colour ~= obj.colourSet.GetNumber('GROW') ) && ( c.GetCellArea() < obj.growthTriggerFraction * c.newCellTargetArea )
+					% Bit of a hacky way around since the phase is indirectly tied to the colour but it should work
+					obj.pausePhaseLength = obj.pausePhaseLength + obj.dt
+					fraction = 0;
+				else
+					fraction = (obj.age - obj.pausePhaseLength) / obj.growingPhaseLength;
+					obj.colour = obj.colourSet.GetNumber('GROW');
+				end
 			end
 
 		end

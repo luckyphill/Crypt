@@ -92,7 +92,9 @@ classdef Visualiser < matlab.mixin.SetGet
 				% For each node, use the id as the first index,
 				% and the second index is the time step. In that
 				% position is stored the (x,y) coords
-				for j = 1:length(nD)
+				[mnD, ~] = size(nD);
+
+				for j = 1:mnD
 					n = nD(j,:);
 					if ~isnan(n(1))
 						nodes(n(1),i,:) = [n(2), n(3)];
@@ -345,7 +347,7 @@ classdef Visualiser < matlab.mixin.SetGet
 		end
 
 
-		function VisualiseRods(obj)
+		function VisualiseRods(obj, varargin)
 
 			% This will take the formatted data and produces a video of a rod cell simulation
 
@@ -359,9 +361,14 @@ classdef Visualiser < matlab.mixin.SetGet
 
 
 			% Initialise the array with anything
-			patchObjects(1) = patch([1,1],[2,2],obj.cs.GetRGB(6), 'LineWidth', 4);
+			patchObjects(1) = patch([1,1],[2,2],obj.cs.GetRGB(6), 'LineWidth', 2);
 
-			for i = 1:I
+			startI =  1;
+			if ~isempty(varargin)
+				startI = varargin{1};
+			end
+
+			for i = startI:I
 				% i is the time steps
 				[~,J] = size(obj.cells);
 				j = 1;
@@ -377,7 +384,7 @@ classdef Visualiser < matlab.mixin.SetGet
 
 					if j > length(patchObjects)
 						[pillX,pillY] = obj.DrawPill(a,b,r);
-						patchObjects(j) = patch(pillX,pillY,obj.cs.GetRGB(colour), 'LineWidth', 4);
+						patchObjects(j) = patch(pillX,pillY,obj.cs.GetRGB(colour), 'LineWidth', 2);
 					else
 						[pillX,pillY] = obj.DrawPill(a,b,r);
 						patchObjects(j).XData = pillX;
@@ -430,7 +437,7 @@ classdef Visualiser < matlab.mixin.SetGet
 
 			% Initialise the array with anything
 			% Initialise the array with anything
-			patchObjects(1) = patch([1,1],[2,2],obj.cs.GetRGB(6), 'LineWidth', 4);
+			patchObjects(1) = patch([1,1],[2,2],obj.cs.GetRGB(6), 'LineWidth', 2);
 
 			for i = tIdxStart:tIdxEnd
 				% i is the time steps
@@ -448,7 +455,7 @@ classdef Visualiser < matlab.mixin.SetGet
 
 					if j > length(patchObjects)
 						[pillX,pillY] = obj.DrawPill(a,b,r);
-						patchObjects(j) = patch(pillX,pillY,obj.cs.GetRGB(colour), 'LineWidth', 4);
+						patchObjects(j) = patch(pillX,pillY,obj.cs.GetRGB(colour), 'LineWidth', 2);
 					else
 						[pillX,pillY] = obj.DrawPill(a,b,r);
 						patchObjects(j).XData = pillX;
@@ -510,7 +517,7 @@ classdef Visualiser < matlab.mixin.SetGet
 
 
 			% Initialise the array with anything
-			patchObjects(1) = patch([1,1],[2,2],obj.cs.GetRGB(6), 'LineWidth', 4);
+			patchObjects(1) = patch([1,1],[2,2],obj.cs.GetRGB(6), 'LineWidth', 2);
 
 
 			[~,J] = size(obj.cells);
@@ -526,7 +533,7 @@ classdef Visualiser < matlab.mixin.SetGet
 				b = nodeCoords(2,:);
 
 				[pillX,pillY] = obj.DrawPill(a,b,r);
-				patchObjects(j) = patch(pillX,pillY,obj.cs.GetRGB(colour), 'LineWidth', 4);
+				patchObjects(j) = patch(pillX,pillY,obj.cs.GetRGB(colour), 'LineWidth', 2);
 
 				j = j + 1;
 

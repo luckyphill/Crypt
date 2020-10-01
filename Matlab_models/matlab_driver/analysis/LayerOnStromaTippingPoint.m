@@ -55,7 +55,7 @@ classdef LayerOnStromaTippingPoint < Analysis
 			obj.spe = spe;
 			obj.seed = 1:runs;
 
-			obj.analysisName = sprintf('%s_n%d_p%g_g%g_w%g_b%g_sae%g_spe%g',obj.analysisName,n,p,g,w,b,sae,spe);
+			obj.analysisName = sprintf('%s/n%d_p%g_g%g_w%g_b%g_sae%g_spe%g',obj.analysisName,n,p,g,w,b,sae,spe);
 
 		end
 

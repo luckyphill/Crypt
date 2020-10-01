@@ -17,7 +17,7 @@ classdef TumourSpheroid < FreeCellSimulation
 
 			areaEnergy = 20;
 			perimeterEnergy = 10;
-			adhesionEnergy = 10;
+			adhesionEnergy = 1;
 
 			% Make nodes around a polygon
 			N = 10;
@@ -47,12 +47,19 @@ classdef TumourSpheroid < FreeCellSimulation
 			% % Node-Element interaction force - requires a SpacePartition
 			% obj.AddNeighbourhoodBasedForce(NodeElementRepulsionForce(0.1, obj.dt));
 
-			% Node-Element interaction force - requires a SpacePartition
-			obj.AddNeighbourhoodBasedForce(NonLinearAdhesionForce(0.1, b, obj.dt));
+			% % Corner force to prevent very sharp corners
+			% internalAngle = (N-2) * pi / N;
+			% obj.AddCellBasedForce(CornerForceCouple(0.1,internalAngle));
 
-			% A small element based force to regularise the placement of the nodes
-			% around the perimeter of the cell
-			obj.AddElementBasedForce(EdgeSpringForce(@(n, l) 2*(n - l)));
+			% Node-Element interaction force - requires a SpacePartition
+			obj.AddNeighbourhoodBasedForce(CorrectorForce(0.1, b, obj.dt));
+
+			% % A small element based force to regularise the placement of the nodes
+			% % around the perimeter of the cell
+			% obj.AddElementBasedForce(EdgeSpringForce(@(n, l) 2*(n - l)));
+
+			% Self explanitory really. Tries to make the edges the same length
+			obj.AddCellBasedForce(FreeCellPerimeterNormalisingForce(1));
 
 			
 			%---------------------------------------------------

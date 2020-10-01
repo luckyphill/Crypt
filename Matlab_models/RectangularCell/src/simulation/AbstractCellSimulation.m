@@ -643,6 +643,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			% Initialise an array of line objects
 			h = figure();
 			hold on
+			axis equal
 
 			fillObjects(length(obj.cellList)) = fill([1,1],[2,2],'r');
 
