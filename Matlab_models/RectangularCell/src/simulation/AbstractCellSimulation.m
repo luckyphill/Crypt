@@ -89,8 +89,8 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 			obj.MakeCellsAge();
 
-			obj.t = obj.t + obj.dt;
 			obj.step = obj.step + 1;
+			obj.t = obj.step * obj.dt;
 
 			obj.StoreData();
 			

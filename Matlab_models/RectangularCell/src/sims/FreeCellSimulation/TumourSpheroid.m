@@ -19,6 +19,8 @@ classdef TumourSpheroid < FreeCellSimulation
 			perimeterEnergy = 10;
 			adhesionEnergy = 1;
 
+			f = 0.9;
+
 			% Make nodes around a polygon
 			N = 10;
 			X = [0, 1, 0, 1];
@@ -28,7 +30,7 @@ classdef TumourSpheroid < FreeCellSimulation
 				x = X(i);
 				y = Y(i);
 				
-				ccm = SimplePhaseBasedCellCycle(p, g);
+				ccm = ContactInhibitionCellCycle(p, g, f, obj.dt);
 				c = MakeCellAtCentre(obj, N, x + 0.5 * mod(y,2), y * sqrt(3)/2, ccm);
 
 				obj.nodeList = [obj.nodeList, c.nodeList];

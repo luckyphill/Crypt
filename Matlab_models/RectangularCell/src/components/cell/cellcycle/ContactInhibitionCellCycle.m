@@ -16,16 +16,20 @@ classdef ContactInhibitionCellCycle < AbstractCellCycleModel
 
 		growthTriggerFraction
 
+		dt
+
 	end
 
 
 	methods
 
-		function obj = ContactInhibitionCellCycle(p, g, f)
+		function obj = ContactInhibitionCellCycle(p, g, f, dt)
 			obj.SetPausePhaseLength(p);
 			obj.SetGrowingPhaseLength(g);
 
 			obj.growthTriggerFraction = f;
+
+			obj.dt = dt;
 
 			% By default cell will start off in the pause phase
 			% (actually, this will depend somewhat on the randomly
@@ -44,7 +48,7 @@ classdef ContactInhibitionCellCycle < AbstractCellCycleModel
 
 		function newCCM = Duplicate(obj)
 
-			newCCM = ContactInhibitionCellCycle(obj.meanPausePhaseLength, obj.meanGrowingPhaseLength);
+			newCCM = ContactInhibitionCellCycle(obj.meanPausePhaseLength, obj.meanGrowingPhaseLength, obj.growthTriggerFraction, obj.dt);
 			newCCM.SetAge(0);
 			newCCM.colour = obj.colourSet.GetNumber('PAUSE');
 
@@ -72,7 +76,7 @@ classdef ContactInhibitionCellCycle < AbstractCellCycleModel
 				c = obj.containingCell;
 				if  ( obj.colour ~= obj.colourSet.GetNumber('GROW') ) && ( c.GetCellArea() < obj.growthTriggerFraction * c.newCellTargetArea )
 					% Bit of a hacky way around since the phase is indirectly tied to the colour but it should work
-					obj.pausePhaseLength = obj.pausePhaseLength + obj.dt
+					obj.pausePhaseLength = obj.pausePhaseLength + obj.dt;
 					fraction = 0;
 				else
 					fraction = (obj.age - obj.pausePhaseLength) / obj.growingPhaseLength;
