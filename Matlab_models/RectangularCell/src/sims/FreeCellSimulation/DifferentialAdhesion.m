@@ -23,14 +23,15 @@ classdef DifferentialAdhesion < FreeCellSimulation
 			adhesionEnergy = 1;
 
 			% Make nodes around a polygon
-			N = 7;
+			N = 10;
 
+			s = 10;
 			for x = 1:10
-				for y = 1:10
+				for y = 1:6
 
 					ccm = NoCellCycle();
 					c = MakeCellAtCentre(obj, N, x + 0.5 * mod(y,2), y * sqrt(3)/2, ccm);
-					c.cellType = randi([1 2]);
+					c.cellType = 1;
 					ccm.colour = c.cellType;
 					c.grownCellTargetArea = 0.8;
 					
@@ -42,7 +43,9 @@ classdef DifferentialAdhesion < FreeCellSimulation
 				end
 			end
 
-
+			% Make the last cell a differnt colour
+			obj.cellList(end).cellType = 2;
+			obj.cellList(end).CellCycleModel.colour = c.cellType;
 			%---------------------------------------------------
 			% Add in the forces
 			%---------------------------------------------------
@@ -50,14 +53,15 @@ classdef DifferentialAdhesion < FreeCellSimulation
 			% Nagai Honda forces
 			obj.AddCellBasedForce(ChasteNagaiHondaForce(areaEnergy, perimeterEnergy, adhesionEnergy));
 			% Random motion force
-			obj.AddCellBasedForce(RandomMotionForce(0.05, obj.dt));
+			% obj.AddCellBasedForce(RandomMotionForce(0.05, obj.dt));
+			obj.AddTissueBasedForce(PushCellForce(obj.cellList(end), [-.8,-.4]));
 
 			% Node-Element interaction force - requires a SpacePartition
 			obj.AddNeighbourhoodBasedForce(DifferentialAdhesionForce(0.1, repulsion, same, different, obj.dt));
-
-			% A small element based force to regularise the placement of the nodes
-			% around the perimeter of the cell
-			obj.AddElementBasedForce(EdgeSpringForce(@(n, l) 2*(n - l)));
+			% obj.AddNeighbourhoodBasedForce(CorrectorForce(0.1, b, obj.dt));
+			
+			% Self explanitory really. Tries to make the edges the same length
+			obj.AddCellBasedForce(FreeCellPerimeterNormalisingForce(1));
 
 			
 			%---------------------------------------------------

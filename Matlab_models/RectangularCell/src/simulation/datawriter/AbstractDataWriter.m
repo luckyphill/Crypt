@@ -135,7 +135,7 @@ classdef AbstractDataWriter < handle & matlab.mixin.Heterogeneous
 						% I mean, seriously, who releases a write function with no append feature??
 						v = version('-release');
 						if str2num(v(1:4)) < 2020
-							dlmwrite(outputFile, n, '-append', 'precision', 10);
+							dlmwrite(outputFile, n, '-append', 'precision', 5);
 						else
 							writematrix(n, outputFile,'WriteMode','append');
 						end
@@ -156,7 +156,7 @@ classdef AbstractDataWriter < handle & matlab.mixin.Heterogeneous
 						% I mean, seriously, who releases a write function with no append feature??
 						v = version('-release');
 						if str2num(v(1:4)) < 2020
-							dlmwrite(outputFile, n, '-append', 'precision', 10);
+							dlmwrite(outputFile, n, '-append', 'precision', 5);
 						else
 							writematrix(n, outputFile,'WriteMode','append');
 						end

@@ -12,6 +12,7 @@ classdef RodsInChannelAngleAnalysis < Analysis
 
 		% No input parameters needed
 
+		n
 		r
 		s
 		g
@@ -34,20 +35,20 @@ classdef RodsInChannelAngleAnalysis < Analysis
 
 	methods
 
-		function obj = RodsInChannelAngleAnalysis(varargin)
+		function obj = RodsInChannelAngleAnalysis(n, r, s, g, d, w, seed)
 
 			% Each seed runs in a separate job
 			obj.specifySeedDirectly = true;
 
-			if ~isempty(varargin)
-				obj.r = varargin{1};
-			 	obj.s = varargin{2};
-				obj.g = varargin{3};
-				obj.d = varargin{4};
-				obj.w = varargin{5};
-				obj.seed = varargin{6};
-				obj.analysisName = sprintf('%s/r%gs%gg%gd%gw%g_seed%g',obj.analysisName,obj.r,obj.s,obj.g,obj.d,obj.w,obj.seed);
-			end
+			obj.n = n;  
+			obj.r = r;   
+		 	obj.s = s;   
+			obj.g = g;   
+			obj.d = d;   
+			obj.w = w;   
+			obj.seed = seed;
+			obj.analysisName = sprintf('%s/n%gr%gs%gg%gd%gw%g_seed%g',obj.analysisName,obj.n,obj.r,obj.s,obj.g,obj.d,obj.w,obj.seed);
+
 
 		end
 
@@ -61,13 +62,10 @@ classdef RodsInChannelAngleAnalysis < Analysis
 
 		function AssembleData(obj)
 
-			% Just need to load the time series as in the visaliser
-			if isempty(obj.r)
-				obj.result = Visualiser('RodsInChannel/SpatialState/');
-			else
-				pathName = sprintf('RodsInChannel/r%gs%gg%gd%gw%g_seed%g/SpatialState/',obj.r,obj.s,obj.g,obj.d,obj.w,obj.seed);
-				obj.result = Visualiser(pathName);
-			end
+
+			pathName = sprintf('RodsInChannel/n%gr%gs%gg%gd%gw%g_seed%g/SpatialState/',obj.n,obj.r,obj.s,obj.g,obj.d,obj.w,obj.seed);
+			obj.result = Visualiser(pathName);
+
 
 		end
 
@@ -154,21 +152,21 @@ classdef RodsInChannelAngleAnalysis < Analysis
 			ylim([0.25 0.55]); xlim([0 180]);
 			SavePlot(obj, h, sprintf('AvgLength'));
 
-			figure
-			h1 = subplot(3,1,1);xlim([-6 6]);ylim([-0.1 2.6]);
-			h2 = subplot(3,1,2);xlim([-6 6]);ylim([-0.1 2.6]);
-			h3 = subplot(3,1,3);xlim([-6 6]);ylim([-0.1 2.6]);
+			% figure
+			% h1 = subplot(3,1,1);xlim([-6 6]);ylim([-0.1 2.6]);
+			% h2 = subplot(3,1,2);xlim([-6 6]);ylim([-0.1 2.6]);
+			% h3 = subplot(3,1,3);xlim([-6 6]);ylim([-0.1 2.6]);
 
-			obj.result.PlotRodTimeStep(1100);
-			copyobj(allchild(gca),h1);
+			% obj.result.PlotRodTimeStep(1100);
+			% copyobj(allchild(gca),h1);
 
-			obj.result.PlotRodTimeStep(1350);
-			copyobj(allchild(gca),h2);
+			% obj.result.PlotRodTimeStep(1350);
+			% copyobj(allchild(gca),h2);
 
-			obj.result.PlotRodTimeStep(1600);
-			copyobj(allchild(gca),h3);
+			% obj.result.PlotRodTimeStep(1600);
+			% copyobj(allchild(gca),h3);
 
-			SavePlot(obj, figure(4), sprintf('TimeSnapShots'));
+			% SavePlot(obj, figure(4), sprintf('TimeSnapShots'));
 
 
 		end

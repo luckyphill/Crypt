@@ -10,7 +10,7 @@ classdef RodsInChannel < FreeCellSimulation
 
 	methods
 
-		function obj = RodsInChannel(r, s, g, d, w, seed)
+		function obj = RodsInChannel(n, r, s, g, d, w, seed)
 
 			% r is the rod growing force
 			% s is the force pushing cells apart to their preferred distance
@@ -20,17 +20,43 @@ classdef RodsInChannel < FreeCellSimulation
 			% The channel is represented by two infinitely long horizontal boundaries
 			% set a width w apart
 
-			n1 = Node(0,   w/2,obj.GetNextNodeId());
-			n2 = Node(0.5, w/2,obj.GetNextNodeId());
+			% Make a grid of starting points
+			x = -5:5;
+			y = 0.5:(w-0.5);
 
-			e = Element(n1,n2,obj.GetNextElementId());
+			[X,Y] = meshgrid(x,y);
 
-			obj.nodeList = [n1,n2];
-			obj.elementList = e;
-			c = RodCell(e,SimpleRodCellCycle(g, d, obj.dt,0.7),obj.GetNextCellId());
-			c.newCellTargetArea = 0.25;
-			c.grownCellTargetArea = 0.5;
-			obj.cellList = c;
+			pairs = [X(:),Y(:)];
+			pairs = datasample(pairs,10,1, 'Replace',false);
+
+			rodLength = 0.5;
+
+			for i = 1:n
+
+				% pairs has the starting points, then pick a random angle
+				theta = 2*pi*rand;
+
+				x1 = pairs(i,1);
+				y1 = pairs(i,2);
+
+				x2 = x1 + rodLength*cos(theta);
+				y2 = y1 + rodLength*sin(theta);
+
+				n1 = Node(x1, y1, obj.GetNextNodeId());
+				n2 = Node(x2, y2, obj.GetNextNodeId());
+
+				e = Element(n1,n2,obj.GetNextElementId());
+
+				obj.nodeList = [obj.nodeList, n1, n2];
+				obj.elementList = [obj.elementList, e];
+				
+				c = RodCell(e,SimpleRodCellCycle(g, d, obj.dt,0.7),obj.GetNextCellId());
+				c.newCellTargetArea = 0.5 * rodLength;
+				c.grownCellTargetArea = rodLength;
+				
+				obj.cellList = [obj.cellList, c];
+
+			end
 
 
 			% Node-Element interaction force - requires a SpacePartition
@@ -50,7 +76,7 @@ classdef RodsInChannel < FreeCellSimulation
 			% Add the data writers
 			%---------------------------------------------------
 
-			pathName = sprintf('RodsInChannel/r%gs%gg%gd%gw%g_seed%g/',r, s, g, d, w, seed);
+			pathName = sprintf('RodsInChannel/n%gr%gs%gg%gd%gw%g_seed%g/',n, r, s, g, d, w, seed);
 			obj.AddSimulationData(SpatialState());
 			obj.AddDataWriter(WriteSpatialState(20, pathName));
 

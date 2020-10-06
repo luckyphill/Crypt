@@ -55,6 +55,8 @@ classdef Visualiser < matlab.mixin.SetGet
 				opts = setvartype(opts, opts.VariableNames{1}, 'double');
 			end
 			nodeData = readmatrix([obj.pathToSpatialState, 'nodes.csv'],opts);
+			% nodeData = dlmread([obj.pathToSpatialState, 'nodes.csv']);
+			% nodeData(nodeData == 0) = nan;
 
 			opts = detectImportOptions([obj.pathToSpatialState, 'elements.csv']);
 			opts.DataLines = [1 Inf];
@@ -334,7 +336,7 @@ classdef Visualiser < matlab.mixin.SetGet
 				% j will always end up being 1 more than the total number of non empty cells
 			axis off
 			drawnow
-			title(sprintf('t = %g',obj.timeSteps(i)),'Interpreter', 'latex');
+			title(sprintf('t = %g',obj.timeSteps(i)),'Interpreter', 'latex', 'FontSize', 40);
 
 
 			set(h,'Units','Inches');
