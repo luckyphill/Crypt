@@ -20,6 +20,8 @@ classdef RodsInChannel < FreeCellSimulation
 			% The channel is represented by two infinitely long horizontal boundaries
 			% set a width w apart
 
+			obj.SetRNGSeed(seed);
+
 			% Make a grid of starting points
 			x = -5:5;
 			y = 0.5:(w-0.5);

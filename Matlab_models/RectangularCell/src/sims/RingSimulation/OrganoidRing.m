@@ -16,7 +16,7 @@ classdef OrganoidRing < RingSimulation
 
 	methods
 
-		function obj = OrganoidRing(nCells, p, g, ep, seed)
+		function obj = OrganoidRing(nCells, p, g, ep, ip, seed)
 			% All the initilising
 			obj.SetRNGSeed(seed);
 
@@ -163,10 +163,13 @@ classdef OrganoidRing < RingSimulation
 			% Element force to stop elements becoming too small
 			obj.AddElementBasedForce(EdgeSpringForce(@(n,l) 20 * exp(1-25 * l/n)));
 
-			% Node-Element interaction force - requires a SpacePartition
-			obj.AddNeighbourhoodBasedForce(NodeElementRepulsionForce(0.1, obj.dt));
+			% % Node-Element interaction force - requires a SpacePartition
+			% obj.AddNeighbourhoodBasedForce(NodeElementRepulsionForce(0.1, obj.dt));
 
-			obj.AddTissueBasedForce(OrganoidPressureForce(ep))
+			% Node-Element interaction force - requires a SpacePartition
+			obj.AddNeighbourhoodBasedForce(SimpleAdhesionRepulsionForce(0.1, 10, obj.dt));
+
+			obj.AddTissueBasedForce(OrganoidPressureForce(ep, ip));
 
 			
 			%---------------------------------------------------
@@ -181,7 +184,7 @@ classdef OrganoidRing < RingSimulation
 			%---------------------------------------------------
 
 			obj.AddSimulationData(SpatialState());
-			pathName = sprintf('OrganoidRing/n%gp%gg%gep%g_seed%g/',nCells,p,g,ep,seed);
+			pathName = sprintf('OrganoidRing/n%gp%gg%gep%gip%g_seed%g/',nCells,p,g,ep,ip,seed);
 			obj.AddDataWriter(WriteSpatialState(20,pathName));
 			
 

@@ -11,45 +11,31 @@ classdef OrganoidPressureForce < AbstractTissueBasedForce
 	properties
 
 		externalPressure
+		internalPressure
 
 	end
 
 	methods
 
 
-		function obj = OrganoidPressureForce(p)
+		function obj = OrganoidPressureForce(ep,ip)
 
-			obj.externalPressure = p;
+			obj.externalPressure = ep;
+			obj.internalPressure = ip;
 
 		end
 
 		function AddTissueBasedForces(obj, t)
 
-			% Find the area inside the organoid
-			N = length(t.cellList);
-			polyNodes = zeros(N,2);
-			for i = 1:N
-				polyNodes(i,:) = t.cellList(i).nodeBottomLeft.position;
-			end
-			x = polyNodes(:,1);
-			y = polyNodes(:,2);
-			A = polyarea(x,y);
-
-			% Using a perverted form of the ideal gas law, the internal pressure
-			% will be the internal mass divided by the internal area
-			% For argument's sake, the internal mass is directly proprtional to
-			% the number of cells around the perimeter
-
-			ip = 0.05*N/A;
-
-			for i = 1:N
+			for i = 1:length(t.cellList)
 				c = t.cellList(i);
-				obj.ApplySpringForce(c,ip)
+				obj.ApplySpringForce(c)
 			end
+
 		end
 
 
-		function ApplySpringForce(obj, c, ip)
+		function ApplySpringForce(obj, c)
 
 			% The top edge will experience a constant pressure, the bottom edge
 			% will experience pressure according to the internal area
@@ -67,11 +53,11 @@ classdef OrganoidPressureForce < AbstractTissueBasedForce
 			et.Node1.AddForceContribution(Ft);
 			et.Node2.AddForceContribution(Ft);
 
-			% nb = eb.GetOutwardNormal();
-			% Fb = -nb * et.GetLength() * ip;
+			nb = eb.GetOutwardNormal();
+			Fb = -nb * et.GetLength() * obj.internalPressure;
 
-			% eb.Node1.AddForceContribution(Fb);
-			% eb.Node2.AddForceContribution(Fb);
+			eb.Node1.AddForceContribution(Fb);
+			eb.Node2.AddForceContribution(Fb);
 
 
 		end

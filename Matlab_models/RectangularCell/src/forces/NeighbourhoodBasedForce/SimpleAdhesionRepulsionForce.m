@@ -38,7 +38,7 @@ classdef SimpleAdhesionRepulsionForce < AbstractNodeElementForce
 
 				for j = 1:length(elementList)
 					e = elementList(j);
-					if e.cellList.id ~= n.cellList.id
+					% if e.cellList.id ~= n.cellList.id
 
 						% Calculate distance between node and edge
 						u = e.GetVector1to2();
@@ -62,7 +62,7 @@ classdef SimpleAdhesionRepulsionForce < AbstractNodeElementForce
 
 						obj.ApplyForcesToNodeAndElement(n,e,Fa,n1toA);
 
-					end
+					% end
 
 				end
 
