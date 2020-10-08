@@ -29,7 +29,7 @@ classdef RodsInChannel < FreeCellSimulation
 			[X,Y] = meshgrid(x,y);
 
 			pairs = [X(:),Y(:)];
-			pairs = datasample(pairs,10,1, 'Replace',false);
+			pairs = datasample(pairs,n,1, 'Replace',false);
 
 			rodLength = 0.8;
 
