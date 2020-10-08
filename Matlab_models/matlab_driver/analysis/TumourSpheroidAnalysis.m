@@ -71,12 +71,14 @@ classdef TumourSpheroidAnalysis < Analysis
 			R80 = []; % Radius about C that captures 80% of the cells
 			mA = []; % Mean area of non-growing cells
 			RA = {}; % Area/Distance pairs
+			pauseRA = {};
 			
 			[I,~] = size(obj.result.cells);
 
 			for i = 1:I
 				R = []; % Radii
 				pauseAreas = []; % self evident
+				pauseRadii = [];
 				CC = []; % Cell centres
 				A = []; % Areas
 				% i is the time steps
@@ -101,7 +103,8 @@ classdef TumourSpheroidAnalysis < Analysis
 
 					if colour == 1
 						% Assemble areas of non-growing cells
-						pauseAreas(end + 1) = A(j);
+						pauseAreas(end+1) = A(j);
+						pauseRadii(end+1) = norm(mean(nodeCoords));
 					end
 
 					j = j + 1;
@@ -113,9 +116,11 @@ classdef TumourSpheroidAnalysis < Analysis
 				C(end + 1,:) = mean(CC);
 				mA(end + 1) = mean(pauseAreas);
 
+
 				R = sqrt(sum(abs(CC-C(end,:)).^2,2));
 
 				RA{end + 1} = [R,A'];
+				pauseRA{end + 1} = [pauseRadii',pauseAreas'];
 
 				R = sort(R);
 				R80(end + 1) = R(ceil(.9*(j-1)));
@@ -126,6 +131,16 @@ classdef TumourSpheroidAnalysis < Analysis
 				% pause(0.1);
 
 			end
+
+			idx = 1800;
+			r = pauseRA{idx}(:,1);
+			a = pauseRA{idx}(:,2);
+			h = figure;
+			xlim([0 14])
+			ylim([0.4 0.5]);
+			hold on
+			scatter(r,a);
+
 
 			h = figure;
 			plot(obj.result.timeSteps,N, 'LineWidth', 4);

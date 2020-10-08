@@ -171,6 +171,12 @@ classdef OrganoidRing < RingSimulation
 
 			obj.AddTissueBasedForce(OrganoidPressureForce(ep, ip));
 
+			% Intial area calculation. This is to make sure the organoid doesn't collapse
+			% or explode immediately
+			areaPerCell = 0.2;
+			initialArea = pi * r^2 - nCells * areaPerCell;
+			obj.AddTissueBasedForce(OrganoidInternalMaterialForce(10,areaPerCell, initialArea));
+
 			
 			%---------------------------------------------------
 			% Add space partition

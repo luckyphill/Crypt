@@ -31,7 +31,7 @@ classdef RodsInChannel < FreeCellSimulation
 			pairs = [X(:),Y(:)];
 			pairs = datasample(pairs,10,1, 'Replace',false);
 
-			rodLength = 0.5;
+			rodLength = 0.8;
 
 			for i = 1:n
 
@@ -52,7 +52,7 @@ classdef RodsInChannel < FreeCellSimulation
 				obj.nodeList = [obj.nodeList, n1, n2];
 				obj.elementList = [obj.elementList, e];
 				
-				c = RodCell(e,SimpleRodCellCycle(g, d, obj.dt,0.7),obj.GetNextCellId());
+				c = RodCell(e,SimpleRodCellCycle(g, d, obj.dt,0.6),obj.GetNextCellId());
 				c.newCellTargetArea = 0.5 * rodLength;
 				c.grownCellTargetArea = rodLength;
 				

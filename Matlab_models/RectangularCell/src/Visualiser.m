@@ -330,15 +330,22 @@ classdef Visualiser < matlab.mixin.SetGet
 
 				fillObjects(j) = fill(x,y,obj.cs.GetRGB(colour));
 
+				if colour == 1
+					fillObjects(j).FaceAlpha = 0.5;
+					fillObjects(j).EdgeAlpha = 0.5;
+				else
+					fillObjects(j).LineWidth = 2;
+				end
+
 				j = j + 1;
 
 			end
 				% j will always end up being 1 more than the total number of non empty cells
 			axis off
 			drawnow
-			title(sprintf('t = %g',obj.timeSteps(i)),'Interpreter', 'latex', 'FontSize', 40);
+			title(sprintf('t = %g',obj.timeSteps(i)),'Interpreter', 'latex', 'FontSize', 34);
 
-
+			xlim([3 9]);ylim([0 6])
 			set(h,'Units','Inches');
 			pos = get(h,'Position');
 			set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)]);
