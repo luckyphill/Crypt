@@ -167,14 +167,14 @@ classdef OrganoidRing < RingSimulation
 			% obj.AddNeighbourhoodBasedForce(NodeElementRepulsionForce(0.1, obj.dt));
 
 			% Node-Element interaction force - requires a SpacePartition
-			obj.AddNeighbourhoodBasedForce(SimpleAdhesionRepulsionForce(0.1, 10, obj.dt));
+			obj.AddNeighbourhoodBasedForce(SimpleAdhesionRepulsionForce(0.1, 20, obj.dt));
 
 			obj.AddTissueBasedForce(OrganoidPressureForce(ep, ip));
 
 			% Intial area calculation. This is to make sure the organoid doesn't collapse
 			% or explode immediately
-			areaPerCell = 0.2;
-			initialArea = pi * r^2 - nCells * areaPerCell;
+			areaPerCell = 0.3;
+			initialArea = pi * r^2;
 			obj.AddTissueBasedForce(OrganoidInternalMaterialForce(10,areaPerCell, initialArea));
 
 			
@@ -190,6 +190,8 @@ classdef OrganoidRing < RingSimulation
 			%---------------------------------------------------
 
 			obj.AddSimulationData(SpatialState());
+			obj.AddSimulationData(Circularity());
+			obj.AddDataStore(StoreCircularity(1));
 			pathName = sprintf('OrganoidRing/n%gp%gg%gep%gip%g_seed%g/',nCells,p,g,ep,ip,seed);
 			obj.AddDataWriter(WriteSpatialState(20,pathName));
 			

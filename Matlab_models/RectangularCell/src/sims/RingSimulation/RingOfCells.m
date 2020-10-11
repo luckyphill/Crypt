@@ -186,6 +186,8 @@ classdef RingOfCells < RingSimulation
 			% Add the data we'd like to store
 			%---------------------------------------------------
 
+			obj.AddSimulationData(Circularity());
+			obj.AddDataStore(StoreCircularity(1));
 			obj.AddSimulationData(SpatialState());
 			pathName = sprintf('RingOfCells/n%gp%gg%g_seed%g/',nCells,p,g,seed);
 			obj.AddDataWriter(WriteSpatialState(20,pathName));

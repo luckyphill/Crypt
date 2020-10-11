@@ -310,6 +310,9 @@ classdef Visualiser < matlab.mixin.SetGet
 
 			i = timeStep;
 
+			% xlim([-8.1801 8.5131]);
+   %          ylim([-6.6310 6.5351]);
+
 
 			% Initialise the array with anything
 			fillObjects(1) = fill([1,1],[2,2],'r');
@@ -330,12 +333,6 @@ classdef Visualiser < matlab.mixin.SetGet
 
 				fillObjects(j) = fill(x,y,obj.cs.GetRGB(colour));
 
-				if colour == 1
-					fillObjects(j).FaceAlpha = 0.5;
-					fillObjects(j).EdgeAlpha = 0.5;
-				else
-					fillObjects(j).LineWidth = 2;
-				end
 
 				j = j + 1;
 
@@ -345,7 +342,6 @@ classdef Visualiser < matlab.mixin.SetGet
 			drawnow
 			title(sprintf('t = %g',obj.timeSteps(i)),'Interpreter', 'latex', 'FontSize', 34);
 
-			xlim([3 9]);ylim([0 6])
 			set(h,'Units','Inches');
 			pos = get(h,'Position');
 			set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)]);
