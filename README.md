@@ -51,7 +51,8 @@ t.Animate(1000,20); % First arg, number of time steps to simulate, second arg, u
 
 v = Visualiser('FreeCellTest/SpatialState/'); 
 
-% The first part of the string is the name of the simulation.
+% The first part of the string is the name of the simulation. This assumes there is an environment variable set called 'HOME'
+% You might need to modify a few lines in Visualiser to help it find the right location
 % To save the data for the Visualiser, the simulation must have a spatial state writer. See lines 125 and 126 of CellGrowing
 % NOTE: the Visualiser uses the matlab function readmatrix, which only exists after R2019b. I've found it to be extremely buggy, so there is no guarantee Visualiser will work, even if you're using the latest version.
 ```
