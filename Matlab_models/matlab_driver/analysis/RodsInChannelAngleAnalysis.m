@@ -152,21 +152,36 @@ classdef RodsInChannelAngleAnalysis < Analysis
 			ylim([0.25 0.55]); xlim([0 180]);
 			SavePlot(obj, h, sprintf('AvgLength'));
 
-			% figure
-			% h1 = subplot(3,1,1);xlim([-6 6]);ylim([-0.1 2.6]);
-			% h2 = subplot(3,1,2);xlim([-6 6]);ylim([-0.1 2.6]);
-			% h3 = subplot(3,1,3);xlim([-6 6]);ylim([-0.1 2.6]);
+			tFontSize = 40;
+			lFontSize = 20;
+			aFontSize = 24;
 
-			% obj.result.PlotRodTimeStep(1100);
-			% copyobj(allchild(gca),h1);
+			figure
+			h1 = subplot(4,1,2);xlim([-12.6774 7.4398]);ylim([-0.1 4.1]);idx = 600;ylabel(['t= ', num2str(idx/10)],'Interpreter', 'latex', 'FontSize', lFontSize);
+			h2 = subplot(4,1,3);xlim([-12.6774 7.4398]);ylim([-0.1 4.1]);idx = 900;ylabel(['t= ', num2str(idx/10)],'Interpreter', 'latex', 'FontSize', lFontSize);
+			h3 = subplot(4,1,4);xlim([-12.6774 7.4398]);ylim([-0.1 4.1]);idx = 1380;ylabel(['t= ', num2str(idx/10)],'Interpreter', 'latex', 'FontSize', lFontSize);
+			h4 = subplot(4,1,1);xlim([-12.6774 7.4398]);ylim([-0.1 4.1]);idx = 10;ylabel(['t= ', num2str(idx/10)],'Interpreter', 'latex', 'FontSize', lFontSize);
 
-			% obj.result.PlotRodTimeStep(1350);
-			% copyobj(allchild(gca),h2);
+			idx = 600;
+			obj.result.PlotRodTimeStep(idx);
+			copyobj(allchild(gca),h1);
+			
 
-			% obj.result.PlotRodTimeStep(1600);
-			% copyobj(allchild(gca),h3);
+			idx = 900;
+			obj.result.PlotRodTimeStep(idx);
+			copyobj(allchild(gca),h2);
+			
 
-			% SavePlot(obj, figure(4), sprintf('TimeSnapShots'));
+			idx = 1380;
+			obj.result.PlotRodTimeStep(idx);
+			copyobj(allchild(gca),h3);
+
+			idx = 10;
+			obj.result.PlotRodTimeStep(idx);
+			copyobj(allchild(gca),h4);
+			
+
+			SavePlot(obj, figure(4), sprintf('TimeSnapShots'));
 
 
 		end

@@ -543,6 +543,29 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		end
 
+		function VisualiseArea(obj)
+
+			h = figure();
+			hold on
+			% Makes the colour depend on the area
+			% Intitialise the vector
+			fillObjects(length(obj.cellList)) = fill([1,1],[2,2],'r');
+
+			for i = 1:length(obj.cellList)
+				c = obj.cellList(i);
+
+				x = [c.nodeList.x];
+				y = [c.nodeList.y];	
+
+				A = polyarea(x,y);
+				fillObjects(i) = fill(x,y,A);
+
+			end
+
+			axis equal
+
+		end
+
 		function VisualiseRods(obj)
 
 			r = 0.08; % The width of the rods

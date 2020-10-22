@@ -54,9 +54,9 @@ classdef Visualiser < matlab.mixin.SetGet
 			if strcmp(opts.VariableTypes{1}, 'char')
 				opts = setvartype(opts, opts.VariableNames{1}, 'double');
 			end
-			nodeData = readmatrix([obj.pathToSpatialState, 'nodes.csv'],opts);
-			% nodeData = dlmread([obj.pathToSpatialState, 'nodes.csv']);
-			% nodeData(nodeData == 0) = nan;
+			% nodeData = readmatrix([obj.pathToSpatialState, 'nodes.csv'],opts);
+			nodeData = dlmread([obj.pathToSpatialState, 'nodes.csv']);
+			nodeData(nodeData == 0) = nan;
 
 			opts = detectImportOptions([obj.pathToSpatialState, 'elements.csv']);
 			opts.DataLines = [1 Inf];
@@ -233,9 +233,11 @@ classdef Visualiser < matlab.mixin.SetGet
 			yu = 0;
 
 			F = getframe(h);
+			xlim([-14.2091 15.5772])
+            ylim([-11.1677 12.3250])
 
 			% Initialise the array with anything
-			fillObjects(1) = fill([1,1],[2,2],'r');
+			fillObjects(1) = fill([1,1],[2,2],.5);
 
 			for i = tIdxStart:tIdxEnd
 				% i is the time steps
@@ -250,7 +252,8 @@ classdef Visualiser < matlab.mixin.SetGet
 
 					x = nodeCoords(:,1);
 					y = nodeCoords(:,2);
-
+					A = polyarea(x,y);
+				
 					if j > length(fillObjects)
 						fillObjects(j) = fill(x,y,obj.cs.GetRGB(colour));
 					else
@@ -311,7 +314,7 @@ classdef Visualiser < matlab.mixin.SetGet
 			i = timeStep;
 
 			% xlim([-8.1801 8.5131]);
-   %          ylim([-6.6310 6.5351]);
+   			% ylim([-6.6310 6.5351]);
 
 
 			% Initialise the array with anything
@@ -330,8 +333,10 @@ classdef Visualiser < matlab.mixin.SetGet
 				x = nodeCoords(:,1);
 				y = nodeCoords(:,2);
 
+				% fillObjects(j) = fill(x,y,obj.cs.GetRGB(colour));
 
-				fillObjects(j) = fill(x,y,obj.cs.GetRGB(colour));
+				A = polyarea(x,y);
+				fillObjects(j) = fill(x,y,A);
 
 
 				j = j + 1;
@@ -350,7 +355,6 @@ classdef Visualiser < matlab.mixin.SetGet
 			print(fileName,'-dpdf')
 
 		end
-
 
 		function VisualiseRods(obj, varargin)
 
@@ -520,9 +524,9 @@ classdef Visualiser < matlab.mixin.SetGet
 
 			i = timeStep;
 
-
+			lineWidth = 1;
 			% Initialise the array with anything
-			patchObjects(1) = patch([1,1],[2,2],obj.cs.GetRGB(6), 'LineWidth', 2);
+			patchObjects(1) = patch([1,1],[2,2],obj.cs.GetRGB(6), 'LineWidth', lineWidth);
 
 
 			[~,J] = size(obj.cells);
@@ -538,7 +542,7 @@ classdef Visualiser < matlab.mixin.SetGet
 				b = nodeCoords(2,:);
 
 				[pillX,pillY] = obj.DrawPill(a,b,r);
-				patchObjects(j) = patch(pillX,pillY,obj.cs.GetRGB(colour), 'LineWidth', 2);
+				patchObjects(j) = patch(pillX,pillY,obj.cs.GetRGB(colour), 'LineWidth', lineWidth);
 
 				j = j + 1;
 

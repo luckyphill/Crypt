@@ -101,7 +101,10 @@ classdef TumourSpheroidAnalysis < Analysis
 
 
 
-					if colour == 1
+					if colour == 1 && A(j) > 0.4 
+						% The are limit cuts out some extreme outliers possibly
+						% due to a division event in the previous timestep that
+						% does not reflect the true area of the cell
 						% Assemble areas of non-growing cells
 						pauseAreas(end+1) = A(j);
 						pauseRadii(end+1) = norm(mean(nodeCoords));
@@ -132,40 +135,77 @@ classdef TumourSpheroidAnalysis < Analysis
 
 			end
 
+			h=figure;
+			hold on
+			box on
+			leg = {};
+			for idx = 400:400:length(pauseRA)
+
+				if ~isempty(pauseRA{idx})
+					r = pauseRA{idx}(:,1);
+					a = pauseRA{idx}(:,2);
+					bins = 0:0.8:14;
+					m = [];
+					for i = 1:length(bins)-1
+						m(i) = mean(a(  logical( (r>bins(i)) .* (r <= bins(i+1))  )   ) );
+					end
+					
+					plot(bins(2:end), m, 'LineWidth', 4);
+					leg{end+1} = ['t= ', num2str(obj.result.timeSteps(idx))];
+				end
+			end
+
+
+			tFontSize = 40;
+			lFontSize = 40;
+			aFontSize = 24;
+			% legend(leg)
+			ax = gca;
+			ax.FontSize = aFontSize;
+			title('Avg cell area vs radius','Interpreter', 'latex','FontSize', tFontSize);
+			ylabel('Avg area','Interpreter', 'latex', 'FontSize', lFontSize);xlabel('Radius','Interpreter', 'latex', 'FontSize', lFontSize);
+			xlim([0 14]);
+			ylim([0.425 0.48]);
+			
+			SavePlot(obj, h, sprintf('AreaRadiusDistribution'));
+
+			figure 
+			idx = 2000;
+			r = pauseRA{idx}(:,1);
+			a = pauseRA{idx}(:,2);
+			scatter(r,a)
+
+			figure 
 			idx = 1800;
 			r = pauseRA{idx}(:,1);
 			a = pauseRA{idx}(:,2);
-			h = figure;
-			xlim([0 14])
-			ylim([0.4 0.5]);
-			hold on
-			scatter(r,a);
+			scatter(r,a)
 
 
 			h = figure;
 			plot(obj.result.timeSteps,N, 'LineWidth', 4);
 			ax = gca;
-			ax.FontSize = 16;
-			title('Cell count over time','Interpreter', 'latex','FontSize', 22);
-			ylabel('N','Interpreter', 'latex', 'FontSize', 40);xlabel('time','Interpreter', 'latex', 'FontSize', 40);
+			ax.FontSize = aFontSize;
+			title('Cell count over time','Interpreter', 'latex','FontSize', tFontSize);
+			ylabel('N','Interpreter', 'latex', 'FontSize', lFontSize);xlabel('time','Interpreter', 'latex', 'FontSize', lFontSize);
 			xlim([0 obj.result.timeSteps(end)]);
 			SavePlot(obj, h, sprintf('CellCount'));
 
 			h = figure;
 			plot(obj.result.timeSteps,mA, 'LineWidth', 4);
 			ax = gca;
-			ax.FontSize = 16;
-			title('Average cell area','Interpreter', 'latex','FontSize', 22);
-			ylabel('Area','Interpreter', 'latex', 'FontSize', 40);xlabel('time','Interpreter', 'latex', 'FontSize', 40);
+			ax.FontSize = aFontSize;
+			title('Average cell area','Interpreter', 'latex','FontSize', tFontSize);
+			ylabel('Area','Interpreter', 'latex', 'FontSize', lFontSize);xlabel('time','Interpreter', 'latex', 'FontSize', lFontSize);
 			xlim([0 obj.result.timeSteps(end)]);
 			SavePlot(obj, h, sprintf('AvgPauseArea'));
 
 			h = figure;
 			plot(obj.result.timeSteps,R80, 'LineWidth', 4);
 			ax = gca;
-			ax.FontSize = 16;
-			title('90\% Radius over time','Interpreter', 'latex','FontSize', 22);
-			ylabel('Radius','Interpreter', 'latex', 'FontSize', 40);xlabel('time','Interpreter', 'latex', 'FontSize', 40);
+			ax.FontSize = aFontSize;
+			title('90\% Radius over time','Interpreter', 'latex','FontSize', tFontSize);
+			ylabel('Radius','Interpreter', 'latex', 'FontSize', lFontSize);xlabel('time','Interpreter', 'latex', 'FontSize', lFontSize);
 			xlim([0 obj.result.timeSteps(end)]);
 			SavePlot(obj, h, sprintf('Radius80'));
 
