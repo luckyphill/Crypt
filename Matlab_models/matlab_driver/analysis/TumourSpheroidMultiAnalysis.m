@@ -135,6 +135,8 @@ classdef TumourSpheroidMultiAnalysis < Analysis
 
 			end
 
+			obj.result = {allN, allR90, allPauseRA};
+
 
 		end
 
@@ -143,27 +145,36 @@ classdef TumourSpheroidMultiAnalysis < Analysis
 
 			
 
-				h=figure;
-				hold on
-				box on
-				leg = {};
+			h=figure;
+			hold on
+			box on
+			leg = {};
+			allPauseRA = obj.result{3};
+			bins = 0:0.8:14;
+			M = [];
+			for k = 1:obj.seed
+				pauseRA = allPauseRA{k};
+				allMean = [];
 				for idx = 400:400:2000
 
 					if ~isempty(pauseRA{idx})
 						r = pauseRA{idx}(:,1);
 						a = pauseRA{idx}(:,2);
-						bins = 0:0.8:14;
+						
 						m = [];
 						for i = 1:length(bins)-1
 							m(i) = mean(a(  logical( (r>bins(i)) .* (r <= bins(i+1))  )   ) );
 						end
 						
-						plot(bins(2:end), m, 'LineWidth', 4);
-						leg{end+1} = ['t= ', num2str(obj.result.timeSteps(idx))];
 					end
+					allMean(end+1) = m;
 				end
 
+				M(:,:,k) = allMean; 
+
 			end
+
+			
 
 
 			tFontSize = 40;
