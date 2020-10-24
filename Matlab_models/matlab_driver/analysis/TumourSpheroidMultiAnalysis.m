@@ -60,7 +60,7 @@ classdef TumourSpheroidMultiAnalysis < Analysis
 			allR90 = [];
 			allPauseRA = {};
 			
-			for k = 1:obj.seed
+			for k = obj.seed
 				pathName = sprintf('TumourSpheroid/p%gg%gb%g_seed%g/SpatialState/',obj.p, obj.g, obj.b, k);
 				r = Visualiser(pathName);
 
@@ -129,9 +129,9 @@ classdef TumourSpheroidMultiAnalysis < Analysis
 
 				end
 
-				allN(k,:) = N;
-				allR90(k,:) = R90;
-				allPauseRA{k} = pauseRA;
+				allN(end+1,:) = N;
+				allR90(end+1,:) = R90;
+				allPauseRA{end+1} = pauseRA;
 
 			end
 
@@ -150,9 +150,9 @@ classdef TumourSpheroidMultiAnalysis < Analysis
 			box on
 			leg = {};
 			allPauseRA = obj.result{3};
-			bins = 0:0.8:14;
+			bins = 0:0.9:14;
 			M = [];
-			for k = 1:obj.seed
+			for k = obj.seed
 				pauseRA = allPauseRA{k};
 				allMean = [];
 				for idx = 400:400:2000
@@ -167,14 +167,18 @@ classdef TumourSpheroidMultiAnalysis < Analysis
 						end
 						
 					end
-					allMean(end+1) = m;
+					allMean(:,end+1) = m;
 				end
 
-				M(:,:,k) = allMean; 
+				M(end+1,:,:) = allMean; 
 
 			end
 
-			
+			h = figure;
+			hold on;
+			for i=1:5
+				plot(bins(2:end), nanmean(M(:,:,i)), 'LineWidth', 4);
+			end
 
 
 			tFontSize = 40;
@@ -190,32 +194,35 @@ classdef TumourSpheroidMultiAnalysis < Analysis
 			
 			SavePlot(obj, h, sprintf('AreaRadiusDistribution'));
 
+			N = obj.result{1}(obj.seed,:);
 
+			maxN = max(N);
+			minN = min(N);
+			avgN = mean(N);
 			h = figure;
-			plot(obj.result.timeSteps,N, 'LineWidth', 4);
+			plot(0.1:0.1:200,avgN, 'LineWidth', 4);
+			hold on
+			fill([0.1:0.1:200,fliplr(0.1:0.1:200)], [minN,fliplr(maxN)], [0, .45, 0.74], 'FaceAlpha', 0.25, 'EdgeAlpha',0);
 			ax = gca;
 			ax.FontSize = aFontSize;
 			title('Cell count over time','Interpreter', 'latex','FontSize', tFontSize);
 			ylabel('N','Interpreter', 'latex', 'FontSize', lFontSize);xlabel('time','Interpreter', 'latex', 'FontSize', lFontSize);
-			xlim([0 obj.result.timeSteps(end)]);
+			xlim([0 200]);
 			SavePlot(obj, h, sprintf('CellCount'));
 
+			R90 = obj.result{2}(obj.seed,:);
+			maxR90 = max(R90);
+			minR90 = min(R90);
+			avgR90 = mean(R90);
 			h = figure;
-			plot(obj.result.timeSteps,mA, 'LineWidth', 4);
-			ax = gca;
-			ax.FontSize = aFontSize;
-			title('Average cell area','Interpreter', 'latex','FontSize', tFontSize);
-			ylabel('Area','Interpreter', 'latex', 'FontSize', lFontSize);xlabel('time','Interpreter', 'latex', 'FontSize', lFontSize);
-			xlim([0 obj.result.timeSteps(end)]);
-			SavePlot(obj, h, sprintf('AvgPauseArea'));
-
-			h = figure;
-			plot(obj.result.timeSteps,R90, 'LineWidth', 4);
+			plot(0.1:0.1:200,avgR90, 'LineWidth', 4);
+			hold on
+			fill([0.1:0.1:200,fliplr(0.1:0.1:200)], [minR90,fliplr(maxR90)], [0, .45, 0.74], 'FaceAlpha', 0.25, 'EdgeAlpha',0);
 			ax = gca;
 			ax.FontSize = aFontSize;
 			title('90\% Radius over time','Interpreter', 'latex','FontSize', tFontSize);
 			ylabel('Radius','Interpreter', 'latex', 'FontSize', lFontSize);xlabel('time','Interpreter', 'latex', 'FontSize', lFontSize);
-			xlim([0 obj.result.timeSteps(end)]);
+			xlim([0 200]);
 			SavePlot(obj, h, sprintf('Radius80'));
 
 

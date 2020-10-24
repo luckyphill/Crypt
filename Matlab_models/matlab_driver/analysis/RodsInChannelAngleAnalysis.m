@@ -74,14 +74,12 @@ classdef RodsInChannelAngleAnalysis < Analysis
 			h = figure;
 
 			angles = 0;
-			% hs = histogram(angles, [-1.6:0.2:1.6], 'Normalization', 'probability');
-			% xlim([-1.6 1.6]);
-			% ylim([0  0.25]);\
+
 			A = [];
 			Q = [];
 			L = [];
 			lengths = [];
-			% hs = histogram(angles, [0:0.2:1.6], 'Normalization', 'probability');
+
 			xlim([0 1.6]);
 			ylim([0  0.5]);
 			[I,~] = size(obj.result.cells);
@@ -119,10 +117,7 @@ classdef RodsInChannelAngleAnalysis < Analysis
 				Q(end + 1) = sqrt(  mean(cos( 2.* angles))^2 + mean(sin( 2.* angles))^2   );
 				A(end + 1) = mean(abs(angles));
 				L(end + 1) = mean(lengths);
-				% hs.Data = abs(angles);
-				% drawnow
-				% title(sprintf('t = %g',obj.result.timeSteps(i)),'Interpreter', 'latex');
-				% pause(0.1);
+
 
 			end
 

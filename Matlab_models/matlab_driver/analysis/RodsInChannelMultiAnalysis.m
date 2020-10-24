@@ -65,38 +65,31 @@ classdef RodsInChannelMultiAnalysis < Analysis
 
 		function AssembleData(obj)
 
-			r = Visualiser.empty;
-			for i = 1:obj.seed
-				pathName = sprintf('RodsInChannel/n%gr%gs%gg%gd%gw%g_seed%g/SpatialState/',obj.n,obj.r,obj.s,obj.g,obj.d,obj.w,i);
-				r(i) = Visualiser(pathName);
-			end
-			obj.result = r;
-
-		end
-
-		function PlotData(obj, varargin)
-
 			allQ = [];
 			allL = [];
+			r = Visualiser.empty;
 			for k = 1:obj.seed
+				pathName = sprintf('RodsInChannel/n%gr%gs%gg%gd%gw%g_seed%g/SpatialState/',obj.n,obj.r,obj.s,obj.g,obj.d,obj.w,k);
+				r = Visualiser(pathName);
+
 				angles = 0;
 
 				Q = [];
 				L = [];
 				lengths = [];
 
-				[I,~] = size(obj.result(k).cells);
+				[I,~] = size(r.cells);
 				for i = 1:I
 					% i is the time steps
-					[~,J] = size(obj.result(k).cells);
+					[~,J] = size(r.cells);
 					j = 1;
 					angles = [];
-					while j <= J && ~isempty(obj.result(k).cells{i,j})
+					while j <= J && ~isempty(r.cells{i,j})
 
-						c = obj.result(k).cells{i,j};
+						c = r.cells{i,j};
 						ids = c(1:end-1);
 						colour = c(end);
-						nodeCoords = squeeze(obj.result(k).nodes(ids,i,:));
+						nodeCoords = squeeze(r.nodes(ids,i,:));
 
 						x = nodeCoords(:,1);
 						y = nodeCoords(:,2);
@@ -120,6 +113,14 @@ classdef RodsInChannelMultiAnalysis < Analysis
 				allL = Concatenate(obj, allL, L);
 
 			end
+			
+			obj.result = {allQ, allL};
+
+		end
+
+		function PlotData(obj, varargin)
+
+			
 
 			obj.allQ = allQ;
 			obj.allL = allL;
@@ -128,7 +129,7 @@ classdef RodsInChannelMultiAnalysis < Analysis
 			lFontSize = 20;
 			aFontSize = 24;
 
-			plot(obj.result(k).timeSteps,mean(allQ), 'LineWidth', 4);
+			plot(r.timeSteps,mean(allQ), 'LineWidth', 4);
 			ax = gca;
 			ax.FontSize = 16;
 			% title('Disorder factor Q over time','Interpreter', 'latex','FontSize', 22);
@@ -138,7 +139,7 @@ classdef RodsInChannelMultiAnalysis < Analysis
 
 
 			h = figure;
-			plot(obj.result(k).timeSteps,mean(allL), 'LineWidth', 4);
+			plot(r.timeSteps,mean(allL), 'LineWidth', 4);
 			ax = gca;
 			ax.FontSize = 16;
 			% title('Average length over time','Interpreter', 'latex','FontSize', 22);
