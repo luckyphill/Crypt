@@ -9,6 +9,7 @@
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=phillip.j.brown@adelaide.edu.au
 
+module load arch/haswell
 module load matlab/2019a
 
-matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); r = RodsInChannel(10,5, 20, 5, 0.1, 4, $SLURM_ARRAY_TASK_ID);r.RunToTime(300); quit()"
+matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); r = RodsInChannel(10,5, 20, 5, 0.1, 4, $SLURM_ARRAY_TASK_ID);r.RunToTime(200); quit()"
