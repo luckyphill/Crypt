@@ -68,7 +68,7 @@ classdef RodsInChannelMultiAnalysis < Analysis
 			allQ = [];
 			allL = [];
 			r = Visualiser.empty;
-			for k = 1:obj.seed
+			for k = obj.seed
 				pathName = sprintf('RodsInChannel/n%gr%gs%gg%gd%gw%g_seed%g/SpatialState/',obj.n,obj.r,obj.s,obj.g,obj.d,obj.w,k);
 				r = Visualiser(pathName);
 
@@ -113,7 +113,7 @@ classdef RodsInChannelMultiAnalysis < Analysis
 				allL = Concatenate(obj, allL, L);
 
 			end
-			
+
 			obj.result = {allQ, allL};
 
 		end
@@ -122,29 +122,29 @@ classdef RodsInChannelMultiAnalysis < Analysis
 
 			
 
-			obj.allQ = allQ;
-			obj.allL = allL;
+			allQ = obj.result{1};
+			allL = obj.result{2};
 
 			tFontSize = 40;
 			lFontSize = 20;
 			aFontSize = 24;
-
-			plot(r.timeSteps,mean(allQ), 'LineWidth', 4);
+			h = figure;
+			plot(nanmean(allQ), 'LineWidth', 4);
 			ax = gca;
 			ax.FontSize = 16;
 			% title('Disorder factor Q over time','Interpreter', 'latex','FontSize', 22);
 			ylabel('Q','Interpreter', 'latex', 'FontSize', 40);xlabel('time','Interpreter', 'latex', 'FontSize', 40);
-			ylim([0 1.1]);; xlim([0 180]);
+			% ylim([0 1.1]);; xlim([0 180]);
 			SavePlot(obj, h, sprintf('QFactor'));
 
 
 			h = figure;
-			plot(r.timeSteps,mean(allL), 'LineWidth', 4);
+			plot(nanmean(allL), 'LineWidth', 4);
 			ax = gca;
 			ax.FontSize = 16;
 			% title('Average length over time','Interpreter', 'latex','FontSize', 22);
 			ylabel('Avg. length','Interpreter', 'latex', 'FontSize', 40);xlabel('time','Interpreter', 'latex', 'FontSize', 40);
-			ylim([0.25 0.55]); xlim([0 180]);
+			% ylim([0.25 0.55]); xlim([0 180]);
 			SavePlot(obj, h, sprintf('AvgLength'));
 
 			
