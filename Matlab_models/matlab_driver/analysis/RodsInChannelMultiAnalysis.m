@@ -129,7 +129,7 @@ classdef RodsInChannelMultiAnalysis < Analysis
 			lFontSize = 20;
 			aFontSize = 24;
 			h = figure;
-			plot(nanmean(allQ), 'LineWidth', 4);
+			plot(allQ', 'LineWidth', 4);
 			ax = gca;
 			ax.FontSize = 16;
 			% title('Disorder factor Q over time','Interpreter', 'latex','FontSize', 22);
@@ -139,7 +139,7 @@ classdef RodsInChannelMultiAnalysis < Analysis
 
 
 			h = figure;
-			plot(nanmean(allL), 'LineWidth', 4);
+			plot(allL', 'LineWidth', 4);
 			ax = gca;
 			ax.FontSize = 16;
 			% title('Average length over time','Interpreter', 'latex','FontSize', 22);
