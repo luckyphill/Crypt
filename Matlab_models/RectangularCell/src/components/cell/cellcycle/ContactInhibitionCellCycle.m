@@ -77,6 +77,7 @@ classdef ContactInhibitionCellCycle < AbstractCellCycleModel
 				if  ( obj.colour ~= obj.colourSet.GetNumber('GROW') ) && ( c.GetCellArea() < obj.growthTriggerFraction * c.newCellTargetArea )
 					% Bit of a hacky way around since the phase is indirectly tied to the colour but it should work
 					obj.pausePhaseLength = obj.pausePhaseLength + obj.dt;
+					obj.colour = obj.colourSet.GetNumber('STOPPED');
 					fraction = 0;
 				else
 					fraction = (obj.age - obj.pausePhaseLength) / obj.growingPhaseLength;

@@ -1,8 +1,9 @@
-classdef RingOfCells < RingSimulation
+classdef RingBuckling < RingSimulation
 
 	% This simulation makes a ring of cells, so there is no
-	% start or end cell. Cell death needs a special apoptosis
-	% mechanism to work properly
+	% start or end cell. The intention is for the ring to buckle
+	% and self contact. The cell-cell interaction force allows
+	% the ring to interact with itself
 
 	properties
 
@@ -16,25 +17,34 @@ classdef RingOfCells < RingSimulation
 
 	methods
 
-		function obj = RingOfCells(nCells, p, g, seed, varargin)
+		function obj = RingBuckling(n, t0, tg, seed)
 			% All the initilising
 			obj.SetRNGSeed(seed);
 
-						% We keep the option of diffent box sizes for efficiency reasons
-			if length(varargin) > 0
-				if length(varargin) == 3
-					areaEnergy = varargin{1};
-					perimeterEnergy = varargin{2};
-					adhesionEnergy = varargin{3};
-				else
-					error('Error using varargin, must have 3 args, areaEnergy, perimeterEnergy, and adhesionEnergy');
-				end
-			else
-				areaEnergy = 20;
-				perimeterEnergy = 10;
-				adhesionEnergy = 1;
-			end
+			% n is the number of cells in the ring, we restrict it to be  >10
+			% t0 is the growth start age
+			% tg is the growth end age
 
+			% Other parameters
+			% The repulsion interaction force
+			s = 10;
+			% Adhesion interaction (not used by default)
+			% If it is used, it is preferable to set a = s, but not vital
+			a = 0;
+
+			% Contact inhibition fraction
+			f = 0.7;
+			% Minimum division time
+			tm = tg;
+
+			% The asymptote, separation, and limit distances for the interaction force
+			dAsym = 0;
+			dSep = 0.1;
+			dLim = 0.2;
+
+			% The energy densities for the cell growth force
+			areaEnergy = 20;
+			perimeterEnergy = 10;
 
 
 			%---------------------------------------------------
@@ -47,14 +57,11 @@ classdef RingOfCells < RingSimulation
 			% In order to have a sensible starting configuration, 
 			% we set a minimum number of 10 cells
 
-			if nCells < 10
+			if n < 10
 				error('For a ring, at least 10 starting cells are needed');
 			end
 
 			
-
-			
-
 			%---------------------------------------------------
 			% Make a list of top nodes and bottom nodes
 			%---------------------------------------------------
@@ -67,14 +74,14 @@ classdef RingOfCells < RingSimulation
 			% Under these conditions, the radius r of the bottom nodes is given
 			% by:
 
-			r = 0.5 / sin(2*pi/nCells) - 0.5;
+			r = 0.5 / sin(2*pi/n) - 0.5;
 
 			topNodes = Node.empty();
 			bottomNodes = Node.empty();
 
-			for n = 1:nCells
+			for i = 1:n
 
-				theta = 2*pi*n/nCells;
+				theta = 2*pi*i/n;
 				xb = r * cos(theta);
 				yb = r * sin(theta);
 
@@ -109,7 +116,10 @@ classdef RingOfCells < RingSimulation
 
 			% Cell cycle model
 
-			ccm = SimplePhaseBasedCellCycle(p, g);
+			ccm = LinearGrowthCellCycle(t0, tg, tm, f, obj.dt);
+			ccm.stochasticGrowthStart = true;
+			ccm.stochasticGrowthEnd = true;
+			ccm.stochasticDivisionAge = true;
 
 			% Assemble the cell
 
@@ -119,7 +129,7 @@ classdef RingOfCells < RingSimulation
 			% Make the middle cells
 			%---------------------------------------------------
 
-			for i = 2:nCells-1
+			for i = 2:n-1
 				% Each time we advance to the next cell, the right most nodes and element of the previous cell
 				% become the leftmost element of the new cell
 
@@ -133,7 +143,10 @@ classdef RingOfCells < RingSimulation
 
 				obj.AddElementsToList([elementBottom, elementRight, elementTop]);
 
-				ccm = SimplePhaseBasedCellCycle(p, g);
+				ccm = LinearGrowthCellCycle(t0, tg, tm, f, obj.dt);
+				ccm.stochasticGrowthStart = true;
+				ccm.stochasticGrowthEnd = true;
+				ccm.stochasticDivisionAge = true;
 
 				obj.cellList(i) = SquareCellJoined(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
 
@@ -145,35 +158,32 @@ classdef RingOfCells < RingSimulation
 			
 			elementRight 	= elementLeft;
 			elementLeft 	= obj.cellList(1).elementRight;
-			elementBottom 	= Element(bottomNodes(nCells), bottomNodes(1), obj.GetNextElementId());
-			elementTop	 	= Element(topNodes(nCells), topNodes(1), obj.GetNextElementId());
+			elementBottom 	= Element(bottomNodes(n), bottomNodes(1), obj.GetNextElementId());
+			elementTop	 	= Element(topNodes(n), topNodes(1), obj.GetNextElementId());
 
 			% Critical for joined cells
 			elementLeft.internal = true;
 
 			obj.AddElementsToList([elementBottom, elementTop]);
 
-			ccm = SimplePhaseBasedCellCycle(p, g);
+			ccm = LinearGrowthCellCycle(t0, tg, tm, f, obj.dt);
+			ccm.stochasticGrowthStart = true;
+			ccm.stochasticGrowthEnd = true;
+			ccm.stochasticDivisionAge = true;
 
-			obj.cellList(nCells) = SquareCellJoined(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
+			obj.cellList(n) = SquareCellJoined(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
 
 
 			%---------------------------------------------------
 			% Add in the forces
 			%---------------------------------------------------
 
-			% Nagai Honda forces
-			obj.AddCellBasedForce(NagaiHondaForce(areaEnergy, perimeterEnergy, adhesionEnergy));
+			% Cell growth force
+			obj.AddCellBasedForce(PolygonCellGrowthForce(areaEnergy, perimeterEnergy));
 
-			% Corner force to prevent very sharp corners
-			obj.AddCellBasedForce(CornerForceCouple(0.1,pi/2));
-
-			% Element force to stop elements becoming too small
-			% obj.AddElementBasedForce(EdgeSpringForce(@(n,l) 20 * exp(1-25 * l/n)));
 
 			% Node-Element interaction force - requires a SpacePartition
-			% obj.AddNeighbourhoodBasedForce(NodeElementRepulsionForce(0.1, obj.dt));
-			obj.AddNeighbourhoodBasedForce(CorrectorForce(0.1, 10, obj.dt));
+			obj.AddNeighbourhoodBasedForce(CellCellInteractionForce(a, s, dAsym, dSep, dLim, obj.dt, true));
 
 			
 			%---------------------------------------------------
@@ -190,7 +200,7 @@ classdef RingOfCells < RingSimulation
 			obj.AddSimulationData(Circularity());
 			obj.AddDataStore(StoreCircularity(1));
 			obj.AddSimulationData(SpatialState());
-			pathName = sprintf('RingOfCells/n%gp%gg%g_seed%g/',nCells,p,g,seed);
+			pathName = sprintf('RingBuckling/n%gt0%gtg%gs%ga%gf%gtm%gda%gds%gdl%galpha%gbeta%g_seed%g/',n,t0,tg,s,a,f,tm,dAsym,dSep, dLim, areaEnergy, perimeterEnergy, seed);
 			obj.AddDataWriter(WriteSpatialState(20,pathName));
 			
 

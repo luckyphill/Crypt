@@ -54,7 +54,7 @@ classdef CorrectorForce < AbstractNodeElementForce
 						% Here, A is the point on the element perpendicular to the node
 						n1toA = u * dot(n1ton, u);
 
-					if e.cellList.id ~= n.cellList.id
+					if sum(ismember(e.cellList, n.cellList)) == 0
 						% The goal is to have the resting separation at r apart
 						% The force points towards the element
 						if d - obj.r > 0
@@ -66,7 +66,7 @@ classdef CorrectorForce < AbstractNodeElementForce
 						end
 
 					else
-						% If the node and edge are part of the same cell
+						% If the node and edge are part of the same cell and are trying to interact
 						% then something is going wrong and we need to push them apart
 						Fa = -obj.springRate * v * abs(d)^(-0.25);
 

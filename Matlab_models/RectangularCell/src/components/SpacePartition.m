@@ -213,7 +213,7 @@ classdef SpacePartition < matlab.mixin.SetGet
 				e = b(i);
 
 				u = e.GetVector1to2();
-				v = [u(2), -u(1)];
+				v = e.GetOutwardNormal();
 
 				% Make box around element
 				% determine if node is in that box
@@ -1152,7 +1152,7 @@ classdef SpacePartition < matlab.mixin.SetGet
 
 		function [i,j] = GetIndices(obj, x,y)
 			% Determine the indices
-			% Have to add 1 because matlab is a shitty language that
+			% Have to add 1 because matlab is a language that
 			% doesn't index from zero, like a sensible language ¯\_(ツ)_/¯
 			i = floor(abs(x/obj.dx)) + 1;
 			j = floor(abs(y/obj.dy)) + 1;

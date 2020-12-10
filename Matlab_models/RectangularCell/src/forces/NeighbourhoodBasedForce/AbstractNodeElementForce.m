@@ -23,7 +23,7 @@ classdef AbstractNodeElementForce < AbstractNeighbourhoodBasedForce
 			% Fa is the force pointing to the element
 
 			% It uses the drag dominated equations of motion I developed
-			% for a rigid body - see research diary
+			% for a rigid body
 
 			% To solve the motion, we need to account for linear
 			% movement and rotational movement. To do this, we solve
@@ -124,11 +124,6 @@ classdef AbstractNodeElementForce < AbstractNeighbourhoodBasedForce
 			r2f = r2f + (obj.dt * Fa) / etaD;
 
 			% We now have the final position of the element after rotation
-			
-			% Ideally I would like to have the simulation set up
-			% so elements can have a torque applied to them, however
-			% this introduces complexity around how to handle two connected
-			% elements that have different torques applied to them
 
 			% The simulation represents elements as two nodes,
 			% so all of the forces have to be realised there

@@ -17,8 +17,9 @@ classdef TumourSpheroid < FreeCellSimulation
 
 			areaEnergy = 20;
 			perimeterEnergy = 10;
-			adhesionEnergy = 1;
+			adhesionEnergy = 0;
 
+			% Contact inhibition fraction
 			f = 0.9;
 
 			% Make nodes around a polygon
@@ -31,6 +32,7 @@ classdef TumourSpheroid < FreeCellSimulation
 				y = Y(i);
 				
 				ccm = ContactInhibitionCellCycle(p, g, f, obj.dt);
+
 				c = MakeCellAtCentre(obj, N, x + 0.5 * mod(y,2), y * sqrt(3)/2, ccm);
 
 				obj.nodeList = [obj.nodeList, c.nodeList];
@@ -46,21 +48,11 @@ classdef TumourSpheroid < FreeCellSimulation
 			% Nagai Honda forces
 			obj.AddCellBasedForce(ChasteNagaiHondaForce(areaEnergy, perimeterEnergy, adhesionEnergy));
 
-			% % Node-Element interaction force - requires a SpacePartition
-			% obj.AddNeighbourhoodBasedForce(NodeElementRepulsionForce(0.1, obj.dt));
-
-			% % Corner force to prevent very sharp corners
-			% internalAngle = (N-2) * pi / N;
-			% obj.AddCellBasedForce(CornerForceCouple(0.1,internalAngle));
 
 			% Node-Element interaction force - requires a SpacePartition
 			obj.AddNeighbourhoodBasedForce(CorrectorForce(0.1, b, obj.dt));
 
-			% % A small element based force to regularise the placement of the nodes
-			% % around the perimeter of the cell
-			% obj.AddElementBasedForce(EdgeSpringForce(@(n, l) 2*(n - l)));
-
-			% Self explanitory really. Tries to make the edges the same length
+			% Self explanitory, really. Tries to make the edges the same length
 			obj.AddCellBasedForce(FreeCellPerimeterNormalisingForce(1));
 
 			

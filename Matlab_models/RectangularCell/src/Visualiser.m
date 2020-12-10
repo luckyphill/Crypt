@@ -333,10 +333,15 @@ classdef Visualiser < matlab.mixin.SetGet
 				x = nodeCoords(:,1);
 				y = nodeCoords(:,2);
 
-				% fillObjects(j) = fill(x,y,obj.cs.GetRGB(colour));
-
-				A = polyarea(x,y);
-				fillObjects(j) = fill(x,y,A);
+				% A = polyarea(x,y);
+				% if A < 0.45
+				% 	fillObjects(j) = fill(x,y,obj.cs.GetRGB('STOPPED'));
+				% else
+				% 	fillObjects(j) = fill(x,y,obj.cs.GetRGB(colour));
+				% end
+				% fillObjects(j) = fill(x,y,A);
+				
+				fillObjects(j) = fill(x,y,obj.cs.GetRGB(colour));
 
 
 				j = j + 1;

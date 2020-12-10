@@ -128,23 +128,45 @@ classdef RodsInChannelMultiAnalysis < Analysis
 			tFontSize = 40;
 			lFontSize = 20;
 			aFontSize = 24;
+
+			t = 0.1:0.1:200;
+			
+
+			mQ = nanmean(allQ);
+			uQ = mQ + sqrt(nanvar(allQ));
+			bQ = mQ - sqrt(nanvar(allQ));
+			% figure;plot(sqrt(nanvar(allQ)))
 			h = figure;
-			plot(allQ', 'LineWidth', 4);
+			plot(t,mQ, 'LineWidth', 4);
+			hold on
+			fill([t,fliplr(t)], [uQ,fliplr(bQ)], [0, .45, 0.74], 'FaceAlpha', 0.25, 'EdgeAlpha',0);
 			ax = gca;
 			ax.FontSize = 16;
 			% title('Disorder factor Q over time','Interpreter', 'latex','FontSize', 22);
 			ylabel('Q','Interpreter', 'latex', 'FontSize', 40);xlabel('time','Interpreter', 'latex', 'FontSize', 40);
-			% ylim([0 1.1]);; xlim([0 180]);
+			ylim([0 0.6]);; xlim([0 200]);
 			SavePlot(obj, h, sprintf('QFactor'));
 
 
+			mL = nanmean(allL);
+			uL = mL + 2*sqrt(nanvar(allL));
+			bL = mL - 2*sqrt(nanvar(allL));
+
+			uT = t(~isnan(uL));
+			uL = uL(~isnan(uL));
+
+			bT = t(~isnan(bL));
+			bL = bL(~isnan(bL));
+			
 			h = figure;
-			plot(allL', 'LineWidth', 4);
+			plot(t,mL, 'LineWidth', 4);
+			hold on
+			fill([bT,fliplr(uT)], [bL,fliplr(uL)], [0, .45, 0.74], 'FaceAlpha', 0.25, 'EdgeAlpha',0);
 			ax = gca;
 			ax.FontSize = 16;
 			% title('Average length over time','Interpreter', 'latex','FontSize', 22);
 			ylabel('Avg. length','Interpreter', 'latex', 'FontSize', 40);xlabel('time','Interpreter', 'latex', 'FontSize', 40);
-			% ylim([0.25 0.55]); xlim([0 180]);
+			ylim([0.25 0.55]); xlim([0 200]);
 			SavePlot(obj, h, sprintf('AvgLength'));
 
 			
