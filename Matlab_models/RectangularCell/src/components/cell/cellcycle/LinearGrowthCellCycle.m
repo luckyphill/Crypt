@@ -44,6 +44,17 @@ classdef LinearGrowthCellCycle < AbstractCellCycleModel
 		funcRandomVariable
 		randomThreshold
 
+		% These are to customise the colouring for the visualisation
+		% They can be left as default with no issues
+
+		% This is mainly here to make it easier to distinguish
+		% rod cell colouring from polygon cell colouring
+
+		preGrowthColour
+		growthColour
+		postGrowthColour
+		inhibitedColour
+
 	end
 
 
@@ -78,13 +89,35 @@ classdef LinearGrowthCellCycle < AbstractCellCycleModel
 			age = floor( unifrnd(0,s) / dt ) * dt;
 			obj.SetAge(age);
 
+
+			% Need to specifiy these here because it won't let properties
+			% be given a default called in this way
+			obj.preGrowthColour = obj.colourSet.GetNumber('PAUSE');
+			obj.growthColour = obj.colourSet.GetNumber('GROW');
+			obj.postGrowthColour = obj.colourSet.GetNumber('PAUSE');
+			obj.inhibitedColour = obj.colourSet.GetNumber('STOPPED');
+
 		end
 
-		% Redefine the AgeCellCycle method to update the phase colour
+		% Co-opt the AgeCellCycle method to update the growth period colour
 		% Could probably add in a phase tracking variable that gets updated here
 		function AgeCellCycle(obj, dt)
 
 			obj.age = obj.age + dt;
+
+			if obj.age < obj.growthPeriodStart
+				obj.colour = obj.preGrowthColour;
+			else
+				if obj.age < obj.growthPeriodEnd
+					obj.colour = obj.growthColour;
+				else
+					obj.colour = obj.postGrowthColour;
+					c = obj.containingCell;
+					if c.GetCellArea() < obj.minimumDivisionFraction * c.GetCellTargetArea()
+						obj.colour = obj.inhibitedColour;
+					end
+				end
+			end
 
 		end
 
@@ -109,9 +142,16 @@ classdef LinearGrowthCellCycle < AbstractCellCycleModel
 			obj.stochasticGrowthEnd = obj.stochasticGrowthEnd;
 			obj.stochasticDivisionAge = obj.stochasticDivisionAge;
 
+			% Pass on the colours
+			newCCM.preGrowthColour = obj.preGrowthColour;
+			newCCM.growthColour = obj.growthColour;
+			newCCM.postGrowthColour = obj.postGrowthColour;
+			newCCM.inhibitedColour = obj.inhibitedColour;
+
+
 			% Reset the colours
-			obj.colour = obj.colourSet.GetNumber('PAUSE');
-			newCCM.colour = obj.colourSet.GetNumber('PAUSE');
+			obj.colour = obj.preGrowthColour;
+			newCCM.colour = obj.preGrowthColour;
 
 		end
 
@@ -141,7 +181,6 @@ classdef LinearGrowthCellCycle < AbstractCellCycleModel
 
 			if obj.age < obj.growthPeriodStart
 				fraction = 0;
-				obj.colour = obj.colourSet.GetNumber('PAUSE');
 			else
 				if obj.age < obj.growthPeriodEnd
 					fraction = (obj.age - obj.growthPeriodStart) / (obj.growthPeriodEnd - obj.growthPeriodStart);

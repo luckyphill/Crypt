@@ -40,23 +40,36 @@ classdef Visualiser < matlab.mixin.SetGet
 
 			obj.LoadData();
 
-			% obj.RunVisualiserGUI();
+			% obj.VisualiseCells();
 
 		end
 
 		function LoadData(obj)
 
 			% For some reason matlab decides to ignore some lines
-			% when using readmatrix, so to stop this, pass in the following options
+			% when using readmatrix, so to stop this, we need to pass in special options
 			% See https://stackoverflow.com/questions/62399666/why-does-readmatrix-in-matlab-skip-the-first-n-lines?
+			
+			% Despite this, readmatrix is still valuable because when it feeds the file
+			% into a matrix, any empty entries are filled with nans. On the other hand
+			% dlmread, or csvread fill empty entries with zeros, which unfortunately are
+			% also valid spatial positions, so it is difficult to reliably distinguish
+			% empty values from valid zeros. To throw a complete spanner in the works
+			% readmatrix can't handle exceptionally large data files (above something like
+			% 100MB or 200MB), so we have to revert to dlmread in this case and just accept
+			% that in certain cases cells will disappear in the visualisation because one of their
+			% coordinates gets convereted to nan. Fortunately, this should be a fleeting
+			% extraordinarily rare event in general. It will however be be common if
+			% boundary conditions are set on the x or y axes
+
 			opts = detectImportOptions([obj.pathToSpatialState, 'nodes.csv']);
 			opts.DataLines = [1 Inf];
 			if strcmp(opts.VariableTypes{1}, 'char')
 				opts = setvartype(opts, opts.VariableNames{1}, 'double');
 			end
-			nodeData = readmatrix([obj.pathToSpatialState, 'nodes.csv'],opts);
-			% nodeData = dlmread([obj.pathToSpatialState, 'nodes.csv']);
-			% nodeData(nodeData == 0) = nan;
+			% nodeData = readmatrix([obj.pathToSpatialState, 'nodes.csv'],opts);
+			nodeData = dlmread([obj.pathToSpatialState, 'nodes.csv']);
+			nodeData(nodeData == 0) = nan;
 
 			opts = detectImportOptions([obj.pathToSpatialState, 'elements.csv']);
 			opts.DataLines = [1 Inf];
@@ -140,7 +153,7 @@ classdef Visualiser < matlab.mixin.SetGet
 
 		end
 
-		function RunVisualiserGUI(obj, varargin)
+		function VisualiseCells(obj, varargin)
 
 			% This will take the formatted data and produce an interactive
 			% plot of the simulation. At the minute it just runs a for loop
@@ -361,21 +374,20 @@ classdef Visualiser < matlab.mixin.SetGet
 
 		end
 
-		function VisualiseRods(obj, varargin)
+		function VisualiseRods(obj, r, varargin)
 
 			% This will take the formatted data and produces a video of a rod cell simulation
 
 			h = figure();
+			set(gca,'Color','k');
 			axis equal
 			hold on
-
-			r = 0.08;
 
 			[I,~] = size(obj.cells);
 
 
 			% Initialise the array with anything
-			patchObjects(1) = patch([1,1],[2,2],obj.cs.GetRGB(6), 'LineWidth', 2);
+			patchObjects(1) = patch([1,1],[2,2],obj.cs.GetRGB(6), 'LineWidth', .5);
 
 			startI =  1;
 			if ~isempty(varargin)
@@ -398,7 +410,7 @@ classdef Visualiser < matlab.mixin.SetGet
 
 					if j > length(patchObjects)
 						[pillX,pillY] = obj.DrawPill(a,b,r);
-						patchObjects(j) = patch(pillX,pillY,obj.cs.GetRGB(colour), 'LineWidth', 2);
+						patchObjects(j) = patch(pillX,pillY,obj.cs.GetRGB(colour), 'LineWidth', .5);
 					else
 						[pillX,pillY] = obj.DrawPill(a,b,r);
 						patchObjects(j).XData = pillX;
@@ -518,14 +530,14 @@ classdef Visualiser < matlab.mixin.SetGet
 
 		end
 
-		function PlotRodTimeStep(obj, timeStep)
+		function PlotRodTimeStep(obj, r, timeStep)
 
 			% Plots a single given timestep
 
 			h = figure();
 			axis equal
 			hold on
-			r = 0.08;
+			set(gca,'Color','k');
 
 			i = timeStep;
 
@@ -553,7 +565,7 @@ classdef Visualiser < matlab.mixin.SetGet
 
 			end
 				% j will always end up being 1 more than the total number of non empty cells
-			axis off
+			% axis off
 			drawnow
 			title(sprintf('t = %g',obj.timeSteps(i)),'Interpreter', 'latex');
 

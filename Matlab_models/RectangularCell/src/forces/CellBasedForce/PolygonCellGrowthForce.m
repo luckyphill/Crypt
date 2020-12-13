@@ -6,16 +6,18 @@ classdef PolygonCellGrowthForce < AbstractCellBasedForce
 	properties
 
 		areaEnergyParameter
-		surfaceEnergyParameter
+		perimeterEnergyParameter
+		surfaceTensionEnergyParameter
 
 	end
 
 	methods
 
-		function obj = PolygonCellGrowthForce(areaP, surfaceP)
+		function obj = PolygonCellGrowthForce(areaP, perimeterP, tensionP)
 
-			obj.areaEnergyParameter 	= areaP;
-			obj.surfaceEnergyParameter 	= surfaceP;
+			obj.areaEnergyParameter 			= areaP;
+			obj.perimeterEnergyParameter 		= perimeterP;
+			obj.surfaceTensionEnergyParameter 	= tensionP;
 			
 		end
 
@@ -29,6 +31,7 @@ classdef PolygonCellGrowthForce < AbstractCellBasedForce
 				c = cellList(i);
 				obj.AddTargetAreaForces(c);
 				obj.AddTargetPerimeterForces(c);
+				obj.AddSurfaceTensionForces(c);
 
 			end
 
@@ -119,7 +122,7 @@ classdef PolygonCellGrowthForce < AbstractCellBasedForce
 			currentPerimeter 	= c.GetCellPerimeter();
 			targetPerimeter 	= c.GetCellTargetPerimeter();
 
-			magnitude = 2 * obj.surfaceEnergyParameter * (currentPerimeter - targetPerimeter);
+			magnitude = 2 * obj.perimeterEnergyParameter * (currentPerimeter - targetPerimeter);
 
 
 			for i = 1:length(c.elementList)
@@ -128,6 +131,53 @@ classdef PolygonCellGrowthForce < AbstractCellBasedForce
 				r = e.GetVector1to2();
 
 				f = magnitude * r;
+
+				e.Node1.AddForceContribution(f);
+				e.Node2.AddForceContribution(-f);
+
+			end
+
+		end
+
+		function AddSurfaceTensionForces(obj, c)
+
+
+			% This force comes from "A dynamic cell model for the formation of epithelial
+			% tissues", Nagai, Honda 2001. It comes from section 2.1 "Tension of the cell boundary"
+			% and is a force resulting from the tendency to minimise the energy held in
+			% the boundary of the cell. If left unchecked, this will drive the boundary
+			% of the cell to zero. The equation governing the energy is:
+			% U = \sum_{j} \sigma_{\alpha,\beta} |r_{i} - r_{j}|
+			% i is a given node around a cell boundary, j are the nodes that share an edge with i
+			% \sigma_{\alpha,\beta} is the energy per unit length of the edge between
+			% cells \alpha and \beta.
+
+			% The resulting force comes by taking the -ve gradient of the energy, giving
+			% -\sigma_{\alpha,\beta} (r_{i} - r_{j}) / |r_{i} - r_{j}|
+
+			% Since the parameter \sigma is specified for any cell pair in the paper, it can be used
+			% as a way for any two cells to minimise their shared boundary. If used this way
+			% it should also account for the tendency for adhesion between two cells, meaning
+			% that the parameter could go negative.
+
+			% Here it will be used as a tendency for a cell to want to minimise it boundary in
+			% general. Adhesion forces will be dealt separately.
+
+			% Practically, the force means for any given element, it's nodes will be pulled together.
+			% In terms of the node, we will find a force pointing towards any other node that
+			% it shares an edge with.
+
+			% Technically this can be separated out as an AbstractElementBasedForce, but it is kept
+			% here since it is part of the "Nagai-Honda" model of a cell.
+
+
+			% Elements are organised so Node1 -> Node2 is anticlockwise
+			for i = 1:length(c.elementList)
+
+				e = c.elementList(i);
+				r = e.GetVector1to2();
+
+				f = obj.surfaceTensionEnergyParameter * r;
 
 				e.Node1.AddForceContribution(f);
 				e.Node2.AddForceContribution(-f);

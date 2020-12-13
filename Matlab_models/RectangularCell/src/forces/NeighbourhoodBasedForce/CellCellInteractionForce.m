@@ -70,7 +70,7 @@ classdef CellCellInteractionForce < AbstractNodeElementForce
 
 		% The shape parameter of the attraction force law, set here
 		% so it can be modified, although it is not intended to be.
-		c = 20;
+		c = 5;
 
 		usingPolys
 
@@ -271,7 +271,7 @@ classdef CellCellInteractionForce < AbstractNodeElementForce
 
 				if (obj.dSeparation <= x ) && ( x < obj.dLimit )
 
-					Fa = obj.springRateAttraction * (  ( obj.dSeparation - x ) / ( obj.dSeparation - obj.dAsymptote )  ) * exp(obj.c*(obj.dSeparation - x) );
+					Fa = obj.springRateAttraction * (  ( obj.dSeparation - x ) / ( obj.dSeparation - obj.dAsymptote )  ) * exp(obj.c*(obj.dSeparation - x)/obj.dSeparation );
 
 				end
 
@@ -279,11 +279,15 @@ classdef CellCellInteractionForce < AbstractNodeElementForce
 				% otherwise, it is internal, and we either do nothing or ...
 				if obj.useInternalRepulsion
 					% we apply the internal repulsion force to push the node and element apart
-
+					% We need to make two small modifications
+					% Firstly we need to flip the direction of the force; normally it would want to
+					% push the node to the outside of the cell, but we wnat it to go inside
+					% Secondly, we need it to aspymtote at the edge, not passed it
 					srr = -obj.springRateRepulsion;
+					dAsym = 0;
 					if (obj.dAsymptote < x) && ( x < obj.dSeparation)
 
-						Fa = srr * log(  ( obj.dSeparation - obj.dAsymptote ) / ( x - obj.dAsymptote )  );
+						Fa = srr * log(  ( obj.dSeparation - dAsymp ) / ( x - dAsymp )  );
 					end
 				end
 			

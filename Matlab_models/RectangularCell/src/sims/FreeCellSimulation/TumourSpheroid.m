@@ -17,7 +17,7 @@ classdef TumourSpheroid < FreeCellSimulation
 
 			areaEnergy = 20;
 			perimeterEnergy = 10;
-			adhesionEnergy = 0;
+			adhesionEnergy = 1;
 
 			% Contact inhibition fraction
 			f = 0.9;

@@ -38,6 +38,7 @@ classdef Spheroid < FreeCellSimulation
 			% The energy densities for the cell growth force
 			areaEnergy = 20;
 			perimeterEnergy = 10;
+			tensionEnergy = 1;
 
 			
 			% Make nodes around a polygon
@@ -67,7 +68,7 @@ classdef Spheroid < FreeCellSimulation
 			%---------------------------------------------------
 
 			% Cell growth force
-			obj.AddCellBasedForce(PolygonCellGrowthForce(areaEnergy, perimeterEnergy));
+			obj.AddCellBasedForce(PolygonCellGrowthForce(areaEnergy, perimeterEnergy, tensionEnergy));
 
 
 			% Node-Element interaction force - requires a SpacePartition
@@ -85,7 +86,7 @@ classdef Spheroid < FreeCellSimulation
 			%---------------------------------------------------
 			% Add the data writers
 			%---------------------------------------------------
-			pathName = sprintf('Spheroid/t0%gtg%gs%gsn%gf%gtm%gda%gds%gdl%ga%gb%g_seed%g/',t0,tg,s,sn,f,tm,dAsym,dSep, dLim, areaEnergy, perimeterEnergy, seed);
+			pathName = sprintf('Spheroid/t0%gtg%gs%gsn%gf%gtm%gda%gds%gdl%ga%gb%gt%g_seed%g/',t0,tg,s,sn,f,tm,dAsym,dSep, dLim, areaEnergy, perimeterEnergy, tensionEnergy, seed);
 			obj.AddSimulationData(SpatialState());
 			obj.AddDataWriter(WriteSpatialState(20, pathName));
 

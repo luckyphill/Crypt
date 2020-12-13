@@ -16,6 +16,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 		nextCellId = 1
 
 		stochasticJiggle = true
+		epsilon = 0.0001; % The size of the jiggle force
 
 		cellBasedForces AbstractCellBasedForce
 		elementBasedForces AbstractElementBasedForce
@@ -188,7 +189,8 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 					% Add the random vector, and make sure it is orders of magnitude
 					% smaller than the actual force
-					force = force + v * norm(force) / 10000;
+					% force = force + v * norm(force) / 10000;
+					force = force + v * obj.epsilon;
 
 				end
 
@@ -566,9 +568,9 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		end
 
-		function VisualiseRods(obj)
-
-			r = 0.08; % The width of the rods
+		function VisualiseRods(obj, r)
+			% r is rod "radius"
+			% r = 0.08; % The width of the rods
 			patchObjects(length(obj.cellList)) = patch([1,1],[2,2],1, 'LineWidth', 2);
 
 			for i = 1:length(obj.cellList)
@@ -792,14 +794,14 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		end
 
-		function AnimateRods(obj,n,sm)
+		function AnimateRods(obj,n,sm,r)
 
 			% Initialise an array of line objects
 			h = figure();
 			hold on
 			axis equal
 
-			r = 0.08;
+			% r is the rod "radius"
 
 
 			% Initialise the array with anything
