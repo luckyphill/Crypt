@@ -38,7 +38,7 @@ classdef ChannelMultiAnalysis < Analysis
 
 	methods
 
-		function obj = ChannelMultiAnalysis(n, r, s, g, d, w, seed)
+		function obj = ChannelMultiAnalysis(seed)
 
 			% Each seed runs in a separate job
 			obj.specifySeedDirectly = true;
@@ -50,7 +50,7 @@ classdef ChannelMultiAnalysis < Analysis
 			obj.d = d;   
 			obj.w = w;   
 			obj.seed = seed;
-			obj.analysisName = sprintf('%s/n%gr%gs%gg%gd%gw%g',obj.analysisName,obj.n,obj.r,obj.s,obj.g,obj.d,obj.w);
+			obj.analysisName = sprintf('%s/',obj.analysisName);
 
 
 		end
