@@ -19,11 +19,15 @@ classdef Visualiser < matlab.mixin.SetGet
 
 		function obj = Visualiser(ptss)
 
+			if ~strcmp(ptss(end),'/')
+				ptss(end+1) = '/';
+			end
+
+			ptss = [ptss, 'SpatialState/'];
+
 			obj.pathToSpatialState = [getenv('HOME'),'/Research/Crypt/Data/Matlab/SimulationOutput/',ptss];
 
-			if ~strcmp(obj.pathToSpatialState(end),'/')
-				obj.pathToSpatialState(end+1) = '/';
-			end
+			
 
 
 			obj.pathToOutput = [getenv('HOME'),'/Research/Crypt/Images/Matlab/',ptss];
