@@ -6,19 +6,6 @@ classdef ChannelMultiAnalysis < Analysis
 		% set of data. If different values are needed, new data is needed
 		% and a new analysis class should be made
 
-
-		% STATIC: DO NOT CHANGE
-		% IF CHANGE IS NEEDED, MAKE A NEW OBJECT
-
-		% No input parameters needed
-
-		n
-		r
-		s
-		g
-		d
-		w
-
 		seed
 
 		analysisName = 'ChannelMultiAnalysis';
@@ -42,13 +29,7 @@ classdef ChannelMultiAnalysis < Analysis
 
 			% Each seed runs in a separate job
 			obj.specifySeedDirectly = true;
-
-			obj.n = n;  
-			obj.r = r;   
-		 	obj.s = s;   
-			obj.g = g;   
-			obj.d = d;   
-			obj.w = w;   
+  
 			obj.seed = seed;
 			obj.analysisName = sprintf('%s/',obj.analysisName);
 
