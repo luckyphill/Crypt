@@ -84,9 +84,13 @@ classdef SimpleContactInhibitionCellCycle < AbstractCellCycleModel
 
 			newCCM = SimpleContactInhibitionCellCycle(obj.meanPausePhaseDuration, obj.meanGrowthPhaseDuration, obj.growthTriggerFraction, obj.dt);
 			newCCM.SetAge(0);
-			newCCM.colour = obj.colourSet.GetNumber('PAUSE');
+			newCCM.pauseColour = obj.pauseColour;
+			newCCM.growthColour = obj.growthColour;
+			newCCM.inhibitedColour = obj.inhibitedColour;
+			
+			newCCM.colour = obj.pauseColour;
 
-			obj.colour = obj.colourSet.GetNumber('PAUSE');
+			obj.colour = obj.pauseColour;
 			obj.SetPausePhaseDuration(obj.meanPausePhaseDuration);
 			obj.SetGrowthPhaseDuration(obj.meanGrowthPhaseDuration);
 
