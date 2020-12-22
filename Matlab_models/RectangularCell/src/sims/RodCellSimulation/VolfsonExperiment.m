@@ -3,7 +3,7 @@ classdef VolfsonExperiment < FreeCellSimulation
 	% This uses rod cells to reproduce the experiment by Volfson et al.
 	% in which a population of E. coli cells are confined to a channel
 	% 30um x 500um x 1um. The height of the channel forces the cells to grow as
-	% monlayer, since the cells have a thickness about 1 um.
+	% monolayer, since the cells have a thickness about 1 um.
 	% To replicate this, we choose a preferred separation of 1um
 	% meaning the rod cells will be measured 1um apart by their centre line (the edge)
 	% in other words, the boundary of the cell will be 0.5um either side of the rod
@@ -18,7 +18,7 @@ classdef VolfsonExperiment < FreeCellSimulation
 
 	methods
 
-		function obj = VolfsonExperiment(n, l, r, s, tg, d, w, seed)
+		function obj = VolfsonExperiment(n, l, r, s, tg, w, seed)
 
 			% n is the number of cells to seed the experiment with
 			% l is the length of the cell. This includes the radius around the
@@ -26,21 +26,19 @@ classdef VolfsonExperiment < FreeCellSimulation
 			% r is the rod growing force
 			% s is the force pushing cells apart to their preferred distance
 			% tg is the time to grow from new cell to full size
-			% d division threshold for the Bernoulli trial
-			% w is the width of the channel - the centre line will be y=0, so xmax = +/- w/2
+			% w is the width of the channel - the centre line will be y=0, so ymax = +/- w/2
 			% The channel is represented by two infinitely long horizontal boundaries
 			% set a width w apart
 
 			% Other parameters
-			% Growth start time and minimum division time
+			% Growth start time
 			t0 = 0;
-			tm = tg;
 			% Contact inhibition fraction
 			f = 0.7;
 
 			% The asymptote, separation, and limit distances for the interaction force
 			dAsym = 0;
-			dSep = 1;%0.2;
+			dSep = 1;
 			dLim = dSep;
 
 			% Rod attraction force (irrelevant unless dLim > dSep)
@@ -88,20 +86,26 @@ classdef VolfsonExperiment < FreeCellSimulation
 				obj.nodeList = [obj.nodeList, n1, n2];
 				obj.elementList = [obj.elementList, e];
 				
-				ccm = LinearGrowthCellCycle(t0, tg, tg, f, obj.dt);
-				ccm.stochasticGrowthStart = true;
-				ccm.stochasticGrowthEnd = true;
-				ccm.stochasticDivisionAge = true;
-				ccm.SetRandomTrialDivisionCondition(@rand, d);
-				
-				ccm.preGrowthColour = ccm.colourSet.GetNumber('ECOLI');
+				% ccm = LinearGrowthCellCycle(t0, tg, tg, f, obj.dt);
+				% ccm.stochasticGrowthStart = true;
+				% ccm.stochasticGrowthEnd = true;
+				% ccm.stochasticDivisionAge = true;
+				% ccm.SetRandomTrialDivisionCondition(@rand, d);
+
+				% ccm.preGrowthColour = ccm.colourSet.GetNumber('ECOLI');
+				% ccm.growthColour = ccm.colourSet.GetNumber('ECOLI');
+				% ccm.postGrowthColour = ccm.colourSet.GetNumber('ECOLI');
+				% ccm.inhibitedColour = ccm.colourSet.GetNumber('ECOLISTOPPED');
+
+				ccm = SimpleContactInhibitionCellCycle(t0, tg, f, obj.dt);
+				ccm.pauseColour = ccm.colourSet.GetNumber('ECOLI');
 				ccm.growthColour = ccm.colourSet.GetNumber('ECOLI');
-				ccm.postGrowthColour = ccm.colourSet.GetNumber('ECOLI');
 				ccm.inhibitedColour = ccm.colourSet.GetNumber('ECOLISTOPPED');
 
 				c = RodCell(e,ccm,obj.GetNextCellId());
 				c.newCellTargetArea = 0.5 * rodLength;
 				c.grownCellTargetArea = rodLength;
+				c.preferredSeperation = dSep/2; 
 				
 				obj.cellList = [obj.cellList, c];
 
@@ -125,7 +129,7 @@ classdef VolfsonExperiment < FreeCellSimulation
 			% Add the data writers
 			%---------------------------------------------------
 
-			pathName = sprintf('VolfsonExperiment/n%gl%gr%gs%gtg%gd%gw%gf%gt0%gtm%gda%gds%gdl%ga%g_seed%g/',n, l, r, s, tg, d, w, f, t0, tm, dAsym,  dSep, dLim, a, seed);
+			pathName = sprintf('VolfsonExperiment/n%gl%gr%gs%gtg%gw%gf%gt0%gda%gds%gdl%ga%g_seed%g/',n, l, r, s, tg, w, f, t0, dAsym,  dSep, dLim, a, seed);
 			obj.AddSimulationData(SpatialState());
 			obj.AddDataWriter(WriteSpatialState(20, pathName));
 

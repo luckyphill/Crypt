@@ -11,7 +11,7 @@ classdef Spheroid < FreeCellSimulation
 
 	methods
 
-		function obj = Spheroid(t0, tg, s, sn, seed)
+		function obj = Spheroid(t0, tg, s, sreg, seed)
 
 			% Object input paramters can be chosen as desired. These are the
 			% most useful ones for tuning behaviour and running tests
@@ -22,13 +22,11 @@ classdef Spheroid < FreeCellSimulation
 			% t0 is the growth start age
 			% tg is the growth end age
 			% s is the cell-cell interaction force law parameter used for both adhesion and repulsion
-			% sn is the perimeter normalising force
+			% sreg is the perimeter normalising force
 
 			% Other parameters
 			% Contact inhibition fraction
 			f = 0.9;
-			% Minimum division time
-			tm = tg;
 
 			% The asymptote, separation, and limit distances for the interaction force
 			dAsym = -0.1;
@@ -50,10 +48,12 @@ classdef Spheroid < FreeCellSimulation
 				x = X(i);
 				y = Y(i);
 				
-				ccm = LinearGrowthCellCycle(t0, tg, tm, f, obj.dt);
-				ccm.stochasticGrowthStart = true;
-				ccm.stochasticGrowthEnd = true;
-				ccm.stochasticDivisionAge = true;
+				% ccm = LinearGrowthCellCycle(t0, tg, tm, f, obj.dt);
+				% ccm.stochasticGrowthStart = true;
+				% ccm.stochasticGrowthEnd = true;
+				% ccm.stochasticDivisionAge = true;
+				ccm = SimpleContactInhibitionCellCycle(t0, tg, f, obj.dt);
+				
 
 				c = MakeCellAtCentre(obj, N, x + 0.5 * mod(y,2), y * sqrt(3)/2, ccm);
 
@@ -75,7 +75,7 @@ classdef Spheroid < FreeCellSimulation
 			obj.AddNeighbourhoodBasedForce(CellCellInteractionForce(s, s, dAsym, dSep, dLim, obj.dt, true));
 
 			% Self explanitory, really. Tries to make the edges the same length
-			obj.AddCellBasedForce(FreeCellPerimeterNormalisingForce(sn));
+			obj.AddCellBasedForce(FreeCellPerimeterNormalisingForce(sreg));
 			
 			%---------------------------------------------------
 			% Add space partition
@@ -86,7 +86,7 @@ classdef Spheroid < FreeCellSimulation
 			%---------------------------------------------------
 			% Add the data writers
 			%---------------------------------------------------
-			pathName = sprintf('Spheroid/t0%gtg%gs%gsn%gf%gtm%gda%gds%gdl%ga%gb%gt%g_seed%g/',t0,tg,s,sn,f,tm,dAsym,dSep, dLim, areaEnergy, perimeterEnergy, tensionEnergy, seed);
+			pathName = sprintf('Spheroid/t0%gtg%gs%gsreg%gf%gda%gds%gdl%ga%gb%gt%g_seed%g/',t0,tg,s,sreg,f,dAsym,dSep, dLim, areaEnergy, perimeterEnergy, tensionEnergy, seed);
 			obj.AddSimulationData(SpatialState());
 			obj.AddDataWriter(WriteSpatialState(20, pathName));
 

@@ -45,6 +45,7 @@ classdef RingBuckling < RingSimulation
 			% The energy densities for the cell growth force
 			areaEnergy = 20;
 			perimeterEnergy = 10;
+			tensionEnergy = 1;
 
 
 			%---------------------------------------------------
@@ -179,7 +180,7 @@ classdef RingBuckling < RingSimulation
 			%---------------------------------------------------
 
 			% Cell growth force
-			obj.AddCellBasedForce(PolygonCellGrowthForce(areaEnergy, perimeterEnergy));
+			obj.AddCellBasedForce(PolygonCellGrowthForce(areaEnergy, perimeterEnergy, tensionEnergy));
 
 
 			% Node-Element interaction force - requires a SpacePartition
@@ -200,7 +201,7 @@ classdef RingBuckling < RingSimulation
 			obj.AddSimulationData(Circularity());
 			obj.AddDataStore(StoreCircularity(1));
 			obj.AddSimulationData(SpatialState());
-			pathName = sprintf('RingBuckling/n%gt0%gtg%gs%ga%gf%gtm%gda%gds%gdl%galpha%gbeta%g_seed%g/',n,t0,tg,s,a,f,tm,dAsym,dSep, dLim, areaEnergy, perimeterEnergy, seed);
+			pathName = sprintf('RingBuckling/n%gt0%gtg%gs%ga%gf%gtm%gda%gds%gdl%galpha%gbeta%gt%g_seed%g/',n,t0,tg,s,a,f,tm,dAsym,dSep, dLim, areaEnergy, perimeterEnergy, tensionEnergy, seed);
 			obj.AddDataWriter(WriteSpatialState(20,pathName));
 			
 

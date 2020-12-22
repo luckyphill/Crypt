@@ -55,6 +55,7 @@ classdef RodCell < AbstractCell
 
 			newCell.newCellTargetArea = obj.newCellTargetArea;
 			newCell.grownCellTargetArea = obj.grownCellTargetArea;
+			newCell.preferredSeperation = obj.preferredSeperation;
 			newNodeList = [n1,n2];
 			newElementList = e1;
 

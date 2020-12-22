@@ -569,6 +569,9 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 		end
 
 		function VisualiseRods(obj, r)
+
+			h = figure();
+			hold on
 			% r is rod "radius"
 			% r = 0.08; % The width of the rods
 			patchObjects(length(obj.cellList)) = patch([1,1],[2,2],1, 'LineWidth', 2);
@@ -588,6 +591,31 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 			axis equal
 
 		end
+
+
+		function VisualiseNodes(obj, r)
+			% r is cell radius
+
+			h = figure();
+			hold on
+
+			patchObjects(length(obj.cellList)) = patch([1,1],[2,2],1, 'LineWidth', 2);
+
+			for i = 1:length(obj.cellList)
+
+				c = obj.cellList(i);
+
+				a = c.nodeList(1).position;
+
+				[pillX,pillY] = obj.DrawPill(a,a,r);
+				patchObjects(i) = patch(pillX,pillY,c.GetColour(), 'LineWidth', 2);
+
+			end
+
+			axis equal
+
+		end
+
 
 		function VisualiseWireFrame(obj, varargin)
 
@@ -856,18 +884,81 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 		end
 
+		function AnimateNodes(obj,n,sm,r)
+
+			% Initialise an array of line objects
+			h = figure();
+			hold on
+			axis equal
+
+			% r is the rod "radius"
+
+
+			% Initialise the array with anything
+			patchObjects(length(obj.cellList)) = patch([1,1],[2,2],1, 'LineWidth', 2);
+
+			for i = 1:length(obj.cellList)
+
+				c = obj.cellList(i);
+
+				a = c.nodeList(1).position;
+
+				[pillX,pillY] = obj.DrawPill(a,a,r);
+				patchObjects(i) = patch(pillX,pillY,c.GetColour(), 'LineWidth', 2);
+
+			end
+
+			totalSteps = 0;
+			while totalSteps < n
+
+				obj.NTimeSteps(sm);
+				totalSteps = totalSteps + sm;
+
+				for j = 1:length(obj.cellList)
+
+					c = obj.cellList(j);
+
+					a = c.nodeList(1).position;
+
+					if j > length(patchObjects)
+						[pillX,pillY] = obj.DrawPill(a,a,r);
+						patchObjects(j) = patch(pillX,pillY,c.GetColour(), 'LineWidth', 2);
+					else
+						[pillX,pillY] = obj.DrawPill(a,a,r);
+						patchObjects(j).XData = pillX;
+						patchObjects(j).YData = pillY;
+						patchObjects(j).FaceColor = c.GetColour();
+					end
+
+				end
+
+				for k = length(patchObjects):-1:length(obj.cellList)+1
+					patchObjects(k).delete;
+					patchObjects(k) = [];
+				end
+
+				drawnow
+				title(sprintf('t=%g',obj.t),'Interpreter', 'latex');
+
+			end
+
+		end
+
 		function [pillX,pillY] = DrawPill(obj,a,b,r)
 
 			% Draws a pill shape where the centre of the circles are at
 			% a and b and the radius is r
 
-			 AtoB = b - a;
+			AtoB = b - a;
 			 
-			 normAtoB = [-AtoB(2), AtoB(1)];
+			normAtoB = [-AtoB(2), AtoB(1)];
 			 
-			 normAtoB = normAtoB / norm(normAtoB);
+			normAtoB = normAtoB / norm(normAtoB);
+			if isnan(normAtoB)
+				normAtoB = [1,0];
+			end
 			 
-			 R = r*normAtoB;
+			R = r*normAtoB;
 			% Make n equally spaced points around a circle starting from R
 			
 			n = 10;
