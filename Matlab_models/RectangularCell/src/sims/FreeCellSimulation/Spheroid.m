@@ -19,8 +19,8 @@ classdef Spheroid < FreeCellSimulation
 			% Set the rng seed for reproducibility
 			obj.SetRNGSeed(seed);
 
-			% t0 is the growth start age
-			% tg is the growth end age
+			% t0 is the pause phase duration
+			% tg is the growth phase duration
 			% s is the cell-cell interaction force law parameter used for both adhesion and repulsion
 			% sreg is the perimeter normalising force
 
@@ -48,10 +48,6 @@ classdef Spheroid < FreeCellSimulation
 				x = X(i);
 				y = Y(i);
 				
-				% ccm = LinearGrowthCellCycle(t0, tg, tm, f, obj.dt);
-				% ccm.stochasticGrowthStart = true;
-				% ccm.stochasticGrowthEnd = true;
-				% ccm.stochasticDivisionAge = true;
 				ccm = SimpleContactInhibitionCellCycle(t0, tg, f, obj.dt);
 				
 

@@ -85,17 +85,6 @@ classdef VolfsonExperiment < FreeCellSimulation
 
 				obj.nodeList = [obj.nodeList, n1, n2];
 				obj.elementList = [obj.elementList, e];
-				
-				% ccm = LinearGrowthCellCycle(t0, tg, tg, f, obj.dt);
-				% ccm.stochasticGrowthStart = true;
-				% ccm.stochasticGrowthEnd = true;
-				% ccm.stochasticDivisionAge = true;
-				% ccm.SetRandomTrialDivisionCondition(@rand, d);
-
-				% ccm.preGrowthColour = ccm.colourSet.GetNumber('ECOLI');
-				% ccm.growthColour = ccm.colourSet.GetNumber('ECOLI');
-				% ccm.postGrowthColour = ccm.colourSet.GetNumber('ECOLI');
-				% ccm.inhibitedColour = ccm.colourSet.GetNumber('ECOLISTOPPED');
 
 				ccm = SimpleContactInhibitionCellCycle(t0, tg, f, obj.dt);
 				ccm.pauseColour = ccm.colourSet.GetNumber('ECOLI');

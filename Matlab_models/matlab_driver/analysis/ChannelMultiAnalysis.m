@@ -50,7 +50,7 @@ classdef ChannelMultiAnalysis < Analysis
 			allL = [];
 			r = Visualiser.empty;
 			for k = obj.seed
-				pathName = sprintf('VolfsonExperiment/n100l5r5s40tg10d0.1w30f0.7t00tm10da0ds1dl1a0_seed%g/',k);
+				pathName = sprintf('VolfsonExperiment/n100l5r5s40tg10w30f0.7t00da0ds1dl1a0_seed%g/',k);
 				r = Visualiser(pathName);
 
 				angles = 0;
@@ -147,7 +147,7 @@ classdef ChannelMultiAnalysis < Analysis
 			ax.FontSize = 16;
 			% title('Average length over time','Interpreter', 'latex','FontSize', 22);
 			ylabel('Avg. length','Interpreter', 'latex', 'FontSize', 40);xlabel('time','Interpreter', 'latex', 'FontSize', 40);
-			ylim([0.25 0.55]); xlim([0 200]);
+			ylim([1.2 2.1]); xlim([0 200]);
 			SavePlot(obj, h, sprintf('AvgLength'));
 
 			

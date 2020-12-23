@@ -33,7 +33,6 @@ classdef SpheroidMultiAnalysis < Analysis
 			obj.specifySeedDirectly = true;
 
 			obj.seed = seed;
-			obj.analysisName = sprintf('%s',obj.analysisName);
 
 
 		end
@@ -51,7 +50,7 @@ classdef SpheroidMultiAnalysis < Analysis
 			allPauseRA = {};
 			
 			for k = obj.seed
-				pathName = sprintf('Spheroid/t010tg20s10sn5f0.9tm20da-0.1ds0.1dl0.2a20b10t1_seed%g/SpatialState/',k);
+				pathName = sprintf('Spheroid/t010tg10s10sreg5f0.9da-0.1ds0.1dl0.2a20b10t1_seed%g/',k);
 				r = Visualiser(pathName);
 
 				N = []; % Number of cells
@@ -89,7 +88,7 @@ classdef SpheroidMultiAnalysis < Analysis
 
 
 
-						if colour == 1 && A(j) > 0.4 
+						if colour == 1 || colour == 3
 							% The are limit cuts out some extreme outliers possibly
 							% due to a division event in the previous timestep that
 							% does not reflect the true area of the cell
