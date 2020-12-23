@@ -12,4 +12,4 @@
 module load arch/haswell
 module load matlab/2019a
 
-matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); r = VolfsonExperiment(100, 5, 5, 40, 10, 0.1, 30, $SLURM_ARRAY_TASK_ID);r.RunToTime(200); quit()"
+matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); r = VolfsonExperiment(100, 5, 5, 40, 10, 30, $SLURM_ARRAY_TASK_ID);r.RunToTime(200); quit()"
