@@ -76,8 +76,8 @@ classdef VolfsonExperiment < FreeCellSimulation
 				x1 = pairs(i,1);
 				y1 = pairs(i,2);
 
-				x2 = x1 + 0.5*grownRodLength*cos(theta); % Factor of 1 half because new cells are half the full length
-				y2 = y1 + 0.5*grownRodLength*sin(theta);
+				x2 = x1 + newRodLength*cos(theta);
+				y2 = y1 + newRodLength*sin(theta);
 
 				n1 = Node(x1, y1, obj.GetNextNodeId());
 				n2 = Node(x2, y2, obj.GetNextNodeId());
@@ -93,8 +93,11 @@ classdef VolfsonExperiment < FreeCellSimulation
 				ccm.inhibitedColour = ccm.colourSet.GetNumber('ECOLISTOPPED');
 
 				c = RodCell(e,ccm,obj.GetNextCellId());
-				c.newCellTargetArea = newRodLength;
-				c.grownCellTargetArea = grownRodLength;
+				% When the cell areas are calculated, the length of the edge and
+				% the radius from the preferred separation are both accounted for
+				% so we can use the actual intended area here
+				c.newCellTargetArea = 0.5*l;
+				c.grownCellTargetArea = l;
 				c.preferredSeperation = dSep;
 				
 				obj.cellList = [obj.cellList, c];

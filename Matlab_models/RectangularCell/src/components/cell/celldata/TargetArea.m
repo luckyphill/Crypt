@@ -16,7 +16,6 @@ classdef TargetArea < AbstractCellData
 		end
 
 		function CalculateData(obj, c)
-			% Node list must be in order around the cell
 
 			fraction = c.CellCycleModel.GetGrowthPhaseFraction();
 

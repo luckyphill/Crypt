@@ -16,9 +16,8 @@ classdef RodCellArea < AbstractCellData
 		end
 
 		function CalculateData(obj, c)
-			% Node list must be in order around the cell
 
-			obj.data = c.elementList.GetLength();
+			obj.data = c.elementList.GetLength() + c.preferredSeperation;
 
 		end
 		
