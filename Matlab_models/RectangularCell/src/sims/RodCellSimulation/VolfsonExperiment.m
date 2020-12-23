@@ -64,7 +64,8 @@ classdef VolfsonExperiment < FreeCellSimulation
 			% The rod length will need to be l - dSep
 			% since the node interaction will effectively introduce
 			% an extra 0.5um at each end
-			rodLength = l - dSep;
+			grownRodLength = l - dSep;
+			newRodLength = 0.5*l - dSep;
 
 			for i = 1:n
 
@@ -75,8 +76,8 @@ classdef VolfsonExperiment < FreeCellSimulation
 				x1 = pairs(i,1);
 				y1 = pairs(i,2);
 
-				x2 = x1 + 0.5*rodLength*cos(theta); % Factor of 1 half because new cells are half the full length
-				y2 = y1 + 0.5*rodLength*sin(theta);
+				x2 = x1 + 0.5*grownRodLength*cos(theta); % Factor of 1 half because new cells are half the full length
+				y2 = y1 + 0.5*grownRodLength*sin(theta);
 
 				n1 = Node(x1, y1, obj.GetNextNodeId());
 				n2 = Node(x2, y2, obj.GetNextNodeId());
@@ -92,9 +93,9 @@ classdef VolfsonExperiment < FreeCellSimulation
 				ccm.inhibitedColour = ccm.colourSet.GetNumber('ECOLISTOPPED');
 
 				c = RodCell(e,ccm,obj.GetNextCellId());
-				c.newCellTargetArea = 0.5 * rodLength;
-				c.grownCellTargetArea = rodLength;
-				c.preferredSeperation = dSep/2; 
+				c.newCellTargetArea = newRodLength;
+				c.grownCellTargetArea = grownRodLength;
+				c.preferredSeperation = dSep;
 				
 				obj.cellList = [obj.cellList, c];
 
