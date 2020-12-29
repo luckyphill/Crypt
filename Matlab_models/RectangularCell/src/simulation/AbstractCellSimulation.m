@@ -833,7 +833,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 
 			% Initialise the array with anything
-			patchObjects(length(obj.cellList)) = patch([1,1],[2,2],1, 'LineWidth', 2);
+			patchObjects(length(obj.cellList)) = patch([1,1],[2,2],1, 'LineWidth', 1);
 
 			for i = 1:length(obj.cellList)
 
@@ -843,7 +843,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 				b = c.nodeList(2).position;
 
 				[pillX,pillY] = obj.DrawPill(a,b,r);
-				patchObjects(i) = patch(pillX,pillY,c.GetColour(), 'LineWidth', 2);
+				patchObjects(i) = patch(pillX,pillY,c.GetColour(), 'LineWidth', 1);
 
 			end
 
@@ -862,7 +862,7 @@ classdef (Abstract) AbstractCellSimulation < matlab.mixin.SetGet
 
 					if j > length(patchObjects)
 						[pillX,pillY] = obj.DrawPill(a,b,r);
-						patchObjects(j) = patch(pillX,pillY,c.GetColour(), 'LineWidth', 2);
+						patchObjects(j) = patch(pillX,pillY,c.GetColour(), 'LineWidth', 1);
 					else
 						[pillX,pillY] = obj.DrawPill(a,b,r);
 						patchObjects(j).XData = pillX;

@@ -17,7 +17,7 @@ classdef RodCellArea < AbstractCellData
 
 		function CalculateData(obj, c)
 
-			obj.data = c.elementList.GetLength() + c.preferredSeperation;
+			obj.data = c.elementList.GetLength();
 
 		end
 		
