@@ -76,7 +76,7 @@ classdef VolfsonExperiment < FreeCellSimulation
 				x1 = pairs(i,1);
 				y1 = pairs(i,2);
 
-				x2 = x1 + newRodLength*cos(theta);
+				x2 = x1 + newRodLength*cos(theta); % Factor of 1 half because new cells are half the full length
 				y2 = y1 + newRodLength*sin(theta);
 
 				n1 = Node(x1, y1, obj.GetNextNodeId());
@@ -96,8 +96,8 @@ classdef VolfsonExperiment < FreeCellSimulation
 				% When the cell areas are calculated, the length of the edge and
 				% the radius from the preferred separation are both accounted for
 				% so we can use the actual intended area here
-				c.newCellTargetArea = newRodLength;
-				c.grownCellTargetArea = grownRodLength;
+				c.newCellTargetArea = l;
+				c.grownCellTargetArea = 0.5*l;
 				c.preferredSeperation = dSep;
 				
 				obj.cellList = [obj.cellList, c];

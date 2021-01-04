@@ -138,7 +138,7 @@ classdef SpheroidMultiAnalysis < Analysis
 			box on
 			leg = {};
 			allPauseRA = obj.result{3};
-			bins = 0:0.9:14;
+			bins = 0:0.8:14;
 			M = [];
 			for k = obj.seed
 				pauseRA = allPauseRA{k};
