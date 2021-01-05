@@ -96,8 +96,8 @@ classdef VolfsonExperiment < FreeCellSimulation
 				% When the cell areas are calculated, the length of the edge and
 				% the radius from the preferred separation are both accounted for
 				% so we can use the actual intended area here
-				c.newCellTargetArea = l;
-				c.grownCellTargetArea = 0.5*l;
+				c.newCellTargetArea = 0.5*l;
+				c.grownCellTargetArea = l;
 				c.preferredSeperation = dSep;
 				
 				obj.cellList = [obj.cellList, c];
