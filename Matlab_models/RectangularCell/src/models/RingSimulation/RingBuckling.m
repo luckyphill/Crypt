@@ -33,7 +33,7 @@ classdef RingBuckling < RingSimulation
 			a = 0;
 
 			% Contact inhibition fraction
-			f = 0.7;
+			f = 0.9;
 			% Minimum division time
 			tm = tg;
 
@@ -116,11 +116,11 @@ classdef RingBuckling < RingSimulation
 			obj.AddElementsToList([elementBottom, elementRight, elementTop, elementLeft]);
 
 			% Cell cycle model
-
-			ccm = LinearGrowthCellCycle(t0, tg, tm, f, obj.dt);
-			ccm.stochasticGrowthStart = true;
-			ccm.stochasticGrowthEnd = true;
-			ccm.stochasticDivisionAge = true;
+			ccm = SimpleContactInhibitionCellCycle(t0, tg, f, obj.dt);
+			% ccm = LinearGrowthCellCycle(t0, tg, tm, f, obj.dt);
+			% ccm.stochasticGrowthStart = true;
+			% ccm.stochasticGrowthEnd = true;
+			% ccm.stochasticDivisionAge = true;
 
 			% Assemble the cell
 
@@ -144,10 +144,11 @@ classdef RingBuckling < RingSimulation
 
 				obj.AddElementsToList([elementBottom, elementRight, elementTop]);
 
-				ccm = LinearGrowthCellCycle(t0, tg, tm, f, obj.dt);
-				ccm.stochasticGrowthStart = true;
-				ccm.stochasticGrowthEnd = true;
-				ccm.stochasticDivisionAge = true;
+				ccm = SimpleContactInhibitionCellCycle(t0, tg, f, obj.dt);
+				% ccm = LinearGrowthCellCycle(t0, tg, tm, f, obj.dt);
+				% ccm.stochasticGrowthStart = true;
+				% ccm.stochasticGrowthEnd = true;
+				% ccm.stochasticDivisionAge = true;
 
 				obj.cellList(i) = SquareCellJoined(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
 
@@ -167,10 +168,11 @@ classdef RingBuckling < RingSimulation
 
 			obj.AddElementsToList([elementBottom, elementTop]);
 
-			ccm = LinearGrowthCellCycle(t0, tg, tm, f, obj.dt);
-			ccm.stochasticGrowthStart = true;
-			ccm.stochasticGrowthEnd = true;
-			ccm.stochasticDivisionAge = true;
+			ccm = SimpleContactInhibitionCellCycle(t0, tg, f, obj.dt);
+			% ccm = LinearGrowthCellCycle(t0, tg, tm, f, obj.dt);
+			% ccm.stochasticGrowthStart = true;
+			% ccm.stochasticGrowthEnd = true;
+			% ccm.stochasticDivisionAge = true;
 
 			obj.cellList(n) = SquareCellJoined(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
 

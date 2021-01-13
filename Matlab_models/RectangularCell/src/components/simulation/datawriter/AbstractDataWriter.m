@@ -23,6 +23,9 @@ classdef AbstractDataWriter < handle & matlab.mixin.Heterogeneous
 		% How many steps between each data point
 		samplingMultiple
 
+		% How many significant figures to store
+		precision = 5
+
 		% A flag to determine if each time step will be written to a
 		% separate file, or all will be written in a single file
 		multipleFiles = true
@@ -32,7 +35,7 @@ classdef AbstractDataWriter < handle & matlab.mixin.Heterogeneous
 		fileNumber = 0
 
 		% A path pointing to where the data will be stored
-		rootStorageLocation = [getenv('HOME'),'/Research/Crypt/Data/Matlab/SimulationOutput/'];
+		rootStorageLocation
 
 		% A flag to tell the function that the full path has been made
 		% i.e. using mkdir
@@ -53,7 +56,7 @@ classdef AbstractDataWriter < handle & matlab.mixin.Heterogeneous
 		% in the matching data cell array
 		fileNames
 
-		% The sub directory structure under the roor storage location
+		% The sub directory structure under the root storage location
 		% Should be at minimum be 'simname/' and can also go deeper
 		% with parameter sets etc. 
 		subdirectoryStructure
@@ -84,7 +87,6 @@ classdef AbstractDataWriter < handle & matlab.mixin.Heterogeneous
 					obj.WriteToMultipleFiles();
 					obj.fileNumber = obj.fileNumber + 1;
 				else
-					% Not yet complete
 					obj.WriteToSingleFile();
 				end
 
@@ -102,7 +104,8 @@ classdef AbstractDataWriter < handle & matlab.mixin.Heterogeneous
 
 				switch class(obj.data{i})
 					case 'double'
-						writematrix(obj.data{i}, outputFile);
+						% writematrix(obj.data{i}, outputFile);
+						dlmwrite(outputFile, obj.data{i}, '-append', 'precision', obj.precision);
 					case 'cell'
 						writecell(obj.data{i}, outputFile);
 					otherwise
@@ -131,14 +134,9 @@ classdef AbstractDataWriter < handle & matlab.mixin.Heterogeneous
 						else
 							n = n(:)';
 						end
-						% A hack to make this work with versions without writematrix appending
-						% I mean, seriously, who releases a write function with no append feature??
-						v = version('-release');
-						if str2num(v(1:4)) < 2020
-							dlmwrite(outputFile, n, '-append', 'precision', 5);
-						else
-							writematrix(n, outputFile,'WriteMode','append');
-						end
+						
+						dlmwrite(outputFile, n, '-append', 'precision', obj.precision);
+
 					case 'cell'
 						% Need to flatten the cell into a single row, and provide separate
 						% delimiters between each row - Not Done
@@ -152,14 +150,8 @@ classdef AbstractDataWriter < handle & matlab.mixin.Heterogeneous
 						else
 							n = n(:)';
 						end
-						% A hack to make this work with versions without writematrix appending
-						% I mean, seriously, who releases a write function with no append feature??
-						v = version('-release');
-						if str2num(v(1:4)) < 2020
-							dlmwrite(outputFile, n, '-append', 'precision', 5);
-						else
-							writematrix(n, outputFile,'WriteMode','append');
-						end
+
+						dlmwrite(outputFile, n, '-append', 'precision', obj.precision);
 
 					otherwise
 						error('ADW:WriteToSingleFile:CantWrite', 'Cant write class %s to file', class(obj.data{i}));
@@ -173,6 +165,14 @@ classdef AbstractDataWriter < handle & matlab.mixin.Heterogeneous
 
 			% Only runs once. First checks if the directory exists,
 			% and if not makes it.
+
+			homeDir = getenv('EDGEDIR');
+
+			if isempty(homeDir)
+				error('ADW:EnvNotSet','To save output, please sent environment variable EDGEDIR=[fullpathto]/EdgeBased');
+			end
+
+			obj.rootStorageLocation = [homeDir, '/SimulationOutput/'];
 
 			obj.fullPath = [obj.rootStorageLocation, obj.subdirectoryStructure];
 

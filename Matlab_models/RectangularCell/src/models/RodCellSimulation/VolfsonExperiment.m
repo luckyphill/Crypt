@@ -87,7 +87,7 @@ classdef VolfsonExperiment < FreeCellSimulation
 				obj.nodeList = [obj.nodeList, n1, n2];
 				obj.elementList = [obj.elementList, e];
 
-				ccm = SimpleContactInhibitionCellCycle(t0, tg, f, obj.dt);
+				ccm = DivisionContactInhibition(t0, tg, f, obj.dt);
 				ccm.pauseColour = ccm.colourSet.GetNumber('ECOLI');
 				ccm.growthColour = ccm.colourSet.GetNumber('ECOLI');
 				ccm.inhibitedColour = ccm.colourSet.GetNumber('ECOLISTOPPED');
@@ -124,7 +124,9 @@ classdef VolfsonExperiment < FreeCellSimulation
 
 			pathName = sprintf('VolfsonExperiment/n%gl%gr%gs%gtg%gw%gf%gt0%gda%gds%gdl%ga%g_seed%g/',n, l, r, s, tg, w, f, t0, dAsym,  dSep, dLim, a, seed);
 			obj.AddSimulationData(SpatialState());
+			obj.AddSimulationData(QFactor());
 			obj.AddDataWriter(WriteSpatialState(20, pathName));
+			obj.AddDataWriter(WriteQFactor(20, pathName));
 
 
 

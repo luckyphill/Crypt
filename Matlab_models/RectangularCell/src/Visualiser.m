@@ -17,23 +17,44 @@ classdef Visualiser < matlab.mixin.SetGet
 
 	methods
 
-		function obj = Visualiser(ptss)
+		function obj = Visualiser(v)
 
-			if ~strcmp(ptss(end),'/')
-				ptss(end+1) = '/';
-			end
+			% v can be either of two types:
+			% a string that gives the subdirectory structure from
+			% the folder SimulationOutput to the folder SpatialState for the desired simulation
+			% i.e. [path]/[to]/SimulatioOutput/[v]/SpatialState
+			% OR
+			% the simulation object handle
 
-			ptss = [ptss, 'SpatialState/'];
+			if isa(v, 'AbstractCellSimulation')
+				
+				obj.pathToSpatialState = v.dataWriters(1).fullPath;
+				rootDir = v.dataWriters(1).rootStorageLocation;
 
-			obj.pathToSpatialState = [getenv('HOME'),'/Research/Crypt/Data/Matlab/SimulationOutput/',ptss];
+				subDir = erase(obj.pathToSpatialState, rootDir);
+				subDir = subDir(1:end-13); % remove SpatialState/ from subDir
 
-			
+				obj.pathToOutput = [getenv('EDGEDIR'),'/Images/',subDir];
 
 
-			obj.pathToOutput = [getenv('HOME'),'/Research/Crypt/Images/Matlab/',ptss];
+			else
 
-			if ~strcmp( obj.pathToOutput(end),'/' )
-				obj.pathToOutput(end+1) = '/';
+				% If the input is not a simulation object, then assume its a string
+
+				if ~strcmp(v(end),'/')
+					v(end+1) = '/';
+				end
+
+				v = [v, 'SpatialState/'];
+
+				obj.pathToSpatialState = [getenv('EDGEDIR'),'/SimulationOutput/',v];
+
+				obj.pathToOutput = [getenv('EDGEDIR'),'/Images/',v];
+
+				if ~strcmp( obj.pathToOutput(end),'/' )
+					obj.pathToOutput(end+1) = '/';
+				end
+
 			end
 
 			if exist(obj.pathToOutput,'dir')~=7
@@ -43,8 +64,6 @@ classdef Visualiser < matlab.mixin.SetGet
 
 
 			obj.LoadData();
-
-			% obj.VisualiseCells();
 
 		end
 
@@ -159,15 +178,8 @@ classdef Visualiser < matlab.mixin.SetGet
 
 		function VisualiseCells(obj, varargin)
 
-			% This will take the formatted data and produce an interactive
+			% This will take the formatted data and produce an animated
 			% plot of the simulation. At the minute it just runs a for loop
-
-			% Components:
-			% Play/Pause button
-			% Speed control (how long between each frame)
-			% Slide bar to choose position
-			% Time stamp in a corner (maybe title)
-			% Reload data button
 
 			% The number of values in a row that correspond to
 			% one cell
@@ -229,6 +241,9 @@ classdef Visualiser < matlab.mixin.SetGet
 
 		function ProduceMovie(obj, varargin)
 
+			% varargin is used to start the movie from a different point
+			% the number must be an integer matching the row number of the
+			% saved data. Usually this will be 10xt but not always
 			tIdxStart = 1;
 			tIdxEnd = length(obj.timeSteps);
 			if ~isempty(varargin)
@@ -251,7 +266,7 @@ classdef Visualiser < matlab.mixin.SetGet
 
 			F = getframe(h);
 			xlim([-14.2091 15.5772])
-            ylim([-11.1677 12.3250])
+			ylim([-11.1677 12.3250])
 
 			% Initialise the array with anything
 			fillObjects(1) = fill([1,1],[2,2],.5);
@@ -323,15 +338,15 @@ classdef Visualiser < matlab.mixin.SetGet
 		function PlotTimeStep(obj, timeStep)
 
 			% Plots a single given timestep
+			% the number timeStep must be an integer matching the row number of the
+			% saved data. Usually this will be 10xt but not always
+
 
 			h = figure();
 			axis equal
 			hold on
 
 			i = timeStep;
-
-			% xlim([-8.1801 8.5131]);
-   			% ylim([-6.6310 6.5351]);
 
 
 			% Initialise the array with anything
@@ -349,14 +364,6 @@ classdef Visualiser < matlab.mixin.SetGet
 
 				x = nodeCoords(:,1);
 				y = nodeCoords(:,2);
-
-				% A = polyarea(x,y);
-				% if A < 0.45
-				% 	fillObjects(j) = fill(x,y,obj.cs.GetRGB('STOPPED'));
-				% else
-				% 	fillObjects(j) = fill(x,y,obj.cs.GetRGB(colour));
-				% end
-				% fillObjects(j) = fill(x,y,A);
 				
 				fillObjects(j) = fill(x,y,obj.cs.GetRGB(colour));
 
@@ -364,7 +371,8 @@ classdef Visualiser < matlab.mixin.SetGet
 				j = j + 1;
 
 			end
-				% j will always end up being 1 more than the total number of non empty cells
+			
+			% j will always end up being 1 more than the total number of non empty cells
 			axis off
 			drawnow
 			title(sprintf('t = %g',obj.timeSteps(i)),'Interpreter', 'latex', 'FontSize', 34);
@@ -373,7 +381,9 @@ classdef Visualiser < matlab.mixin.SetGet
 			pos = get(h,'Position');
 			set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)]);
 			
-			fileName = sprintf('%sImageAtTime_%g', obj.pathToOutput, obj.timeSteps(timeStep));
+			fileName = sprintf('ImageAtTime_%g',obj.timeSteps(timeStep));
+			fileName = strrep(fileName,'.','_'); % If any time has decimals, change the point to underscore
+			fileName = sprintf('%s%s', obj.pathToOutput, fileName);
 			print(fileName,'-dpdf')
 
 		end
@@ -542,10 +552,12 @@ classdef Visualiser < matlab.mixin.SetGet
 			axis equal
 			hold on
 			set(gca,'Color','k');
+			set(h, 'InvertHardcopy', 'off')
+			set(h,'color','w');
 
 			i = timeStep;
 
-			lineWidth = 1;
+			lineWidth = 0.5;
 			% Initialise the array with anything
 			patchObjects(1) = patch([1,1],[2,2],obj.cs.GetRGB(6), 'LineWidth', lineWidth);
 
@@ -578,7 +590,10 @@ classdef Visualiser < matlab.mixin.SetGet
 			pos = get(h,'Position');
 			set(h,'PaperPositionMode','Auto','PaperUnits','Inches','PaperSize',[pos(3), pos(4)]);
 			
-			fileName = sprintf('%sImageAtTime_%g', obj.pathToOutput, obj.timeSteps(timeStep));
+
+			fileName = sprintf('ImageAtTime_%g',obj.timeSteps(timeStep));
+			fileName = strrep(fileName,'.','_'); % If any time has decimals, change the point to underscore
+			fileName = sprintf('%s%s', obj.pathToOutput, fileName);
 			print(fileName,'-dpdf')
 
 		end
