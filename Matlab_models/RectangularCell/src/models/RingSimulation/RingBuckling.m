@@ -34,8 +34,6 @@ classdef RingBuckling < RingSimulation
 
 			% Contact inhibition fraction
 			f = 0.9;
-			% Minimum division time
-			tm = tg;
 
 			% The asymptote, separation, and limit distances for the interaction force
 			dAsym = 0;
@@ -116,11 +114,7 @@ classdef RingBuckling < RingSimulation
 			obj.AddElementsToList([elementBottom, elementRight, elementTop, elementLeft]);
 
 			% Cell cycle model
-			ccm = SimpleContactInhibitionCellCycle(t0, tg, f, obj.dt);
-			% ccm = LinearGrowthCellCycle(t0, tg, tm, f, obj.dt);
-			% ccm.stochasticGrowthStart = true;
-			% ccm.stochasticGrowthEnd = true;
-			% ccm.stochasticDivisionAge = true;
+			ccm = GrowthContactInhibition(t0, tg, f, obj.dt);
 
 			% Assemble the cell
 
@@ -144,11 +138,7 @@ classdef RingBuckling < RingSimulation
 
 				obj.AddElementsToList([elementBottom, elementRight, elementTop]);
 
-				ccm = SimpleContactInhibitionCellCycle(t0, tg, f, obj.dt);
-				% ccm = LinearGrowthCellCycle(t0, tg, tm, f, obj.dt);
-				% ccm.stochasticGrowthStart = true;
-				% ccm.stochasticGrowthEnd = true;
-				% ccm.stochasticDivisionAge = true;
+				ccm = GrowthContactInhibition(t0, tg, f, obj.dt);
 
 				obj.cellList(i) = SquareCellJoined(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
 
@@ -168,11 +158,7 @@ classdef RingBuckling < RingSimulation
 
 			obj.AddElementsToList([elementBottom, elementTop]);
 
-			ccm = SimpleContactInhibitionCellCycle(t0, tg, f, obj.dt);
-			% ccm = LinearGrowthCellCycle(t0, tg, tm, f, obj.dt);
-			% ccm.stochasticGrowthStart = true;
-			% ccm.stochasticGrowthEnd = true;
-			% ccm.stochasticDivisionAge = true;
+			ccm = GrowthContactInhibition(t0, tg, f, obj.dt);
 
 			obj.cellList(n) = SquareCellJoined(ccm, [elementTop, elementBottom, elementLeft, elementRight], obj.GetNextCellId());
 
@@ -203,7 +189,7 @@ classdef RingBuckling < RingSimulation
 			obj.AddSimulationData(Circularity());
 			obj.AddDataStore(StoreCircularity(1));
 			obj.AddSimulationData(SpatialState());
-			pathName = sprintf('RingBuckling/n%gt0%gtg%gs%ga%gf%gtm%gda%gds%gdl%galpha%gbeta%gt%g_seed%g/',n,t0,tg,s,a,f,tm,dAsym,dSep, dLim, areaEnergy, perimeterEnergy, tensionEnergy, seed);
+			pathName = sprintf('RingBuckling/n%gt0%gtg%gs%ga%gf%gda%gds%gdl%galpha%gbeta%gt%g_seed%g/',n,t0,tg,s,a,f,dAsym,dSep, dLim, areaEnergy, perimeterEnergy, tensionEnergy, seed);
 			obj.AddDataWriter(WriteSpatialState(20,pathName));
 			
 

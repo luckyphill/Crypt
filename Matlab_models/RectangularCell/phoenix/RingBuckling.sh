@@ -12,4 +12,4 @@ module load arch/haswell
 module load matlab
 export EDGEDIR='/hpcfs/users/a1738927/Research/Crypt/Matlab_models/RectangularCell'
 
-matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); t = RingBuckling(10,10,20,1);t.RunToTime(200); quit()"
+matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); t = RingBuckling(20,10,10,1);t.RunToTime(200); quit()"
