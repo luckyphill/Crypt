@@ -18,6 +18,7 @@ classdef ChannelAngleAnalysis < Analysis
 		s
 		tg
 		w
+		f
 
 		seed
 
@@ -35,7 +36,7 @@ classdef ChannelAngleAnalysis < Analysis
 
 	methods
 
-		function obj = ChannelAngleAnalysis(n, l, r, s, tg, w, seed)
+		function obj = ChannelAngleAnalysis(n, l, r, s, tg, w, f, seed)
 
 			% Each seed runs in a separate job
 			obj.specifySeedDirectly = true;
@@ -45,7 +46,8 @@ classdef ChannelAngleAnalysis < Analysis
 			obj.r = r;   
 		 	obj.s = s;
 			obj.tg = tg;   
-			obj.w = w;   
+			obj.w = w;
+			obj.f = f;   
 			obj.seed = seed;
 			obj.analysisName = sprintf('%s/n50l5r5s20tg10w30f0.9t00da0ds1dl1a0_seed2',obj.analysisName)%,obj.n,obj.r,obj.s,obj.g,obj.d,obj.w,obj.seed);
 

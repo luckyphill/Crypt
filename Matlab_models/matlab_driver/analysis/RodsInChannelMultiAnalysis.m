@@ -69,7 +69,7 @@ classdef RodsInChannelMultiAnalysis < Analysis
 			allL = [];
 			r = Visualiser.empty;
 			for k = obj.seed
-				pathName = sprintf('RodsInChannel/n%gr%gs%gg%gd%gw%g_seed%g/SpatialState/',obj.n,obj.r,obj.s,obj.g,obj.d,obj.w,k);
+				pathName = sprintf('RodsInChannel/n%gr%gs%gg%gd%gw%g_seed%g/',obj.n,obj.r,obj.s,obj.g,obj.d,obj.w,k);
 				r = Visualiser(pathName);
 
 				angles = 0;

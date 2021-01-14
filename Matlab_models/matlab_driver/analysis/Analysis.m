@@ -201,19 +201,19 @@ classdef (Abstract) Analysis < matlab.mixin.SetGet
 
 		function SetSaveDetails(obj)
 
-			researchPath = getenv('HOME');
-			if isempty(researchPath)
-				error('HOME environment variable not set');
+			edgeBasedPath = getenv('EGEBASED');
+			if isempty(edgeBasedPath)
+				error('EDGEBASED environment variable not set');
 			end
-			if ~strcmp(researchPath(end),'/')
-				researchPath(end+1) = '/';
+			if ~strcmp(edgeBasedPath(end),'/')
+				edgeBasedPath(end+1) = '/';
 			end
 
-			obj.simulationFileLocation = [researchPath, 'Research/Crypt/Matlab_models/RectangularCell/phoenix/', obj.analysisName, '/'];
+			obj.simulationFileLocation = [edgeBasedPath, 'phoenix/', obj.analysisName, '/'];
 
-			obj.imageSaveLocation = [researchPath, 'Research/Crypt/Images/Matlab/', obj.analysisName, '/'];
+			obj.imageSaveLocation = [edgeBasedPath, 'Images/', obj.analysisName, '/'];
 
-			obj.dataSaveLocation = [researchPath, 'Research/Crypt/Data/Matlab/AnalysisOutput/', obj.analysisName, '/'];
+			obj.dataSaveLocation = [edgeBasedPath, 'AnalysisOutput/', obj.analysisName, '/'];
 
 			obj.dataFile = [obj.dataSaveLocation, 'data.mat'];
 
