@@ -11,5 +11,6 @@
 
 module load arch/haswell
 module load matlab/2019a
+export EDGEDIR='/hpcfs/users/a1738927/Research/Crypt/Matlab_models/RectangularCell'
 
-matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); r = VolfsonExperiment(100, 5, 5, 40, 10, 30, $SLURM_ARRAY_TASK_ID);r.RunToTime(200); quit()"
+matlab -nodisplay -nodesktop -r "cd ../../; addpath(genpath(pwd)); r = VolfsonExperiment(20, 6, 5, 40, 10, 30, 0.9, $SLURM_ARRAY_TASK_ID);r.RunToTime(200); quit()"
