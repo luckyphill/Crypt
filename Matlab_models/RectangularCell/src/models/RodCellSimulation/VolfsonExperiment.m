@@ -48,7 +48,7 @@ classdef VolfsonExperiment < FreeCellSimulation
 			% Make a grid of starting points
 			% we make them in steps of 2l to prevent cells overlapping
 			% in the initialisation stage
-			x = -80:l:80;
+			x = -40:l:40;
 			y = -(w/2):l:(w/2);
 			% x = -5:5;
 			% y = 0.5:(w-0.5);
@@ -90,6 +90,10 @@ classdef VolfsonExperiment < FreeCellSimulation
 				ccm.pauseColour = ccm.colourSet.GetNumber('ECOLI');
 				ccm.growthColour = ccm.colourSet.GetNumber('ECOLI');
 				ccm.inhibitedColour = ccm.colourSet.GetNumber('ECOLISTOPPED');
+				% Set the age to a random value to avoid population level
+				% cell cycle synchronisation. This will make most cells shorter than
+				% their target length, so there will be an early stage of rapid growth
+				ccm.SetAge(round(unifrnd(0,tg-2),1));
 
 				c = RodCell(e,ccm,obj.GetNextCellId());
 				% When the cell areas are calculated, the length of the edge and
