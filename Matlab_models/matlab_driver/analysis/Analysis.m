@@ -201,9 +201,9 @@ classdef (Abstract) Analysis < matlab.mixin.SetGet
 
 		function SetSaveDetails(obj)
 
-			edgeBasedPath = getenv('EGEBASED');
+			edgeBasedPath = getenv('EDGEDIR');
 			if isempty(edgeBasedPath)
-				error('EDGEBASED environment variable not set');
+				error('EDGEDIR environment variable not set');
 			end
 			if ~strcmp(edgeBasedPath(end),'/')
 				edgeBasedPath(end+1) = '/';
