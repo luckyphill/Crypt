@@ -81,7 +81,7 @@ classdef VolfsonMultiAnalysis < Analysis
 
 					Q(end + 1) = sqrt(  mean(cos( 2.* angles))^2 + mean(sin( 2.* angles))^2   );
 					L(end + 1) = mean(lengths);
-					N(end + 1) = J;
+					N(end + 1) = j-1;
 
 				end
 
