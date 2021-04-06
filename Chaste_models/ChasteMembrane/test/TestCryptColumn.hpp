@@ -69,7 +69,7 @@ class TestCryptColumn : public AbstractCellBasedTestSuite
 public:
 
 
-	void TestCrypt() throw(Exception)
+	void TestCrypt()
 	{
 		// This test simulates a column of cells that move in 2 dimensions
 		// Growing cells are represented as two nodes throughout the duration of W phase
