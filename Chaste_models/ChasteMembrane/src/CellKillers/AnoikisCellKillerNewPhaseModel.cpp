@@ -153,7 +153,7 @@ void AnoikisCellKillerNewPhaseModel::CheckAndLabelCellsForApoptosisOrDeath()
 
 	if (dynamic_cast<NodeBasedCellPopulation<2>*>(this->mpCellPopulation))
 	{
-		NodeBasedCellPopulation<2>* p_tissue = static_cast<NodeBasedCellPopulation<2>*> (this->mpCellPopulation);
+		// NodeBasedCellPopulation<2>* p_tissue = static_cast<NodeBasedCellPopulation<2>*> (this->mpCellPopulation);
 
 		// Get the information at this timestep for each node index that says whether to remove by anoikis or random apoptosis
 		this->PopulateAnoikisList();
