@@ -31,8 +31,8 @@ done < optimalRun.txt
 
 if [ $found = 1 ]; then
 
-    echo '/hpcfs/users/a1738927/Research/chaste_build/projects/ChasteMembrane/test/TestCryptColumn -bt 100 -t 400 -n $n -np $np -ees $ees -ms $ms -cct $cct -wt $wt -vf $vf';
-    /hpcfs/users/a1738927/Research/chaste_build/projects/ChasteMembrane/test/TestCryptColumn -n $n -np $np -ees $ees -ms $ms -cct $cct -wt $wt -vf $vf
+    echo "/hpcfs/users/a1738927/Research/chaste_build/projects/ChasteMembrane/test/TestCryptColumn -bt 100 -t 400 -n $n -np $np -ees $ees -ms $ms -cct $cct -wt $wt -vf $vf";
+    /hpcfs/users/a1738927/Research/chaste_build/projects/ChasteMembrane/test/TestCryptColumn -bt 100 -t 400 -n $n -np $np -ees $ees -ms $ms -cct $cct -wt $wt -vf $vf
 	
 else 
   echo "optimalWalkPoints.txt  does not have enough parameters for $SLURM_ARRAY_TASK_ID index" 
