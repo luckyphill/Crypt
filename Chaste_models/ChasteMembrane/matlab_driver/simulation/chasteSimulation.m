@@ -110,7 +110,7 @@ classdef chasteSimulation < simulation
 				fid = fopen(obj.errorFile,'w');
 				fprintf(fid, obj.cmdout);
 				fclose(fid);
-				fprintf('Problem running simulation. Console output saved in:\n%s', obj.errorFile);
+				fprintf('Problem running simulation. Console output saved in:\n%s\n', obj.errorFile);
 			else
 				% If failed returns 0, then the command completed without failing
 				% However, this does not mean the data will necessarily be in the correct

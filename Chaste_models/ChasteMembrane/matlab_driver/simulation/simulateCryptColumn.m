@@ -177,7 +177,7 @@ classdef simulateCryptColumn < chasteSimulation
 			% command for the specific parameter set, numerical conditions, and seed
 
 			obj.generateInputString();
-			obj.simulationCommand = [obj.chastePath, 'chaste_build/projects/ChasteMembrane/test/', obj.chasteTest, obj.inputString];
+			obj.simulationCommand = [obj.chastePath, 'Research/chaste_build/projects/ChasteMembrane/test/', obj.chasteTest, obj.inputString];
 
 		end
 
