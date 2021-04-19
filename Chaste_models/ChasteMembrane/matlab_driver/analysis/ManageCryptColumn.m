@@ -35,7 +35,7 @@ function physical = verifyParams(n,np,ees,ms,cct,wt,vf)
 		end
 	end
 
-	if nnp > n - 4
+	if np > n - 4
 		% Need at least some space where the crypt has differentiated cells
 		physical = false;
 	end
