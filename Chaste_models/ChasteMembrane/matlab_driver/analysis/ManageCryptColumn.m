@@ -1,4 +1,4 @@
-function ManageCryptColumn(n, np, ees, ms, cct, wt, vf)
+function ManageCryptColumn(n, np, ees, ms, cct, wt, vf, seed)
 	
 	% A dumb mamanger - it sets the variables and runs the simulation
 	% Ideally I'd want to implement this in the same way as for EdgeBased
@@ -7,7 +7,7 @@ function ManageCryptColumn(n, np, ees, ms, cct, wt, vf)
 	outputTypes = behaviourData();
 	simParams = containers.Map({'n', 'np', 'ees', 'ms', 'cct', 'wt', 'vf'}, {n, np, ees, ms, cct, wt, vf});
 	solverParams = containers.Map({'t', 'bt', 'dt'}, {1000, 100, 0.0005});
-	seedParams = containers.Map({'run'}, {1});
+	seedParams = containers.Map({'run'}, {seed});
 	
 	if verifyParams(n,np,ees,ms,cct,wt,vf)
 

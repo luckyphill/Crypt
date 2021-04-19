@@ -1,0 +1,1 @@
+sbatch --array=0-961 --time=4:00:00 ../generalSbatch7seed.sh ManageCryptColumn SpaceSweepMSvsEES.txt 

@@ -1,4 +1,4 @@
-classdef SpaceSweepCCTvsWT < Analysis
+classdef SpaceSweepMSvsEES < Analysis
 
 	% This analysis sweeps over two parameters while keeping the others fixed
 	% to try to show an optimal region
@@ -9,24 +9,24 @@ classdef SpaceSweepCCTvsWT < Analysis
 		% IF CHANGE IS NEEDED, MAKE A NEW OBJECT
 
 		
-		n 	= ;
-		np 	= ;		
-		ees 		
-		ms 			
-		cct 
-		wt 
-		vf 			
+		n 	= 19.1
+		np 	= 9.3	
+		ees = 100:10:400	
+		ms 	= 100:10:400		
+		cct = 22
+		wt  = 3.4
+		vf 	= 0.937	
 
 		seed = 1;
 
 		targetTime = 1000;
 
-		analysisName = 'SpaceSweepCCTvsWT';
+		analysisName = 'SpaceSweepMSvsEES';
 
 		parameterSet = []
 		missingParameterSet = []
 
-		simulationRuns = 50
+		simulationRuns = 1
 		slurmTimeNeeded = 4
 		simulationDriverName = 'ManageCryptColumn'
 		simulationInputCount = 7
@@ -36,7 +36,7 @@ classdef SpaceSweepCCTvsWT < Analysis
 
 	methods
 
-		function obj = SpaceSweepCCTvsWT()
+		function obj = SpaceSweepMSvsEES()
 
 			obj.seedIsInParameterSet = false; % The seed not given in MakeParameterSet, it is set in properties
 			obj.seedHandledByScript = false; % The seed will be in the parameter file, not the job script
@@ -55,7 +55,7 @@ classdef SpaceSweepCCTvsWT < Analysis
 					for ees = obj.ees
 						for ms = obj.ms
 							for cct = obj.cct
-								for w = obj.wt
+								for wt = obj.wt
 									for vf = obj.vf
 
 										params(end+1,:) = [n,np,ees,ms,cct,wt,vf];

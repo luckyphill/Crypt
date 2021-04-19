@@ -272,19 +272,21 @@ classdef (Abstract) Analysis < matlab.mixin.SetGet
 
 		function SetSaveDetails(obj)
 
-			edgeBasedPath = getenv('EDGEDIR');
-			if isempty(edgeBasedPath)
+			% Change this for matlab_driver
+
+			driverPath = '/Users/phillip/Research/Crypt/Chaste_models/ChasteMembrane/matlab_driver/';
+			if isempty(driverPath)
 				error('EDGEDIR environment variable not set');
 			end
-			if ~strcmp(edgeBasedPath(end),'/')
-				edgeBasedPath(end+1) = '/';
+			if ~strcmp(driverPath(end),'/')
+				driverPath(end+1) = '/';
 			end
 
 			
 
-			obj.imageSaveLocation = [edgeBasedPath, 'Images/', obj.analysisName, '/'];
+			obj.imageSaveLocation = [driverPath, 'Images/', obj.analysisName, '/'];
 
-			obj.dataSaveLocation = [edgeBasedPath, 'AnalysisOutput/', obj.analysisName, '/'];
+			obj.dataSaveLocation = [driverPath, 'AnalysisOutput/', obj.analysisName, '/'];
 
 			obj.dataFile = [obj.dataSaveLocation, 'data.mat'];
 
@@ -298,7 +300,7 @@ classdef (Abstract) Analysis < matlab.mixin.SetGet
 
 			% Only relevant when outputting HPC simulation files
 			if obj.usingHPC
-				obj.simulationFileLocation = [edgeBasedPath, 'HPC/', obj.analysisName, '/'];
+				obj.simulationFileLocation = [driverPath, 'HPC/', obj.analysisName, '/'];
 
 				if exist(obj.simulationFileLocation,'dir')~=7
 					mkdir(obj.simulationFileLocation);
