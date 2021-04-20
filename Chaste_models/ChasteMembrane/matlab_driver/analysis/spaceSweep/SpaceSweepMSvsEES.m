@@ -103,7 +103,7 @@ classdef SpaceSweepMSvsEES < Analysis
 				outputTypes = behaviourData();
 				simParams = containers.Map({'n', 'np', 'ees', 'ms', 'cct', 'wt', 'vf'}, {n, np, ees, ms, cct, wt, vf});
 				solverParams = containers.Map({'t', 'bt', 'dt'}, {1000, 100, 0.0005});
-				seedParams = containers.Map({'run'}, {seed});
+				seedParams = containers.Map({'run'}, {obj.seed});
 
 				sim = simulateCryptColumn(simParams, solverParams, seedParams, outputTypes);
 

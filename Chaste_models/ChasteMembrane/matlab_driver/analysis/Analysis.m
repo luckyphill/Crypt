@@ -274,9 +274,9 @@ classdef (Abstract) Analysis < matlab.mixin.SetGet
 
 			% Change this for matlab_driver
 
-			driverPath = '/Users/phillip/Research/Crypt/Chaste_models/ChasteMembrane/matlab_driver/';
+			driverPath = getenv('DRIVERPATH');
 			if isempty(driverPath)
-				error('EDGEDIR environment variable not set');
+				error('DRIVERPATH environment variable not set');
 			end
 			if ~strcmp(driverPath(end),'/')
 				driverPath(end+1) = '/';
