@@ -111,7 +111,7 @@ classdef SpaceSweepMSvsEES < Analysis
 
 				data(i,:) = sim.data.behaviour_data;
 
-				objectiveValue = MouseColonAsc(data(i,:));
+				objectiveValue(i) = MouseColonAsc(data(i,:));
 
 			end
 
