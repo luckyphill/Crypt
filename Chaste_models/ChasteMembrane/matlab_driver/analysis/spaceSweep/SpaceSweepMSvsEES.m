@@ -126,11 +126,12 @@ classdef SpaceSweepMSvsEES < Analysis
 			h = figure;
 
 			scatter(obj.parameterSet(:,3), obj.parameterSet(:,4), 100, objectiveValue,'filled');
-			ylabel('Area energy parameter','Interpreter', 'latex', 'FontSize', 15);
-			xlabel('Perimeter energy parameter','Interpreter', 'latex', 'FontSize', 15);
-			title(sprintf('Proportion buckled, p=%g, g=%g',obj.p,obj.g),'Interpreter', 'latex', 'FontSize', 22);
-			ylim([min(obj.sae)-1, max(obj.sae)+1]);xlim([min(obj.spe)-1, max(obj.spe)+1]);
-			colorbar; caxis([0 1]);
+			ylabel('Cell-cell stiffness','Interpreter', 'latex', 'FontSize', 15);
+			xlabel('Membrane adhesion stiffness','Interpreter', 'latex', 'FontSize', 15);
+			title(sprintf('Objective function value'),'Interpreter', 'latex', 'FontSize', 22);
+			ylim([min(obj.ees)-1, max(obj.ees)+1]);
+			xlim([min(obj.ms)-1, max(obj.ms)+1]);
+			colorbar;
 			colormap jet;
 			ax = gca;
 			c = ax.Color;
@@ -138,7 +139,7 @@ classdef SpaceSweepMSvsEES < Analysis
 			set(h, 'InvertHardcopy', 'off')
 			set(h,'color','w');
 
-			SavePlot(obj, h, sprintf('BodyParams'));
+			SavePlot(obj, h, sprintf('MSvsEES'));
 
 		end
 
