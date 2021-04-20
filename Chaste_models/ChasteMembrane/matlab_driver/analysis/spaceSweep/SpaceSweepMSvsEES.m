@@ -113,15 +113,25 @@ classdef SpaceSweepMSvsEES < Analysis
 
 				objectiveValue(i) = MouseColonAsc(data(i,:));
 
+				if isnan(objectiveValue(i))
+
+					obj.missingParameterSet(end + 1, :) = [s,1];
+				end
+
 			end
 
 			obj.result = {data, objectiveValue};
+
+			if ~isempty(obj.missingParameterSet)
+
+				obj.ProduceMissingDataSimulationFiles();
+			end
 
 		end
 
 		function PlotData(obj)
 
-			objectiveValue = obj.result{1};
+			objectiveValue = obj.result{2};
 
 			h = figure;
 
