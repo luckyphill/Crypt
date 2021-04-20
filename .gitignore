@@ -7,3 +7,4 @@ Chaste_models/ChasteMembrane/processing/ParameterOptimisation/testing/*
 Books/*
 **/*.pdf
 **/untitled*.m
+**/*.out

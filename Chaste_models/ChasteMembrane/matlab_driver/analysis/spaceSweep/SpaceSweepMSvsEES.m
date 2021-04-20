@@ -85,12 +85,60 @@ classdef SpaceSweepMSvsEES < Analysis
 
 		function AssembleData(obj)
 
-			
+
+			obj.MakeParameterSet();
+
+
+			for i = 1:length(obj.parameterSet)
+
+				s = obj.parameterSet(i,:);
+				n 	= s(1);
+				np 	= s(2);	
+				ees = s(3);
+				ms 	= s(4);		
+				cct = s(5);
+				wt  = s(6);
+				vf 	= s(7);
+
+				outputTypes = behaviourData();
+				simParams = containers.Map({'n', 'np', 'ees', 'ms', 'cct', 'wt', 'vf'}, {n, np, ees, ms, cct, wt, vf});
+				solverParams = containers.Map({'t', 'bt', 'dt'}, {1000, 100, 0.0005});
+				seedParams = containers.Map({'run'}, {seed});
+
+				sim = simulateCryptColumn(simParams, solverParams, seedParams, outputTypes);
+
+				sim.loadSimulationData;
+
+				data(i,:) = sim.data.behaviour_data;
+
+				objectiveValue = MouseColonAsc(data(i,:));
+
+			end
+
+			obj.result = {data, objectiveValue};
 
 		end
 
 		function PlotData(obj)
 
+			objectiveValue = obj.result{1};
+
+			h = figure;
+
+			scatter(obj.parameterSet(:,3), obj.parameterSet(:,4), 100, objectiveValue,'filled');
+			ylabel('Area energy parameter','Interpreter', 'latex', 'FontSize', 15);
+			xlabel('Perimeter energy parameter','Interpreter', 'latex', 'FontSize', 15);
+			title(sprintf('Proportion buckled, p=%g, g=%g',obj.p,obj.g),'Interpreter', 'latex', 'FontSize', 22);
+			ylim([min(obj.sae)-1, max(obj.sae)+1]);xlim([min(obj.spe)-1, max(obj.spe)+1]);
+			colorbar; caxis([0 1]);
+			colormap jet;
+			ax = gca;
+			c = ax.Color;
+			ax.Color = 'black';
+			set(h, 'InvertHardcopy', 'off')
+			set(h,'color','w');
+
+			SavePlot(obj, h, sprintf('BodyParams'));
 
 		end
 
