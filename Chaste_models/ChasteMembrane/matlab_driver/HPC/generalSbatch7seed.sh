@@ -10,12 +10,13 @@
 simName=$1 
 paramFile=$2
 
+module purge
 module load CMake
-module load Boost
+module load Boost/1.67.0
 module unload OpenMPI/gcc/3.1.1
 
-module load arch/haswell
-module load matlab
+# module load arch/haswell
+module load matlab/2020b
 
 echo "array_job_index: $SLURM_ARRAY_TASK_ID"
 
